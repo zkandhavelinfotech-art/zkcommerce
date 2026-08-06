@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZKCommerce — Gap Analysis & Competitor Comparison</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif}
+body{background:#f8fafc;color:#0f172a;font-size:14px;line-height:1.6}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 20px}
+.hero{text-align:center;padding:40px 0 28px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#4338ca;border:1.5px solid #c7d2fe;border-radius:99px;padding:5px 16px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px}
+.hero h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.hero p{font-size:15px;color:#64748b;max-width:580px;margin:0 auto 6px}
+.tagline{font-size:13px;color:#4f46e5;font-weight:700}
+.tabs{display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:28px;background:#fff;border-radius:12px 12px 0 0;padding:0 8px;overflow-x:auto}
+.tab{padding:12px 20px;font-size:13px;font-weight:500;color:#94a3b8;cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+.tab:hover{color:#334155}
+.tab.active{color:#4f46e5;border-bottom-color:#4f46e5;font-weight:700}
+.panel{display:none}.panel.active{display:block}
+.alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;line-height:1.65}
+.aw{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
+.ai{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}
+.as{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
+.tbl-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:12px;background:#fff;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;min-width:760px}
+thead th{padding:11px 12px;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;background:#f8fafc;text-align:center;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+thead th:first-child{text-align:left;min-width:180px}
+th.zkc-h{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:11px}
+tbody tr:hover td{background:#fafafe}
+td{padding:10px 12px;font-size:12.5px;color:#475569;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:middle}
+td:first-child{text-align:left;font-weight:600;color:#0f172a;background:#f9fafb;font-size:12.5px}
+tbody tr:last-child td{border-bottom:none}
+.sec td{background:#f1f5f9!important;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:7px 12px;text-align:left}
+.zkc-col{background:#fafafe!important;color:#4338ca!important;font-weight:700!important}
+.ok{color:#15803d;font-weight:700}
+.bad{color:#dc2626}
+.mid{color:#d97706;font-weight:600}
+.price-big{font-size:17px;font-weight:800;color:#0f172a;display:block}
+.price-sub{font-size:10px;color:#94a3b8;display:block;margin-top:1px}
+.gap-wrap{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px}
+.gap-head{display:grid;grid-template-columns:1fr 100px 110px 100px 80px;background:#1e293b;padding:10px 16px;gap:8px}
+.gap-head span{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;text-align:center}
+.gap-head span:first-child{text-align:left;color:#cbd5e1}
+.gap-row{display:grid;grid-template-columns:1fr 100px 110px 100px 80px;padding:10px 16px;border-bottom:1px solid #f1f5f9;align-items:center;background:#fff;gap:8px}
+.gap-row:hover{background:#fafafe}
+.gap-row:last-child{border-bottom:none}
+.gap-sec{padding:7px 16px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
+.gn{font-size:13px;font-weight:600;color:#0f172a}
+.gs{font-size:11px;color:#94a3b8;margin-top:2px}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;white-space:nowrap;justify-content:center}
+.pd{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.pm{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.pp{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.pn{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
+.phi{color:#dc2626;font-size:10px;font-weight:800}
+.pmd{color:#d97706;font-size:10px;font-weight:800}
+.plo{color:#0369a1;font-size:10px;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.sc{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;text-align:center}
+.scv{font-size:26px;font-weight:800;margin-bottom:3px}
+.scl{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;line-height:1.4}
+.bv{color:#4f46e5}.gv{color:#16a34a}.rv{color:#dc2626}.av{color:#d97706}
+.wins-box{background:#0f172a;border-radius:14px;padding:22px 24px;margin-bottom:20px}
+.wins-box h3{font-size:15px;font-weight:800;margin-bottom:16px;color:#fff}
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.win{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 14px}
+.wt{font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.ws{font-size:11px;color:#94a3b8;line-height:1.55}
+.cost-box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.cost-hdr{display:grid;grid-template-columns:1.2fr repeat(5,1fr);background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:10px 14px}
+.cost-hdr span{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;text-align:center}
+.cost-hdr span:first-child{text-align:left}
+.cost-row{display:grid;grid-template-columns:1.2fr repeat(5,1fr);padding:10px 14px;border-bottom:1px solid #f1f5f9;align-items:center}
+.cost-row:last-child{background:#f8fafc;border-bottom:none}
+.cost-row span{font-size:12px;color:#475569;text-align:center}
+.cost-row span:first-child{text-align:left;color:#0f172a;font-weight:600;font-size:12px}
+.cost-row.tot span{font-size:13px;font-weight:800}
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .wg{grid-template-columns:1fr 1fr}
+  .gap-head,.gap-row{grid-template-columns:1fr 90px 80px;gap:4px}
+  .gap-head span:nth-child(3),.gap-row>div:nth-child(3){display:none}
+  .cost-hdr,.cost-row{grid-template-columns:1fr repeat(3,80px)}
+  .cost-hdr span:nth-child(4),.cost-row span:nth-child(4),
+  .cost-hdr span:nth-child(5),.cost-row span:nth-child(5){display:none}
+}
+</style>
+<link rel="stylesheet" href="assets/css/design-system.css">
+</head>
+<body>
+<div class="wrap">
+<div class="hero">
+  <div class="hero-badge">⚡ ZKCommerce</div>
+  <h1>Gap Analysis &amp; Competitor Comparison</h1>
+  <p>ZKCommerce vs Shopify India · Zoho Commerce · Amazon India · Flipkart</p>
+  <div class="tagline">India's Commerce Platform · Sell Everywhere. Grow Faster.</div>
+  <div style="font-size:11px;color:#94a3b8;margin-top:4px">by ZKanadavel Infotech Pvt Ltd &amp; ZK Infotech INC</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('pricing',this)">💰 Pricing comparison</button>
+  <button class="tab" onclick="show('gaps',this)">🔍 Feature gaps</button>
+  <button class="tab" onclick="show('compete',this)">🆚 4-way comparison</button>
+  <button class="tab" onclick="show('wins',this)">🏆 Why ZKCommerce</button>
+</div>
+
+<!-- PRICING -->
+<div id="tab-pricing" class="panel active">
+  <div class="alert aw">⚠️ <strong>Shopify India has NO Shopify Payments.</strong> Every merchant pays 0.5%–2% platform fee ON TOP of Razorpay (~2%). True cost per ₹100 sale: ₹3.5–₹4.5. <strong>ZKCommerce charges ₹0 platform transaction fee.</strong></div>
+  <div class="alert ai">ℹ️ <strong>Zoho Commerce pricing (USD→INR at ₹84/$):</strong> Starter $15 = ~₹1,260/mo · Professional $49 = ~₹4,116/mo · Premium $109 = ~₹9,156/mo. No txn fees but limited India features &amp; USD pricing hurts Indian merchants.</div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left">Plan / feature</th>
+          <th>Shopify Basic<br><small style="color:#94a3b8;font-size:9px">₹1,499/mo</small></th>
+          <th>Shopify Grow<br><small style="color:#94a3b8;font-size:9px">₹5,599/mo</small></th>
+          <th>Zoho Starter<br><small style="color:#94a3b8;font-size:9px">~₹1,260/mo</small></th>
+          <th>Zoho Pro<br><small style="color:#94a3b8;font-size:9px">~₹4,116/mo</small></th>
+          <th class="zkc-h">⚡ ZKCommerce Growth<br><small style="color:rgba(255,255,255,.7);font-size:9px">₹799/mo</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sec"><td colspan="6">Pricing</td></tr>
+        <tr><td>Listed price (excl. GST)</td><td>₹1,499</td><td>₹5,599</td><td>~₹1,260</td><td>~₹4,116</td><td class="zkc-col"><span class="price-big">₹799</span><span class="price-sub">Launch offer</span></td></tr>
+        <tr><td>Annual billing saving</td><td>25%</td><td>25%</td><td>~20%</td><td>~20%</td><td class="zkc-col ok">30% + free setup ✓</td></tr>
+        <tr><td>Free trial</td><td class="bad">3 days only</td><td class="bad">3 days only</td><td>14 days</td><td>14 days</td><td class="zkc-col ok">30 days ✓</td></tr>
+        <tr><td>Currency risk</td><td>INR stable</td><td>INR stable</td><td class="bad">USD → INR fluctuates</td><td class="bad">USD → INR fluctuates</td><td class="zkc-col ok">INR fixed ✓</td></tr>
+
+        <tr class="sec"><td colspan="6">Transaction &amp; gateway fees</td></tr>
+        <tr><td style="color:#dc2626;font-weight:700">⚠️ Platform txn fee per sale</td><td class="bad">2% every sale</td><td class="bad">1% every sale</td><td class="ok">0% ✓</td><td class="ok">0% ✓</td><td class="zkc-col ok">0% ✓</td></tr>
+        <tr><td>Payment gateway fee</td><td>~2% Razorpay</td><td>~2% Razorpay</td><td>~2%</td><td>~2%</td><td class="zkc-col ok">~1.8% Razorpay ✓</td></tr>
+        <tr><td style="font-weight:800;color:#dc2626">TRUE cost per ₹100 sale</td><td class="bad" style="font-weight:800">₹4–4.5</td><td class="bad" style="font-weight:800">₹3–3.5</td><td style="font-weight:800">₹2–2.5</td><td style="font-weight:800">₹2–2.5</td><td class="zkc-col ok" style="font-size:14px">₹1.8 only ✓</td></tr>
+
+        <tr class="sec"><td colspan="6">Store &amp; products</td></tr>
+        <tr><td>Products listed</td><td>Unlimited</td><td>Unlimited</td><td class="bad">500 only</td><td class="mid">5,000 only</td><td class="zkc-col ok">Unlimited ✓</td></tr>
+        <tr><td>Staff accounts</td><td class="bad">2 only</td><td class="mid">5 only</td><td class="bad">2 only</td><td class="mid">5 only</td><td class="zkc-col ok">Unlimited ✓</td></tr>
+        <tr><td>Inventory locations</td><td class="bad">4 only</td><td class="bad">5 only</td><td class="bad">1 only</td><td class="mid">3 only</td><td class="zkc-col ok">Unlimited ✓</td></tr>
+        <tr><td>Custom storefront themes</td><td class="bad">Paid ₹10k+</td><td class="bad">Paid ₹10k+</td><td class="mid">3 themes</td><td class="mid">8 themes</td><td class="zkc-col ok">8 themes free ✓</td></tr>
+        <tr><td>Custom domain + SSL</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td class="zkc-col ok">✓ Free SSL</td></tr>
+
+        <tr class="sec"><td colspan="6">India-specific (built-in)</td></tr>
+        <tr><td>GST-compliant invoicing</td><td class="bad">Paid app ₹600+/mo</td><td class="bad">Paid app ₹600+/mo</td><td class="mid">Via Zoho Books addon</td><td class="mid">Via Zoho Books addon</td><td class="zkc-col ok">Native built-in ✓</td></tr>
+        <tr><td>GSTR-1 CSV export</td><td class="bad">Paid app</td><td class="bad">Paid app</td><td class="mid">Via Zoho Books</td><td class="mid">Via Zoho Books</td><td class="zkc-col ok">Native CSV ✓</td></tr>
+        <tr><td>UPI / Razorpay native</td><td class="mid">Via app setup</td><td class="mid">Via app setup</td><td>✓</td><td>✓</td><td class="zkc-col ok">Native UPI ✓</td></tr>
+        <tr><td>COD (Cash on Delivery)</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td class="zkc-col ok">✓ + OTP verify</td></tr>
+        <tr><td>Loyalty points</td><td class="bad">Paid app ₹1,200+</td><td class="bad">Paid app ₹1,200+</td><td class="mid">Via Zoho Thrive</td><td class="mid">Via Zoho Thrive</td><td class="zkc-col ok">Native built-in ✓</td></tr>
+        <tr><td>WhatsApp integration</td><td class="bad">Paid app ₹800+</td><td class="bad">Paid app ₹800+</td><td class="mid">Via Zoho Cliq</td><td class="mid">Via Zoho Cliq</td><td class="zkc-col ok">Built-in ✓</td></tr>
+        <tr><td>Shipping label print</td><td class="bad">Paid app</td><td class="bad">Paid app</td><td class="mid">Via Shiprocket</td><td class="mid">Via Shiprocket</td><td class="zkc-col ok">Native built-in ✓</td></tr>
+        <tr><td>Delhivery / courier API</td><td class="bad">Paid app</td><td class="bad">Paid app</td><td class="mid">Via Shiprocket</td><td class="mid">Via Shiprocket</td><td class="zkc-col ok">Native API ✓</td></tr>
+        <tr><td>India phone/WhatsApp support</td><td class="bad">Email/chat only</td><td class="bad">Email/chat only</td><td class="mid">Email/chat only</td><td class="mid">Email/chat only</td><td class="zkc-col ok">Phone + WhatsApp ✓</td></tr>
+        <tr><td>Free onboarding assistance</td><td class="bad">Self-serve only</td><td class="bad">Self-serve only</td><td class="mid">Email guidance</td><td class="mid">Email guidance</td><td class="zkc-col ok">Free dedicated setup ✓</td></tr>
+
+        <tr class="sec"><td colspan="6">Analytics &amp; marketing</td></tr>
+        <tr><td>Full analytics dashboard</td><td class="bad">Basic only</td><td>Professional</td><td class="mid">Basic</td><td>Standard</td><td class="zkc-col ok">Full + UTM + funnel ✓</td></tr>
+        <tr><td>Abandoned cart recovery</td><td>✓</td><td>✓</td><td class="mid">Via Zoho Campaigns</td><td class="mid">Via Zoho Campaigns</td><td class="zkc-col ok">✓ Built-in</td></tr>
+        <tr><td>Email/SMS/WA campaigns</td><td class="bad">Paid app</td><td class="bad">Paid app</td><td class="mid">Via Zoho Campaigns</td><td class="mid">Via Zoho Campaigns</td><td class="zkc-col ok">Built-in ✓</td></tr>
+
+        <tr class="sec"><td colspan="6">True cost — ₹5L/month GMV merchant</td></tr>
+        <tr><td>Apps typically needed</td><td class="bad">₹5,000–15,000/mo</td><td class="bad">₹8,000–20,000/mo</td><td class="mid">₹2,000–5,000/mo</td><td class="mid">₹3,000–6,000/mo</td><td class="zkc-col ok">₹0 (all built-in)</td></tr>
+        <tr><td>Platform txn fees (₹5L GMV)</td><td class="bad">₹10,000 (2%)</td><td class="bad">₹5,000 (1%)</td><td class="ok">₹0</td><td class="ok">₹0</td><td class="zkc-col ok">₹0 ✓</td></tr>
+        <tr style="background:#fef9f0"><td style="font-weight:800;font-size:13px">TOTAL TRUE MONTHLY COST</td><td class="bad" style="font-weight:800">₹18,000–28,000</td><td class="bad" style="font-weight:800">₹16,000–30,000</td><td class="mid" style="font-weight:800">₹4,000–8,000</td><td class="mid" style="font-weight:800">₹7,000–12,000</td><td class="zkc-col ok" style="font-size:14px;font-weight:800">₹799 flat ✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert as">💡 <strong>ZKCommerce saves you:</strong> vs Shopify Basic — <strong>₹17,000–27,000/month</strong> (₹2–3 lakh/year). vs Zoho Commerce Pro — <strong>₹3,000–7,000/month</strong> (₹36,000–84,000/year). At ₹10L/month GMV vs Shopify: save <strong>₹2.4 lakh/year</strong> in transaction fees alone.</div>
+</div>
+
+<!-- GAP ANALYSIS -->
+<div id="tab-gaps" class="panel">
+  <div class="alert ai">ℹ️ Features Shopify / Zoho Commerce offer that ZKCommerce should build next (AI features excluded). Ranked by India market impact.</div>
+  <div class="gap-wrap">
+    <div class="gap-head">
+      <span>Feature</span>
+      <span style="text-align:center">Shopify</span>
+      <span style="text-align:center">Zoho Commerce</span>
+      <span style="text-align:center">ZKCommerce</span>
+      <span style="text-align:center">Priority</span>
+    </div>
+
+    <div class="gap-sec">🛒 Sales channels</div>
+    <div class="gap-row"><div><div class="gn">Facebook / Instagram shop sync</div><div class="gs">Auto-sync catalogue to Meta shops, tag products in Instagram posts &amp; reels</div></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Google Shopping feed</div><div class="gs">Auto-submit product feed to Google Merchant Center for free listings</div></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pd">Native ✓</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Amazon / Flipkart marketplace sync</div><div class="gs">List products on Amazon India &amp; Flipkart directly from ZKCommerce dashboard</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">WhatsApp catalogue sharing</div><div class="gs">Share product catalogue via WhatsApp Business — #1 sales channel in Tier 2/3 India</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pp">Partial</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Meesho / Snapdeal channel sync</div><div class="gs">Meesho is massive for Tier 2/3 Indian sellers — no other platform connects natively</div></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">POS (Point of Sale) system</div><div class="gs">Physical store checkout — barcode scanner, receipt printer, offline mode</div></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+
+    <div class="gap-sec">📦 Fulfilment &amp; shipping</div>
+    <div class="gap-row"><div><div class="gn">Shiprocket / multi-courier booking UI</div><div class="gs">One-click courier booking with rate comparison — DTDC, BlueDart, XpressBees, Ecom Express</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pd">Shiprocket ✓</span></div><div style="text-align:center"><span class="pill pp">API only</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Auto AWB + live tracking push to customer</div><div class="gs">Auto-assign AWB, push live courier status via SMS/WhatsApp to buyer</div></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pp">Partial</span></div><div style="text-align:center"><span class="pill pp">Partial</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Returns management portal</div><div class="gs">Customer-initiated returns, pickup scheduling, refund automation, RTO reduction</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Hyperlocal delivery (Dunzo / Porter)</div><div class="gs">Same-day delivery via Dunzo, Porter, Shadowfax, Borzo — growing fast in metros</div></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+
+    <div class="gap-sec">💳 Payments</div>
+    <div class="gap-row"><div><div class="gn">COD verification via OTP / IVR call</div><div class="gs">Verify COD orders before dispatch — reduces RTO which is the #1 pain for Indian merchants</div></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">No-cost EMI (Bajaj / ICICI / HDFC)</div><div class="gs">No-cost EMI at checkout — critical for electronics, furniture, appliances in India</div></div><div style="text-align:center"><span class="pill pp">Via Razorpay</span></div><div style="text-align:center"><span class="pill pp">Via Razorpay</span></div><div style="text-align:center"><span class="pill pp">Partial</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Buy Now Pay Later (Simpl / LazyPay)</div><div class="gs">BNPL at checkout — fast-growing among 18–35 age group across India</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+
+    <div class="gap-sec">📈 Marketing &amp; SEO</div>
+    <div class="gap-row"><div><div class="gn">Abandoned cart WhatsApp recovery</div><div class="gs">Auto-WhatsApp when cart is abandoned — 3× better recovery rate than email in India</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Built-in blog / content module</div><div class="gs">SEO blog — drives 40–60% organic traffic for D2C brands. Both Shopify &amp; Zoho have this natively</div></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">Flash sale / countdown timer</div><div class="gs">Time-limited sale countdown on product page — proven conversion booster on all Indian platforms</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">Affiliate / referral program</div><div class="gs">Let customers earn commissions for referrals — massive for D2C brands in India</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pp">Via Zoho Thrive</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">Product bundles &amp; combo offers</div><div class="gs">Sell product bundles at discount — popular upsell in FMCG, beauty, health categories</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+
+    <div class="gap-sec">🏪 Store experience</div>
+    <div class="gap-row"><div><div class="gn">Multi-language storefront</div><div class="gs">Hindi, Tamil, Telugu, Kannada, Bengali storefronts — India has 22 official languages</div></div><div style="text-align:center"><span class="pill pd">Native</span></div><div style="text-align:center"><span class="pill pp">Partial</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">Subscription / recurring orders</div><div class="gs">Monthly delivery subscriptions — groceries, supplements, pet food, hygiene products</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">Product Q&amp;A section</div><div class="gs">Customers ask questions on product page, merchant answers publicly — reduces returns</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="plo">🔵 Low</span></div></div>
+    <div class="gap-row"><div><div class="gn">Digital gift cards</div><div class="gs">Issue and redeem digital gift cards — Shopify Grow+ only, Zoho doesn't have it</div></div><div style="text-align:center"><span class="pill pp">Grow+ only</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="plo">🔵 Low</span></div></div>
+
+    <div class="gap-sec">⚙️ Operations &amp; integrations</div>
+    <div class="gap-row"><div><div class="gn">Tally / Zoho Books ERP integration</div><div class="gs">Sync orders to Tally — 80%+ of Indian businesses use Tally for accounting</div></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pd">Native (Zoho Books)</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="phi">🔴 High</span></div></div>
+    <div class="gap-row"><div><div class="gn">Workflow automation / triggers</div><div class="gs">Auto-tag orders, WhatsApp on low stock, restock alerts — like Shopify Flow</div></div><div style="text-align:center"><span class="pill pd">Shopify Flow</span></div><div style="text-align:center"><span class="pill pp">Via Zoho Flow</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">B2B / wholesale pricing tiers</div><div class="gs">Different price lists for wholesale vs retail buyers — D2C + wholesale demand growing</div></div><div style="text-align:center"><span class="pill pp">Plus only</span></div><div style="text-align:center"><span class="pill pp">Premium only</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="pmd">🟡 Medium</span></div></div>
+    <div class="gap-row"><div><div class="gn">Dropshipping supplier integration</div><div class="gs">Connect Indian wholesale suppliers, auto-fulfil orders from supplier stock</div></div><div style="text-align:center"><span class="pill pp">Via app</span></div><div style="text-align:center"><span class="pill pn">No</span></div><div style="text-align:center"><span class="pill pm">Missing</span></div><div><span class="plo">🔵 Low</span></div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px">
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:800;color:#dc2626">12</div><div style="font-size:11px;color:#7f1d1d;font-weight:700;text-transform:uppercase;letter-spacing:.05em">High priority gaps</div><div style="font-size:11px;color:#94a3b8;margin-top:3px">Build in next 3 months</div></div>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:800;color:#d97706">10</div><div style="font-size:11px;color:#78350f;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Medium priority gaps</div><div style="font-size:11px;color:#94a3b8;margin-top:3px">Next 6–9 months</div></div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:800;color:#1d4ed8">3</div><div style="font-size:11px;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Low priority gaps</div><div style="font-size:11px;color:#94a3b8;margin-top:3px">Nice to have</div></div>
+  </div>
+</div>
+
+<!-- 4-WAY COMPARISON -->
+<div id="tab-compete" class="panel">
+  <div class="alert ai">Full feature comparison — ZKCommerce vs Shopify India vs Amazon India vs Flipkart vs Zoho Commerce.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left">Feature</th>
+          <th>🟢 Shopify India</th>
+          <th>🟠 Amazon India</th>
+          <th>🔵 Flipkart</th>
+          <th>🟣 Zoho Commerce</th>
+          <th class="zkc-h">⚡ ZKCommerce</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sec"><td colspan="6">Business model</td></tr>
+        <tr><td>Platform type</td><td>SaaS — own store</td><td>Marketplace</td><td>Marketplace</td><td>SaaS — own store</td><td class="zkc-col ok">SaaS — own store ✓</td></tr>
+        <tr><td>Brand ownership</td><td class="ok">✓ Full</td><td class="bad">✗ Amazon brand</td><td class="bad">✗ Flipkart brand</td><td class="ok">✓ Full</td><td class="zkc-col ok">✓ 100% yours</td></tr>
+        <tr><td>Customer data ownership</td><td class="ok">✓ Yours</td><td class="bad">✗ Amazon's</td><td class="bad">✗ Flipkart's</td><td class="ok">✓ Yours</td><td class="zkc-col ok">✓ 100% yours</td></tr>
+        <tr><td>Built-in customer traffic</td><td class="bad">✗ You drive it</td><td class="ok">✓ 300M+ visitors</td><td class="ok">✓ 200M+ visitors</td><td class="bad">✗ You drive it</td><td class="zkc-col bad">✗ You drive it</td></tr>
+        <tr><td>Control over pricing</td><td class="ok">✓ Full control</td><td class="bad">✗ Algorithm pressure</td><td class="bad">✗ Flash sale pressure</td><td class="ok">✓ Full control</td><td class="zkc-col ok">✓ Full control</td></tr>
+
+        <tr class="sec"><td colspan="6">Costs &amp; fees</td></tr>
+        <tr><td>Monthly subscription</td><td class="bad">₹1,499–₹22,680</td><td class="ok">₹0</td><td class="ok">₹0</td><td class="mid">~₹1,260–₹9,156 (USD)</td><td class="zkc-col ok">₹799/mo ✓</td></tr>
+        <tr><td>Commission per sale</td><td class="bad">2%–5% + gateway</td><td class="bad">8%–45%!</td><td class="bad">5%–35%!</td><td class="ok">0% ✓</td><td class="zkc-col ok">0% ✓</td></tr>
+        <tr><td>Payment settlement time</td><td>2–3 days</td><td class="bad">7–14 days</td><td class="bad">7–14 days</td><td>2–3 days</td><td class="zkc-col ok">2–3 days ✓</td></tr>
+        <tr><td>True cost per ₹1,000 sale</td><td class="bad">₹40–80</td><td class="bad">₹150–500!</td><td class="bad">₹100–380!</td><td>₹20–40</td><td class="zkc-col ok">₹18–20 ✓</td></tr>
+
+        <tr class="sec"><td colspan="6">Products &amp; store</td></tr>
+        <tr><td>Product approval needed</td><td class="ok">No — instant</td><td class="bad">Yes — days wait</td><td class="bad">Yes — days wait</td><td class="ok">No — instant</td><td class="zkc-col ok">No — instant ✓</td></tr>
+        <tr><td>Unlimited products</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="bad">500 on Starter</td><td class="zkc-col ok">✓ Unlimited</td></tr>
+        <tr><td>Custom product pages</td><td class="ok">✓ Full control</td><td class="bad">✗ Amazon template</td><td class="bad">✗ Flipkart template</td><td class="ok">✓ Full control</td><td class="zkc-col ok">✓ Full control</td></tr>
+        <tr><td>Product variants support</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="zkc-col ok">✓ Unlimited combos</td></tr>
+        <tr><td>CSV bulk product import</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="zkc-col ok">✓ With validation</td></tr>
+
+        <tr class="sec"><td colspan="6">India-specific features</td></tr>
+        <tr><td>GST invoicing built-in</td><td class="bad">✗ Paid app needed</td><td class="ok">✓</td><td class="ok">✓</td><td class="mid">Via Zoho Books addon</td><td class="zkc-col ok">✓ Native</td></tr>
+        <tr><td>UPI payments native</td><td class="mid">Via Razorpay app</td><td class="ok">✓ Native</td><td class="ok">✓ Native</td><td class="ok">✓</td><td class="zkc-col ok">✓ Native</td></tr>
+        <tr><td>COD (Cash on Delivery)</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="zkc-col ok">✓ + OTP verification</td></tr>
+        <tr><td>Loyalty points built-in</td><td class="bad">✗ Paid app</td><td class="mid">Partial</td><td class="mid">Partial</td><td class="mid">Via Zoho Thrive</td><td class="zkc-col ok">✓ Native</td></tr>
+        <tr><td>GSTR-1 report export</td><td class="bad">✗ Paid app</td><td class="mid">Basic only</td><td class="mid">Basic only</td><td class="mid">Via Zoho Books</td><td class="zkc-col ok">✓ Native CSV</td></tr>
+        <tr><td>Shipping label print</td><td class="bad">✗ Paid app</td><td class="ok">✓ FBA</td><td class="ok">✓ FBF</td><td class="mid">Via Shiprocket</td><td class="zkc-col ok">✓ Native</td></tr>
+        <tr><td>Hindi / regional language</td><td class="bad">✗ English only</td><td class="ok">✓</td><td class="ok">✓</td><td class="mid">Partial</td><td class="zkc-col mid">Roadmap Q3 2026</td></tr>
+        <tr><td>India phone/WA support</td><td class="bad">✗ Chat/email only</td><td class="ok">✓</td><td class="ok">✓</td><td class="mid">Email/chat only</td><td class="zkc-col ok">✓ Phone + WhatsApp</td></tr>
+        <tr><td>Seller onboarding help</td><td class="bad">✗ Self-serve</td><td class="ok">✓ Dedicated AM</td><td class="ok">✓ Dedicated AM</td><td class="mid">Email guidance</td><td class="zkc-col ok">✓ Free onboarding</td></tr>
+
+        <tr class="sec"><td colspan="6">Analytics &amp; marketing</td></tr>
+        <tr><td>Full analytics (UTM/funnel/cities)</td><td class="mid">Grow+ only</td><td class="mid">Basic dashboard</td><td class="mid">Basic dashboard</td><td class="mid">Standard plan+</td><td class="zkc-col ok">✓ All plans</td></tr>
+        <tr><td>Customer behaviour data</td><td class="ok">✓ Full access</td><td class="bad">✗ Amazon keeps it</td><td class="bad">✗ Flipkart keeps it</td><td class="ok">✓ Full access</td><td class="zkc-col ok">✓ Full access</td></tr>
+        <tr><td>Email/SMS/WA campaigns</td><td class="bad">✗ Paid app</td><td class="bad">Sponsored ads only</td><td class="bad">Sponsored ads only</td><td class="mid">Via Zoho Campaigns</td><td class="zkc-col ok">✓ Built-in</td></tr>
+        <tr><td>Abandoned cart recovery</td><td class="ok">✓ Basic+</td><td class="bad">✗</td><td class="bad">✗</td><td class="mid">Via Zoho Campaigns</td><td class="zkc-col ok">✓ Built-in</td></tr>
+
+        <tr class="sec"><td colspan="6">Verdict</td></tr>
+        <tr><td>Best for</td><td>D2C brands, global reach, brand control</td><td>High-volume commodity, electronics, books</td><td>Fashion, lifestyle, Tier 2 price-sensitive</td><td>Zoho ecosystem users, small businesses</td><td class="zkc-col ok">Indian merchants wanting own store + all India tools built-in at lowest total cost</td></tr>
+        <tr><td>Biggest weakness</td><td class="bad">No Shopify Payments → 4–5% per sale. Apps cost ₹5k–20k extra/mo</td><td class="bad">Commission 8–45%. No customer data. Account suspension risk</td><td class="bad">5–35% commission. Deep discount pressure. Catalogue duplication</td><td class="mid">USD pricing. Needs Zoho ecosystem. Limited India-specific features</td><td class="zkc-col mid">Building: marketplace sync, multi-language, BNPL (Q3 2026 roadmap)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- WHY ZKCOMMERCE -->
+<div id="tab-wins" class="panel">
+  <div class="stats">
+    <div class="sc"><div class="scv bv">₹0</div><div class="scl">Platform transaction fee</div></div>
+    <div class="sc"><div class="scv gv">₹799</div><div class="scl">All-inclusive monthly price</div></div>
+    <div class="sc"><div class="scv av">14+</div><div class="scl">Built-in tools others charge extra for</div></div>
+    <div class="sc"><div class="scv rv">₹2.4L</div><div class="scl">Saved/year vs Shopify at ₹10L/mo GMV</div></div>
+  </div>
+
+  <div class="wins-box">
+    <h3>⚡ ZKCommerce — India-first advantages over every competitor</h3>
+    <div class="wg">
+      <div class="win"><div class="wt">₹0 platform transaction fees</div><div class="ws">Shopify charges 2%–5% on every sale. At ₹10L/month GMV that's ₹20,000/month wasted. ZKCommerce charges zero. Your revenue stays yours.</div></div>
+      <div class="win"><div class="wt">Cheapest true cost in market</div><div class="ws">Zoho Commerce charges ~₹4,116/mo (Pro) with USD currency risk. ZKCommerce charges ₹799/mo flat in INR — that's 80% cheaper than Zoho Pro, 95% cheaper than Shopify with apps.</div></div>
+      <div class="win"><div class="wt">GST &amp; GSTR-1 built-in</div><div class="ws">CGST/SGST invoices, GSTR-1 CSV, invoice register — all native. Shopify needs ₹600–1,500/mo paid app. Zoho needs Zoho Books subscription add-on.</div></div>
+      <div class="win"><div class="wt">UPI + Razorpay native</div><div class="ws">Built for Indian payments from day one. Lowest gateway fee at 1.8% via Razorpay partnership. No 3rd-party plugin headaches like Shopify merchants face.</div></div>
+      <div class="win"><div class="wt">Loyalty points native</div><div class="ws">Earn + redeem loyalty at checkout. Shopify merchants pay ₹1,200–3,000/mo for this. Zoho needs Zoho Thrive add-on. ZKCommerce includes it free.</div></div>
+      <div class="win"><div class="wt">Shipping labels native</div><div class="ws">Print-ready Delhivery labels, bulk printing, barcode, QR code — no paid app. Shopify merchants pay ₹800+/mo. Zoho needs Shiprocket integration.</div></div>
+      <div class="win"><div class="wt">Full analytics on all plans</div><div class="ws">Revenue, traffic, UTM, conversion funnel, product performance, top cities — on every ZKCommerce plan. Shopify restricts analytics to ₹5,599/mo Grow+ plan.</div></div>
+      <div class="win"><div class="wt">Unlimited staff &amp; warehouses</div><div class="ws">Shopify limits to 2–15 staff, 4–8 locations. Zoho limits to 2–5 users, 1–3 locations. ZKCommerce gives unlimited staff and warehouses on all plans.</div></div>
+      <div class="win"><div class="wt">India support — phone + WhatsApp</div><div class="ws">Shopify India offers chat/email only. Zoho offers email/chat. ZKCommerce provides local phone &amp; WhatsApp support by ZKanadavel Infotech's India team.</div></div>
+    </div>
+  </div>
+
+  <div class="cost-box">
+    <div class="cost-hdr">
+      <span>Cost item (₹5L/mo GMV)</span>
+      <span>Shopify Basic</span>
+      <span>Zoho Commerce Pro</span>
+      <span>Amazon India</span>
+      <span>Flipkart</span>
+      <span style="color:#4f46e5">⚡ ZKCommerce</span>
+    </div>
+    <div class="cost-row"><span>Monthly subscription</span><span style="color:#dc2626">₹1,994 (incl. GST)</span><span style="color:#d97706">~₹4,857 (incl. GST)</span><span style="color:#22c55e">₹0</span><span style="color:#22c55e">₹0</span><span style="color:#4f46e5;font-weight:700">₹943 (incl. GST)</span></div>
+    <div class="cost-row"><span>Platform txn fees (₹5L GMV)</span><span style="color:#dc2626">₹10,000 (2%)</span><span style="color:#22c55e">₹0</span><span style="color:#dc2626">₹50k–2.25L</span><span style="color:#dc2626">₹25k–1.75L</span><span style="color:#22c55e;font-weight:700">₹0 ✓</span></div>
+    <div class="cost-row"><span>Apps (GST, loyalty, shipping, WA)</span><span style="color:#dc2626">₹5,000–15,000</span><span style="color:#d97706">₹2,000–6,000</span><span>—</span><span>—</span><span style="color:#22c55e;font-weight:700">₹0 built-in ✓</span></div>
+    <div class="cost-row"><span>Gateway fees (₹5L GMV)</span><span>₹10,000 (~2%)</span><span>₹10,000 (~2%)</span><span>Included above</span><span>Included above</span><span style="color:#4f46e5;font-weight:700">₹9,000 (1.8%) ✓</span></div>
+    <div class="cost-row tot"><span>TOTAL TRUE MONTHLY COST</span><span style="color:#dc2626">₹27,000–37,000</span><span style="color:#d97706">₹16,000–21,000</span><span style="color:#dc2626">₹59k–2.34L</span><span style="color:#dc2626">₹34k–1.84L</span><span style="color:#4f46e5;font-size:14px">₹9,943 only ✓</span></div>
+  </div>
+
+  <div class="alert as">
+    🏆 <strong>Bottom line:</strong> ZKCommerce costs <strong>₹9,943/month total</strong> at ₹5L GMV (subscription + gateway only, zero extras). Shopify Basic costs ₹27,000–37,000. Zoho Commerce Pro costs ₹16,000–21,000. Amazon takes ₹59,000–2.34 lakh. ZKCommerce is the only platform combining own-brand store ownership + 0% platform fees + all India tools built-in + lowest INR price in the market.<br><br>
+    <strong>By ZKanadavel Infotech Pvt Ltd &amp; ZK Infotech INC — India's Commerce Platform. Sell Everywhere. Grow Faster.</strong>
+  </div>
+</div>
+
+</div>
+<script>
+function show(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+</script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

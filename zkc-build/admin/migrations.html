@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Migrations — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+</head>
+<body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>
+    <span>ZKCommerce</span>
+    <span style="font-size:9px;background:rgba(255,107,0,.3);color:#FF9A4D;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800">ADMIN</span>
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Platform</div>
+    <a href="admin/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+<a href="admin/merchants.html" class="zk-sidebar-link "><span class="sl-icon">🏪</span>Merchants</a>
+<a href="admin/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>All orders</a>
+<a href="admin/revenue.html" class="zk-sidebar-link "><span class="sl-icon">💰</span>Revenue</a>
+<a href="admin/plans.html" class="zk-sidebar-link "><span class="sl-icon">📋</span>Plans & billing</a>
+<a href="admin/reviews.html" class="zk-sidebar-link "><span class="sl-icon">⭐</span>Reviews</a>
+<a href="admin/migrations.html" class="zk-sidebar-link active"><span class="sl-icon">🚀</span>Migrations</a>
+<a href="admin/support.html" class="zk-sidebar-link "><span class="sl-icon">💬</span>Support tickets</a>
+<a href="admin/settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Platform settings</a>
+<a href="admin/gaps.html" class="zk-sidebar-link "><span class="sl-icon">🔍</span>Gap analysis</a>
+
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce Admin v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a>
+  </div>
+</aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Migrations</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span style="font-size:12px;color:var(--zk-muted)">🟢 All systems operational</span>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff">A</div>
+  </div>
+</div><div class="zk-page">
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Migration Requests</div><div class="zk-page-sub">Incoming store migrations from other platforms</div></div>
+  <button class="btn btn-primary btn-sm" onclick="toast.success('New migration assigned!')">+ Assign migration</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+  <div class="zk-stat-card"><div class="zk-stat-label">Total migrations</div><div class="zk-stat-value fire-text">284</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">In progress</div><div class="zk-stat-value" style="color:#D97706">6</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Completed (30d)</div><div class="zk-stat-value" style="color:#22C55E">48</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Avg completion time</div><div class="zk-stat-value">14.2h</div></div>
+</div>
+<div class="alert alert-info" style="margin-bottom:20px">🚀 <strong>6 migrations</strong> are currently in progress. 2 are awaiting merchant approval on staging preview.</div>
+<div class="zk-table-wrap">
+  <table class="zk-table">
+    <thead><tr><th>Merchant</th><th>From platform</th><th>Products</th><th>Assigned to</th><th>Started</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td class="col-primary">Madurai Silks</td><td><span class="badge badge-green">🟢 Shopify</span></td><td>840</td><td>Karthik (Team)</td><td>17 Jul, 10:00 AM</td><td><span class="status status-processing">In progress</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Migration details')">View</button></td></tr>
+      <tr><td class="col-primary">Salem Organics</td><td><span class="badge badge-amber">🟠 Amazon</span></td><td>210</td><td>Priya (Team)</td><td>16 Jul, 2:00 PM</td><td><span class="status status-shipped">Staging review</span></td><td><button class="btn btn-primary btn-sm" onclick="toast.success('Approved & going live!')">Go live</button></td></tr>
+      <tr><td class="col-primary">Trichy Fashions</td><td><span class="badge badge-brand">🔵 Flipkart</span></td><td>1,200</td><td>Arun (Team)</td><td>15 Jul, 9:00 AM</td><td><span class="status status-delivered">Completed</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Migration details')">View</button></td></tr>
+      <tr><td class="col-primary">Coimbatore Spices</td><td><span class="badge" style="background:#FFE8E0;color:#B83D18;border:1px solid #FFBBA3">🟣 Zoho</span></td><td>320</td><td>Unassigned</td><td>—</td><td><span class="status status-pending" style="background:#F1F5F9;color:#64748B">Queued</span></td><td><button class="btn btn-primary btn-sm" onclick="toast.success('Migration assigned!')">Assign</button></td></tr>
+    </tbody>
+  </table>
+</div>
+</div></div></div><script src="../assets/js/app.js"></script>
+</body>
+</html>

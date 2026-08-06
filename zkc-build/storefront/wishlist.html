@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wishlist — Rajan Textiles — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100"><div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800"><div style="width:30px;height:30px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">⚡</div>Rajan Textiles</div><div style="display:flex;align-items:center;gap:20px"><a href="home.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Home</a><a href="category.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Shop</a><a href="wishlist.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">❤️</a><a href="account.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Account</a><a href="cart.html" style="font-size:13px;font-weight:600;color:var(--zk-muted);position:relative">🛒<span class="cart-count" style="position:absolute;top:-6px;right:-10px;background:var(--zk-fire);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">0</span></a></div></nav>
+<div style="max-width:960px;margin:0 auto;padding:40px 5%">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+    <h1 style="font-family:var(--font-display);font-size:28px;font-weight:800">❤️ Wishlist <span style="font-size:16px;font-weight:500;color:var(--zk-muted)">(4 items)</span></h1>
+    <button class="btn btn-secondary btn-sm" onclick="toast.success('Wishlist link copied!')">🔗 Share</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px" id="wl"><div id="wi-0" style="background:#fff;border:1px solid var(--zk-border);border-radius:14px;overflow:hidden">
+  <div style="position:relative"><div style="height:180px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);display:flex;align-items:center;justify-content:center;font-size:44px">🥻</div>
+  <button onclick="rmWL(0)" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#fff;border:none;font-size:13px;cursor:pointer;box-shadow:var(--s-sm)">✕</button>
+  <div style='position:absolute;top:8px;left:8px;background:#DC2626;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px'>LOW STOCK</div></div>
+  <div style="padding:12px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">Kanjivaram Silk Saree</div>
+  <div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--zk-fire);margin-bottom:10px">₹12,500</div>
+  <button class="btn btn-primary btn-sm btn-full" onclick="cart.add({id:1,name:'Item',price:12500});rmWL(0)">Add to cart</button></div></div><div id="wi-1" style="background:#fff;border:1px solid var(--zk-border);border-radius:14px;overflow:hidden">
+  <div style="position:relative"><div style="height:180px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);display:flex;align-items:center;justify-content:center;font-size:44px">👗</div>
+  <button onclick="rmWL(1)" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#fff;border:none;font-size:13px;cursor:pointer;box-shadow:var(--s-sm)">✕</button>
+  </div>
+  <div style="padding:12px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">Cotton Kurta</div>
+  <div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--zk-fire);margin-bottom:10px">₹2,199</div>
+  <button class="btn btn-primary btn-sm btn-full" onclick="cart.add({id:2,name:'Item',price:2199});rmWL(1)">Add to cart</button></div></div><div id="wi-2" style="background:#fff;border:1px solid var(--zk-border);border-radius:14px;overflow:hidden">
+  <div style="position:relative"><div style="height:180px;background:linear-gradient(135deg,#F0FDF4,#DCFCE7);display:flex;align-items:center;justify-content:center;font-size:44px">🧣</div>
+  <button onclick="rmWL(2)" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#fff;border:none;font-size:13px;cursor:pointer;box-shadow:var(--s-sm)">✕</button>
+  </div>
+  <div style="padding:12px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">Handloom Dupatta</div>
+  <div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--zk-fire);margin-bottom:10px">₹890</div>
+  <button class="btn btn-primary btn-sm btn-full" onclick="cart.add({id:3,name:'Item',price:890});rmWL(2)">Add to cart</button></div></div><div id="wi-3" style="background:#fff;border:1px solid var(--zk-border);border-radius:14px;overflow:hidden">
+  <div style="position:relative"><div style="height:180px;background:linear-gradient(135deg,#FFF1F2,#FFE4E6);display:flex;align-items:center;justify-content:center;font-size:44px">💍</div>
+  <button onclick="rmWL(3)" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#fff;border:none;font-size:13px;cursor:pointer;box-shadow:var(--s-sm)">✕</button>
+  </div>
+  <div style="padding:12px"><div style="font-weight:700;font-size:14px;margin-bottom:4px">Gold Necklace</div>
+  <div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--zk-fire);margin-bottom:10px">₹8,500</div>
+  <button class="btn btn-primary btn-sm btn-full" onclick="cart.add({id:4,name:'Item',price:8500});rmWL(3)">Add to cart</button></div></div>
+  </div>
+  <div id="wl-empty" style="display:none;text-align:center;padding:64px 32px"><div style="font-size:48px;margin-bottom:14px">❤️</div><div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:8px">Wishlist is empty</div><a href="home.html" class="btn btn-primary" style="margin-top:8px">Browse products →</a></div>
+</div>
+<script>function rmWL(i){document.getElementById('wi-'+i).remove();if(!document.querySelectorAll('[id^=wi-]').length)document.getElementById('wl-empty').style.display='block';toast.info('Removed from wishlist');}</script>
+<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script></body></html>

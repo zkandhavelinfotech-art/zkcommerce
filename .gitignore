@@ -1,0 +1,26 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Environment / Secret files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Logs
+*.log
+**/logs/
+**/*.log
+
+# Build and IDE files
+dist/
+build/
+.vercel/
+**/dist/
+**/build/
+**/.vercel/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

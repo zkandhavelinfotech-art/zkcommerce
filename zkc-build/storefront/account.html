@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account — Rajan Textiles — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/design-system.css">
+</head>
+<body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800">
+    <div style="width:30px;height:30px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px">⚡</div>Rajan Textiles
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="home.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Home</a>
+    <a href="product.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Shop</a>
+    <a href="account.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Account</a>
+    <a href="cart.html" style="font-size:13px;font-weight:600;color:var(--zk-muted);position:relative">
+      🛒 Cart <span class="cart-count" style="position:absolute;top:-6px;right:-10px;background:var(--zk-fire);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">0</span>
+    </a>
+  </div>
+</nav>
+<div style="max-width:960px;margin:0 auto;padding:40px 5%">
+  <h1 style="font-family:var(--font-display);font-size:28px;font-weight:800;margin-bottom:28px">My account</h1>
+  <div style="display:grid;grid-template-columns:240px 1fr;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;background:var(--zk-pale);border-color:var(--zk-indigo);color:var(--zk-indigo)">📋 Orders</button>
+      <button class="btn btn-secondary btn-sm" style="justify-content:flex-start">⭐ Loyalty points</button>
+      <button class="btn btn-secondary btn-sm" style="justify-content:flex-start">📍 Addresses</button>
+      <button class="btn btn-secondary btn-sm" style="justify-content:flex-start">👤 Profile</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="padding:16px 20px;background:linear-gradient(135deg,var(--zk-deep),#1a0830);border-radius:16px;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.4);margin-bottom:4px">Loyalty balance</div><div style="font-family:var(--font-display);font-size:36px;font-weight:800;background:var(--g-fire);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">24,180 pts</div><div style="font-size:12px;color:rgba(255,255,255,.45)">Worth ₹12,090 · Use at checkout</div></div>
+        <div style="font-size:48px">⭐</div>
+      </div>
+      <div class="zk-table-wrap">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--zk-border)"><div style="font-size:14px;font-weight:800">Recent orders</div></div>
+        <table class="zk-table">
+          <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="col-primary">#ZK-2026-00284</td><td>17 Jul 2026</td><td>2 items</td><td>₹19,940</td><td><span class="status status-processing">Processing</span></td></tr>
+            <tr><td class="col-primary">#ZK-2026-00201</td><td>2 Jun 2026</td><td>1 item</td><td>₹12,500</td><td><span class="status status-delivered">Delivered</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<footer style="background:var(--zk-deep);padding:40px 5% 24px;margin-top:60px">
+  <div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:13px">⚡</div>
+      <span style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</span>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳 Made in Tamil Nadu</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Rajan Textiles. All rights reserved.</div>
+  </div>
+</footer><script src="../../assets/js/app.js"></script>
+</body>
+</html>

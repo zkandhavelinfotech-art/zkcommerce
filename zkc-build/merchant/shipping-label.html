@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shipping Labels — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/design-system.css">
+</head>
+<body>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="../merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="../merchant/analytics.html" class="zk-sidebar-link "><span class="sl-icon">📈</span>Analytics</a>
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="../merchant/products.html" class="zk-sidebar-link "><span class="sl-icon">🛍️</span>Products</a>
+    <a href="../merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a>
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="../merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="../merchant/shipping-label.html" class="zk-sidebar-link active"><span class="sl-icon">🚚</span>Shipping labels</a>
+    <div class="zk-sidebar-section-label">Finance</div>
+    <a href="../merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a>
+    <div class="zk-sidebar-section-label">Marketing</div>
+    <a href="../merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a>
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="../merchant/store-settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+<div class="zk-main" style="margin-left:240px">
+<div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Shipping Labels</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+  </div>
+</div>
+<div class="zk-page">
+
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Shipping Labels</div><div class="zk-page-sub">Generate and print Delhivery labels</div></div>
+  <button class="btn btn-primary btn-sm" onclick="printAll()">🖨️ Print all pending</button>
+</div>
+<div class="alert alert-info" style="margin-bottom:20px">📦 <strong>12 orders</strong> are ready for label generation today. Connected courier: <strong>Delhivery</strong></div>
+<div class="zk-table-wrap">
+  <table class="zk-table">
+    <thead><tr><th><input type="checkbox" id="select-all" onchange="selectAll(this)"></th><th>Order</th><th>Customer</th><th>City</th><th>Weight</th><th>AWB</th><th>Label</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox" class="order-cb"></td><td class="col-primary">#ZK-2026-00284</td><td>Rajan Kumar</td><td>Coimbatore</td><td>0.8 kg</td><td><span class="badge badge-green">DL4829301</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.success('Label printed!')">🖨️ Print</button></td></tr>
+      <tr><td><input type="checkbox" class="order-cb"></td><td class="col-primary">#ZK-2026-00283</td><td>Priya Nair</td><td>Chennai</td><td>0.5 kg</td><td><span class="badge badge-green">DL4829302</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.success('Label printed!')">🖨️ Print</button></td></tr>
+      <tr><td><input type="checkbox" class="order-cb"></td><td class="col-primary">#ZK-2026-00282</td><td>Arun Murugan</td><td>Madurai</td><td>1.2 kg</td><td><span class="badge badge-amber">Pending</span></td><td><button class="btn btn-primary btn-sm" onclick="toast.success('AWB generated! Label ready.')">Generate</button></td></tr>
+      <tr><td><input type="checkbox" class="order-cb"></td><td class="col-primary">#ZK-2026-00281</td><td>Kavitha S.</td><td>Trichy</td><td>0.6 kg</td><td><span class="badge badge-amber">Pending</span></td><td><button class="btn btn-primary btn-sm" onclick="toast.success('AWB generated! Label ready.')">Generate</button></td></tr>
+    </tbody>
+  </table>
+</div>
+<script>function selectAll(cb){document.querySelectorAll('.order-cb').forEach(c=>c.checked=cb.checked);}function printAll(){const checked=[...document.querySelectorAll('.order-cb:checked')];if(!checked.length){toast.warning('Select at least one order');return;}toast.success(checked.length+' labels sent to printer!');}</script>
+
+</div>
+</div>
+<script src="../../assets/js/app.js"></script>
+</body>
+</html>

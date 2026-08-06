@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comprehensive Gap Analysis — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:var(--zk-chalk)}
+.gap-header{background:linear-gradient(135deg,#08061A,#1a0530);padding:48px 5%;color:#fff}
+.gap-header h1{font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:8px}
+.gap-header p{font-size:15px;color:rgba(255,255,255,.55);max-width:600px}
+.meta-strip{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap}
+.meta-item{font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:6px}
+.meta-val{font-weight:700;color:rgba(255,255,255,.7)}
+.gap-nav{background:#fff;border-bottom:1px solid var(--zk-border);padding:0 5%;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.gnav-tab{padding:14px 20px;font-size:13px;font-weight:700;color:var(--zk-muted);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s}
+.gnav-tab:hover{color:var(--zk-text)}
+.gnav-tab.active{color:var(--zk-fire);border-bottom-color:var(--zk-fire)}
+.gap-body{max-width:1200px;margin:0 auto;padding:32px 5%}
+.section-title{font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:6px}
+.section-sub{font-size:14px;color:var(--zk-muted);margin-bottom:24px}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.score-card{background:#fff;border:1px solid var(--zk-border);border-radius:16px;padding:20px;text-align:center}
+.score-num{font-family:var(--font-display);font-size:40px;font-weight:800;line-height:1;margin-bottom:6px}
+.score-label{font-size:12px;font-weight:700;color:var(--zk-muted);text-transform:uppercase;letter-spacing:.06em}
+.score-bar{height:6px;border-radius:3px;background:var(--zk-chalk);margin-top:10px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.panel{display:none}.panel.active{display:block}
+.gap-table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--zk-border)}
+.gap-table th{padding:11px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--zk-dim);background:var(--zk-chalk);text-align:left;border-bottom:1px solid var(--zk-border);white-space:nowrap}
+.gap-table td{padding:13px 16px;font-size:13px;border-bottom:1px solid #F8FAFC;vertical-align:top}
+.gap-table tr:last-child td{border-bottom:none}
+.gap-table tr:hover td{background:#FAFAFA}
+.feat-name{font-weight:700;color:var(--zk-text);margin-bottom:3px}
+.feat-desc{font-size:12px;color:var(--zk-muted);line-height:1.5}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.s-done{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.s-partial{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.s-missing{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.s-planned{background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE}
+.s-building{background:#FFF7F2;color:#C2410C;border:1px solid #FED7AA}
+.prio-high{color:#DC2626;font-weight:800;font-size:11px}
+.prio-med{color:#D97706;font-weight:800;font-size:11px}
+.prio-low{color:#0369A1;font-weight:800;font-size:11px}
+.effort-tag{background:var(--zk-chalk);border:1px solid var(--zk-border);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--zk-muted)}
+.impact-bar{display:flex;align-items:center;gap:6px}
+.impact-dots{display:flex;gap:2px}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.on{background:var(--zk-fire)}
+.dot.off{background:var(--zk-border)}
+.competitor-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--zk-border);border-radius:16px;overflow:hidden;background:#fff;margin-bottom:24px}
+.comp-header{background:var(--zk-chalk);padding:12px 14px;font-size:12px;font-weight:800;text-align:center;border-bottom:1px solid var(--zk-border)}
+.comp-cell{padding:10px 12px;border-bottom:1px solid #F8FAFC;font-size:12px;text-align:center;border-right:1px solid #F8FAFC}
+.comp-row-label{text-align:left;font-weight:600;color:var(--zk-text)}
+.comp-yes{color:#15803D;font-weight:700}
+.comp-no{color:#DC2626;font-weight:700}
+.comp-part{color:#D97706;font-weight:700}
+.comp-zk{background:#FFF7F2}
+.roadmap-lane{margin-bottom:24px}
+.rl-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.rl-badge{padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.rl-q3{background:linear-gradient(135deg,#FF6B00,#C41E3A);color:#fff}
+.rl-q4{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff}
+.rl-2027{background:var(--zk-chalk);color:var(--zk-muted);border:1px solid var(--zk-border)}
+.rl-items{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rl-card{background:#fff;border:1px solid var(--zk-border);border-radius:12px;padding:14px}
+.rl-card.fire{border-left:3px solid var(--zk-fire)}
+.rl-card.brand{border-left:3px solid var(--zk-indigo)}
+.rl-title{font-size:13px;font-weight:800;margin-bottom:4px}
+.rl-desc{font-size:11px;color:var(--zk-muted);line-height:1.5}
+.rl-tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.rl-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--zk-chalk);color:var(--zk-dim)}
+.audit-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.audit-card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:20px}
+.audit-card h4{font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.audit-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC;font-size:13px}
+.audit-item:last-child{border-bottom:none}
+.ai-ico{font-size:14px;flex-shrink:0;width:18px}
+.ai-text{flex:1;color:var(--zk-muted);line-height:1.5}
+.ai-text strong{color:var(--zk-text)}
+.sprint-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.sprint-card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:18px;position:relative}
+.sprint-card::before{content:attr(data-sprint);position:absolute;top:-1px;left:16px;background:var(--zk-fire);color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:0 0 8px 8px;text-transform:uppercase;letter-spacing:.06em}
+.sprint-title{font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:4px;margin-top:10px}
+.sprint-dur{font-size:11px;color:var(--zk-dim);margin-bottom:12px}
+.sprint-item{font-size:12px;color:var(--zk-muted);padding:5px 0;border-bottom:1px solid #F8FAFC;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+.sprint-item:last-child{border-bottom:none}
+.sprint-item::before{content:'→';color:var(--zk-fire);font-weight:700;flex-shrink:0;margin-top:1px}
+.tech-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.tech-card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:18px}
+.tech-card h4{font-family:var(--font-display);font-size:14px;font-weight:800;margin-bottom:12px;color:var(--zk-text)}
+.tech-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F8FAFC;font-size:13px}
+.tech-row:last-child{border-bottom:none}
+.tech-current{color:var(--zk-muted)}
+.tech-arrow{color:var(--zk-fire);font-weight:800;margin:0 8px}
+.tech-recommended{color:var(--zk-text);font-weight:700}
+.tech-why{font-size:11px;color:var(--zk-dim)}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:18px}
+.kpi-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--zk-dim);margin-bottom:10px}
+.kpi-now{font-family:var(--font-display);font-size:28px;font-weight:800;color:var(--zk-muted)}
+.kpi-target{font-family:var(--font-display);font-size:28px;font-weight:800;color:var(--zk-fire)}
+.kpi-arrow{color:var(--zk-fire);font-size:18px;margin:0 6px}
+.kpi-label{font-size:12px;color:var(--zk-muted);margin-top:4px}
+@media(max-width:900px){.score-grid,.rl-items,.sprint-grid,.tech-grid,.audit-grid,.kpi-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.score-grid,.sprint-grid,.kpi-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="gap-header">
+  <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.3);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:700;color:#FF9A4D;margin-bottom:16px;text-transform:uppercase;letter-spacing:.07em">
+    📋 Comprehensive Gap Analysis & Roadmap
+  </div>
+  <h1>ZKCommerce v3 — Full Platform Review</h1>
+  <p>Complete audit of frontend, backend, API, database and market positioning. Identifies what's built, what's missing, what needs improvement, and the exact next steps to go live.</p>
+  <div class="meta-strip">
+    <div class="meta-item">📅 Audit date: <span class="meta-val">July 2026</span></div>
+    <div class="meta-item">📁 Files audited: <span class="meta-val">46 files · 673 KB</span></div>
+    <div class="meta-item">🗄️ DB tables: <span class="meta-val">27 tables + 7 views</span></div>
+    <div class="meta-item">🔌 API routes: <span class="meta-val">40+ endpoints</span></div>
+    <div class="meta-item">🏗️ Stack: <span class="meta-val">HTML/CSS/JS + Node.js + PostgreSQL</span></div>
+  </div>
+</div>
+
+<div class="gap-nav" id="gap-nav">
+  <div class="gnav-tab active" onclick="showPanel('overview',this)">📊 Overview</div>
+  <div class="gnav-tab" onclick="showPanel('frontend',this)">🖥️ Frontend audit</div>
+  <div class="gnav-tab" onclick="showPanel('backend',this)">⚙️ Backend audit</div>
+  <div class="gnav-tab" onclick="showPanel('features',this)">🔍 Feature gaps</div>
+  <div class="gnav-tab" onclick="showPanel('competitors',this)">🆚 Competitor matrix</div>
+  <div class="gnav-tab" onclick="showPanel('roadmap',this)">🗺️ Roadmap</div>
+  <div class="gnav-tab" onclick="showPanel('tech',this)">🛠️ Tech migration</div>
+  <div class="gnav-tab" onclick="showPanel('kpis',this)">🎯 KPIs & next steps</div>
+</div>
+
+<div class="gap-body">
+
+<!-- ═══ OVERVIEW ═══ -->
+<div class="panel active" id="panel-overview">
+  <div class="section-title">Platform health scores</div>
+  <div class="section-sub">Scored against production-ready SaaS ecommerce standards (0–100)</div>
+  <div class="score-grid">
+    <div class="score-card">
+      <div class="score-num fire-text">78</div>
+      <div class="score-label">Frontend completeness</div>
+      <div style="font-size:11px;color:var(--zk-dim);margin-top:4px">36 pages · design system done · needs Next.js</div>
+      <div class="score-bar"><div class="score-fill" style="width:78%;background:linear-gradient(90deg,#FF6B00,#C41E3A)"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#4F46E5">62</div>
+      <div class="score-label">Backend completeness</div>
+      <div style="font-size:11px;color:var(--zk-dim);margin-top:4px">Schema done · API routes incomplete · no auth middleware</div>
+      <div class="score-bar"><div class="score-fill" style="width:62%;background:#4F46E5"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#16A34A">85</div>
+      <div class="score-label">Database design</div>
+      <div style="font-size:11px;color:var(--zk-dim);margin-top:4px">27 tables · 7 views · needs indexes + RLS</div>
+      <div class="score-bar"><div class="score-fill" style="width:85%;background:#16A34A"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#D97706">45</div>
+      <div class="score-label">Market readiness</div>
+      <div style="font-size:11px;color:var(--zk-dim);margin-top:4px">Strong India focus · missing key integrations</div>
+      <div class="score-bar"><div class="score-fill" style="width:45%;background:#D97706"></div></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px;color:#15803D">✅ What's working well</h4>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>Complete design system</strong> — ZKCommerce DS v3 with full token system, components, dark sidebar. Production quality.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>Store setup wizard</strong> — 16 industries, 8 themes, live CMS editor with 30+ section types. Best-in-class onboarding.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>India-specific features</strong> — GST invoicing, GSTR-1 export, UPI, COD, Razorpay, Delhivery, WhatsApp alerts. Competitors lack this depth.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>Database schema</strong> — 27 tables, 7 views, multi-warehouse, variants, loyalty, campaigns. Solid foundation.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>Admin panel</strong> — 10 pages with gap analysis, migration tracker, support tickets, revenue analytics. Rare in Indian SaaS.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>Marketing site</strong> — Full landing page, migration portal, competitor positioning. Ready to drive signups.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#15803D;font-size:15px">✓</span><div><strong>Loyalty program</strong> — Points, tiers (Bronze/Silver/Gold), redemption, earn rates. Most Shopify alternatives lack this.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px;color:#DC2626">⚠️ Critical gaps to fix before launch</h4>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>API routes only 6 of 40+ wired</strong> — phase2-routes.js has 0 routes. Most backend is schema + structure but not connected.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>No real authentication</strong> — Login falls back to demo mode. JWT middleware exists but not applied to protected routes.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>Frontend is static HTML</strong> — No routing, no state management, no real API calls. Needs Next.js migration for production.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>No payment integration</strong> — Razorpay is referenced but checkout calls are mocked. No actual payment flow.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>No file uploads working</strong> — Product images, logos, CSV imports all show toasts but don't save anything.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>Missing merchant pages</strong> — No refund management, no dispute resolution, no payout/settlements page.</div></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:#DC2626;font-size:15px">✗</span><div><strong>No storefront subdomain routing</strong> — merchant1.zkcommerce.in vs merchant2.zkcommerce.in not implemented.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:16px">📊 Feature completion by module</h4>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Authentication system</span><span style="font-weight:800;color:var(--zk-fire)">70%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:70%;height:100%;background:var(--g-fire);border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">UI done · Google OAuth stubbed · password reset flow needs email integration</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Merchant dashboard</span><span style="font-weight:800;color:#4F46E5">82%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:82%;height:100%;background:#4F46E5;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">13 pages built · missing: payouts, refunds, disputes, staff management</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Product management</span><span style="font-weight:800;color:#D97706">55%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:55%;height:100%;background:#D97706;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">List UI done · missing: add/edit product form, bulk import, image upload, variants UI</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Order management</span><span style="font-weight:800;color:#D97706">60%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:60%;height:100%;background:#D97706;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">Order list done · missing: order detail page, refund flow, return management</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Storefront (customer side)</span><span style="font-weight:800;color:var(--zk-fire)">75%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:75%;height:100%;background:var(--g-fire);border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">6 pages done · missing: category page, search results, wishlist page, address book</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Payments & checkout</span><span style="font-weight:800;color:#DC2626">35%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:35%;height:100%;background:#DC2626;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">Checkout UI done · Razorpay not wired · no payment confirmation · no payout logic</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">REST API backend</span><span style="font-weight:800;color:#DC2626">30%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:30%;height:100%;background:#DC2626;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">Schema + structure + 6 routes live · 34+ routes missing · no middleware applied</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">GST & compliance</span><span style="font-weight:800;color:#16A34A">80%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:80%;height:100%;background:#16A34A;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">Invoice UI + GST split calc done · GSTR-1 export UI done · needs real PDF generation</div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:700">Marketing & CMS</span><span style="font-weight:800;color:#4F46E5">88%</span></div><div style="height:8px;background:var(--zk-chalk);border-radius:4px"><div style="width:88%;height:100%;background:#4F46E5;border-radius:4px"></div></div><div style="font-size:11px;color:var(--zk-dim);margin-top:3px">Landing page, setup wizard, CMS editor all strong · needs SEO meta management</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FRONTEND AUDIT ═══ -->
+<div class="panel" id="panel-frontend">
+  <div class="section-title">Frontend audit — all 36 pages</div>
+  <div class="section-sub">Detailed review of every HTML page: what's complete, what's missing, what needs improvement</div>
+
+  <div class="audit-grid">
+    <div class="audit-card">
+      <h4>🔐 Auth pages (4/4 built)</h4>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>login.html</strong> — Demo fallback, role-based redirect, keyboard enter. <span style="color:#D97706">Missing: Google OAuth button wiring, remember me, 2FA</span></div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>register.html</strong> → redirects to setup wizard. <span style="color:#D97706">Missing: phone OTP verification, GSTIN field, referral code</span></div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>forgot-password.html</strong> — UI done. <span style="color:#DC2626">Missing: actual email/WhatsApp dispatch, countdown timer</span></div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>reset-password.html</strong> — Password match validation. <span style="color:#DC2626">Missing: token validation, expiry check</span></div></div>
+    </div>
+    <div class="audit-card">
+      <h4>🏪 Merchant pages (13/18 built)</h4>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>dashboard, analytics, campaigns, loyalty, reviews, coupons, gst-report, inventory, shipping-label, store-settings</strong> — all solid</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>setup.html</strong> — Exceptional: 5-step wizard, 16 industries, 8 themes, live CMS, 30+ section types</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: products/add-edit.html</strong> — No form to actually add or edit a product with images, variants, pricing</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: orders/detail.html</strong> — No single order view with timeline, dispatch, notes</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: payouts.html</strong> — No settlement/payout page. Critical for merchant trust</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: staff.html</strong> — Multi-user/team management page not built</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: returns.html</strong> — No returns/refund management UI</div></div>
+    </div>
+    <div class="audit-card">
+      <h4>🌐 Storefront pages (6/10 built)</h4>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>home, product, cart, checkout, account, order-tracking</strong> — core flow complete</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: category.html</strong> — No browse by category page with filters and sort</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: search.html</strong> — No search results page</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: wishlist.html</strong> — Wishlist table exists in DB but no UI</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: order-detail.html</strong> — Customer order detail + return request</div></div>
+      <div class="audit-item"><span class="ai-ico">⚠️</span><div class="ai-text"><strong>checkout.html</strong> — Razorpay not wired. "Place order" shows a toast only. No payment confirmation page.</div></div>
+    </div>
+    <div class="audit-card">
+      <h4>🔧 Admin pages (10/10 built)</h4>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>All 10 pages built</strong> — dashboard, merchants, orders, revenue, plans, reviews, migrations, support, settings, gaps</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: admin/merchant-detail.html</strong> — Deep view of one merchant with GMV, orders, store health</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: admin/announcements.html</strong> — Send platform-wide announcements to merchants</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>Missing: admin/fraud.html</strong> — Suspicious order / fraud detection dashboard</div></div>
+      <div class="audit-item"><span class="ai-ico">⚠️</span><div class="ai-text"><strong>All admin data is hardcoded</strong> — No live API calls. Every number is static demo data</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">🎨 Design system review</h4>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div style="padding:14px;background:#F0FDF4;border-radius:10px;border:1px solid #BBF7D0"><div style="font-size:12px;font-weight:800;color:#15803D;margin-bottom:6px">✅ Strengths</div><div style="font-size:12px;color:#15803D;line-height:1.6">Full CSS token system · saffron/crimson brand identity · Tamil Nadu kolam elements · responsive breakpoints · dark sidebar · 8 storefront themes</div></div>
+      <div style="padding:14px;background:#FFFBEB;border-radius:10px;border:1px solid #FDE68A"><div style="font-size:12px;font-weight:800;color:#92400E;margin-bottom:6px">⚠️ Improvements needed</div><div style="font-size:12px;color:#92400E;line-height:1.6">No dark mode toggle · mobile sidebar not smooth · print stylesheet missing (for invoices/labels) · no loading skeleton states in tables</div></div>
+      <div style="padding:14px;background:#EEF2FF;border-radius:10px;border:1px solid #C7D2FE"><div style="font-size:12px;font-weight:800;color:#4338CA;margin-bottom:6px">📋 Add next</div><div style="font-size:12px;color:#4338CA;line-height:1.6">RTL support (Arabic future) · accessibility audit (ARIA labels) · Storybook component docs · CSS custom property overrides for white-label</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">📱 Missing pages — complete list</h4>
+    <table class="gap-table">
+      <thead><tr><th>Page</th><th>Module</th><th>Why needed</th><th>Priority</th><th>Effort</th></tr></thead>
+      <tbody>
+        <tr><td><div class="feat-name">merchant/products/add.html</div><div class="feat-desc">Full product add/edit form with image upload, variants, pricing tiers, SEO fields</div></td><td>Merchant</td><td>Cannot add products without this</td><td><span class="prio-high">🔴 Critical</span></td><td><span class="effort-tag">3 days</span></td></tr>
+        <tr><td><div class="feat-name">merchant/orders/detail.html</div><div class="feat-desc">Single order view with timeline, customer info, dispatch, refund, notes</div></td><td>Merchant</td><td>Merchants need to manage individual orders</td><td><span class="prio-high">🔴 Critical</span></td><td><span class="effort-tag">2 days</span></td></tr>
+        <tr><td><div class="feat-name">merchant/payouts.html</div><div class="feat-desc">Settlement schedule, payout history, bank account management, Razorpay X integration</div></td><td>Merchant</td><td>How merchants get paid — trust critical</td><td><span class="prio-high">🔴 Critical</span></td><td><span class="effort-tag">2 days</span></td></tr>
+        <tr><td><div class="feat-name">merchant/returns.html</div><div class="feat-desc">Customer return requests, approve/reject, refund initiation, RTO tracking</div></td><td>Merchant</td><td>30% of orders need return handling</td><td><span class="prio-high">🔴 High</span></td><td><span class="effort-tag">2 days</span></td></tr>
+        <tr><td><div class="feat-name">merchant/staff.html</div><div class="feat-desc">Add staff members, assign roles (manager, support, warehouse), activity log</div></td><td>Merchant</td><td>Growth plan includes unlimited staff</td><td><span class="prio-med">🟡 Medium</span></td><td><span class="effort-tag">1 day</span></td></tr>
+        <tr><td><div class="feat-name">storefront/category.html</div><div class="feat-desc">Category browse with filters (price, rating, brand), sort, pagination</div></td><td>Storefront</td><td>Main shopping browse flow</td><td><span class="prio-high">🔴 High</span></td><td><span class="effort-tag">2 days</span></td></tr>
+        <tr><td><div class="feat-name">storefront/search.html</div><div class="feat-desc">Search results page with filters, suggestions, no-results state</div></td><td>Storefront</td><td>40% of purchases come from search</td><td><span class="prio-high">🔴 High</span></td><td><span class="effort-tag">1 day</span></td></tr>
+        <tr><td><div class="feat-name">storefront/wishlist.html</div><div class="feat-desc">Saved items, share wishlist, move to cart, low stock alerts</div></td><td>Storefront</td><td>DB table exists but no UI</td><td><span class="prio-med">🟡 Medium</span></td><td><span class="effort-tag">1 day</span></td></tr>
+        <tr><td><div class="feat-name">storefront/payment-success.html</div><div class="feat-desc">Order confirmation with order ID, estimated delivery, loyalty points earned</div></td><td>Storefront</td><td>Critical post-purchase UX</td><td><span class="prio-high">🔴 Critical</span></td><td><span class="effort-tag">1 day</span></td></tr>
+        <tr><td><div class="feat-name">admin/merchant-detail.html</div><div class="feat-desc">Deep merchant profile: GMV, orders, plan history, store health score, support tickets</div></td><td>Admin</td><td>Admin needs per-merchant oversight</td><td><span class="prio-med">🟡 Medium</span></td><td><span class="effort-tag">1 day</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ BACKEND AUDIT ═══ -->
+<div class="panel" id="panel-backend">
+  <div class="section-title">Backend audit — API, database, infrastructure</div>
+  <div class="section-sub">Detailed review of server.js, phase2-routes.js, all SQL files, and infrastructure gaps</div>
+
+  <div class="audit-grid" style="margin-bottom:20px">
+    <div class="audit-card">
+      <h4>✅ What's built in the backend</h4>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>Database schema</strong> — 27 tables across 3 SQL files. Multi-tenant, multi-warehouse, variants, loyalty, campaigns. Production-quality design.</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>JWT authentication middleware</strong> — verifyToken, requireRole written. Just not applied to routes.</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>6 live API routes</strong> — /health, /api/categories, /api/search, /api/shipping/estimate, /api/orders/:id/invoice (x2)</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>Razorpay integration stub</strong> — Instance created, webhook signature verification written</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>Multer file upload config</strong> — S3 storage engine configured, file type + size validation done</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>GST calculation logic</strong> — split(), gstr1Export() functions written with real GSTIN validation</div></div>
+      <div class="audit-item"><span class="ai-ico">✅</span><div class="ai-text"><strong>Nodemailer email setup</strong> — Transporter configured, welcome + order email templates exist</div></div>
+    </div>
+    <div class="audit-card">
+      <h4>❌ Critical backend gaps</h4>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>34+ API routes missing</strong> — Auth routes, product CRUD, order management, cart, loyalty, campaigns all not wired. phase2-routes.js has 0 routes.</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>No input validation middleware</strong> — No Joi/Zod schemas. SQL injection possible. No rate limiting beyond basic express-rate-limit stub.</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>No database indexes</strong> — Schema has no CREATE INDEX statements. Full table scans on orders, products at scale = slow queries.</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>No Row Level Security</strong> — PostgreSQL RLS policies not set. One merchant could theoretically access another's data.</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>No Razorpay payout routes</strong> — Payment collection works but payout to merchant bank accounts not implemented.</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>No background job system</strong> — Email, WhatsApp, labels, GSTR-1 all run synchronously. Will timeout under load.</div></div>
+      <div class="audit-item"><span class="ai-ico">❌</span><div class="ai-text"><strong>No Redis caching</strong> — Every page load hits Postgres. Product listings, categories, storefront homepage need cache.</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">🔌 Missing API routes — complete list</h4>
+    <table class="gap-table">
+      <thead><tr><th>Route</th><th>Method</th><th>Description</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="feat-name">POST /api/auth/register</td><td><span class="effort-tag">POST</span></td><td>User registration with email verification</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">POST /api/auth/login</td><td><span class="effort-tag">POST</span></td><td>Email/password login, return JWT</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">POST /api/auth/google</td><td><span class="effort-tag">POST</span></td><td>Google OAuth callback</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+        <tr><td class="feat-name">GET /api/products</td><td><span class="effort-tag">GET</span></td><td>Paginated product list with filters</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">POST /api/products</td><td><span class="effort-tag">POST</span></td><td>Create product with variants + images</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">PUT /api/products/:id</td><td><span class="effort-tag">PUT</span></td><td>Update product</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">POST /api/orders</td><td><span class="effort-tag">POST</span></td><td>Create order from cart</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">GET /api/orders</td><td><span class="effort-tag">GET</span></td><td>Merchant order list with filters</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">PUT /api/orders/:id/status</td><td><span class="effort-tag">PUT</span></td><td>Update order status (dispatch, deliver)</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">POST /api/payments/razorpay/order</td><td><span class="effort-tag">POST</span></td><td>Create Razorpay order ID</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">POST /api/payments/razorpay/verify</td><td><span class="effort-tag">POST</span></td><td>Verify payment signature, update order</td><td><span class="prio-high">🔴 Critical</span></td></tr>
+        <tr><td class="feat-name">GET /api/cart</td><td><span class="effort-tag">GET</span></td><td>Get user cart (server-side)</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+        <tr><td class="feat-name">POST /api/cart/items</td><td><span class="effort-tag">POST</span></td><td>Add item to cart</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+        <tr><td class="feat-name">GET /api/loyalty/balance</td><td><span class="effort-tag">GET</span></td><td>Customer loyalty points balance</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+        <tr><td class="feat-name">POST /api/loyalty/redeem</td><td><span class="effort-tag">POST</span></td><td>Redeem points at checkout</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+        <tr><td class="feat-name">GET /api/gst/report</td><td><span class="effort-tag">GET</span></td><td>GST invoice report by month</td><td><span class="prio-high">🔴 High</span></td></tr>
+        <tr><td class="feat-name">GET /api/gst/gstr1-export</td><td><span class="effort-tag">GET</span></td><td>GSTR-1 CSV download</td><td><span class="prio-high">🔴 High</span></td></tr>
+        <tr><td class="feat-name">POST /api/shipping/awb</td><td><span class="effort-tag">POST</span></td><td>Generate Delhivery AWB</td><td><span class="prio-high">🔴 High</span></td></tr>
+        <tr><td class="feat-name">GET /api/analytics/revenue</td><td><span class="effort-tag">GET</span></td><td>Revenue analytics with date range</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+        <tr><td class="feat-name">POST /api/campaigns</td><td><span class="effort-tag">POST</span></td><td>Create and send WhatsApp/email campaign</td><td><span class="prio-med">🟡 Medium</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">🗄️ Database improvements needed</h4>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+      <div style="padding:14px;background:var(--zk-chalk);border-radius:10px;border:1px solid var(--zk-border)">
+        <div style="font-size:12px;font-weight:800;color:var(--zk-text);margin-bottom:10px">Missing indexes (performance)</div>
+        <div style="font-size:12px;color:var(--zk-muted);font-family:monospace;line-height:2">
+          CREATE INDEX idx_orders_store ON orders(store_id);<br>
+          CREATE INDEX idx_products_store ON products(store_id);<br>
+          CREATE INDEX idx_orders_status ON orders(status);<br>
+          CREATE INDEX idx_products_search ON products USING GIN(to_tsvector('english', name));<br>
+          CREATE INDEX idx_analytics_store_date ON analytics_events(store_id, created_at);
+        </div>
+      </div>
+      <div style="padding:14px;background:var(--zk-chalk);border-radius:10px;border:1px solid var(--zk-border)">
+        <div style="font-size:12px;font-weight:800;color:var(--zk-text);margin-bottom:10px">Missing tables (features)</div>
+        <div style="font-size:12px;color:var(--zk-muted);line-height:2">
+          • <strong>returns</strong> — return_requests, return_items<br>
+          • <strong>payouts</strong> — merchant_payouts, payout_items<br>
+          • <strong>staff</strong> — store_staff, staff_roles, permissions<br>
+          • <strong>disputes</strong> — payment_disputes, dispute_messages<br>
+          • <strong>seo</strong> — store_seo, product_seo, sitemap_cache<br>
+          • <strong>audit_log</strong> — all admin actions for compliance
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FEATURE GAPS ═══ -->
+<div class="panel" id="panel-features">
+  <div class="section-title">Feature gap analysis — 58 features</div>
+  <div class="section-sub">Every feature scored against Indian market standards. Click any row to see details.</div>
+  <table class="gap-table">
+    <thead><tr><th>Feature</th><th>Status</th><th>Market standard</th><th>Impact</th><th>Priority</th><th>Sprint</th></tr></thead>
+    <tbody id="feat-tbody"></tbody>
+  </table>
+</div>
+
+<!-- ═══ COMPETITOR MATRIX ═══ -->
+<div class="panel" id="panel-competitors">
+  <div class="section-title">Competitor feature matrix</div>
+  <div class="section-sub">ZKCommerce vs Shopify, Dukaan, Instamojo, WooCommerce — 40 features</div>
+
+  <div class="score-grid" style="margin-bottom:28px">
+    <div class="score-card"><div class="score-num fire-text">72</div><div class="score-label">vs Shopify</div><div style="font-size:11px;color:var(--zk-dim);margin-top:4px">We win on price, India tax, WhatsApp</div><div class="score-bar"><div class="score-fill" style="width:72%;background:var(--g-fire)"></div></div></div>
+    <div class="score-card"><div class="score-num" style="color:#16A34A">88</div><div class="score-label">vs Dukaan</div><div style="font-size:11px;color:var(--zk-dim);margin-top:4px">We win on features, analytics, loyalty</div><div class="score-bar"><div class="score-fill" style="width:88%;background:#16A34A"></div></div></div>
+    <div class="score-card"><div class="score-num" style="color:#4F46E5">91</div><div class="score-label">vs Instamojo</div><div style="font-size:11px;color:var(--zk-dim);margin-top:4px">We win on full ecomm vs payment link</div><div class="score-bar"><div class="score-fill" style="width:91%;background:#4F46E5"></div></div></div>
+    <div class="score-card"><div class="score-num" style="color:#D97706">65</div><div class="score-label">vs WooCommerce</div><div style="font-size:11px;color:var(--zk-dim);margin-top:4px">They win on plugins, we win on SaaS ease</div><div class="score-bar"><div class="score-fill" style="width:65%;background:#D97706"></div></div></div>
+  </div>
+
+  <div class="competitor-grid">
+    <div class="comp-header" style="border-right:1px solid var(--zk-border)">Feature</div>
+    <div class="comp-header comp-zk">⚡ ZKCommerce</div>
+    <div class="comp-header">🟢 Shopify</div>
+    <div class="comp-header">🔵 Dukaan</div>
+    <div class="comp-header">🟣 Instamojo</div>
+    <div id="comp-tbody" style="display:contents"></div>
+  </div>
+</div>
+
+<!-- ═══ ROADMAP ═══ -->
+<div class="panel" id="panel-roadmap">
+  <div class="section-title">Product roadmap — Q3 2026 to 2027</div>
+  <div class="section-sub">Prioritised by revenue impact, merchant demand and competitive necessity</div>
+
+  <div class="roadmap-lane">
+    <div class="rl-header">
+      <span class="rl-badge rl-q3">🔴 Q3 2026 — Ship now (July–September)</span>
+      <span style="font-size:12px;color:var(--zk-muted)">Critical for first paying customers</span>
+    </div>
+    <div class="rl-items">
+      <div class="rl-card fire"><div class="rl-title">Complete all API routes</div><div class="rl-desc">Wire up all 34 missing endpoints. Auth, products, orders, payments, cart, loyalty. Backend must be fully functional.</div><div class="rl-tags"><span class="rl-tag">Backend</span><span class="rl-tag">2 weeks</span><span class="rl-tag">Critical</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Razorpay payment flow</div><div class="rl-desc">Order creation → Razorpay checkout → payment verification → order confirmation → loyalty points award.</div><div class="rl-tags"><span class="rl-tag">Payments</span><span class="rl-tag">1 week</span><span class="rl-tag">Critical</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Product add/edit form</div><div class="rl-desc">Full product creation: images (S3/R2), variants (size/colour), pricing, stock, SEO title/desc, GST category.</div><div class="rl-tags"><span class="rl-tag">Frontend</span><span class="rl-tag">3 days</span><span class="rl-tag">Critical</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Storefront subdomain routing</div><div class="rl-desc">merchant1.zkcommerce.in → serve that merchant's theme, products, categories. Wildcard DNS + Next.js middleware.</div><div class="rl-tags"><span class="rl-tag">Infrastructure</span><span class="rl-tag">1 week</span><span class="rl-tag">Critical</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Database indexes + RLS</div><div class="rl-desc">Add 8 critical indexes for order/product queries. PostgreSQL RLS so merchants can only see their own data.</div><div class="rl-tags"><span class="rl-tag">Database</span><span class="rl-tag">2 days</span><span class="rl-tag">Security</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Returns management</div><div class="rl-desc">Customer initiates return → merchant approves/rejects → Delhivery reverse pickup → Razorpay refund automated.</div><div class="rl-tags"><span class="rl-tag">Full stack</span><span class="rl-tag">1 week</span><span class="rl-tag">High demand</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Payout / settlements page</div><div class="rl-desc">Show merchant what they've earned, what's pending, payout schedule. Razorpay X integration for auto-payout.</div><div class="rl-tags"><span class="rl-tag">Finance</span><span class="rl-tag">3 days</span><span class="rl-tag">Trust</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">WhatsApp order alerts</div><div class="rl-desc">Order placed → WA to customer. Order shipped → WA with tracking. COD OTP verification before dispatch.</div><div class="rl-tags"><span class="rl-tag">Notifications</span><span class="rl-tag">3 days</span><span class="rl-tag">India-specific</span></div></div>
+      <div class="rl-card fire"><div class="rl-title">Next.js migration</div><div class="rl-desc">Move from static HTML to Next.js 14 App Router. SSR storefronts, dynamic routing, real API calls throughout.</div><div class="rl-tags"><span class="rl-tag">Frontend</span><span class="rl-tag">3 weeks</span><span class="rl-tag">Foundation</span></div></div>
+    </div>
+  </div>
+
+  <div class="roadmap-lane">
+    <div class="rl-header">
+      <span class="rl-badge rl-q4">🟡 Q4 2026 — Growth features (October–December)</span>
+      <span style="font-size:12px;color:var(--zk-muted)">For merchants on Growth/Enterprise plans</span>
+    </div>
+    <div class="rl-items">
+      <div class="rl-card brand"><div class="rl-title">Facebook / Instagram shop sync</div><div class="rl-desc">Auto-sync product catalogue to Meta Shops. Single inventory, orders flow into ZKCommerce dashboard.</div><div class="rl-tags"><span class="rl-tag">Sales channels</span><span class="rl-tag">2 weeks</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">Abandoned cart WhatsApp</div><div class="rl-desc">Auto-send WhatsApp 1h after cart abandonment. Personalised product reminder + discount code. 22% recovery rate.</div><div class="rl-tags"><span class="rl-tag">Marketing</span><span class="rl-tag">1 week</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">Blog / SEO module</div><div class="rl-desc">Built-in blog with CMS editor. Auto-generates sitemap. Meta title/desc per page. Schema markup for products.</div><div class="rl-tags"><span class="rl-tag">SEO</span><span class="rl-tag">2 weeks</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">Tally ERP integration</div><div class="rl-desc">Auto-sync orders/invoices to Tally. 80%+ Indian businesses use Tally. Biggest merchant pain point today.</div><div class="rl-tags"><span class="rl-tag">Finance</span><span class="rl-tag">2 weeks</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">Multi-courier rate comparison</div><div class="rl-desc">Delhivery, BlueDart, XpressBees, DTDC rates in one UI. Cheapest-fastest toggle. Bulk dispatch.</div><div class="rl-tags"><span class="rl-tag">Shipping</span><span class="rl-tag">1 week</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">BNPL / no-cost EMI</div><div class="rl-desc">Simpl, LazyPay, Bajaj Finserv at checkout. Bajaj EMI is #1 conversion driver for electronics/jewellery.</div><div class="rl-tags"><span class="rl-tag">Payments</span><span class="rl-tag">1 week</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">Flash sale / countdown timer</div><div class="rl-desc">Time-limited sales with countdown on product and category pages. Bulk price override with auto-revert.</div><div class="rl-tags"><span class="rl-tag">Marketing</span><span class="rl-tag">3 days</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">B2B / wholesale pricing</div><div class="rl-desc">Separate price tiers for wholesale buyers. MOQ, custom quotes, credit terms, bulk invoice PDF.</div><div class="rl-tags"><span class="rl-tag">Enterprise</span><span class="rl-tag">2 weeks</span></div></div>
+      <div class="rl-card brand"><div class="rl-title">Staff management + roles</div><div class="rl-desc">Invite staff, assign roles (manager, support, packer). Activity log. IP whitelist option.</div><div class="rl-tags"><span class="rl-tag">Operations</span><span class="rl-tag">1 week</span></div></div>
+    </div>
+  </div>
+
+  <div class="roadmap-lane">
+    <div class="rl-header">
+      <span class="rl-badge rl-2027">⚪ 2027 — Platform scale features</span>
+      <span style="font-size:12px;color:var(--zk-muted)">When you have 5,000+ merchants</span>
+    </div>
+    <div class="rl-items">
+      <div class="rl-card"><div class="rl-title">Multi-language storefront</div><div class="rl-desc">Tamil, Hindi, Telugu, Kannada, Malayalam. Auto-translate products. Language toggle on storefront.</div><div class="rl-tags"><span class="rl-tag">Localisation</span><span class="rl-tag">3 weeks</span></div></div>
+      <div class="rl-card"><div class="rl-title">Amazon / Flipkart listing sync</div><div class="rl-desc">Unified inventory across ZKCommerce + Amazon + Flipkart. Orders aggregate in one dashboard.</div><div class="rl-tags"><span class="rl-tag">Marketplace</span><span class="rl-tag">4 weeks</span></div></div>
+      <div class="rl-card"><div class="rl-title">POS — point of sale</div><div class="rl-desc">Physical store checkout app. Barcode scanner, cash drawer, daily reconciliation with online store.</div><div class="rl-tags"><span class="rl-tag">Offline</span><span class="rl-tag">6 weeks</span></div></div>
+      <div class="rl-card"><div class="rl-title">Affiliate / referral program</div><div class="rl-desc">Merchants can launch their own affiliate programs. Auto-track commissions, payouts, cookie attribution.</div><div class="rl-tags"><span class="rl-tag">Growth</span><span class="rl-tag">2 weeks</span></div></div>
+      <div class="rl-card"><div class="rl-title">Subscription / recurring orders</div><div class="rl-desc">Monthly subscriptions for grocery, supplements, pet food. Auto-payment, pause/skip, flexible billing.</div><div class="rl-tags"><span class="rl-tag">Retention</span><span class="rl-tag">3 weeks</span></div></div>
+      <div class="rl-card"><div class="rl-title">International payments</div><div class="rl-desc">Stripe for USD/EUR payments. Multi-currency display. Global shipping rates. Customs duty calculator.</div><div class="rl-tags"><span class="rl-tag">Global</span><span class="rl-tag">2 weeks</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TECH MIGRATION ═══ -->
+<div class="panel" id="panel-tech">
+  <div class="section-title">Tech stack migration plan</div>
+  <div class="section-sub">Current → recommended production stack with rationale for each decision</div>
+
+  <div class="tech-grid" style="margin-bottom:20px">
+    <div class="tech-card">
+      <h4>🖥️ Frontend</h4>
+      <div class="tech-row"><div><div class="tech-current">Vanilla HTML/CSS/JS</div><div class="tech-why">Current: 36 static pages, no routing</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Next.js 14 + Tailwind</div><div class="tech-why">SSR storefronts, App Router, edge CDN</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No state management</div><div class="tech-why">localStorage only</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Zustand + React Query</div><div class="tech-why">Lightweight, server state caching</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Custom design system CSS</div><div class="tech-why">ZKCommerce DS v3 — keep it</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">CSS tokens → Tailwind plugin</div><div class="tech-why">Convert tokens, reuse all components</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No TypeScript</div><div class="tech-why">Plain JS in app.js</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">TypeScript strict</div><div class="tech-why">Catch bugs at compile time, better DX</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Manual deploy</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Vercel + GitHub CI/CD</div><div class="tech-why">Preview URLs, edge functions, 60s deploys</div></div></div>
+    </div>
+    <div class="tech-card">
+      <h4>⚙️ Backend</h4>
+      <div class="tech-row"><div><div class="tech-current">Express 4</div><div class="tech-why">Good start, keep for now</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Express → Fastify (later)</div><div class="tech-why">2-3× throughput, built-in validation</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No input validation</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Zod schemas</div><div class="tech-why">Type-safe validation, auto error messages</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Synchronous jobs</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">BullMQ + Redis (Upstash)</div><div class="tech-why">Background: email, WA, labels, reports</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No caching</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Redis cache layer</div><div class="tech-why">Cache product listings, categories, sessions</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Railway (suggested)</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Railway → AWS App Runner</div><div class="tech-why">Mumbai region, VPC, auto-scale at 2k+ merchants</div></div></div>
+    </div>
+    <div class="tech-card">
+      <h4>🗄️ Database</h4>
+      <div class="tech-row"><div><div class="tech-current">Self-hosted Postgres</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Neon (serverless Postgres)</div><div class="tech-why">Scale to zero, branching, free tier</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No connection pooling</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">PgBouncer (Neon built-in)</div><div class="tech-why">Handle 2,000+ concurrent connections</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No ORM</div><div class="tech-why">Raw pg queries — fine for now</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Drizzle ORM</div><div class="tech-why">Type-safe, fast, SQL-like syntax</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No full-text search</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">pg_trgm → Typesense</div><div class="tech-why">pg_trgm free, Typesense for faceted search</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">AWS S3 (configured)</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Cloudflare R2</div><div class="tech-why">Zero egress, S3-compatible, 60% cheaper</div></div></div>
+    </div>
+    <div class="tech-card">
+      <h4>📦 Third-party services</h4>
+      <div class="tech-row"><div><div class="tech-current">Nodemailer SMTP</div><div class="tech-why">Works but deliverability varies</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Resend</div><div class="tech-why">99.9% deliverability, 3k/day free, React email</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Twilio (WA stub)</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Gupshup / Interakt</div><div class="tech-why">Indian WA BSP, INR pricing, faster delivery</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Razorpay ✅</div><div class="tech-why">Correct choice, keep it</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">+ Razorpay X payouts</div><div class="tech-why">Auto-payout to merchant bank accounts</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">Delhivery ✅</div><div class="tech-why">Correct choice, keep it</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">+ Shiprocket aggregator</div><div class="tech-why">Multi-courier from one API</div></div></div>
+      <div class="tech-row"><div><div class="tech-current">No monitoring</div></div><span class="tech-arrow">→</span><div><div class="tech-recommended">Sentry + Datadog</div><div class="tech-why">Error tracking, uptime, query performance</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ KPIs ═══ -->
+<div class="panel" id="panel-kpis">
+  <div class="section-title">KPIs, sprint plan & immediate next steps</div>
+  <div class="section-sub">Concrete actions, success metrics and 8-week execution plan</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-title">Time to first paying merchant</div><div style="display:flex;align-items:center"><div class="kpi-now">Demo</div><div class="kpi-arrow">→</div><div class="kpi-target">6 weeks</div></div><div class="kpi-label">After completing sprints 1–2</div></div>
+    <div class="kpi-card"><div class="kpi-title">Target merchants — month 3</div><div style="display:flex;align-items:center"><div class="kpi-now">0</div><div class="kpi-arrow">→</div><div class="kpi-target">100</div></div><div class="kpi-label">Tamil Nadu pilot launch</div></div>
+    <div class="kpi-card"><div class="kpi-title">Target MRR — month 6</div><div style="display:flex;align-items:center"><div class="kpi-now">₹0</div><div class="kpi-arrow">→</div><div class="kpi-target">₹3.2L</div></div><div class="kpi-label">400 merchants avg ₹599/mo blended</div></div>
+    <div class="kpi-card"><div class="kpi-title">API routes to complete</div><div style="display:flex;align-items:center"><div class="kpi-now">6</div><div class="kpi-arrow">→</div><div class="kpi-target">40+</div></div><div class="kpi-label">Sprint 1 primary goal</div></div>
+    <div class="kpi-card"><div class="kpi-title">Frontend pages to add</div><div style="display:flex;align-items:center"><div class="kpi-now">36</div><div class="kpi-arrow">→</div><div class="kpi-target">46</div></div><div class="kpi-label">10 critical missing pages</div></div>
+    <div class="kpi-card"><div class="kpi-title">Storefront page load (India)</div><div style="display:flex;align-items:center"><div class="kpi-now">N/A</div><div class="kpi-arrow">→</div><div class="kpi-target">&lt;1.5s</div></div><div class="kpi-label">Vercel edge + Cloudflare CDN</div></div>
+  </div>
+
+  <div class="sprint-grid" style="margin-bottom:24px">
+    <div class="sprint-card" data-sprint="Sprint 1 · 2 weeks">
+      <div class="sprint-title">Backend API</div>
+      <div class="sprint-dur">Weeks 1–2 · Backend developer</div>
+      <div class="sprint-item">Auth routes (register, login, JWT)</div>
+      <div class="sprint-item">Product CRUD (create, read, update, delete)</div>
+      <div class="sprint-item">Order management routes</div>
+      <div class="sprint-item">Razorpay order + verify routes</div>
+      <div class="sprint-item">Cart server-side routes</div>
+      <div class="sprint-item">GST report + GSTR-1 export routes</div>
+      <div class="sprint-item">Database indexes + RLS policies</div>
+      <div class="sprint-item">Zod input validation on all routes</div>
+    </div>
+    <div class="sprint-card" data-sprint="Sprint 2 · 2 weeks">
+      <div class="sprint-title">Frontend critical pages</div>
+      <div class="sprint-dur">Weeks 3–4 · Frontend developer</div>
+      <div class="sprint-item">Product add/edit form with image upload</div>
+      <div class="sprint-item">Order detail page with timeline</div>
+      <div class="sprint-item">Payment success / confirmation page</div>
+      <div class="sprint-item">Payout / settlements page</div>
+      <div class="sprint-item">Returns management page</div>
+      <div class="sprint-item">Category browse + search results</div>
+      <div class="sprint-item">Wishlist page</div>
+      <div class="sprint-item">Wire Razorpay checkout end-to-end</div>
+    </div>
+    <div class="sprint-card" data-sprint="Sprint 3 · 2 weeks">
+      <div class="sprint-title">Infrastructure + Next.js</div>
+      <div class="sprint-dur">Weeks 5–6 · Full stack</div>
+      <div class="sprint-item">Deploy backend to Railway</div>
+      <div class="sprint-item">Deploy frontend to Vercel</div>
+      <div class="sprint-item">Neon Postgres setup, run migrations</div>
+      <div class="sprint-item">Cloudflare R2 for product images</div>
+      <div class="sprint-item">Wildcard DNS *.zkcommerce.in</div>
+      <div class="sprint-item">Subdomain → merchant routing</div>
+      <div class="sprint-item">Resend email integration</div>
+      <div class="sprint-item">Gupshup WhatsApp order alerts</div>
+    </div>
+    <div class="sprint-card" data-sprint="Sprint 4 · 2 weeks">
+      <div class="sprint-title">Launch prep</div>
+      <div class="sprint-dur">Weeks 7–8 · All hands</div>
+      <div class="sprint-item">End-to-end checkout testing (UPI, COD)</div>
+      <div class="sprint-item">GST invoice PDF generation (Puppeteer)</div>
+      <div class="sprint-item">Delhivery AWB + label print end-to-end</div>
+      <div class="sprint-item">Security audit (OWASP top 10)</div>
+      <div class="sprint-item">Load test: 100 concurrent checkouts</div>
+      <div class="sprint-item">Sentry error monitoring setup</div>
+      <div class="sprint-item">Onboard 5 pilot merchants (Tamil Nadu)</div>
+      <div class="sprint-item">Apply for Razorpay live credentials</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">✅ This week's action checklist</h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--zk-dim);margin-bottom:4px">Day 1–2: Accounts & infra</div>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Register zkcommerce.in on Cloudflare. Set wildcard *.zkcommerce.in</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Create Neon account (free tier). Run schema.sql, phase1 + phase2 SQL</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Create Railway account. Connect GitHub repo. Deploy api/server.js</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Push static HTML to Vercel. Get live URL for demo</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Apply for Razorpay test account (KYC takes 2–3 days)</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Create Upstash Redis instance (free tier)</label>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--zk-dim);margin-bottom:4px">Day 3–7: Code</div>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Write POST /api/auth/register and POST /api/auth/login</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Apply verifyToken middleware to all protected routes</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Write GET/POST/PUT /api/products with Zod validation</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Build merchant/products/add.html with image upload form</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Wire login.html to real /api/auth/login (remove demo fallback)</label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px;flex-shrink:0"> Add CREATE INDEX statements to schema.sql and run on Neon</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end gap-body -->
+
+<script src="../assets/js/app.js"></script>
+<script>
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.gnav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+const FEATURES = [
+  // Frontend
+  {name:'36 HTML pages',desc:'All auth, merchant, storefront, admin pages',status:'done',std:'Min 30 pages',impact:5,prio:'low',sprint:'Done'},
+  {name:'Design system v3',desc:'CSS tokens, components, sidebar, tables, forms',status:'done',std:'Required',impact:5,prio:'low',sprint:'Done'},
+  {name:'Store setup wizard',desc:'5 steps, 16 industries, 8 themes, CMS editor',status:'done',std:'Nice to have',impact:5,prio:'low',sprint:'Done'},
+  {name:'CMS content editor',desc:'30+ section types, live preview, drag reorder',status:'done',std:'Nice to have',impact:4,prio:'low',sprint:'Done'},
+  {name:'Product add/edit form',desc:'Images, variants, pricing, GST, SEO fields',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 2'},
+  {name:'Order detail page',desc:'Timeline, dispatch, refund, customer notes',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 2'},
+  {name:'Payout / settlements',desc:'Merchant earnings, payout schedule, bank account',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 2'},
+  {name:'Returns management UI',desc:'Initiate, approve, track, refund flow',status:'missing',std:'Required',impact:4,prio:'high',sprint:'Sprint 2'},
+  {name:'Category + search pages',desc:'Browse by category, search results, filters',status:'missing',std:'Required',impact:4,prio:'high',sprint:'Sprint 2'},
+  {name:'Payment success page',desc:'Order confirm, loyalty points, delivery ETA',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 2'},
+  {name:'Staff management page',desc:'Add/remove staff, roles, activity log',status:'missing',std:'Required for Growth plan',impact:3,prio:'med',sprint:'Sprint 3'},
+  {name:'Wishlist page',desc:'Saved items, share, move to cart',status:'missing',std:'Standard',impact:3,prio:'med',sprint:'Sprint 3'},
+  {name:'Dark mode',desc:'System-level dark mode toggle',status:'missing',std:'Increasingly expected',impact:2,prio:'low',sprint:'Q4 2026'},
+  {name:'Mobile responsive (full)',desc:'All pages tested on 375px viewport',status:'partial',std:'Required',impact:4,prio:'med',sprint:'Sprint 3'},
+  // Backend
+  {name:'Auth API routes',desc:'Register, login, Google OAuth, JWT refresh',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Product CRUD API',desc:'Full create/read/update/delete with variants',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Order management API',desc:'Create, list, status update, cancellation',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Razorpay payment API',desc:'Order creation, payment verify, webhook',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Cart server-side API',desc:'Add/remove/update cart items server-side',status:'partial',std:'Required',impact:4,prio:'high',sprint:'Sprint 1'},
+  {name:'GST report API',desc:'Invoice list, GSTR-1 CSV export',status:'partial',std:'India-specific required',impact:4,prio:'high',sprint:'Sprint 1'},
+  {name:'Shipping / AWB API',desc:'Delhivery integration, AWB, tracking webhook',status:'partial',std:'Required',impact:4,prio:'high',sprint:'Sprint 1'},
+  {name:'Input validation (Zod)',desc:'Validate all API inputs, prevent SQL injection',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Database indexes',desc:'Indexes on orders, products, analytics',status:'missing',std:'Required for performance',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Row level security',desc:'RLS so merchants cannot see each others data',status:'missing',std:'Required for multi-tenant',impact:5,prio:'high',sprint:'Sprint 1'},
+  {name:'Background jobs (BullMQ)',desc:'Email, WhatsApp, labels run async',status:'missing',std:'Required at scale',impact:4,prio:'med',sprint:'Sprint 3'},
+  {name:'Redis caching',desc:'Cache product listings, categories, sessions',status:'missing',std:'Required at scale',impact:4,prio:'med',sprint:'Sprint 3'},
+  {name:'Rate limiting',desc:'Per-IP and per-user rate limits on all routes',status:'missing',std:'Required for security',impact:4,prio:'high',sprint:'Sprint 1'},
+  {name:'Returns / refund API',desc:'Return requests, Razorpay refund initiation',status:'missing',std:'Required',impact:4,prio:'high',sprint:'Sprint 2'},
+  {name:'Payout API (Razorpay X)',desc:'Auto-payout to merchant bank accounts',status:'missing',std:'Required',impact:4,prio:'high',sprint:'Sprint 2'},
+  {name:'Loyalty points API',desc:'Earn, balance, redeem at checkout',status:'partial',std:'Differentiator',impact:4,prio:'med',sprint:'Sprint 2'},
+  // Integrations
+  {name:'Razorpay checkout wired',desc:'Real payment flow end-to-end in browser',status:'missing',std:'Required',impact:5,prio:'high',sprint:'Sprint 2'},
+  {name:'WhatsApp order alerts',desc:'Order + shipping + COD OTP via WA',status:'missing',std:'India standard',impact:5,prio:'high',sprint:'Sprint 3'},
+  {name:'PDF invoice generation',desc:'Real GST invoice PDF (Puppeteer/PDFKit)',status:'missing',std:'Required by law',impact:5,prio:'high',sprint:'Sprint 2'},
+  {name:'Delhivery AWB live',desc:'Real AWB generation via Delhivery API',status:'partial',std:'Required',impact:4,prio:'high',sprint:'Sprint 2'},
+  {name:'Google OAuth wired',desc:'Real Google sign-in with Passport.js',status:'missing',std:'Expected',impact:3,prio:'med',sprint:'Sprint 3'},
+  {name:'Email transactional',desc:'Welcome, order confirm, reset via Resend',status:'missing',std:'Required',impact:4,prio:'high',sprint:'Sprint 3'},
+  // Market gaps
+  {name:'Facebook/Instagram shop',desc:'Product catalogue sync to Meta Shops',status:'planned',std:'Growing standard',impact:4,prio:'med',sprint:'Q4 2026'},
+  {name:'Abandoned cart WhatsApp',desc:'Auto WA recovery 1h after cart drop',status:'planned',std:'India differentiator',impact:5,prio:'high',sprint:'Q4 2026'},
+  {name:'Blog / SEO module',desc:'Built-in blog with sitemap, meta management',status:'planned',std:'Required for SEO',impact:4,prio:'med',sprint:'Q4 2026'},
+  {name:'Flash sale timer',desc:'Countdown on product/category pages',status:'planned',std:'Standard',impact:3,prio:'med',sprint:'Q4 2026'},
+  {name:'BNPL / EMI at checkout',desc:'Simpl, LazyPay, Bajaj at checkout',status:'planned',std:'India growing fast',impact:4,prio:'med',sprint:'Q4 2026'},
+  {name:'Tally ERP sync',desc:'Orders/invoices sync to Tally',status:'planned',std:'India-specific must',impact:4,prio:'med',sprint:'Q4 2026'},
+  {name:'Multi-courier compare',desc:'Rate comparison Delhivery vs BlueDart etc',status:'planned',std:'Standard',impact:3,prio:'med',sprint:'Q4 2026'},
+  {name:'Multi-language storefront',desc:'Tamil, Hindi, Telugu, Kannada',status:'planned',std:'India-specific',impact:3,prio:'low',sprint:'2027'},
+  {name:'Amazon/Flipkart sync',desc:'Unified listing and order management',status:'planned',std:'Growing demand',impact:4,prio:'med',sprint:'2027'},
+  {name:'Subscription orders',desc:'Recurring monthly orders, auto-payment',status:'planned',std:'Niche but sticky',impact:3,prio:'low',sprint:'2027'},
+];
+
+const statusMap = {
+  done:    '<span class="status-pill s-done">✅ Built</span>',
+  partial: '<span class="status-pill s-partial">⚡ Partial</span>',
+  missing: '<span class="status-pill s-missing">❌ Missing</span>',
+  planned: '<span class="status-pill s-planned">📋 Planned</span>',
+  building:'<span class="status-pill s-building">🔨 Building</span>',
+};
+const prioMap = {
+  high:'<span class="prio-high">🔴 High</span>',
+  med: '<span class="prio-med">🟡 Medium</span>',
+  low: '<span class="prio-low">🔵 Low</span>',
+};
+
+document.getElementById('feat-tbody').innerHTML = FEATURES.map(f => `
+  <tr>
+    <td><div class="feat-name">${f.name}</div><div class="feat-desc">${f.desc}</div></td>
+    <td>${statusMap[f.status]}</td>
+    <td style="font-size:12px;color:var(--zk-muted)">${f.std}</td>
+    <td><div class="impact-dots">${[1,2,3,4,5].map(i=>`<div class="dot ${i<=f.impact?'on':'off'}"></div>`).join('')}</div></td>
+    <td>${prioMap[f.prio]}</td>
+    <td><span class="effort-tag" style="${f.sprint==='Done'?'color:#15803D;border-color:#BBF7D0':f.sprint==='Sprint 1'||f.sprint==='Sprint 2'?'color:var(--zk-fire);border-color:rgba(255,107,0,.3)':''}">${f.sprint}</span></td>
+  </tr>`).join('');
+
+const COMP = [
+  {f:'0% transaction fees',zk:'✓',sh:'✗ 2%+',dk:'✓',im:'✗ 2-3%'},
+  {f:'UPI payments',zk:'✓',sh:'Plugin only',dk:'✓',im:'✓'},
+  {f:'GST invoicing + GSTR-1',zk:'✓',sh:'Plugin ₹5k/mo',dk:'Partial',im:'✗'},
+  {f:'WhatsApp order alerts',zk:'✓',sh:'Plugin',dk:'✓',im:'✗'},
+  {f:'COD with OTP verify',zk:'Building',sh:'✗',dk:'✓',im:'✓'},
+  {f:'Store setup wizard',zk:'✓ Best',sh:'✓',dk:'Partial',im:'✗'},
+  {f:'CMS content editor',zk:'✓ Best',sh:'✓',dk:'Basic',im:'✗'},
+  {f:'Loyalty program',zk:'✓',sh:'Plugin',dk:'✗',im:'✗'},
+  {f:'Multi-warehouse',zk:'✓',sh:'Plugin',dk:'✗',im:'✗'},
+  {f:'Product variants',zk:'✓',sh:'✓',dk:'✓',im:'✗'},
+  {f:'Analytics dashboard',zk:'✓',sh:'✓',dk:'Basic',im:'Basic'},
+  {f:'Admin / platform panel',zk:'✓',sh:'✓',dk:'✓',im:'✓'},
+  {f:'Migration portal',zk:'✓ Best',sh:'✗',dk:'✗',im:'✗'},
+  {f:'INR pricing',zk:'₹399',sh:'₹1,499+',dk:'₹499',im:'Free+fees'},
+  {f:'Free trial',zk:'30 days',sh:'3 days',dk:'Free forever',im:'Free forever'},
+  {f:'Custom domain',zk:'✓',sh:'✓',dk:'✓',im:'✗'},
+  {f:'Delhivery integration',zk:'✓',sh:'Plugin',dk:'✓',im:'✗'},
+  {f:'Coupons & discounts',zk:'✓',sh:'✓',dk:'✓',im:'✓'},
+  {f:'Facebook/Instagram shop',zk:'Planned',sh:'✓',dk:'✓',im:'✗'},
+  {f:'Blog / SEO tools',zk:'Planned',sh:'✓',dk:'✗',im:'✗'},
+];
+
+document.getElementById('comp-tbody').innerHTML = COMP.map(r => `
+  <div class="comp-cell comp-row-label" style="border-right:1px solid var(--zk-border)">${r.f}</div>
+  <div class="comp-cell comp-zk ${r.zk==='✓'||r.zk.includes('Best')?'comp-yes':r.zk==='✗'?'comp-no':r.zk.includes('Planned')?'comp-part':''}">${r.zk}</div>
+  <div class="comp-cell ${r.sh==='✓'?'comp-yes':r.sh==='✗'?'comp-no':'comp-part'}">${r.sh}</div>
+  <div class="comp-cell ${r.dk==='✓'?'comp-yes':r.dk==='✗'?'comp-no':'comp-part'}">${r.dk}</div>
+  <div class="comp-cell" style="border-right:none;${r.im==='✓'?'color:#15803D;font-weight:700':r.im==='✗'?'color:#DC2626;font-weight:700':'color:#D97706;font-weight:700'}">${r.im}</div>
+`).join('');
+
+// Animate score bars on load
+setTimeout(()=>{
+  document.querySelectorAll('.score-fill').forEach(el=>{
+    el.style.width = el.style.width;
+  });
+},100);
+</script>
+</body>
+</html>

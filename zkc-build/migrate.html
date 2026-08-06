@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Migrate to ZKCommerce — Free Migration from Shopify, Amazon, Flipkart & Zoho</title>
+<meta name="description" content="Migrate your store to ZKCommerce in 24 hours — free. Products, customers, orders, SEO URLs all transferred. From Shopify, Amazon, Flipkart, Zoho Commerce or any platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fire:#FF6B00;--crimson:#C41E3A;--amber:#F5A623;
+  --indigo:#4F46E5;--violet:#7C3AED;--green:#16A34A;
+  --deep:#08061A;--ink:#0E0C2A;
+  --chalk:#FAFAF8;--warm:#FFF7F2;--pale:#F8F6FF;
+  --text:#0F0E1E;--muted:#64748B;--dim:#94A3B8;
+  --border:#E8E4F0;
+  --gfire:linear-gradient(135deg,#FF6B00,#C41E3A);
+  --gbrand:linear-gradient(135deg,#4F46E5,#7C3AED);
+  --ghero:linear-gradient(160deg,#08061A 0%,#0a0d2e 50%,#1a0828 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#fff;color:var(--text);line-height:1.6;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer}
+
+/* UTILS */
+.si{max-width:1140px;margin:0 auto;padding:0 28px}
+.sh{font-family:'Syne',sans-serif;font-size:clamp(26px,3.5vw,42px);font-weight:800;letter-spacing:-.025em;line-height:1.12;margin-bottom:12px}
+.sh.w{color:#fff}
+.ssub{font-size:15px;color:var(--muted);line-height:1.75;max-width:580px}
+.eyebrow{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--fire);margin-bottom:12px}
+.fire-t{background:var(--gfire);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn-f{display:inline-flex;align-items:center;gap:8px;background:var(--gfire);color:#fff;padding:13px 26px;border-radius:10px;font-size:14px;font-weight:700;border:none;box-shadow:0 4px 18px rgba(255,107,0,.35);transition:transform .15s,box-shadow .15s;cursor:pointer}
+.btn-f:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,0,.45)}
+.btn-s{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--text);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:700;border:1.5px solid var(--border);transition:all .15s;cursor:pointer}
+.btn-s:hover{border-color:#C7D2FE;background:var(--pale)}
+.tick{color:#22C55E;font-weight:800;flex-shrink:0}
+.cross{color:#DC2626;font-weight:700}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:999;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;transition:all .3s}
+#nav.solid{background:rgba(8,6,26,.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff}
+.nav-gem{width:36px;height:36px;border-radius:9px;background:var(--gfire);display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 16px rgba(255,107,0,.4)}
+.nav-links{display:flex;align-items:center;gap:24px}
+.nav-links a{font-size:13px;font-weight:500;color:rgba(255,255,255,.6);transition:color .15s}
+.nav-links a:hover{color:#fff}
+.nav-cta{background:var(--gfire);color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 10px rgba(255,107,0,.3);transition:opacity .15s}
+.nav-cta:hover{opacity:.9}
+
+/* HERO */
+.hero{background:var(--ghero);padding:120px 5% 80px;position:relative;overflow:hidden}
+.hero-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none}
+.o1{width:500px;height:500px;background:radial-gradient(#FF6B00,transparent 70%);top:-150px;right:-80px;opacity:.2}
+.o2{width:360px;height:360px;background:radial-gradient(#4F46E5,transparent 70%);bottom:-80px;left:-60px;opacity:.22}
+.hero-inner{max-width:1140px;margin:0 auto;position:relative;z-index:2}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;background:rgba(255,107,0,.1);border:1px solid rgba(255,107,0,.3);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:700;color:#FF9A4D;letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.kd{width:6px;height:6px;border-radius:50%;background:#FF6B00;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+h1.hh{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,58px);font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+.hero-sub{font-size:17px;color:rgba(255,255,255,.58);line-height:1.78;margin-bottom:32px;max-width:580px}
+.hero-sub strong{color:rgba(255,255,255,.9)}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px}
+/* platform pills in hero */
+.platform-pills{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px}
+.pp{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:rgba(255,255,255,.75);transition:all .15s;cursor:pointer}
+.pp:hover{background:rgba(255,255,255,.12);color:#fff}
+.pp.active{background:rgba(255,107,0,.18);border-color:rgba(255,107,0,.45);color:#FF9A4D}
+.pp-icon{font-size:18px}
+/* hero guarantee strip */
+.guarantee-strip{display:flex;gap:24px;flex-wrap:wrap}
+.gs-item{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,.45)}
+.gs-item strong{color:rgba(255,255,255,.78);font-weight:700}
+.gs-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.2)}
+
+/* PLATFORM CARDS */
+.platforms-section{padding:80px 5%;background:#fff}
+.platform-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:48px}
+.plat-card{border:1.5px solid var(--border);border-radius:20px;overflow:hidden;transition:all .2s;cursor:pointer}
+.plat-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.plat-card.active{border-color:var(--fire);box-shadow:0 0 0 3px rgba(255,107,0,.12)}
+.pc-header{padding:22px 24px;display:flex;align-items:center;justify-content:space-between}
+.pc-logo{display:flex;align-items:center;gap:12px}
+.pc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.pc-name{font-size:18px;font-weight:800}
+.pc-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;opacity:.6}
+.pc-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px}
+.pc-body{padding:0 24px 24px}
+.pc-pain{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.pc-pain-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted);line-height:1.5}
+.pc-pain-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.pc-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px;background:var(--chalk);border-radius:12px;margin-bottom:16px}
+.pc-stat-item{text-align:center}
+.pc-stat-val{font-size:18px;font-weight:800;color:var(--text)}
+.pc-stat-lbl{font-size:10px;color:var(--dim);font-weight:600;margin-top:2px;line-height:1.3}
+.pc-stat-val.bad{color:#DC2626}
+.pc-cta{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pc-effort{font-size:12px;color:var(--muted);font-weight:600}
+
+/* Shopify */
+.pc-shopify .pc-header{background:linear-gradient(135deg,#F6FFF0,#EEFFDB)}
+.pc-shopify .pc-icon{background:#96BF48}
+.pc-shopify .pc-name{color:#3D6B1E}
+.pc-shopify .pc-badge{background:#E8FFD6;color:#3D6B1E}
+
+/* Amazon */
+.pc-amazon .pc-header{background:linear-gradient(135deg,#FFF8EE,#FFF3DB)}
+.pc-amazon .pc-icon{background:#FF9900}
+.pc-amazon .pc-name{color:#C45500}
+.pc-amazon .pc-badge{background:#FFF3DB;color:#C45500}
+
+/* Flipkart */
+.pc-flipkart .pc-header{background:linear-gradient(135deg,#EEF5FF,#E0EEFF)}
+.pc-flipkart .pc-icon{background:#2874F0}
+.pc-flipkart .pc-name{color:#1F5DC4}
+.pc-flipkart .pc-badge{background:#E0EEFF;color:#1F5DC4}
+
+/* Zoho */
+.pc-zoho .pc-header{background:linear-gradient(135deg,#FFF2EE,#FFE8E0)}
+.pc-zoho .pc-icon{background:#E4562A}
+.pc-zoho .pc-name{color:#B83D18}
+.pc-zoho .pc-badge{background:#FFE8E0;color:#B83D18}
+
+/* MIGRATION WIZARD */
+.wizard-section{padding:80px 5%;background:var(--chalk)}
+.wizard-wrap{background:#fff;border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.wiz-header{background:var(--deep);padding:28px 36px;display:flex;align-items:center;justify-content:space-between}
+.wiz-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.wiz-sub{font-size:13px;color:rgba(255,255,255,.45);margin-top:4px}
+.wiz-steps{display:flex;align-items:center;gap:0}
+.ws{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:rgba(255,255,255,.35);padding:0 14px;text-transform:uppercase;letter-spacing:.05em}
+.ws.done{color:#4ADE80}
+.ws.active{color:#FF9A4D}
+.ws-num{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.ws-sep{width:32px;height:1px;background:rgba(255,255,255,.12)}
+.wiz-body{padding:36px}
+
+/* Step 1 — Choose platform */
+.step-panel{display:none}.step-panel.active{display:block}
+.platform-select-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.psel{border:2px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all .15s;text-align:center;background:#fff;position:relative}
+.psel:hover{border-color:#C7D2FE;background:var(--pale)}
+.psel.sel{border-color:var(--fire);background:#FFF7F2}
+.psel.sel::after{content:'✓';position:absolute;top:8px;right:10px;font-size:12px;font-weight:800;color:var(--fire)}
+.psel-icon{font-size:28px;margin-bottom:8px;display:block}
+.psel-name{font-size:14px;font-weight:700;color:var(--text)}
+.psel-desc{font-size:11px;color:var(--dim);margin-top:3px}
+.psel-other{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.psel-other .psel{text-align:left;display:flex;align-items:center;gap:10px}
+.psel-other .psel-icon{font-size:20px;margin:0}
+
+/* Step 2 — Store details */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.fg-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12px;font-weight:700;color:var(--muted)}
+.field{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);background:#fff;outline:none;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.field:focus{border-color:#FF6B00;box-shadow:0 0 0 3px rgba(255,107,0,.1)}
+.field::placeholder{color:var(--dim)}
+select.field{cursor:pointer}
+textarea.field{resize:vertical;min-height:80px}
+.checklist-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.cl-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;background:#fff}
+.cl-item:hover{border-color:#C7D2FE;background:var(--pale)}
+.cl-item input[type=checkbox]{accent-color:var(--fire);width:16px;height:16px;flex-shrink:0}
+.cl-label{font-size:13px;font-weight:600;color:var(--text)}
+.cl-sub{font-size:11px;color:var(--dim)}
+
+/* Step 3 — Timeline */
+.timeline-grid{display:grid;grid-template-columns:1fr 340px;gap:32px}
+.tl-steps{display:flex;flex-direction:column;gap:0}
+.tl-step{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--border)}
+.tl-step:last-child{border-bottom:none}
+.tl-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.tl-num.done{background:#22C55E}
+.tl-num.current{background:var(--gfire)}
+.tl-num.pending{background:var(--dim)}
+.tl-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.tl-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.tl-time{font-size:11px;font-weight:700;color:var(--fire);margin-top:5px;display:inline-block}
+.tl-summary{background:var(--warm);border:1.5px solid #FFE4CC;border-radius:16px;padding:24px;height:fit-content}
+.tls-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:16px}
+.tls-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,107,0,.1);font-size:13px}
+.tls-row:last-child{border-bottom:none}
+.tls-key{color:var(--muted);font-weight:500}
+.tls-val{font-weight:700;color:var(--text)}
+.tls-val.fire{color:var(--fire)}
+.tls-val.green{color:#16A34A}
+
+/* Step 4 — Success */
+.success-wrap{text-align:center;padding:20px 0}
+.success-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px;box-shadow:0 8px 24px rgba(34,197,94,.3)}
+.success-h{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:10px}
+.success-next{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0}
+.sn-card{border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;background:var(--chalk)}
+.sn-icon{font-size:24px;margin-bottom:8px}
+.sn-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.sn-desc{font-size:11px;color:var(--dim);line-height:1.5}
+
+/* Wiz nav */
+.wiz-nav{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);margin-top:24px}
+.wiz-progress{font-size:12px;color:var(--dim);font-weight:600}
+
+/* WHAT WE MIGRATE */
+.migrate-what{padding:80px 5%;background:#fff}
+.mw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.mw-card{border:1px solid var(--border);border-radius:16px;padding:22px;background:#fff;transition:all .2s}
+.mw-card:hover{border-color:#C7D2FE;box-shadow:0 4px 20px rgba(79,70,229,.06)}
+.mw-icon{font-size:28px;margin-bottom:12px}
+.mw-title{font-size:15px;font-weight:800;margin-bottom:10px}
+.mw-list{display:flex;flex-direction:column;gap:6px}
+.mw-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+.mw-ck{color:#22C55E;font-weight:800;font-size:12px;flex-shrink:0}
+
+/* COMPARISON TABLE */
+.comp-section{padding:80px 5%;background:var(--pale)}
+.comp-table-wrap{border:1px solid var(--border);border-radius:16px;overflow:hidden;background:#fff;margin-top:48px}
+.ctbl{width:100%;border-collapse:collapse}
+.ctbl thead th{padding:12px 16px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);background:var(--chalk);text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}
+.ctbl thead th:first-child{text-align:left;min-width:180px}
+.ctbl thead th.zkc-th{background:var(--deep);color:rgba(255,255,255,.6);font-size:10px}
+.ctbl td{padding:10px 16px;font-size:12.5px;color:#475569;border-bottom:1px solid #F8FAFC;text-align:center;vertical-align:middle}
+.ctbl td:first-child{text-align:left;font-weight:600;color:var(--text);background:#FAFAFA}
+.ctbl tbody tr:hover td{background:#F8FAFC}
+.ctbl tbody tr:last-child td{border-bottom:none}
+.ctbl .shd td{background:#F1F5F9!important;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);padding:7px 16px;text-align:left}
+.zkc-td{background:#F5F3FF!important;color:#4338CA!important;font-weight:700!important}
+.yv{color:#16A34A;font-weight:700}
+.nv{color:var(--dim)}
+.warn{color:#D97706;font-weight:600}
+.bad{color:#DC2626;font-weight:600}
+
+/* TESTIMONIALS */
+.testi-section{padding:80px 5%;background:var(--deep)}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+.tc{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:24px}
+.tc:hover{background:rgba(255,255,255,.08)}
+.tstars{color:#F59E0B;font-size:14px;margin-bottom:12px;letter-spacing:1px}
+.ttext{font-size:14px;color:rgba(255,255,255,.65);line-height:1.75;margin-bottom:16px;font-style:italic}
+.tauth{display:flex;align-items:center;gap:10px}
+.tav{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.tnm{font-size:13px;font-weight:700;color:#fff}
+.tbiz{font-size:11px;color:rgba(255,255,255,.35)}
+.tmig{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:6px}
+
+/* FAQ */
+.faq-section{padding:80px 5%;background:var(--chalk)}
+.faq-list{max-width:760px;margin:36px auto 0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff}
+.fi{border-bottom:1px solid var(--border)}.fi:last-child{border-bottom:none}
+.fq{width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 22px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;border:none;background:none;text-align:left;font-family:inherit}
+.fq:hover{background:var(--chalk)}
+.fq-ico{font-size:18px;color:var(--dim);flex-shrink:0;transition:transform .25s;margin-left:12px}
+.fa{display:none;padding:0 22px 16px;font-size:13px;color:var(--muted);line-height:1.78}
+.fi.open .fa{display:block}
+.fi.open .fq-ico{transform:rotate(45deg);color:var(--fire)}
+
+/* CTA */
+.cta-section{padding:80px 5%;background:var(--deep);text-align:center}
+.cta-h{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.025em}
+.cta-sub{font-size:16px;color:rgba(255,255,255,.42);margin-bottom:32px;max-width:540px;margin-left:auto;margin-right:auto;line-height:1.7}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .platform-grid{grid-template-columns:1fr}
+  .platform-select-grid{grid-template-columns:repeat(2,1fr)}
+  .timeline-grid{grid-template-columns:1fr}
+  .mw-grid,.tg{grid-template-columns:1fr}
+  .success-next{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .checklist-grid{grid-template-columns:1fr}
+  .wiz-steps{display:none}
+}
+@media(max-width:640px){
+  #nav .nav-links{display:none}
+  .platform-select-grid{grid-template-columns:1fr}
+  .psel-other{grid-template-columns:1fr}
+  .wiz-header{flex-direction:column;gap:14px;text-align:center}
+}
+</style>
+<link rel="stylesheet" href="assets/css/design-system.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo"><div class="nav-gem">⚡</div>ZKCommerce</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="index.html#features">Features</a>
+    <a href="auth/register.html">Sign up free</a>
+    <a href="auth/login.html">Sign in</a>
+    <a href="auth/register.html" class="nav-cta">Start free →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="home">
+  <div class="hero-dots"></div>
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <div class="hero-inner">
+    <div class="hero-kicker"><div class="kd"></div>Free Migration Service</div>
+    <h1 class="hh">Migrate your store to<br><span class="fire-t">ZKCommerce in 24 hours.</span></h1>
+    <p class="hero-sub">Moving from <strong>Shopify, Amazon, Flipkart, Zoho Commerce</strong> or any platform? Our team handles the full migration — products, customers, orders, images, SEO URLs. Completely free. Zero downtime.</p>
+    <!-- Platform pills -->
+    <div class="platform-pills">
+      <div class="pp active" onclick="scrollToWizard('shopify')"><span class="pp-icon">🟢</span>From Shopify</div>
+      <div class="pp" onclick="scrollToWizard('amazon')"><span class="pp-icon">🟠</span>From Amazon</div>
+      <div class="pp" onclick="scrollToWizard('flipkart')"><span class="pp-icon">🔵</span>From Flipkart</div>
+      <div class="pp" onclick="scrollToWizard('zoho')"><span class="pp-icon">🟣</span>From Zoho Commerce</div>
+      <div class="pp" onclick="scrollToWizard('other')"><span class="pp-icon">⚙️</span>Other platform</div>
+    </div>
+    <div class="hero-actions">
+      <a href="#wizard" class="btn-f">Start free migration →</a>
+      <a href="auth/register.html" class="btn-s" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.18)">Create account first</a>
+    </div>
+    <div class="guarantee-strip">
+      <div class="gs-item">🚀 <strong>24h</strong> migration guarantee</div>
+      <div class="gs-dot"></div>
+      <div class="gs-item">🔒 <strong>Zero</strong> downtime</div>
+      <div class="gs-dot"></div>
+      <div class="gs-item">🆓 <strong>Free</strong> on Growth + Enterprise</div>
+      <div class="gs-dot"></div>
+      <div class="gs-item">📈 <strong>SEO</strong> rankings preserved</div>
+      <div class="gs-dot"></div>
+      <div class="gs-item">📱 <strong>WhatsApp</strong> support throughout</div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM CARDS -->
+<section class="platforms-section" id="platforms">
+  <div class="si">
+    <div class="eyebrow">Choose your platform</div>
+    <h2 class="sh">Why merchants migrate to ZKCommerce</h2>
+    <p class="ssub">Every platform has a reason merchants are switching. Here's what you leave behind — and what you gain.</p>
+
+    <div class="platform-grid">
+
+      <!-- Shopify -->
+      <div class="plat-card pc-shopify" id="card-shopify">
+        <div class="pc-header">
+          <div class="pc-logo">
+            <div class="pc-icon">🟢</div>
+            <div>
+              <div class="pc-name">Shopify India</div>
+              <div class="pc-type">SaaS store platform</div>
+            </div>
+          </div>
+          <span class="pc-badge" style="background:#FFEED6;color:#92400E">Migrate now</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-stat">
+            <div class="pc-stat-item"><div class="pc-stat-val bad">2%</div><div class="pc-stat-lbl">Platform fee per sale (Basic)</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">₹15K+</div><div class="pc-stat-lbl">Monthly apps typically needed</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">No</div><div class="pc-stat-lbl">Shopify Payments in India</div></div>
+          </div>
+          <div class="pc-pain">
+            <div class="pc-pain-item"><span class="pc-pain-icon">💸</span>Shopify Payments unavailable in India — you pay 2% platform fee on every sale ON TOP of Razorpay's ~2% gateway fee</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🧩</span>GST invoicing, loyalty, WhatsApp, shipping labels all need separate paid apps — ₹5,000–20,000 extra per month</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">📊</span>Full analytics locked behind ₹5,599/mo Grow plan — Basic plan gets almost nothing</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">👥</span>Staff accounts limited to 2 on Basic, 5 on Grow — every extra person costs more</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">📞</span>India phone/WhatsApp support not available — only chat and email</div>
+          </div>
+          <div class="pc-cta">
+            <div class="pc-effort">⏱ Migration time: <strong>6–18 hours</strong></div>
+            <button class="btn-f" onclick="startWizard('shopify')" style="padding:10px 18px;font-size:13px">Migrate from Shopify →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amazon -->
+      <div class="plat-card pc-amazon" id="card-amazon">
+        <div class="pc-header">
+          <div class="pc-logo">
+            <div class="pc-icon">🟠</div>
+            <div>
+              <div class="pc-name">Amazon India</div>
+              <div class="pc-type">Marketplace seller</div>
+            </div>
+          </div>
+          <span class="pc-badge" style="background:#FFEEDD;color:#92400E">Own your brand</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-stat">
+            <div class="pc-stat-item"><div class="pc-stat-val bad">8–45%</div><div class="pc-stat-lbl">Commission per sale</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">0%</div><div class="pc-stat-lbl">Customer data you own</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">7–14d</div><div class="pc-stat-lbl">Payment settlement</div></div>
+          </div>
+          <div class="pc-pain">
+            <div class="pc-pain-item"><span class="pc-pain-icon">💰</span>Amazon takes 8%–45% commission on every sale depending on category — on top of FBA fulfillment fees of ₹35–₹200+ per order</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🙈</span>You don't own your customers — Amazon keeps all buyer data. You can't market directly to them</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">⚠️</span>Account suspension can happen overnight — one policy violation and your entire business stops</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">📉</span>Algorithm changes and competitor undercutting destroy rankings without warning</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🏷️</span>No brand ownership — customers see "Amazon" not your brand name. Impossible to build loyalty</div>
+          </div>
+          <div class="pc-cta">
+            <div class="pc-effort">⏱ Migration time: <strong>12–24 hours</strong></div>
+            <button class="btn-f" onclick="startWizard('amazon')" style="padding:10px 18px;font-size:13px">Launch your own store →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flipkart -->
+      <div class="plat-card pc-flipkart" id="card-flipkart">
+        <div class="pc-header">
+          <div class="pc-logo">
+            <div class="pc-icon">🔵</div>
+            <div>
+              <div class="pc-name">Flipkart</div>
+              <div class="pc-type">Marketplace seller</div>
+            </div>
+          </div>
+          <span class="pc-badge" style="background:#DDEEFF;color:#1F5DC4">Own your store</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-stat">
+            <div class="pc-stat-item"><div class="pc-stat-val bad">5–35%</div><div class="pc-stat-lbl">Commission per sale</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">Heavy</div><div class="pc-stat-lbl">Discount pressure</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">7–14d</div><div class="pc-stat-lbl">Payment settlement</div></div>
+          </div>
+          <div class="pc-pain">
+            <div class="pc-pain-item"><span class="pc-pain-icon">💰</span>Flipkart takes 5%–35% commission per sale plus closing fees of ₹2–₹25 per item and shipping fees</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🏷️</span>Constant pressure to participate in Big Billion Days and flash sales — deep discounts eat your margins</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🙈</span>Flipkart owns all customer data — you cannot email, WhatsApp or market to buyers directly</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">📋</span>Product catalogue duplication — competitors copy your listings and undercut your price</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">⚠️</span>Seller account can be suspended without warning — no appeals process that works quickly</div>
+          </div>
+          <div class="pc-cta">
+            <div class="pc-effort">⏱ Migration time: <strong>12–24 hours</strong></div>
+            <button class="btn-f" onclick="startWizard('flipkart')" style="padding:10px 18px;font-size:13px">Launch your own store →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zoho -->
+      <div class="plat-card pc-zoho" id="card-zoho">
+        <div class="pc-header">
+          <div class="pc-logo">
+            <div class="pc-icon">🟣</div>
+            <div>
+              <div class="pc-name">Zoho Commerce</div>
+              <div class="pc-type">SaaS store platform</div>
+            </div>
+          </div>
+          <span class="pc-badge" style="background:#FFEEE8;color:#B83D18">Save on USD pricing</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-stat">
+            <div class="pc-stat-item"><div class="pc-stat-val bad">USD</div><div class="pc-stat-lbl">Pricing in dollars — rises with ₹</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">500</div><div class="pc-stat-lbl">Products on Starter plan</div></div>
+            <div class="pc-stat-item"><div class="pc-stat-val bad">Extra</div><div class="pc-stat-lbl">Zoho Books needed for GST</div></div>
+          </div>
+          <div class="pc-pain">
+            <div class="pc-pain-item"><span class="pc-pain-icon">💱</span>USD pricing means your monthly bill rises every time the rupee weakens — unpredictable costs</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🧩</span>GST invoicing and GSTR-1 export need a separate Zoho Books subscription — extra cost every month</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">📦</span>Loyalty points need Zoho Thrive add-on, WhatsApp needs Zoho Cliq — every India feature is a separate product</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">👥</span>Only 2 users on Starter, 5 on Professional — need to pay Zoho more as your team grows</div>
+            <div class="pc-pain-item"><span class="pc-pain-icon">🏪</span>Only 500 products on Starter, 5,000 on Professional — ZKCommerce Growth gives unlimited for ₹799</div>
+          </div>
+          <div class="pc-cta">
+            <div class="pc-effort">⏱ Migration time: <strong>6–12 hours</strong></div>
+            <button class="btn-f" onclick="startWizard('zoho')" style="padding:10px 18px;font-size:13px">Migrate from Zoho →</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MIGRATION WIZARD -->
+<section class="wizard-section" id="wizard">
+  <div class="si">
+    <div class="eyebrow">Free migration wizard</div>
+    <h2 class="sh">Tell us about your store</h2>
+    <p class="ssub" style="margin-bottom:32px">Fill in the details below and our team will start your migration within 2 hours — on WhatsApp.</p>
+
+    <div class="wizard-wrap">
+      <div class="wiz-header">
+        <div>
+          <div class="wiz-title">ZKCommerce Migration Wizard</div>
+          <div class="wiz-sub">Free · 24-hour guarantee · No credit card needed</div>
+        </div>
+        <div class="wiz-steps">
+          <div class="ws active" id="ws1"><div class="ws-num" id="wsn1">1</div>Platform</div>
+          <div class="ws-sep"></div>
+          <div class="ws" id="ws2"><div class="ws-num" id="wsn2">2</div>Store details</div>
+          <div class="ws-sep"></div>
+          <div class="ws" id="ws3"><div class="ws-num" id="wsn3">3</div>Timeline</div>
+          <div class="ws-sep"></div>
+          <div class="ws" id="ws4"><div class="ws-num" id="wsn4">4</div>Confirm</div>
+        </div>
+      </div>
+      <div class="wiz-body">
+
+        <!-- Step 1: Platform -->
+        <div class="step-panel active" id="step1">
+          <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">Which platform are you migrating from?</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Select your current platform. We'll customise the migration plan for you.</p>
+          <div class="platform-select-grid" id="platform-select">
+            <div class="psel" data-platform="shopify" onclick="selectPlatform(this)"><span class="psel-icon">🟢</span><div class="psel-name">Shopify</div><div class="psel-desc">Basic, Grow, Advanced or Plus</div></div>
+            <div class="psel" data-platform="amazon" onclick="selectPlatform(this)"><span class="psel-icon">🟠</span><div class="psel-name">Amazon Seller</div><div class="psel-desc">Amazon India seller account</div></div>
+            <div class="psel" data-platform="flipkart" onclick="selectPlatform(this)"><span class="psel-icon">🔵</span><div class="psel-name">Flipkart Seller</div><div class="psel-desc">Flipkart seller hub account</div></div>
+            <div class="psel" data-platform="zoho" onclick="selectPlatform(this)"><span class="psel-icon">🟣</span><div class="psel-name">Zoho Commerce</div><div class="psel-desc">Starter, Professional or Premium</div></div>
+            <div class="psel" data-platform="woocommerce" onclick="selectPlatform(this)"><span class="psel-icon">🛒</span><div class="psel-name">WooCommerce</div><div class="psel-desc">WordPress + WooCommerce store</div></div>
+            <div class="psel" data-platform="other" onclick="selectPlatform(this)"><span class="psel-icon">⚙️</span><div class="psel-name">Other platform</div><div class="psel-desc">Custom site, Wix, Squarespace etc.</div></div>
+          </div>
+          <div class="wiz-nav">
+            <div class="wiz-progress">Step 1 of 4</div>
+            <button class="btn-f" onclick="goStep(2)" id="step1-next" disabled style="opacity:.5">Next: Store details →</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Store details -->
+        <div class="step-panel" id="step2">
+          <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">Tell us about your store</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Our team uses this to prepare your migration plan and contact you on WhatsApp.</p>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Your name *</label><input type="text" class="field" id="f-name" placeholder="Rajan Kumar"></div>
+            <div class="form-group"><label class="form-label">WhatsApp number *</label><input type="tel" class="field" id="f-phone" placeholder="+91 98765 43210"></div>
+            <div class="form-group"><label class="form-label">Email address *</label><input type="email" class="field" id="f-email" placeholder="rajan@mystore.in"></div>
+            <div class="form-group"><label class="form-label">Current store URL *</label><input type="url" class="field" id="f-url" placeholder="https://mystore.in or amazon seller ID"></div>
+            <div class="form-group"><label class="form-label">Business name</label><input type="text" class="field" id="f-biz" placeholder="Rajan Textiles"></div>
+            <div class="form-group"><label class="form-label">Number of products</label><select class="field" id="f-products"><option value="">Select range</option><option>1–50 products</option><option>51–200 products</option><option>201–1,000 products</option><option>1,001–5,000 products</option><option>5,000+ products</option></select></div>
+            <div class="form-group fg-full"><label class="form-label">What do you sell?</label><input type="text" class="field" id="f-category" placeholder="e.g. Cotton sarees, electronics, organic food, jewellery…"></div>
+          </div>
+          <p style="font-size:13px;font-weight:700;margin-bottom:12px">What do you want us to migrate? <span style="color:var(--muted);font-weight:500">(check all that apply)</span></p>
+          <div class="checklist-grid">
+            <label class="cl-item"><input type="checkbox" checked> <div><div class="cl-label">📦 All products + images + variants</div><div class="cl-sub">Every product, colour, size, SKU and photo</div></div></label>
+            <label class="cl-item"><input type="checkbox" checked> <div><div class="cl-label">👥 Customer data</div><div class="cl-sub">Name, email, phone, address book</div></div></label>
+            <label class="cl-item"><input type="checkbox" checked> <div><div class="cl-label">📋 Order history</div><div class="cl-sub">Past orders for returns and loyalty reference</div></div></label>
+            <label class="cl-item"><input type="checkbox" checked> <div><div class="cl-label">🌐 SEO URLs + redirects</div><div class="cl-sub">301 redirects so Google rankings are preserved</div></div></label>
+            <label class="cl-item"><input type="checkbox"> <div><div class="cl-label">⭐ Product reviews</div><div class="cl-sub">Import existing product ratings and reviews</div></div></label>
+            <label class="cl-item"><input type="checkbox"> <div><div class="cl-label">🎟 Discount codes</div><div class="cl-sub">Active coupons and promo codes</div></div></label>
+            <label class="cl-item"><input type="checkbox"> <div><div class="cl-label">🧾 GST setup</div><div class="cl-sub">Configure GSTIN, tax rules, invoice template</div></div></label>
+            <label class="cl-item"><input type="checkbox"> <div><div class="cl-label">💳 Razorpay setup</div><div class="cl-sub">Configure and test all payment methods</div></div></label>
+          </div>
+          <div class="form-group" style="margin-top:16px"><label class="form-label">Any special requirements?</label><textarea class="field" id="f-notes" placeholder="e.g. We have a custom product configurator, we need our blog migrated, our domain is with GoDaddy…"></textarea></div>
+          <div class="wiz-nav">
+            <button class="btn-s" onclick="goStep(1)">← Back</button>
+            <div class="wiz-progress">Step 2 of 4</div>
+            <button class="btn-f" onclick="goStep(3)">Next: See your plan →</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Timeline -->
+        <div class="step-panel" id="step3">
+          <h3 style="font-size:17px;font-weight:800;margin-bottom:6px">Your migration plan</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Here's exactly how we'll migrate your store — step by step, with timing.</p>
+          <div class="timeline-grid">
+            <div class="tl-steps">
+              <div class="tl-step"><div class="tl-num done">✓</div><div><div class="tl-title">Account created</div><div class="tl-desc">Your ZKCommerce account is ready. 30-day Growth plan trial activated — all features unlocked including loyalty, WhatsApp, analytics.</div><span class="tl-time">Now — 5 minutes</span></div></div>
+              <div class="tl-step"><div class="tl-num current">2</div><div><div class="tl-title">Our team contacts you on WhatsApp</div><div class="tl-desc">We'll WhatsApp you within 2 hours of form submission to confirm the migration scope and get export access to your current store.</div><span class="tl-time">Within 2 hours of submission</span></div></div>
+              <div class="tl-step"><div class="tl-num pending">3</div><div><div class="tl-title">We export all your data</div><div class="tl-desc">Products, variants, images, customer data, order history — all exported from your current platform using official export tools. No risk to your live store.</div><span class="tl-time">2–6 hours</span></div></div>
+              <div class="tl-step"><div class="tl-num pending">4</div><div><div class="tl-title">We import everything into ZKCommerce</div><div class="tl-desc">All data imported, categorised, images uploaded to our CDN, SEO URLs mapped with 301 redirects planned. Your ZKCommerce store is built.</div><span class="tl-time">4–8 hours</span></div></div>
+              <div class="tl-step"><div class="tl-num pending">5</div><div><div class="tl-title">You review the staging store</div><div class="tl-desc">We send you a staging URL. You browse every product, collection and page. Request changes — we fix them. Your current store is still live at this point.</div><span class="tl-time">2–4 hours (your review)</span></div></div>
+              <div class="tl-step"><div class="tl-num pending">6</div><div><div class="tl-title">Razorpay + UPI configured and tested</div><div class="tl-desc">We connect Razorpay, configure UPI, cards, COD and EMI. We do a test purchase to confirm everything works before going live.</div><span class="tl-time">1–2 hours</span></div></div>
+              <div class="tl-step"><div class="tl-num pending">7</div><div><div class="tl-title">DNS switch — you go live</div><div class="tl-desc">On your approval, we update DNS to point your domain to ZKCommerce. Zero downtime. Customers see your store without interruption. Done!</div><span class="tl-time">30 minutes — you're live!</span></div></div>
+            </div>
+            <div class="tl-summary">
+              <div class="tls-title">Your migration summary</div>
+              <div class="tls-row"><span class="tls-key">Migrating from</span><span class="tls-val fire" id="sum-platform">Shopify</span></div>
+              <div class="tls-row"><span class="tls-key">Migration cost</span><span class="tls-val green">₹0 — Free</span></div>
+              <div class="tls-row"><span class="tls-key">Estimated time</span><span class="tls-val">14–24 hours</span></div>
+              <div class="tls-row"><span class="tls-key">Your store downtime</span><span class="tls-val green">Zero</span></div>
+              <div class="tls-row"><span class="tls-key">Current store disruption</span><span class="tls-val green">None</span></div>
+              <div class="tls-row"><span class="tls-key">SEO ranking impact</span><span class="tls-val green">None (301 redirects)</span></div>
+              <div class="tls-row"><span class="tls-key">ZKCommerce plan</span><span class="tls-val fire">Growth — ₹799/mo</span></div>
+              <div class="tls-row"><span class="tls-key">Trial period</span><span class="tls-val green">30 days free</span></div>
+              <div style="margin-top:16px;padding:12px;background:#F0FDF4;border-radius:10px;font-size:12px;color:#15803D;font-weight:700">
+                🛡️ If migration takes more than 24 hours, your first month is free.
+              </div>
+            </div>
+          </div>
+          <div class="wiz-nav">
+            <button class="btn-s" onclick="goStep(2)">← Back</button>
+            <div class="wiz-progress">Step 3 of 4</div>
+            <button class="btn-f" onclick="goStep(4)">Confirm migration →</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div class="step-panel" id="step4">
+          <div class="success-wrap">
+            <div class="success-icon">🚀</div>
+            <div class="success-h">Migration request submitted!</div>
+            <p style="font-size:15px;color:var(--muted);margin-bottom:8px">Our team will WhatsApp you within 2 hours to kick off your migration.</p>
+            <p style="font-size:13px;color:var(--dim);margin-bottom:24px">Reference: <strong style="color:var(--text)" id="ref-num">ZKM-2026-0847</strong> · Keep this for your records</p>
+            <div class="success-next">
+              <div class="sn-card"><div class="sn-icon">📱</div><div class="sn-title">Check your WhatsApp</div><div class="sn-desc">Our migration specialist will message you within 2 hours to start the process.</div></div>
+              <div class="sn-card"><div class="sn-icon">🏪</div><div class="sn-title">Create your account</div><div class="sn-desc">Sign up for ZKCommerce now to activate your 30-day free trial while we prepare your migration.</div></div>
+              <div class="sn-card"><div class="sn-icon">📋</div><div class="sn-title">Export your data</div><div class="sn-desc">If you can, start a product and customer export from your current platform — our team will guide you.</div></div>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+              <a href="auth/register.html" class="btn-f">Create your ZKCommerce account →</a>
+              <a href="index.html" class="btn-s">Back to homepage</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE MIGRATE -->
+<section class="migrate-what" id="what-we-migrate">
+  <div class="si">
+    <div class="eyebrow">Complete data transfer</div>
+    <h2 class="sh">Everything moves. Nothing left behind.</h2>
+    <p class="ssub">Our migration covers every aspect of your store — not just products.</p>
+    <div class="mw-grid">
+      <div class="mw-card">
+        <div class="mw-icon">📦</div>
+        <div class="mw-title">Products + variants</div>
+        <div class="mw-list">
+          <div class="mw-item"><span class="mw-ck">✓</span>All product names, descriptions, prices</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Every colour, size, storage variant</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>SKUs, barcodes, weight, dimensions</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Stock quantities per variant</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Product images (all angles, all variants)</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Collections / categories preserved</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Product tags and metadata</div>
+        </div>
+      </div>
+      <div class="mw-card">
+        <div class="mw-icon">👥</div>
+        <div class="mw-title">Customers + orders</div>
+        <div class="mw-list">
+          <div class="mw-item"><span class="mw-ck">✓</span>Customer names, emails, phones</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>All saved delivery addresses</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Complete order history</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Order line items, amounts, dates</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Customer purchase frequency</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Product reviews and ratings</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Wishlists (where available)</div>
+        </div>
+      </div>
+      <div class="mw-card">
+        <div class="mw-icon">🌐</div>
+        <div class="mw-title">SEO + settings</div>
+        <div class="mw-list">
+          <div class="mw-item"><span class="mw-ck">✓</span>Product page URLs → 301 redirects</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Collection/category URL redirects</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Meta titles and descriptions</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Domain DNS transfer assistance</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Free SSL certificate setup</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Shipping rules and zones</div>
+          <div class="mw-item"><span class="mw-ck">✓</span>Discount codes and coupons</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="comp-section" id="compare">
+  <div class="si">
+    <div class="eyebrow">Why ZKCommerce wins</div>
+    <h2 class="sh">ZKCommerce vs where you are now</h2>
+    <p class="ssub">Side-by-side comparison of what changes when you migrate.</p>
+    <div class="comp-table-wrap">
+      <table class="ctbl">
+        <thead>
+          <tr>
+            <th style="text-align:left">Feature</th>
+            <th>🟢 Shopify Basic</th>
+            <th>🟠 Amazon India</th>
+            <th>🔵 Flipkart</th>
+            <th>🟣 Zoho Pro</th>
+            <th class="zkc-th">⚡ ZKCommerce Growth</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="shd"><td colspan="6">Cost</td></tr>
+          <tr><td>Monthly subscription</td><td class="bad">₹1,499 + GST</td><td class="yv">₹0</td><td class="yv">₹0</td><td class="warn">~₹4,116 USD</td><td class="zkc-td yv">₹799 flat ✓</td></tr>
+          <tr><td>Platform fee per sale</td><td class="bad">2% every sale</td><td class="bad">8%–45%!</td><td class="bad">5%–35%!</td><td class="yv">0%</td><td class="zkc-td yv">0% ✓</td></tr>
+          <tr><td>Apps / add-ons needed</td><td class="bad">₹5k–20k/mo</td><td class="yv">—</td><td class="yv">—</td><td class="warn">₹2k–6k/mo</td><td class="zkc-td yv">₹0 — all built-in</td></tr>
+          <tr><td>True cost (₹5L GMV)</td><td class="bad">₹27,000–37,000</td><td class="bad">₹59,000–2.34L</td><td class="bad">₹34,000–1.84L</td><td class="warn">₹16,000–21,000</td><td class="zkc-td yv">₹9,943 only ✓</td></tr>
+          <tr class="shd"><td colspan="6">Brand &amp; data</td></tr>
+          <tr><td>Own brand store</td><td class="yv">✓</td><td class="bad">✗ Amazon brand</td><td class="bad">✗ Flipkart brand</td><td class="yv">✓</td><td class="zkc-td yv">✓ Full control</td></tr>
+          <tr><td>Customer data ownership</td><td class="yv">✓</td><td class="bad">✗ Amazon's</td><td class="bad">✗ Flipkart's</td><td class="yv">✓</td><td class="zkc-td yv">✓ 100% yours</td></tr>
+          <tr><td>Account suspension risk</td><td class="yv">None</td><td class="bad">High</td><td class="bad">High</td><td class="yv">None</td><td class="zkc-td yv">None ✓</td></tr>
+          <tr><td>Payment settlement</td><td>2–3 days</td><td class="bad">7–14 days</td><td class="bad">7–14 days</td><td>2–3 days</td><td class="zkc-td yv">2–3 days ✓</td></tr>
+          <tr class="shd"><td colspan="6">India tools</td></tr>
+          <tr><td>GST invoicing built-in</td><td class="bad">✗ Paid app</td><td class="yv">✓</td><td class="yv">✓</td><td class="warn">Via Zoho Books</td><td class="zkc-td yv">✓ Native</td></tr>
+          <tr><td>UPI native</td><td class="warn">Via Razorpay app</td><td class="yv">✓</td><td class="yv">✓</td><td class="yv">✓</td><td class="zkc-td yv">✓ Native</td></tr>
+          <tr><td>Loyalty points built-in</td><td class="bad">✗ Paid app</td><td class="warn">Partial</td><td class="warn">Partial</td><td class="warn">Via Zoho Thrive</td><td class="zkc-td yv">✓ Built-in</td></tr>
+          <tr><td>WhatsApp alerts built-in</td><td class="bad">✗ Paid app</td><td class="bad">✗</td><td class="bad">✗</td><td class="warn">Via Zoho Cliq</td><td class="zkc-td yv">✓ Built-in</td></tr>
+          <tr><td>Shipping labels built-in</td><td class="bad">✗ Paid app</td><td class="yv">✓ FBA</td><td class="yv">✓ FBF</td><td class="warn">Via Shiprocket</td><td class="zkc-td yv">✓ Built-in</td></tr>
+          <tr><td>Full analytics</td><td class="warn">Grow+ only</td><td class="warn">Basic only</td><td class="warn">Basic only</td><td class="warn">Standard+ only</td><td class="zkc-td yv">✓ All plans</td></tr>
+          <tr><td>India phone + WA support</td><td class="bad">✗ Chat only</td><td class="yv">✓</td><td class="yv">✓</td><td class="bad">✗ Email only</td><td class="zkc-td yv">✓ Phone + WhatsApp</td></tr>
+          <tr><td>Free store migration</td><td class="bad">✗</td><td class="bad">✗</td><td class="bad">✗</td><td class="bad">✗</td><td class="zkc-td yv">✓ 24h free ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi-section" id="testimonials">
+  <div class="si">
+    <div style="text-align:center;margin-bottom:0">
+      <div class="eyebrow" style="color:#FF9A4D">Migration success stories</div>
+      <h2 class="sh w" style="text-align:center">Merchants who made the switch</h2>
+    </div>
+    <div class="tg">
+      <div class="tc">
+        <div class="tstars">★★★★★</div>
+        <div class="ttext">"We were paying ₹2,000/month for a Shopify GST app alone. After migrating to ZKCommerce, everything is built-in. The migration team completed everything in 14 hours. Not a single product was missed."</div>
+        <div class="tauth">
+          <div class="tav" style="background:linear-gradient(135deg,#FF6B00,#C41E3A)">RK</div>
+          <div>
+            <div class="tnm">Rajan Kumar · Coimbatore</div>
+            <div class="tbiz">430 products migrated</div>
+            <div class="tmig"><span style="color:#96BF48">🟢</span><span style="color:rgba(255,255,255,.4)"> Shopify Basic</span><span style="color:rgba(255,255,255,.3)"> → </span><span style="color:#FF9A4D">⚡ ZKCommerce</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tc">
+        <div class="tstars">★★★★★</div>
+        <div class="ttext">"I was selling on Amazon for 3 years but they kept my customer data and took 18% commission. After launching my own store on ZKCommerce I kept 100% of revenue and now market directly to my buyers via WhatsApp."</div>
+        <div class="tauth">
+          <div class="tav" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">PM</div>
+          <div>
+            <div class="tnm">Priya Mani · Chennai</div>
+            <div class="tbiz">Electronics D2C brand launched</div>
+            <div class="tmig"><span style="color:#FF9900">🟠</span><span style="color:rgba(255,255,255,.4)"> Amazon Seller</span><span style="color:rgba(255,255,255,.3)"> → </span><span style="color:#FF9A4D">⚡ ZKCommerce</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tc">
+        <div class="tstars">★★★★★</div>
+        <div class="ttext">"Zoho Commerce was charging us in USD and every month the bill was different. ZKCommerce is ₹799 flat. The migration team even set up our Razorpay and did a test purchase before handing over. Very professional."</div>
+        <div class="tauth">
+          <div class="tav" style="background:linear-gradient(135deg,#F5A623,#FF6B00)">SK</div>
+          <div>
+            <div class="tnm">Selvi Krishnan · Madurai</div>
+            <div class="tbiz">Saree boutique — 1,200 products</div>
+            <div class="tmig"><span style="color:#E4562A">🟣</span><span style="color:rgba(255,255,255,.4)"> Zoho Commerce</span><span style="color:rgba(255,255,255,.3)"> → </span><span style="color:#FF9A4D">⚡ ZKCommerce</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="si">
+    <div style="text-align:center">
+      <div class="eyebrow">Migration questions</div>
+      <h2 class="sh" style="text-align:center">Frequently asked migration questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="fi"><button class="fq" onclick="faqT(this)">Is the migration really free? No hidden charges?<span class="fq-ico">+</span></button><div class="fa">Yes, completely free for Growth and Enterprise plan customers. We migrate products, images, customer data, order history, SEO redirects and configure Razorpay — all at no cost. There is no setup fee, no migration fee, and no "professional services" charge. The only cost is your ZKCommerce subscription (₹799/mo for Growth) after your 30-day free trial.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">Will my customers notice any downtime during migration?<span class="fq-ico">+</span></button><div class="fa">No. Your current store (Shopify, Amazon, Flipkart or Zoho) stays fully live until the moment you approve the ZKCommerce staging store. The DNS switch takes 30 minutes and is done at a low-traffic time. Customers see zero interruption. We guarantee zero downtime migrations.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">Will I lose my Google search rankings after migration?<span class="fq-ico">+</span></button><div class="fa">No. We set up 301 permanent redirects from all your old product and category URLs to the new ZKCommerce URLs. Google respects 301 redirects and transfers ranking authority. In our experience, merchants retain 95%+ of their search rankings within 2–4 weeks of migration. We also preserve all meta titles and descriptions.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">How do you migrate my Shopify products?<span class="fq-ico">+</span></button><div class="fa">We use Shopify's official product CSV export — all products, variants, images, collections, inventory levels and metafields. We import this into ZKCommerce's bulk import system with validation to catch errors. Images are uploaded to ZKCommerce's CDN. The whole product import usually takes 2–4 hours depending on your catalogue size.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">I sell on Amazon — what exactly can you migrate?<span class="fq-ico">+</span></button><div class="fa">From Amazon we can migrate your product catalogue (via Amazon Seller Central product export or flat file), product images you have rights to, and your current pricing. Amazon does not give you customer data (they keep it) so we cannot migrate customer records or order history from Amazon. What we're really doing is helping you launch your own independent D2C store.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">What if migration takes longer than 24 hours?<span class="fq-ico">+</span></button><div class="fa">Simple — your first month on ZKCommerce is completely free. We take the 24-hour guarantee seriously. In practice, most migrations complete in 10–18 hours. Larger stores with 5,000+ products may take up to 36 hours, and we'll tell you upfront if that applies to your store so you can plan accordingly.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">Can I keep my Shopify store running while you build the ZKCommerce one?<span class="fq-ico">+</span></button><div class="fa">Yes — absolutely. Your Shopify store keeps running throughout the entire migration. We build your ZKCommerce store in parallel, you review and approve it on a staging URL, and we only switch DNS when you give us the go-ahead. You can run both for as long as you want before switching.</div></div>
+      <div class="fi"><button class="fq" onclick="faqT(this)">What about my custom domain? Who handles DNS?<span class="fq-ico">+</span></button><div class="fa">We handle the full DNS configuration. We'll ask for temporary access to your DNS provider (GoDaddy, Cloudflare, BigRock, etc.) or walk you through the changes step by step. We configure the A record, CNAME for www, and set up free SSL via Let's Encrypt. The switch takes about 15 minutes and propagates within 1–4 hours globally.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="si">
+    <h2 class="cta-h">Ready to migrate?<br><span class="fire-t">Start in 2 minutes.</span></h2>
+    <p class="cta-sub">Fill in the migration form above or create your ZKCommerce account first. Our team will WhatsApp you within 2 hours to get started.</p>
+    <div class="cta-actions">
+      <a href="#wizard" class="btn-f" style="font-size:15px;padding:15px 30px">Start free migration →</a>
+      <a href="auth/register.html" class="btn-s" style="font-size:15px;padding:15px 30px;background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.18)">Create account first</a>
+    </div>
+    <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:24px">
+      <span style="font-size:12px;color:rgba(255,255,255,.25)">✓ Free migration</span>
+      <span style="font-size:12px;color:rgba(255,255,255,.25)">✓ 24h guarantee</span>
+      <span style="font-size:12px;color:rgba(255,255,255,.25)">✓ Zero downtime</span>
+      <span style="font-size:12px;color:rgba(255,255,255,.25)">✓ SEO preserved</span>
+      <span style="font-size:12px;color:rgba(255,255,255,.25)">✓ 30-day free trial</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#040210;padding:40px 5% 28px">
+  <div style="max-width:1140px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#FF6B00,#C41E3A);display:flex;align-items:center;justify-content:center;font-size:14px">⚡</div>
+      <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fff">ZKCommerce</span>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <a href="index.html" style="font-size:13px;color:rgba(255,255,255,.3);transition:color .15s">Home</a>
+      <a href="index.html#pricing" style="font-size:13px;color:rgba(255,255,255,.3)">Pricing</a>
+      <a href="index.html#features" style="font-size:13px;color:rgba(255,255,255,.3)">Features</a>
+      <a href="auth/register.html" style="font-size:13px;color:rgba(255,255,255,.3)">Sign up free</a>
+      <a href="auth/login.html" style="font-size:13px;color:rgba(255,255,255,.3)">Sign in</a>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.2)">© 2026 ZKanadavel Infotech Pvt Ltd &amp; ZK Infotech INC · 🇮🇳 Made in Tamil Nadu</div>
+  </div>
+</footer>
+
+<script>
+/* Nav scroll */
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('solid',window.scrollY>40);
+});
+
+/* Smooth scroll */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}
+  });
+});
+
+/* Platform pills */
+function scrollToWizard(platform){
+  document.querySelectorAll('.pp').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelector('#wizard').scrollIntoView({behavior:'smooth'});
+  // Pre-select in wizard
+  setTimeout(()=>{ preselectPlatform(platform); },600);
+}
+
+function preselectPlatform(platform){
+  document.querySelectorAll('.psel').forEach(p=>{
+    if(p.dataset.platform===platform){ selectPlatform(p); }
+  });
+}
+
+/* Platform select in wizard */
+let selectedPlatform = '';
+function selectPlatform(el){
+  document.querySelectorAll('.psel').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedPlatform = el.dataset.platform;
+  const names = {shopify:'Shopify',amazon:'Amazon India',flipkart:'Flipkart',zoho:'Zoho Commerce',woocommerce:'WooCommerce',other:'Other platform'};
+  document.getElementById('sum-platform').textContent = names[selectedPlatform] || selectedPlatform;
+  const nextBtn = document.getElementById('step1-next');
+  nextBtn.disabled = false;
+  nextBtn.style.opacity = '1';
+}
+
+/* Wizard steps */
+let currentStep = 1;
+function goStep(n){
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  currentStep = n;
+  // Update step indicators
+  for(let i=1;i<=4;i++){
+    const ws = document.getElementById('ws'+i);
+    const wsn = document.getElementById('wsn'+i);
+    if(!ws)continue;
+    ws.className='ws';
+    if(i<n){ws.classList.add('done');wsn.textContent='✓';}
+    else if(i===n){ws.classList.add('active');}
+  }
+  if(n===4){
+    // Generate ref number
+    document.getElementById('ref-num').textContent='ZKM-2026-'+Math.floor(1000+Math.random()*8999);
+  }
+  document.getElementById('wizard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* Start wizard from platform card buttons */
+function startWizard(platform){
+  document.getElementById('wizard').scrollIntoView({behavior:'smooth'});
+  setTimeout(()=>{ preselectPlatform(platform); },600);
+}
+
+/* FAQ */
+function faqT(btn){
+  const item=btn.closest('.fi');
+  const open=item.classList.contains('open');
+  document.querySelectorAll('.fi').forEach(i=>i.classList.remove('open'));
+  if(!open)item.classList.add('open');
+}
+
+/* Auto-select platform from URL param e.g. migrate.html?from=shopify */
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const from = params.get('from');
+  if(from){
+    // highlight hero pill
+    document.querySelectorAll('.pp').forEach(p=>{
+      if(p.getAttribute('onclick') && p.getAttribute('onclick').includes("'"+from+"'")){
+        p.classList.add('active');
+      }
+    });
+    // scroll to wizard and pre-select after a short delay
+    setTimeout(()=>{
+      document.getElementById('wizard').scrollIntoView({behavior:'smooth',block:'start'});
+      setTimeout(()=>{ preselectPlatform(from); }, 700);
+    }, 400);
+  }
+})();
+
+</script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

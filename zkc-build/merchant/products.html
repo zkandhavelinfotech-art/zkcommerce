@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Products — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/design-system.css">
+</head>
+<body>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="../merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="../merchant/analytics.html" class="zk-sidebar-link "><span class="sl-icon">📈</span>Analytics</a>
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="../merchant/products.html" class="zk-sidebar-link active"><span class="sl-icon">🛍️</span>Products</a>
+    <a href="../merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a>
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="../merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="../merchant/shipping-label.html" class="zk-sidebar-link "><span class="sl-icon">🚚</span>Shipping labels</a>
+    <div class="zk-sidebar-section-label">Finance</div>
+    <a href="../merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a>
+    <div class="zk-sidebar-section-label">Marketing</div>
+    <a href="../merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a>
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="../merchant/store-settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+<div class="zk-main" style="margin-left:240px">
+<div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Products</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+  </div>
+</div>
+<div class="zk-page">
+
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Products</div><div class="zk-page-sub">Manage your product catalogue</div></div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-secondary btn-sm" onclick="toast.info('CSV export started')">↓ Export CSV</button>
+    <button class="btn btn-primary btn-sm" onclick="toast.success('Add product form coming soon')">+ Add product</button>
+  </div>
+</div>
+<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+  <input type="search" class="field" placeholder="🔍 Search products…" style="max-width:280px" oninput="filterProducts(this.value)">
+  <select class="field" style="width:auto"><option>All categories</option><option>Sarees</option><option>Kurtas</option><option>Blouses</option></select>
+  <select class="field" style="width:auto"><option>All stock</option><option>In stock</option><option>Low stock</option><option>Out of stock</option></select>
+</div>
+<div class="zk-table-wrap">
+  <table class="zk-table" id="products-table">
+    <thead><tr><th>Product</th><th>SKU</th><th>Price</th><th>Stock</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="products-body">
+      <tr><td><div style="font-weight:700">Kanjivaram Silk Saree</div><div style="font-size:11px;color:var(--zk-dim)">Red, Blue, Green variants</div></td><td>KSS-001</td><td>₹12,500</td><td><span class="badge badge-green">48</span></td><td>Sarees</td><td><span class="status status-delivered">Active</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Edit product')">Edit</button></td></tr>
+      <tr><td><div style="font-weight:700">Cotton Kurta Set</div><div style="font-size:11px;color:var(--zk-dim)">S, M, L, XL sizes</div></td><td>CKS-002</td><td>₹2,199</td><td><span class="badge badge-amber">5</span></td><td>Kurtas</td><td><span class="status status-delivered">Active</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Edit product')">Edit</button></td></tr>
+      <tr><td><div style="font-weight:700">Embroidered Blouse</div><div style="font-size:11px;color:var(--zk-dim)">Custom sizing available</div></td><td>EBL-003</td><td>₹1,450</td><td><span class="badge badge-red">2</span></td><td>Blouses</td><td><span class="status status-delivered">Active</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Edit product')">Edit</button></td></tr>
+      <tr><td><div style="font-weight:700">Handloom Dupatta</div><div style="font-size:11px;color:var(--zk-dim)">Pure cotton, 6 colours</div></td><td>HLD-004</td><td>₹890</td><td><span class="badge badge-green">120</span></td><td>Accessories</td><td><span class="status status-processing">Draft</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Edit product')">Edit</button></td></tr>
+    </tbody>
+  </table>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+  <div style="font-size:13px;color:var(--zk-muted)">Showing 4 of 1,248 products</div>
+  <div class="zk-pagination">
+    <button class="zk-page-btn">←</button>
+    <button class="zk-page-btn active">1</button>
+    <button class="zk-page-btn">2</button>
+    <button class="zk-page-btn">3</button>
+    <button class="zk-page-btn">→</button>
+  </div>
+</div>
+<script>function filterProducts(v){document.querySelectorAll('#products-body tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(v.toLowerCase())?'':'none';});}</script>
+
+</div>
+</div>
+<script src="../../assets/js/app.js"></script>
+</body>
+</html>

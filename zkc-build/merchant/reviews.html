@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reviews — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+</head>
+<body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav"><div class="zk-sidebar-section-label">Main</div>
+<a href="merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+<a href="merchant/analytics.html" class="zk-sidebar-link "><span class="sl-icon">📈</span>Analytics</a>
+<div class="zk-sidebar-section-label">Catalogue</div>
+<a href="merchant/products.html" class="zk-sidebar-link "><span class="sl-icon">🛍️</span>Products</a>
+<a href="merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a>
+<div class="zk-sidebar-section-label">Orders</div>
+<a href="merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+<a href="merchant/shipping-label.html" class="zk-sidebar-link "><span class="sl-icon">🚚</span>Shipping labels</a>
+<div class="zk-sidebar-section-label">Finance</div>
+<a href="merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a>
+<div class="zk-sidebar-section-label">Marketing</div>
+<a href="merchant/loyalty.html" class="zk-sidebar-link "><span class="sl-icon">⭐</span>Loyalty</a>
+<a href="merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a>
+<a href="merchant/reviews.html" class="zk-sidebar-link active"><span class="sl-icon">💬</span>Reviews</a>
+<a href="merchant/coupons.html" class="zk-sidebar-link "><span class="sl-icon">🎟</span>Coupons</a>
+<div class="zk-sidebar-section-label">Settings</div>
+<a href="merchant/store-settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Store settings</a>
+</nav>
+  <div class="zk-sidebar-footer">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:5px;margin-bottom:8px">🌐 View my store</a>
+    <a href="setup.html" style="font-size:12px;color:rgba(255,107,0,.6);font-weight:700;display:flex;align-items:center;gap:5px;margin-bottom:8px">🧙 Setup wizard</a>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a>
+  </div>
+</aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Reviews</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire)">🌐 View store</a>
+    <span style="font-size:12px;color:var(--zk-muted)">Rajan Textiles</span>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff">R</div>
+  </div>
+</div><div class="zk-page">
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Product Reviews</div><div class="zk-page-sub">Manage customer feedback and ratings</div></div>
+  <select class="field btn-sm" style="width:auto"><option>All reviews</option><option>Pending</option><option>Published</option></select>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+  <div class="zk-stat-card"><div class="zk-stat-label">Total reviews</div><div class="zk-stat-value">1,284</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Average rating</div><div class="zk-stat-value fire-text">⭐ 4.6</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Pending approval</div><div class="zk-stat-value" style="color:#D97706">18</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">5-star reviews</div><div class="zk-stat-value" style="color:#22C55E">68%</div></div>
+</div>
+<div class="zk-table-wrap">
+  <table class="zk-table">
+    <thead><tr><th>Review</th><th>Product</th><th>Rating</th><th>Customer</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td style="max-width:200px;font-size:13px">"Beautiful saree! Exactly as shown. Very fast delivery."</td><td>Kanjivaram Silk</td><td><span style="color:#F59E0B;font-weight:700">★★★★★</span></td><td>Priya N.</td><td>16 Jul</td><td><span class="status status-delivered">Published</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Replied')">Reply</button></td></tr>
+      <tr><td style="max-width:200px;font-size:13px">"Quality is good but shipping was slow."</td><td>Cotton Kurta</td><td><span style="color:#F59E0B;font-weight:700">★★★</span></td><td>Arun M.</td><td>15 Jul</td><td><span class="status status-processing">Pending</span></td><td><div style="display:flex;gap:5px"><button class="btn btn-primary btn-sm" onclick="toast.success('Review published')">Publish</button><button class="btn btn-secondary btn-sm" onclick="toast.info('Review hidden')">Hide</button></div></td></tr>
+    </tbody>
+  </table>
+</div>
+</div></div></div><script src="../assets/js/app.js"></script>
+</body>
+</html>

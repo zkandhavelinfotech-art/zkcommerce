@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Store Settings — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/design-system.css">
+</head>
+<body>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="../merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="../merchant/analytics.html" class="zk-sidebar-link "><span class="sl-icon">📈</span>Analytics</a>
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="../merchant/products.html" class="zk-sidebar-link "><span class="sl-icon">🛍️</span>Products</a>
+    <a href="../merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a>
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="../merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="../merchant/shipping-label.html" class="zk-sidebar-link "><span class="sl-icon">🚚</span>Shipping labels</a>
+    <div class="zk-sidebar-section-label">Finance</div>
+    <a href="../merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a>
+    <div class="zk-sidebar-section-label">Marketing</div>
+    <a href="../merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a>
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="../merchant/store-settings.html" class="zk-sidebar-link active"><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+<div class="zk-main" style="margin-left:240px">
+<div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Store Settings</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+  </div>
+</div>
+<div class="zk-page">
+
+<div class="zk-page-header"><div class="zk-page-title">Store settings</div><div class="zk-page-sub">Manage your store profile, payments and preferences</div></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;background:var(--zk-pale);border-color:var(--zk-indigo);color:var(--zk-indigo)">🏪 Store profile</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Payments section')">💳 Payments</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Shipping section')">🚚 Shipping</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('GST section')">🧾 GST / Tax</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Themes section')">🎨 Themes</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Notifications')">🔔 Notifications</button>
+  </div>
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;margin-bottom:20px">Store profile</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="field-group"><label class="field-label">Store name</label><input type="text" class="field" value="Rajan Textiles"></div>
+      <div class="field-group"><label class="field-label">Store URL</label><input type="text" class="field" value="rajanTextiles.zkcommerce.in"></div>
+      <div class="field-group"><label class="field-label">WhatsApp number</label><input type="tel" class="field" value="+91 98765 43210"></div>
+      <div class="field-group"><label class="field-label">Email</label><input type="email" class="field" value="rajan@rajanTextiles.in"></div>
+      <div class="field-group" style="grid-column:1/-1"><label class="field-label">Store description</label><textarea class="field" rows="3">Premium handloom sarees and ethnic wear from Tamil Nadu. Authentic Kanjivaram silk, cotton sarees and kurtas.</textarea></div>
+      <div class="field-group"><label class="field-label">GSTIN</label><input type="text" class="field" value="33AABCU9603R1ZX"></div>
+      <div class="field-group"><label class="field-label">Currency</label><select class="field"><option>INR (₹)</option></select></div>
+    </div>
+    <button class="btn btn-primary" onclick="toast.success('Store settings saved!')">Save changes</button>
+  </div>
+</div>
+
+</div>
+</div>
+<script src="../../assets/js/app.js"></script>
+</body>
+</html>
