@@ -6,7 +6,7 @@
 <title>Analytics — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -97,6 +97,29 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadAnalytics() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/analytics/revenue?period=30days', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    if (data.totals) {
+      setEl('total-revenue', fmt.inr(data.totals.total_revenue));
+      setEl('total-orders',  data.totals.total_orders);
+      setEl('avg-order',     fmt.inr(data.totals.avg_order_value, 2));
+      setEl('unique-customers', data.totals.unique_customers);
+    }
+  } catch(e) { console.warn('Analytics load error:', e); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAnalytics);
+</script>
 </body>
 </html>

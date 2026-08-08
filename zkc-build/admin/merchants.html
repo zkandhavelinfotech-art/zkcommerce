@@ -84,5 +84,39 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </div>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadMerchants() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/admin/merchants?limit=50', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    var tbody = document.getElementById('merchants-tbody');
+    if (!tbody || !data.merchants) return;
+    if (!data.merchants.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--zk-muted)">No merchants yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.merchants.map(function(m) {
+      return '<tr>'
+        + '<td><div><div class="col-primary">' + m.name + '</div><div style="font-size:11px;color:var(--zk-dim)">' + m.email + '</div></div></td>'
+        + '<td>' + (m.owner_name||'-') + '</td>'
+        + '<td><span class="badge badge-' + (m.plan==='growth'?'brand':'green') + '">' + m.plan + '</span></td>'
+        + '<td>' + fmt.inrCompact(m.total_gmv||0) + '</td>'
+        + '<td>' + (m.order_count||0) + '</td>'
+        + '<td><span class="status status-' + (m.is_active?'delivered':'cancelled') + '">' + (m.is_active?'Active':'Suspended') + '</span></td>'
+        + '<td><a href="merchant-detail.html?id=' + m.id + '" class="btn btn-secondary btn-sm">View</a></td>'
+        + '</tr>';
+    }).join('');
+    var totEl = document.getElementById('merchants-total');
+    if (totEl) totEl.textContent = (data.total||data.merchants.length) + ' merchants';
+  } catch(e) { console.warn('Merchants load error:', e); }
+}
+document.addEventListener('DOMContentLoaded', loadMerchants);
+</script>
 </body>
 </html>

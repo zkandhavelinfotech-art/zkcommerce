@@ -6,7 +6,7 @@
 <title>Checkout — Rajan Textiles — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100">
   <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800">
@@ -67,6 +67,143 @@
     <div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳 Made in Tamil Nadu</div>
     <div style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Rajan Textiles. All rights reserved.</div>
   </div>
-</footer><script src="../../assets/js/app.js"></script>
+</footer><script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+// Load addresses on page load
+async function loadAddresses() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/addresses', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var sel = document.getElementById('address-select');
+    if (sel && d.addresses && d.addresses.length) {
+      sel.innerHTML = d.addresses.map(function(a) {
+        return '<option value="' + a.id + '"' + (a.is_default?' selected':'') + '>'
+          + a.name + ' -- ' + a.line1 + ', ' + a.city + ' ' + a.pincode + '</option>';
+      }).join('');
+    }
+  } catch(e) {}
+}
+
+async function placeOrder() {
+  var token = auth.token;
+  if (!token) { toast.error('Please login first'); return; }
+
+  var addrEl = document.getElementById('address-select');
+  var payEl  = document.querySelector('input[name="payment"]:checked') || document.getElementById('pay-upi');
+  var addressId = addrEl ? parseInt(addrEl.value) : null;
+  var payMethod = payEl ? payEl.value : 'razorpay';
+
+  if (!cart.items.length) { toast.error('Your cart is empty'); return; }
+
+  if (token.startsWith('demo_token')) {
+    toast.info('Demo mode: redirecting to success page');
+    setTimeout(function(){ window.location.href = 'payment-success.html'; }, 1000);
+    return;
+  }
+
+  if (!addressId) { toast.error('Please select a delivery address'); return; }
+
+  var btn = document.getElementById('place-order-btn');
+  btnLoading(btn, true);
+
+  try {
+    // Step 1: Create order
+    var couponData = JSON.parse(localStorage.getItem('zk_coupon') || 'null');
+    var orderRes = await fetch(API_BASE + '/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        address_id: addressId,
+        payment_method: payMethod,
+        coupon_code: couponData ? couponData.code : undefined,
+        loyalty_points_redeem: 0
+      })
+    });
+    var orderData = await orderRes.json();
+    if (!orderData.order) { toast.error(orderData.error || 'Order creation failed'); btnLoading(btn, false); return; }
+
+    var orderId = orderData.order.id;
+
+    // COD: skip payment
+    if (payMethod === 'cod') {
+      cart.clear();
+      localStorage.removeItem('zk_coupon');
+      window.location.href = 'payment-success.html?order=' + orderId;
+      return;
+    }
+
+    // Step 2: Create Razorpay order
+    var rzpRes = await fetch(API_BASE + '/payments/razorpay/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ order_id: orderId })
+    });
+    var rzpData = await rzpRes.json();
+    if (!rzpData.razorpay_order_id) { toast.error(rzpData.error || 'Payment initiation failed'); btnLoading(btn, false); return; }
+
+    // Step 3: Open Razorpay modal
+    var user = auth.user || {};
+    var rzp = new Razorpay({
+      key:         rzpData.key_id,
+      amount:      rzpData.amount,
+      currency:    'INR',
+      order_id:    rzpData.razorpay_order_id,
+      name:        'ZKCommerce',
+      description: 'Order #ZK-' + String(orderId).padStart(5,'0'),
+      prefill: { name: user.name || '', email: user.email || '', contact: user.phone || '' },
+      theme: { color: '#FF6B00' },
+      handler: async function(response) {
+        // Step 4: Verify payment
+        try {
+          var verRes = await fetch(API_BASE + '/payments/razorpay/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              razorpay_order_id:   response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature:  response.razorpay_signature,
+              order_id: orderId
+            })
+          });
+          var verData = await verRes.json();
+          if (verData.message) {
+            cart.clear();
+            localStorage.removeItem('zk_coupon');
+            window.location.href = 'payment-success.html?order=' + orderId;
+          } else {
+            toast.error('Payment verification failed');
+          }
+        } catch(e) { toast.error('Verification error'); }
+      },
+      modal: { ondismiss: function(){ toast.info('Payment cancelled'); btnLoading(btn, false); } }
+    });
+    rzp.open();
+
+  } catch(e) {
+    toast.error('Server error -- is npm run dev running?');
+    btnLoading(btn, false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadAddresses();
+  // Show cart summary
+  var items = cart.items;
+  var summEl = document.getElementById('checkout-items');
+  if (summEl && items.length) {
+    summEl.innerHTML = items.map(function(i){
+      return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--zk-border)">'
+        + '<span>' + i.name + ' x' + i.quantity + '</span><span>' + fmt.inr(i.price * i.quantity) + '</span></div>';
+    }).join('');
+  }
+  var totalEl = document.getElementById('checkout-total');
+  if (totalEl) totalEl.textContent = fmt.inr(cart.total + (cart.total >= 999 ? 0 : 99));
+});
+</script>
 </body>
 </html>

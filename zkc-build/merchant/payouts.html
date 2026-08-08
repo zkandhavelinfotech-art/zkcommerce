@@ -16,4 +16,38 @@
   </tbody></table></div>
   <div class="card"><h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">🏦 Bank account</h3><div style="padding:14px;background:var(--zk-pale);border-radius:10px;border:1px solid #C7D2FE;margin-bottom:12px"><div style="font-size:11px;font-weight:800;color:var(--zk-indigo);margin-bottom:6px">PRIMARY</div><div style="font-size:14px;font-weight:800">HDFC Bank</div><div style="font-size:13px;color:var(--zk-muted);margin-top:2px">•••• 4821 · IFSC: HDFC0001234</div><div style="font-size:12px;color:var(--zk-muted)">Rajan Kumar — Current A/C</div></div><button class="btn btn-secondary btn-sm btn-full" onclick="toast.info('Contact support to change bank account')">Change bank account</button><div style="margin-top:14px;border-top:1px solid var(--zk-border);padding-top:12px;font-size:12px;color:var(--zk-muted);line-height:1.8">Prepaid: T+2 days<br>COD: T+2 after delivery<br>Refunds: deducted from next payout</div></div>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script></body></html>
+</div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadPayouts() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/payouts', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    var tbody = document.getElementById('payouts-tbody');
+    if (tbody && data.payouts && data.payouts.length) {
+      tbody.innerHTML = data.payouts.map(function(p) {
+        var ds = p.period ? new Date(p.period).toLocaleDateString('en-IN') : '—';
+        return '<tr>'
+          + '<td>' + ds + '</td>'
+          + '<td>' + (p.order_count || 0) + ' orders</td>'
+          + '<td class="col-primary">' + fmt.inr(p.amount) + '</td>'
+          + '<td><span class="status status-delivered">Settled</span></td>'
+          + '<td style="font-size:11px;font-family:monospace;color:var(--zk-dim)">' + (p.utr || '—') + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+    if (data.pending_payout) {
+      setEl('next-payout', fmt.inr(data.pending_payout.amount));
+    }
+  } catch(e) { console.warn('Payouts load error:', e); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadPayouts);
+</script>
+</body></html>

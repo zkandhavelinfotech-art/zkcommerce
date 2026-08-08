@@ -26,4 +26,111 @@
   <div class="card"><h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px">💳 Payment</h3><div style="font-size:13px;line-height:1.9;color:var(--zk-muted)">UPI · <span class="status status-delivered" style="display:inline">Paid</span><br>Ref: <span style="font-family:monospace">pay_xyz123</span></div><button class="btn btn-secondary btn-sm btn-full" style="margin-top:10px" onclick="if(confirm('Refund ₹19,940?'))toast.success('Refund initiated — 5–7 business days')">↩️ Issue refund</button></div>
 </div>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script></body></html>
+</div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+function getOrderId() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('id') || null;
+}
+
+async function loadOrder() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  var oid = getOrderId();
+  if (!oid) return;
+  try {
+    var r = await fetch(API_BASE + '/orders/' + oid, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    if (!data.order) { toast.error('Order not found'); return; }
+    var o = data.order;
+
+    setEl('order-id',        '#ZK-' + String(o.id).padStart(5,'0'));
+    setEl('order-date',      fmt.datetime(o.created_at));
+    setEl('order-status',    o.status);
+    setEl('order-total',     fmt.inr(o.total));
+    setEl('customer-name',   o.customer_name || '-');
+    setEl('customer-email',  o.customer_email || '-');
+    setEl('customer-phone',  o.customer_phone || '-');
+    setEl('delivery-address',[(o.line1||''), (o.line2||''), (o.city||''), (o.state||''), (o.pincode||'')].filter(Boolean).join(', '));
+    setEl('payment-method',  o.payment_method || '-');
+    setEl('payment-status',  o.payment_status || '-');
+    setEl('razorpay-ref',    o.razorpay_payment_id || '—');
+    if (o.awb_number) setEl('awb-number', o.awb_number);
+
+    // Items
+    var itemsTbl = document.getElementById('order-items-tbody');
+    if (itemsTbl && o.items) {
+      itemsTbl.innerHTML = o.items.map(function(item) {
+        return '<tr>'
+          + '<td class="col-primary">' + (item.product_name||item.name||'-') + '</td>'
+          + '<td>' + (item.sku||'-') + '</td>'
+          + '<td>' + item.quantity + '</td>'
+          + '<td>' + fmt.inr(item.unit_price) + '</td>'
+          + '<td>' + fmt.inr(item.line_total) + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+  } catch(e) { console.warn('Order load error:', e); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+
+async function updateStatus(status) {
+  var token = auth.token;
+  var oid   = getOrderId();
+  if (!oid || !token || token.startsWith('demo_token')) { toast.info('Demo mode'); return; }
+  if (!confirm('Mark order as ' + status + '?')) return;
+  try {
+    var r = await fetch(API_BASE + '/orders/' + oid + '/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: status })
+    });
+    var data = await r.json();
+    if (data.order) { toast.success('Order updated to ' + status); loadOrder(); }
+    else toast.error(data.error || 'Update failed');
+  } catch(e) { toast.error('Server error'); }
+}
+
+async function generateAWB() {
+  var token = auth.token;
+  var oid   = getOrderId();
+  if (!oid || !token || token.startsWith('demo_token')) { toast.success('AWB DL4829301 (demo)'); return; }
+  try {
+    var r = await fetch(API_BASE + '/shipping/awb', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ order_id: parseInt(oid), courier: 'delhivery', weight_kg: 1.0 })
+    });
+    var data = await r.json();
+    if (data.awb_number) {
+      toast.success('AWB generated: ' + data.awb_number);
+      setEl('awb-number', data.awb_number);
+    } else toast.error(data.error || 'AWB generation failed');
+  } catch(e) { toast.error('Server error'); }
+}
+
+async function issueRefund() {
+  var token = auth.token;
+  var oid   = getOrderId();
+  if (!oid || !token || token.startsWith('demo_token')) { toast.warning('Demo mode — cannot process refunds'); return; }
+  if (!confirm('Issue full refund for this order?')) return;
+  try {
+    var r = await fetch(API_BASE + '/payments/razorpay/refund', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ order_id: parseInt(oid), reason: 'Merchant initiated refund' })
+    });
+    var data = await r.json();
+    if (data.refund_id) toast.success('Refund initiated — ' + data.refund_id);
+    else toast.error(data.error || 'Refund failed');
+  } catch(e) { toast.error('Server error'); }
+}
+
+document.addEventListener('DOMContentLoaded', loadOrder);
+</script>
+</body></html>

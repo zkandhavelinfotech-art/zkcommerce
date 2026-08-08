@@ -6,7 +6,7 @@
 <title>Track Order — Rajan Textiles — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100">
   <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800">
@@ -54,6 +54,43 @@
     <div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳 Made in Tamil Nadu</div>
     <div style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Rajan Textiles. All rights reserved.</div>
   </div>
-</footer><script src="../../assets/js/app.js"></script>
+</footer><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadTracking() {
+  var params = new URLSearchParams(window.location.search);
+  var orderId = params.get('id') || params.get('order');
+  if (!orderId) return;
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/orders/' + orderId, { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    if (!d.order) return;
+    var o = d.order;
+    setEl('track-order-id', fmt.orderId(o.id));
+    setEl('track-status',   o.status);
+    setEl('track-total',    fmt.inr(o.total));
+    setEl('track-date',     fmt.date(o.created_at));
+    if (o.awb_number) {
+      setEl('track-awb',    o.awb_number);
+      setEl('track-courier', o.courier || 'Delhivery');
+      var trackBtn = document.getElementById('track-awb-btn');
+      if (trackBtn) trackBtn.href = 'https://www.delhivery.com/track/package/' + o.awb_number;
+    }
+    var statuses = ['pending','processing','shipped','delivered'];
+    var currentIdx = statuses.indexOf(o.status);
+    statuses.forEach(function(s, i) {
+      var el = document.getElementById('step-' + s);
+      if (el) {
+        el.style.color = i <= currentIdx ? 'var(--zk-fire)' : 'var(--zk-muted)';
+        el.style.fontWeight = i === currentIdx ? '800' : '400';
+      }
+    });
+  } catch(e) {}
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadTracking);
+</script>
 </body>
 </html>

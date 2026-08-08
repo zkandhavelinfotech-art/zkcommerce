@@ -18,4 +18,58 @@
 function approveR(id){document.getElementById('rs-'+id).textContent='Approved';document.getElementById('rs-'+id).className='status status-shipped';toast.success('Return approved! Delhivery pickup scheduled.');}
 function rejectR(id){const r=prompt('Rejection reason:','Item not eligible per return policy');if(r){document.getElementById('rs-'+id).textContent='Rejected';document.getElementById('rs-'+id).className='status status-cancelled';toast.info('Return rejected. Customer notified.');}}
 </script>
-</div></div></div><script src="../assets/js/app.js"></script></body></html>
+</div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadReturns() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/returns', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    var tbody = document.getElementById('returns-tbody');
+    if (tbody && data.returns) {
+      if (!data.returns.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--zk-muted)">No return requests yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.returns.map(function(ret) {
+        return '<tr>'
+          + '<td class="col-primary">#RET-' + ret.return_id + '</td>'
+          + '<td>#ZK-' + String(ret.order_id).padStart(5,'0') + '</td>'
+          + '<td>' + (ret.customer_name||'-') + '</td>'
+          + '<td>' + (ret.reason||'-') + '</td>'
+          + '<td>' + fmt.inr(ret.refund_amount||0) + '</td>'
+          + '<td><span class="status status-processing">' + (ret.return_status||'pending') + '</span></td>'
+          + '<td><div style="display:flex;gap:5px">'
+          + '<button class="btn btn-primary btn-sm" onclick="handleReturn(' + ret.order_id + ',\'return_approved\')">Approve</button>'
+          + '<button class="btn btn-secondary btn-sm" onclick="handleReturn(' + ret.order_id + ',\'return_rejected\')">Reject</button>'
+          + '</div></td>'
+          + '</tr>';
+      }).join('');
+    }
+  } catch(e) { console.warn('Returns load error:', e); }
+}
+
+async function handleReturn(orderId, status) {
+  var token = auth.token;
+  var reason = status === 'return_rejected' ? prompt('Rejection reason:','Item not eligible for return') : null;
+  if (status === 'return_rejected' && !reason) return;
+  try {
+    var r = await fetch(API_BASE + '/returns/' + orderId + '/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: status, rejection_reason: reason })
+    });
+    var data = await r.json();
+    toast.success(status === 'return_approved' ? 'Return approved!' : 'Return rejected');
+    loadReturns();
+  } catch(e) { toast.error('Server error'); }
+}
+
+document.addEventListener('DOMContentLoaded', loadReturns);
+</script>
+</body></html>

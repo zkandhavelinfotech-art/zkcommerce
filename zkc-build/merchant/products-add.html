@@ -69,4 +69,138 @@ function addVariant(){const d=document.createElement('div');d.style.cssText='dis
 function calcG(){const p=parseFloat(document.getElementById('sprice').value)||0;const r=parseFloat(document.getElementById('grate').value)/100;if(p>0){const b=p/(1+r);const t=(p-b)/2;document.getElementById('gtx').textContent=fmt.inr(b,2);document.getElementById('gcg').textContent=fmt.inr(t,2);document.getElementById('gsg').textContent=fmt.inr(t,2);document.getElementById('gbox').style.display='block';}}
 function doPublish(){if(!document.getElementById('pname').value){toast.error('Product name required');return;}toast.success('Product published!');setTimeout(()=>window.location.href='products.html',1200);}
 </script>
-</div></div></div><script src="../assets/js/app.js"></script></body></html>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var EDIT_ID  = new URLSearchParams(window.location.search).get('id');
+
+// Load categories from API
+async function loadCategories() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/categories', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    var sel = document.getElementById('pcat');
+    if (sel && d.categories && d.categories.length) {
+      sel.innerHTML = '<option value="">Select category...</option>'
+        + d.categories.map(function(c){
+            return '<option value="' + c.id + '">' + c.name + '</option>';
+          }).join('');
+    }
+  } catch(e) {}
+}
+
+// Load existing product for editing
+async function loadProductForEdit(id) {
+  var token = auth.token;
+  if (!token) return;
+  try {
+    var r = await fetch(API_BASE + '/products/' + id, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.product) {
+      var p = d.product;
+      setVal('pname',  p.name);
+      setVal('pdesc',  p.description || '');
+      setVal('sprice', p.price);
+      setVal('pmrp',   p.mrp || '');
+      setVal('pcost',  p.cost_price || '');
+      setVal('pstock', p.stock);
+      setVal('grate',  p.gst_rate || '12');
+      setVal('pcat',   p.category_id || '');
+      // Update page title
+      var h1 = document.querySelector('h1, .page-title');
+      if (h1) h1.textContent = 'Edit Product';
+      // Update button text
+      var btn = document.getElementById('publish-btn');
+      if (btn) btn.textContent = 'Save Changes';
+    }
+  } catch(e) { console.warn('Load product error:', e.message); }
+}
+
+function calcGST() {
+  var price = parseFloat(document.getElementById('sprice').value) || 0;
+  var rate  = parseFloat(document.getElementById('grate').value) / 100;
+  var box   = document.getElementById('gbox');
+  if (price > 0 && box) {
+    var g = gst.split(price, rate*100);
+    setEl('gtx', fmt.inr(g.base, 2));
+    setEl('gcg', fmt.inr(g.cgst, 2));
+    setEl('gsg', fmt.inr(g.sgst, 2));
+    box.style.display = 'block';
+  }
+}
+
+async function doPublish(status) {
+  var name  = getVal('pname');
+  var price = parseFloat(document.getElementById('sprice').value) || 0;
+  if (!name)        { toast.error('Product name is required'); return; }
+  if (price <= 0)   { toast.error('Valid price is required'); return; }
+
+  var token = auth.token;
+  if (!token) { toast.error('Please login first'); return; }
+  if (token.startsWith('demo_token')) {
+    toast.info('Demo mode — login with real account to save products');
+    return;
+  }
+
+  var btn = event.currentTarget;
+  btnLoading(btn, true);
+
+  var payload = {
+    name:        name,
+    description: getVal('pdesc'),
+    price:       price,
+    mrp:         parseFloat(document.getElementById('pmrp').value) || null,
+    cost_price:  parseFloat(document.getElementById('pcost') ? document.getElementById('pcost').value : 0) || null,
+    gst_rate:    getVal('grate') || '12',
+    category_id: document.getElementById('pcat').value ? parseInt(document.getElementById('pcat').value) : null,
+    stock:       parseInt(document.getElementById('pstock') ? document.getElementById('pstock').value : 0) || 0,
+    status:      status || 'published',
+    is_cod:      true,
+    low_stock_alert: 5,
+  };
+
+  try {
+    var url    = EDIT_ID ? API_BASE + '/products/' + EDIT_ID : API_BASE + '/products';
+    var method = EDIT_ID ? 'PUT' : 'POST';
+    var r  = await fetch(url, {
+      method:  method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.product) {
+      toast.success(EDIT_ID ? 'Product updated!' : (status === 'draft' ? 'Draft saved!' : 'Product published!'));
+      setTimeout(function(){ window.location.href = 'products.html'; }, 1200);
+    } else {
+      toast.error(d.error || d.message || 'Failed to save product');
+    }
+  } catch(e) {
+    toast.error('Server error — is npm run dev running?');
+  }
+  btnLoading(btn, false);
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el) {
+    if (el.tagName === 'SELECT') el.value = val;
+    else if (el.tagName === 'TEXTAREA') el.value = val;
+    else el.value = val;
+  }
+}
+function getVal(id) { var el=document.getElementById(id); return el?el.value.trim():''; }
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategories();
+  if (EDIT_ID) loadProductForEdit(EDIT_ID);
+});
+</script>
+</body></html>

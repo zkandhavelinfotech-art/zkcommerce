@@ -92,5 +92,25 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </table>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadLoyalty() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/loyalty/balance', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    if (data.balance !== undefined) {
+      setEl('loyalty-balance', data.balance.toLocaleString('en-IN'));
+      setEl('loyalty-worth',   fmt.inr(data.worth));
+      setEl('loyalty-tier',    data.tier || 'Bronze');
+    }
+  } catch(e) { console.warn('Loyalty load error:', e); }
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadLoyalty);
+</script>
 </body>
 </html>

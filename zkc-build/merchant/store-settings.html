@@ -6,7 +6,7 @@
 <title>Store Settings — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -79,6 +79,129 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+
+async function loadStoreSettings() {
+  var user  = auth.user;
+  var token = auth.token;
+  if (!user || !token || token.startsWith('demo_token')) {
+    // Prefill with demo data
+    setVal('store-name', 'Rajan Textiles (Demo)');
+    setVal('store-gstin', '33AABCU9603R1ZX');
+    return;
+  }
+  try {
+    // Try to load by store_slug, or fallback to user store_id
+    var slug = user.store_slug || localStorage.getItem('zk_store_slug');
+    var url = slug
+      ? API_BASE + '/storefront/' + slug
+      : API_BASE + '/stores/' + user.store_id;
+
+    var r = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    var store = d.store || d;
+
+    if (store && store.name) {
+      setVal('store-name',      store.name);
+      setVal('store-tagline',   store.tagline || '');
+      setVal('store-desc',      store.description || '');
+      setVal('store-gstin',     store.gstin || '');
+      setVal('store-whatsapp',  store.whatsapp || '');
+      setVal('store-domain',    store.domain || '');
+      setVal('store-address',   store.address || '');
+
+      // Show store URL
+      var storeUrl = getStoreURL(store.slug || slug);
+      var urlEl = document.getElementById('store-preview-url');
+      if (urlEl) { urlEl.textContent = storeUrl; urlEl.href = storeUrl; }
+    }
+  } catch(e) { console.warn('Store settings load error:', e.message); }
+}
+
+async function saveStoreSettings() {
+  var btn   = event.currentTarget;
+  var token = auth.token;
+  var user  = auth.user;
+
+  if (!token || token.startsWith('demo_token')) {
+    toast.info('Login with a real account to save settings');
+    return;
+  }
+  if (!user || !user.store_id) {
+    toast.error('No store found. Please complete store setup first.');
+    return;
+  }
+
+  btnLoading(btn, true);
+  var payload = {
+    name:        getVal('store-name'),
+    tagline:     getVal('store-tagline'),
+    description: getVal('store-desc'),
+    gstin:       getVal('store-gstin'),
+    whatsapp:    getVal('store-whatsapp'),
+    domain:      getVal('store-domain'),
+    address:     getVal('store-address'),
+  };
+
+  if (!payload.name) { toast.error('Store name cannot be empty'); btnLoading(btn, false); return; }
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + user.store_id, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.store || d.id) {
+      toast.success('Store settings saved!');
+      // Update cached user
+      var updated = Object.assign({}, user, { store_name: payload.name });
+      auth.save(token, updated);
+    } else {
+      toast.error(d.error || d.message || 'Save failed');
+    }
+  } catch(e) {
+    toast.error('Server error — is npm run dev running?');
+  }
+  btnLoading(btn, false);
+}
+
+function getStoreURL(slug) {
+  if (!slug) return '#';
+  var host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
+    return '../storefront/home.html?store=' + slug;
+  }
+  if (host.endsWith('.vercel.app')) {
+    return window.location.origin + '/storefront/home.html?store=' + slug;
+  }
+  return 'https://' + slug + '.zkcommerce.in';
+}
+
+function openStorefront() {
+  var user = auth.user;
+  var slug = user ? (user.store_slug || localStorage.getItem('zk_store_slug')) : null;
+  if (!slug) { toast.error('No store URL yet. Save settings first.'); return; }
+  window.open(getStoreURL(slug), '_blank');
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') el.value = val;
+  else el.textContent = val;
+}
+function getVal(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+document.addEventListener('DOMContentLoaded', loadStoreSettings);
+</script>
 </body>
 </html>

@@ -3,98 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sign in — ZKCommerce</title>
+<title>Login — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/design-system.css">
-</head>
-<body>
 <style>
 body{min-height:100vh;background:var(--g-hero);display:flex;align-items:center;justify-content:center;padding:24px}
-.auth-card{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.2)}
-.auth-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:32px;justify-content:center}
-.auth-gem{width:40px;height:40px;border-radius:10px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 16px rgba(255,107,0,.4)}
-.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--zk-dim);font-size:12px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--zk-border)}
+.auth-card{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.auth-gem{width:40px;height:40px;border-radius:10px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+.demo-bar{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:12px;color:#166534;margin-bottom:16px}
+.demo-bar strong{display:block;font-weight:800;margin-bottom:4px;color:#15803D}
+.demo-cred{display:flex;justify-content:space-between;align-items:center;padding:3px 0;cursor:pointer}
+.demo-cred:hover{color:#15803D;font-weight:700}
 </style>
+</head>
+<body>
 <div class="auth-card">
-  <div class="auth-logo"><div class="auth-gem">⚡</div>ZKCommerce</div>
-  <h2 style="font-family:var(--font-display);font-size:24px;font-weight:800;margin-bottom:6px;text-align:center">Welcome back</h2>
-  <p style="font-size:13px;color:var(--zk-muted);text-align:center;margin-bottom:28px">Sign in to your merchant dashboard</p>
+  <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:28px;justify-content:center">
+    <div class="auth-gem">&#9889;</div>ZKCommerce
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:4px;text-align:center">Welcome back</h2>
+  <p style="font-size:13px;color:var(--zk-muted);text-align:center;margin-bottom:24px">Sign in to your ZKCommerce account</p>
+
+  <!-- Quick-fill demo credentials -->
+  <div class="demo-bar">
+    <strong>Demo accounts (click to fill)</strong>
+    <div class="demo-cred" onclick="fillDemo('merchant@zkcommerce.in','demo1234')">
+      Merchant: merchant@zkcommerce.in / demo1234
+    </div>
+    <div class="demo-cred" onclick="fillDemo('admin@zkcommerce.in','demo1234')">
+      Admin: admin@zkcommerce.in / demo1234
+    </div>
+  </div>
+
   <div id="alert-box"></div>
+
   <div class="field-group" style="margin-bottom:14px">
     <label class="field-label">Email address</label>
-    <input type="email" class="field" id="email" placeholder="merchant@example.in" autocomplete="email">
+    <input type="email" id="email" class="field" placeholder="you@store.in"
+           onkeydown="if(event.key==='Enter')doLogin()">
   </div>
   <div class="field-group" style="margin-bottom:6px">
     <label class="field-label">Password</label>
-    <input type="password" class="field" id="password" placeholder="Your password" autocomplete="current-password">
+    <input type="password" id="password" class="field" placeholder="Your password"
+           onkeydown="if(event.key==='Enter')doLogin()">
   </div>
   <div style="text-align:right;margin-bottom:20px">
-    <a href="forgot-password.html" style="font-size:12px;font-weight:700;color:var(--zk-fire)">Forgot password?</a>
+    <a href="forgot-password.html" style="font-size:12px;color:var(--zk-fire);font-weight:700">Forgot password?</a>
   </div>
-  <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Sign in →</button>
-  <div class="divider">or</div>
-  <div style="text-align:center;font-size:13px;color:var(--zk-muted)">
-    New to ZKCommerce? <a href="register.html" style="font-weight:700;color:var(--zk-fire)">Create free account</a>
+
+  <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin()">
+    Sign in &rarr;
+  </button>
+
+  <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--zk-muted)">
+    No account? <a href="register.html" style="color:var(--zk-fire);font-weight:700">Start free trial</a>
   </div>
-  <div style="margin-top:24px;padding:14px;background:var(--zk-chalk);border-radius:10px">
-    <div style="font-size:11px;font-weight:700;color:var(--zk-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Demo accounts</div>
-    <div style="font-size:12px;color:var(--zk-muted);display:flex;flex-direction:column;gap:4px">
-      <span>🏪 <strong>merchant@zkcommerce.in</strong> / demo1234</span>
-      <span>👤 <strong>customer@zkcommerce.in</strong> / demo1234</span>
-      <span>🔧 <strong>admin@zkcommerce.in</strong> / admin1234</span>
-    </div>
-  </div>
+
+  <div id="api-status" style="margin-top:16px;padding:8px 12px;border-radius:8px;font-size:11px;text-align:center;display:none"></div>
 </div>
+
+<script src="../assets/js/app.js"></script>
 <script>
-async function doLogin(){
-  const email=document.getElementById('email').value.trim();
-  const pass=document.getElementById('password').value;
-  const btn=document.getElementById('login-btn');
-  const ab=document.getElementById('alert-box');
-  if(!email||!pass){ab.innerHTML='<div class="alert alert-error" style="margin-bottom:14px">Please enter email and password.</div>';return;}
-  btnLoading(btn,true);
-  try{
-    const res=await api.post('/auth/login',{email,password:pass});
-    if(res.token){
-      auth.save(res.token,res.user);
-      const role=res.user.role;
-      if(role==='merchant'){
-      const setup=localStorage.getItem('zk_setup_complete');
-      window.location.href=setup?'../merchant/dashboard.html':'../merchant/setup.html';
+/* Detect whether API is reachable */
+const API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : (window.ZK ? ZK.api : '/api');
+
+async function checkAPI() {
+  const statusEl = document.getElementById('api-status');
+  try {
+    const r = await fetch('http://localhost:3000/health');
+    const j = await r.json();
+    if (j.status === 'ok') {
+      statusEl.style.display = 'block';
+      statusEl.style.background = '#F0FDF4';
+      statusEl.style.color = '#15803D';
+      statusEl.textContent = 'API connected: ' + API_BASE;
     }
-      else if(role==='admin')window.location.href='../admin/dashboard.html';
-      else window.location.href='../storefront/home.html';
-    }else{
-      ab.innerHTML='<div class="alert alert-error" style="margin-bottom:14px">'+(res.message||'Invalid credentials')+'</div>';
-      btnLoading(btn,false);
-    }
-  }catch(e){
-    // Demo mode fallback
-    const demos={
-      'merchant@zkcommerce.in':'demo1234',
-      'customer@zkcommerce.in':'demo1234',
-      'admin@zkcommerce.in':'admin1234',
-    };
-    const roles={'merchant@zkcommerce.in':'merchant','customer@zkcommerce.in':'customer','admin@zkcommerce.in':'admin'};
-    if(demos[email]===pass){
-      auth.save('demo_token_'+Date.now(),{id:1,name:'Demo User',email,role:roles[email]||'merchant'});
-      const role=roles[email]||'merchant';
-      if(role==='merchant'){
-      const setup=localStorage.getItem('zk_setup_complete');
-      window.location.href=setup?'../merchant/dashboard.html':'../merchant/setup.html';
-    }
-      else if(role==='admin')window.location.href='../admin/dashboard.html';
-      else window.location.href='../storefront/home.html';
-    }else{
-      ab.innerHTML='<div class="alert alert-error" style="margin-bottom:14px">Invalid email or password. Try the demo accounts below.</div>';
-      btnLoading(btn,false);
-    }
+  } catch(e) {
+    statusEl.style.display = 'block';
+    statusEl.style.background = '#FEF9C3';
+    statusEl.style.color = '#854D0E';
+    statusEl.innerHTML = 'API offline. Start server: <strong>npm run dev</strong><br>Demo mode active.';
   }
 }
-document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+checkAPI();
+
+function fillDemo(email, pass) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = pass;
+  document.getElementById('email').focus();
+}
+
+function getRedirect(role) {
+  const setup = localStorage.getItem('zk_setup_complete');
+  if (role === 'merchant') return setup ? '../merchant/dashboard.html' : '../merchant/setup.html';
+  if (role === 'admin')    return '../admin/dashboard.html';
+  return '../storefront/home.html';
+}
+
+function showError(msg) {
+  document.getElementById('alert-box').innerHTML =
+    '<div class="alert alert-error" style="margin-bottom:14px">' + msg + '</div>';
+}
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+  const btn   = document.getElementById('login-btn');
+  if (!email || !pass) { showError('Please enter email and password.'); return; }
+
+  btnLoading(btn, true);
+
+  /* ── Try real API first ── */
+  try {
+    const res = await fetch(API_BASE + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await res.json();
+
+    if (data.token) {
+      auth.save(data.token, data.user);
+      localStorage.setItem('zk_setup_complete', data.user.store_id ? '1' : '');
+      window.location.href = getRedirect(data.user.role);
+      return;
+    }
+    /* API responded but wrong credentials */
+    showError(data.error || data.message || 'Invalid email or password.');
+    btnLoading(btn, false);
+    return;
+  } catch(e) {
+    /* API not running — fall through to demo mode */
+  }
+
+  /* ── Demo mode (API offline) ── */
+  const DEMOS = {
+    'merchant@zkcommerce.in': { pass: 'demo1234', role: 'merchant', id: 2, name: 'Rajan Kumar', store_id: 1 },
+    'admin@zkcommerce.in':    { pass: 'demo1234', role: 'admin',    id: 1, name: 'ZK Admin',   store_id: null },
+    'customer@zkcommerce.in': { pass: 'demo1234', role: 'customer', id: 3, name: 'Priya Nair', store_id: null },
+  };
+  const demo = DEMOS[email.toLowerCase()];
+  if (demo && demo.pass === pass) {
+    auth.save('demo_token_' + Date.now(), { id: demo.id, name: demo.name, email, role: demo.role, store_id: demo.store_id });
+    if (demo.role === 'merchant') localStorage.setItem('zk_setup_complete', '1');
+    window.location.href = getRedirect(demo.role);
+    return;
+  }
+
+  showError('Invalid email or password. <br><small>If API is offline, use demo accounts shown above.</small>');
+  btnLoading(btn, false);
+}
 </script>
-<script src="../../assets/js/app.js"></script>
 </body>
 </html>

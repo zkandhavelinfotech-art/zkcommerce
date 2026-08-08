@@ -1,0 +1,203 @@
+#!/usr/bin/env node
+/**
+ * ZKCommerce v4.1 -- Deployment Manager Launcher
+ * Usage: node deployment/launcher [command] [environment]
+ *
+ * Commands:
+ *   start      [env]   Start API server
+ *   stop       [env]   Stop all processes
+ *   restart    [env]   Restart API server
+ *   status     [env]   Show status of all services
+ *   health     [env]   Run full health check
+ *   deploy     [env]   Full deploy pipeline
+ *   db:create  [env]   Create database
+ *   db:migrate [env]   Run migrations
+ *   db:backup  [env]   Backup database
+ *   db:reset   [env]   Reset database (dev/testing only)
+ *   db:status  [env]   Database status
+ *   build              Build for production
+ *   logs       [svc]   Tail logs
+ *   help               Show this help
+ */
+'use strict';
+
+const { spawn, execSync, spawnSync } = require('child_process');
+const path = require('path');
+const fs   = require('fs');
+
+const [,, cmd, envArg] = process.argv;
+const env = envArg || process.env.NODE_ENV || 'development';
+const ROOT = path.join(__dirname, '..');
+
+// Colours
+const C = {
+  reset: '\x1b[0m', bold: '\x1b[1m',
+  red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m',
+  blue: '\x1b[34m', magenta: '\x1b[35m', cyan: '\x1b[36m'
+};
+
+function banner() {
+  console.log(`${C.bold}${C.magenta}`);
+  console.log('╔══════════════════════════════════════════════╗');
+  console.log('║  ZKCommerce v4.1 -- Deployment Manager       ║');
+  console.log('║  ZKanadavel Infotech Pvt Ltd                 ║');
+  console.log(`╚══════════════════════════════════════════════╝${C.reset}`);
+  console.log(`${C.cyan}  Environment: ${C.bold}${env.toUpperCase()}${C.reset}`);
+  console.log(`${C.cyan}  Command:     ${C.bold}${cmd || 'help'}${C.reset}\n`);
+}
+
+function run(script, args, opts) {
+  const result = spawnSync('node', [path.join(__dirname, 'scripts', script), ...args],
+    { stdio: 'inherit', cwd: ROOT, ...opts });
+  return result.status || 0;
+}
+
+function shell(command, opts) {
+  try {
+    execSync(command, { stdio: 'inherit', cwd: ROOT, ...(opts || {}) });
+    return 0;
+  } catch(e) {
+    return e.status || 1;
+  }
+}
+
+function loadEnv() {
+  const envFile = path.join(__dirname, 'environments', `.env.${env}`);
+  if (fs.existsSync(envFile)) {
+    const lines = fs.readFileSync(envFile, 'utf8').split('\n');
+    lines.forEach(line => {
+      if (!line || line.startsWith('#')) return;
+      const [k, ...v] = line.split('=');
+      if (k && v.length && !process.env[k]) {
+        process.env[k] = v.join('=').trim();
+      }
+    });
+    console.log(`${C.green}[Launcher]${C.reset} Loaded .env.${env}`);
+  } else {
+    console.log(`${C.yellow}[Launcher]${C.reset} No .env.${env} found, using system environment`);
+  }
+}
+
+function showHelp() {
+  console.log(`${C.bold}Usage:${C.reset} node deployment/launcher <command> [environment]\n`);
+  const cmds = [
+    ['start      [env]',   'Start API server with nodemon'],
+    ['stop       [env]',   'Stop all running processes'],
+    ['status     [env]',   'Show service status'],
+    ['health     [env]',   'Full health check (DB, API, env, files)'],
+    ['deploy     [env]',   'Full deploy: health check + migrate + start'],
+    ['db:create  [env]',   'Create database'],
+    ['db:migrate [env]',   'Run all SQL migrations'],
+    ['db:backup  [env]',   'Backup database to deployment/backups/'],
+    ['db:reset   [env]',   'Drop + recreate + migrate (NOT for production)'],
+    ['db:status  [env]',   'Database health and row counts'],
+    ['build',              'Build production Docker image'],
+    ['logs       [svc]',   'Tail application logs'],
+    ['help',               'Show this help'],
+  ];
+  cmds.forEach(([c, d]) =>
+    console.log(`  ${C.cyan}${c.padEnd(22)}${C.reset} ${d}`)
+  );
+  console.log('\nEnvironments: development | testing | staging | production');
+  console.log('\nExamples:');
+  console.log('  node deployment/launcher start development');
+  console.log('  node deployment/launcher health production');
+  console.log('  node deployment/launcher db:backup production');
+  console.log('  node deployment/launcher deploy staging');
+}
+
+// ── COMMAND HANDLERS ─────────────────────────────────────────
+
+const handlers = {
+
+  start() {
+    loadEnv();
+    console.log(`${C.green}[Launcher]${C.reset} Starting API server [${env}]...`);
+    const proc = spawn('npm', ['run', 'dev'], {
+      stdio: 'inherit', cwd: ROOT,
+      env: { ...process.env, NODE_ENV: env }
+    });
+    proc.on('close', code => {
+      console.log(`\n${C.yellow}[Launcher]${C.reset} Server stopped (exit code: ${code})`);
+    });
+  },
+
+  stop() {
+    console.log(`${C.yellow}[Launcher]${C.reset} Stopping processes...`);
+    try { shell('pkill -f "node api/server.js" || true'); } catch(e) {}
+    console.log(`${C.green}[Launcher]${C.reset} Done`);
+  },
+
+  status() {
+    loadEnv();
+    console.log(`\n${C.bold}Service Status [${env}]${C.reset}\n`);
+    const checks = [
+      { name: 'PostgreSQL', cmd: 'pg_isready -h localhost -p 5432 -U postgres 2>&1' },
+      { name: 'Redis',      cmd: 'redis-cli ping 2>&1' },
+      { name: 'API (3000)', cmd: 'curl -s http://localhost:3000/health 2>&1 | head -1' },
+    ];
+    checks.forEach(c => {
+      try {
+        const out = execSync(c.cmd, { encoding: 'utf8' }).trim();
+        const ok  = out.includes('ok') || out.includes('accepting') || out.includes('PONG');
+        console.log(`  ${ok ? C.green+'[UP]  ' : C.yellow+'[DOWN]'}${C.reset} ${c.name}: ${out.slice(0, 60)}`);
+      } catch(e) {
+        console.log(`  ${C.red}[DOWN]${C.reset} ${c.name}: not reachable`);
+      }
+    });
+    console.log('');
+  },
+
+  health() {
+    loadEnv();
+    run('health-check.js', [env]);
+  },
+
+  'db:create'()  { loadEnv(); run('db-manager.js', ['create',  env]); },
+  'db:migrate'() { loadEnv(); run('db-manager.js', ['migrate', env]); },
+  'db:backup'()  { loadEnv(); run('db-manager.js', ['backup',  env]); },
+  'db:reset'()   { loadEnv(); run('db-manager.js', ['reset',   env]); },
+  'db:status'()  { loadEnv(); run('db-manager.js', ['status',  env]); },
+
+  deploy() {
+    loadEnv();
+    console.log(`${C.bold}[Launcher] Starting full deploy [${env}]${C.reset}\n`);
+    console.log('Step 1: Health check...');
+    const hc = run('health-check.js', [env]);
+    if (hc !== 0 && env === 'production') {
+      console.log(`${C.red}[Launcher] Health check failed. Aborting production deploy.${C.reset}`);
+      process.exit(1);
+    }
+    console.log('\nStep 2: Database migration...');
+    run('db-manager.js', ['migrate', env]);
+    console.log('\nStep 3: Starting server...');
+    handlers.start();
+  },
+
+  build() {
+    console.log(`${C.bold}[Launcher] Building production Docker image${C.reset}`);
+    shell('docker build -f deployment/docker/Dockerfile.production -t zkcommerce-api:latest .');
+  },
+
+  logs() {
+    const logDir = path.join(__dirname, 'logs');
+    const logFile = path.join(logDir, 'database.log');
+    if (fs.existsSync(logFile)) {
+      shell(`tail -f "${logFile}"`);
+    } else {
+      console.log('No log files found yet. Start the application first.');
+    }
+  },
+
+  help() { showHelp(); },
+};
+
+// ── MAIN ─────────────────────────────────────────────────────
+banner();
+
+if (!cmd || cmd === 'help' || !handlers[cmd]) {
+  showHelp();
+  process.exit(0);
+}
+
+handlers[cmd]();

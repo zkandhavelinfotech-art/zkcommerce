@@ -13,4 +13,42 @@
   </div>
 </div>
 <script>function doSrch(){const q=document.getElementById('sq').value.trim();if(q)document.getElementById('srch-lbl').innerHTML='Results for <strong>"'+q+'"</strong>';}</script>
-<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script></body></html>
+<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function doSearch() {
+  var q    = (document.getElementById('sq') || {value:''}).value.trim();
+  var params = new URLSearchParams(window.location.search);
+  var slug = params.get('store') || 'rajanTextiles';
+  if (!q) return;
+  document.getElementById('srch-lbl').innerHTML = 'Searching for <strong>"' + q + '"</strong>...';
+  try {
+    var r = await fetch(API_BASE + '/search?q=' + encodeURIComponent(q) + '&slug=' + slug);
+    var d = await r.json();
+    var grid = document.getElementById('search-results');
+    var lbl  = document.getElementById('srch-lbl');
+    if (!d.products || !d.products.length) {
+      if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--zk-muted)">No results for "' + q + '"</div>';
+      if (lbl)  lbl.innerHTML  = 'No results for <strong>"' + q + '"</strong>';
+      return;
+    }
+    if (lbl) lbl.innerHTML = d.products.length + ' results for <strong>"' + q + '"</strong>';
+    if (grid) {
+      grid.innerHTML = d.products.map(function(p) {
+        return '<div class="zk-product-card" onclick="window.location.href=\'product.html?id=' + p.id + '&store=' + slug + '\'">'
+          + '<div class="zk-product-img" style="height:170px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);display:flex;align-items:center;justify-content:center;font-size:36px">&#128722;</div>'
+          + '<div class="zk-product-info"><div class="zk-product-name">' + p.name + '</div>'
+          + '<div class="zk-product-price">' + fmt.inr(p.price) + '</div></div></div>';
+      }).join('');
+    }
+  } catch(e) { document.getElementById('srch-lbl').textContent = 'Search error — is the API running?'; }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var params = new URLSearchParams(window.location.search);
+  var q = params.get('q');
+  if (q) { var sqEl = document.getElementById('sq'); if(sqEl) sqEl.value=q; doSearch(); }
+});
+</script>
+</body></html>

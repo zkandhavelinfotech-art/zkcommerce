@@ -119,5 +119,24 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </div>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadAdminDashboard() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/admin/stats', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    setEl('stat-merchants',    data.merchants||0);
+    setEl('stat-gmv',          fmt.inrCompact(data.gmv_30d||0));
+    setEl('stat-orders',       data.orders_30d||0);
+    setEl('stat-trials',       data.active_trials||0);
+  } catch(e) { console.warn('Admin stats error:', e); }
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAdminDashboard);
+</script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 <title>GST Reports — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -82,6 +82,62 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadGSTReport() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  var month = document.getElementById('gst-month') ? document.getElementById('gst-month').value : new Date().getMonth()+1;
+  var year  = document.getElementById('gst-year')  ? document.getElementById('gst-year').value  : new Date().getFullYear();
+  try {
+    var r = await fetch(API_BASE + '/gst/report?month=' + month + '&year=' + year, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+
+    // Totals
+    if (data.totals) {
+      setEl('gst-taxable', fmt.inr(data.totals.taxable, 2));
+      setEl('gst-cgst',    fmt.inr(data.totals.cgst, 2));
+      setEl('gst-sgst',    fmt.inr(data.totals.sgst, 2));
+      setEl('gst-total',   fmt.inr(data.totals.total, 2));
+    }
+
+    // Table
+    var tbody = document.getElementById('gst-tbody');
+    if (tbody && data.invoices) {
+      if (!data.invoices.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--zk-muted)">No invoices this month</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.invoices.map(function(inv) {
+        return '<tr>'
+          + '<td class="col-primary">INV-' + inv.id + '</td>'
+          + '<td>' + fmt.date(inv.created_at) + '</td>'
+          + '<td>' + (inv.customer_name||'-') + '</td>'
+          + '<td>' + fmt.inr(inv.taxable, 2) + '</td>'
+          + '<td>' + fmt.inr(inv.cgst, 2) + '</td>'
+          + '<td>' + fmt.inr(inv.sgst, 2) + '</td>'
+          + '<td>' + fmt.inr(inv.total, 2) + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+  } catch(e) { console.warn('GST report error:', e); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+
+async function downloadGSTR1() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) { toast.info('Login required to download GSTR-1'); return; }
+  var month = document.getElementById('gst-month') ? document.getElementById('gst-month').value : new Date().getMonth()+1;
+  var year  = document.getElementById('gst-year')  ? document.getElementById('gst-year').value  : new Date().getFullYear();
+  window.location.href = API_BASE + '/gst/gstr1-export?month=' + month + '&year=' + year + '&token=' + token;
+}
+
+document.addEventListener('DOMContentLoaded', loadGSTReport);
+</script>
 </body>
 </html>

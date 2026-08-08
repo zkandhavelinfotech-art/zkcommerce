@@ -62,15 +62,10 @@ FOR EACH ROW EXECUTE FUNCTION update_cart_timestamp();
 -- ============================================================
 --  2. LOYALTY POINTS  (points ledger)
 -- ============================================================
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'loyalty_tx_type') THEN
-    CREATE TYPE loyalty_tx_type AS ENUM (
-      'earn_purchase', 'earn_review', 'earn_referral', 'earn_signup',
-      'redeem', 'expire', 'adjust'
-    );
-  END IF;
-END$$;
+CREATE TYPE IF NOT EXISTS loyalty_tx_type AS ENUM (
+  'earn_purchase', 'earn_review', 'earn_referral', 'earn_signup',
+  'redeem', 'expire', 'adjust'
+);
 
 CREATE TABLE IF NOT EXISTS loyalty_points (
   id            BIGSERIAL         PRIMARY KEY,

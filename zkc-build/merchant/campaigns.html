@@ -6,7 +6,7 @@
 <title>Campaigns — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -76,6 +76,59 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadCampaigns() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/campaigns', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('campaigns-tbody');
+    if (!tbody || !d.campaigns) return;
+    if (!d.campaigns.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--zk-muted)">No campaigns yet. Create your first campaign.</td></tr>'; return; }
+    tbody.innerHTML = d.campaigns.map(function(c) {
+      return '<tr><td class="col-primary">' + c.name + '</td>'
+        + '<td><span class="badge badge-brand">' + c.type + '</span></td>'
+        + '<td><span class="status status-' + (c.status==='sent'?'delivered':'processing') + '">' + c.status + '</span></td>'
+        + '<td>' + (c.sent_count || 0) + '</td>'
+        + '<td>' + fmt.date(c.created_at) + '</td>'
+        + '<td><div style="display:flex;gap:5px">'
+        + (c.status==='draft' ? '<button class="btn btn-primary btn-sm" onclick="sendCampaign(' + c.id + ')">Send</button>' : '')
+        + '<button class="btn btn-secondary btn-sm" onclick="toast.info(\'Campaign analytics coming soon\')">Stats</button>'
+        + '</div></td></tr>';
+    }).join('');
+  } catch(e) {}
+}
+async function sendCampaign(id) {
+  if (!confirm('Send this campaign to all customers?')) return;
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/campaigns/' + id + '/send', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    toast.success('Campaign sent to ' + (d.sent || 0) + ' recipients!');
+    loadCampaigns();
+  } catch(e) { toast.error('Server error'); }
+}
+async function createCampaign() {
+  var name = prompt('Campaign name:');
+  if (!name) return;
+  var type = prompt('Type (email/whatsapp/sms):', 'whatsapp');
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ name: name, type: type || 'whatsapp', content: '', subject: name })
+    });
+    var d = await r.json();
+    if (d.campaign) { toast.success('Campaign created!'); loadCampaigns(); }
+    else toast.error(d.error || 'Failed');
+  } catch(e) { toast.error('Server error'); }
+}
+document.addEventListener('DOMContentLoaded', loadCampaigns);
+</script>
 </body>
 </html>

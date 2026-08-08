@@ -78,5 +78,30 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </div>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+
+async function loadAdminSettings() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/admin/stats', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    setEl('platform-version', 'v4.1.0');
+    setEl('db-tables',        d.db_tables || '36');
+    setEl('api-routes',       '83');
+    setEl('active-merchants', d.merchants || 0);
+  } catch(e) {}
+}
+
+async function saveSettings() {
+  toast.info('Platform settings saved (demo mode — full settings API in v5.0)');
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAdminSettings);
+</script>
 </body>
 </html>

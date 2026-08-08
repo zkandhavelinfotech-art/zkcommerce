@@ -114,18 +114,9 @@ END $$;
 -- ============================================================
 --  3. EMAIL CAMPAIGNS + RECIPIENTS  (Marketing module)
 -- ============================================================
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'campaign_channel') THEN
-    CREATE TYPE campaign_channel AS ENUM ('email', 'sms', 'whatsapp', 'push');
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'campaign_status') THEN
-    CREATE TYPE campaign_status AS ENUM ('draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled');
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recipient_status') THEN
-    CREATE TYPE recipient_status AS ENUM ('pending', 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'unsubscribed');
-  END IF;
-END$$;
+CREATE TYPE IF NOT EXISTS campaign_channel  AS ENUM ('email', 'sms', 'whatsapp', 'push');
+CREATE TYPE IF NOT EXISTS campaign_status   AS ENUM ('draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled');
+CREATE TYPE IF NOT EXISTS recipient_status  AS ENUM ('pending', 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'unsubscribed');
 
 CREATE TABLE IF NOT EXISTS campaigns (
   id              BIGSERIAL         PRIMARY KEY,

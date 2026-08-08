@@ -1,11 +1,20 @@
 {
   "version": 2,
   "name": "zkcommerce",
+  "outputDirectory": ".",
   "builds": [
-    { "src": "**/*.html", "use": "@vercel/static" }
+    { "src": "**/*.html", "use": "@vercel/static" },
+    { "src": "assets/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "https://api.zkcommerce.in/api/$1" },
+    { "src": "/", "dest": "/auth/login.html" },
+    { "src": "/login", "dest": "/auth/login.html" },
+    { "src": "/register", "dest": "/auth/register.html" },
+    { "src": "/dashboard", "dest": "/merchant/dashboard.html" },
+    { "src": "/admin", "dest": "/admin/dashboard.html" },
+    { "src": "/store/(.*)", "dest": "/storefront/home.html" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/(.*\\.html)", "dest": "/$1" },
     { "src": "/(.*)", "dest": "/$1" }
   ],
   "headers": [
@@ -13,9 +22,9 @@
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options",        "value": "DENY" },
-        { "key": "X-XSS-Protection",       "value": "1; mode=block" },
-        { "key": "Referrer-Policy",         "value": "strict-origin-when-cross-origin" }
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     },
     {

@@ -71,5 +71,53 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </table>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadReviews() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/products?limit=100', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    if (!d.products || !d.products.length) return;
+    var allReviews = [];
+    for (var i = 0; i < Math.min(d.products.length, 5); i++) {
+      var pr = await fetch(API_BASE + '/products/' + d.products[i].id + '/reviews?limit=20');
+      var pd = await pr.json();
+      if (pd.reviews) {
+        pd.reviews.forEach(function(rev) { rev.product_name = d.products[i].name; allReviews.push(rev); });
+      }
+    }
+    var tbody = document.getElementById('reviews-tbody');
+    if (!tbody) return;
+    if (!allReviews.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--zk-muted)">No reviews yet.</td></tr>'; return; }
+    tbody.innerHTML = allReviews.map(function(rev) {
+      var stars = Array(rev.rating).fill('*').join('').replace(/\*/g,'&#9733;');
+      return '<tr><td class="col-primary">' + (rev.product_name||'-') + '</td>'
+        + '<td>' + (rev.reviewer_name||'Customer') + '</td>'
+        + '<td style="color:#F59E0B">' + stars + '</td>'
+        + '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (rev.body||'') + '</td>'
+        + '<td><span class="status status-' + (rev.status==='approved'?'delivered':'processing') + '">' + rev.status + '</span></td>'
+        + '<td><div style="display:flex;gap:5px">'
+        + (rev.status!=='approved' ? '<button class="btn btn-primary btn-sm" onclick="moderateReview(' + rev.id + ',\'approved\')">Approve</button>' : '')
+        + (rev.status!=='rejected' ? '<button class="btn btn-secondary btn-sm" onclick="moderateReview(' + rev.id + ',\'rejected\')">Hide</button>' : '')
+        + '</div></td></tr>';
+    }).join('');
+  } catch(e) {}
+}
+async function moderateReview(id, status) {
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/reviews/' + id + '/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: status })
+    });
+    var d = await r.json();
+    if (d.review) { toast.success('Review ' + status); loadReviews(); }
+  } catch(e) { toast.error('Server error'); }
+}
+document.addEventListener('DOMContentLoaded', loadReviews);
+</script>
 </body>
 </html>

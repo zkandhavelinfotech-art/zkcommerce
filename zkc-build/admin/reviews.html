@@ -67,5 +67,24 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </table>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+
+async function loadAdminReviews() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    // Get products across all stores, then their reviews
+    var r    = await fetch(API_BASE + '/admin/merchants?limit=20', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    setEl('merchant-count', data.total || (data.merchants ? data.merchants.length : 0));
+    toast.info('Review moderation across all stores coming in v4.1 final');
+  } catch(e) { console.warn('Admin reviews error:', e.message); }
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAdminReviews);
+</script>
 </body>
 </html>

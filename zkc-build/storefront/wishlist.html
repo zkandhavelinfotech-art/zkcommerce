@@ -33,4 +33,46 @@
   <div id="wl-empty" style="display:none;text-align:center;padding:64px 32px"><div style="font-size:48px;margin-bottom:14px">❤️</div><div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:8px">Wishlist is empty</div><a href="home.html" class="btn btn-primary" style="margin-top:8px">Browse products →</a></div>
 </div>
 <script>function rmWL(i){document.getElementById('wi-'+i).remove();if(!document.querySelectorAll('[id^=wi-]').length)document.getElementById('wl-empty').style.display='block';toast.info('Removed from wishlist');}</script>
-<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script></body></html>
+<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadWishlist() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) { showEmpty(); return; }
+  try {
+    var r = await fetch(API_BASE + '/wishlist', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var grid = document.getElementById('wl');
+    var emptyEl = document.getElementById('wl-empty');
+    if (!d.items || !d.items.length) { showEmpty(); return; }
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (grid) grid.innerHTML = d.items.map(function(item) {
+      return '<div id="wi-' + item.product_id + '" style="background:#fff;border:1px solid var(--zk-border);border-radius:14px;overflow:hidden">'
+        + '<div style="position:relative"><div style="height:180px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);display:flex;align-items:center;justify-content:center;font-size:44px">&#128722;</div>'
+        + '<button onclick="removeWL(' + item.product_id + ')" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:#fff;border:none;font-size:13px;cursor:pointer">X</button></div>'
+        + '<div style="padding:12px"><div style="font-weight:700;margin-bottom:4px">' + item.name + '</div>'
+        + '<div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--zk-fire);margin-bottom:10px">' + fmt.inr(item.price) + '</div>'
+        + '<button class="btn btn-primary btn-sm btn-full" onclick="addToCartFromWL(' + item.product_id + ',\'' + item.name + '\',' + item.price + ')">Add to cart</button></div></div>';
+    }).join('');
+  } catch(e) { showEmpty(); }
+}
+async function removeWL(productId) {
+  var token = auth.token;
+  try {
+    await fetch(API_BASE + '/wishlist/' + productId, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }});
+    document.getElementById('wi-' + productId).remove();
+    toast.info('Removed from wishlist');
+    if (!document.querySelectorAll('[id^=wi-]').length) showEmpty();
+  } catch(e) { toast.error('Error'); }
+}
+function addToCartFromWL(id, name, price) {
+  cart.add({ id: id, name: name, price: price });
+  toast.success('Added to cart!');
+}
+function showEmpty() {
+  var emptyEl = document.getElementById('wl-empty');
+  if (emptyEl) emptyEl.style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', loadWishlist);
+</script>
+</body></html>

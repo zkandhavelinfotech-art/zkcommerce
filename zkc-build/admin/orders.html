@@ -73,6 +73,39 @@ body{background:var(--zk-chalk);overflow-x:hidden}
     </tbody>
   </table>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+async function loadAdminOrders(page, status) {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  var url = API_BASE + '/admin/orders?page=' + (page||1) + '&limit=25';
+  if (status) url += '&status=' + status;
+  try {
+    var r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('orders-tbody');
+    if (!tbody) return;
+    if (!d.orders || !d.orders.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--zk-muted)">No orders found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = d.orders.map(function(o) {
+      return '<tr><td class="col-primary">' + fmt.orderId(o.id) + '</td>'
+        + '<td>' + (o.store_name||'-') + '</td>'
+        + '<td>' + (o.customer_name||'-') + '</td>'
+        + '<td>' + fmt.inr(o.total) + '</td>'
+        + '<td>' + (o.payment_method||'-') + '</td>'
+        + '<td><span class="status status-' + o.payment_status + '">' + o.payment_status + '</span></td>'
+        + '<td><span class="status status-' + o.status + '">' + o.status + '</span></td>'
+        + '<td>' + fmt.date(o.created_at) + '</td></tr>';
+    }).join('');
+    var totEl = document.getElementById('orders-total');
+    if (totEl) totEl.textContent = (d.total||d.orders.length) + ' orders';
+  } catch(e) { console.warn('Admin orders:', e.message); }
+}
+document.addEventListener('DOMContentLoaded', function(){ loadAdminOrders(1); });
+</script>
 </body>
 </html>

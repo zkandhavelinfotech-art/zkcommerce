@@ -35,4 +35,39 @@
     </div>
   </div>
 </div>
-<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script></body></html>
+<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var params = new URLSearchParams(window.location.search);
+var SLUG = params.get('store') || localStorage.getItem('zk_store_slug') || 'rajanTextiles';
+var CAT  = params.get('cat') || '';
+
+async function loadCategory(page) {
+  var url = API_BASE + '/storefront/' + SLUG + '/products?page=' + (page||1) + '&limit=9';
+  if (CAT) url += '&category=' + CAT;
+  try {
+    var r = await fetch(url);
+    var d = await r.json();
+    var grid = document.getElementById('cat-grid');
+    if (!grid) return;
+    if (!d.products || !d.products.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--zk-muted)">No products found</div>';
+      return;
+    }
+    grid.innerHTML = d.products.map(function(p) {
+      return '<div class="zk-product-card" onclick="window.location.href=\'product.html?id='+p.id+'&store='+SLUG+'\'">'
+        +'<div style="height:180px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);display:flex;align-items:center;justify-content:center;font-size:40px">&#128722;</div>'
+        +'<div style="padding:12px"><div style="font-weight:700;margin-bottom:4px">'+p.name+'</div>'
+        +'<div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--zk-fire)">'+fmt.inr(p.price)+'</div>'
+        +'<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px" onclick="event.stopPropagation();cart.add({id:'+p.id+',name:\''+p.name.replace(/'/g,"\\'")+ '\',price:'+p.price+'});toast.success(\'Added!\')">Add to cart</button>'
+        +'</div></div>';
+    }).join('');
+    var totEl = document.getElementById('product-count');
+    if (totEl) totEl.textContent = (d.total||d.products.length) + ' products';
+  } catch(e) { console.warn('Category:', e.message); }
+}
+document.addEventListener('DOMContentLoaded', function(){ loadCategory(1); });
+</script>
+</body></html>

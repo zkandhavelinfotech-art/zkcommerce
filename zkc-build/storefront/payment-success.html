@@ -23,4 +23,28 @@
     <a href="home.html" class="btn btn-secondary">Continue shopping</a>
   </div>
 </div>
-<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script></body></html>
+<footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadSuccess() {
+  var params = new URLSearchParams(window.location.search);
+  var orderId = params.get('order');
+  if (!orderId) return;
+  setEl('order-id', '#ZK-' + String(orderId).padStart(5,'0'));
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/orders/' + orderId, { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    if (d.order) {
+      var o = d.order;
+      setEl('order-total', fmt.inr(o.total));
+      setEl('order-date',  fmt.date(o.created_at));
+      setEl('loyalty-earned', Math.floor(o.total).toLocaleString('en-IN'));
+    }
+  } catch(e) {}
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadSuccess);
+</script>
+</body></html>

@@ -114,7 +114,7 @@ const handlers = {
     loadEnv();
     console.log(`${C.green}[Launcher]${C.reset} Starting API server [${env}]...`);
     const proc = spawn('npm', ['run', 'dev'], {
-      stdio: 'inherit', cwd: ROOT, shell: true,
+      stdio: 'inherit', cwd: ROOT,
       env: { ...process.env, NODE_ENV: env }
     });
     proc.on('close', code => {
@@ -124,14 +124,7 @@ const handlers = {
 
   stop() {
     console.log(`${C.yellow}[Launcher]${C.reset} Stopping processes...`);
-    try {
-      if (process.platform === 'win32') {
-        shell('taskkill /f /im nodemon.exe /t 2>nul || true');
-        shell('wmic process where "commandline like \'%api/server.js%\'" call terminate 2>nul || true');
-      } else {
-        shell('pkill -f "node api/server.js" || true');
-      }
-    } catch(e) {}
+    try { shell('pkill -f "node api/server.js" || true'); } catch(e) {}
     console.log(`${C.green}[Launcher]${C.reset} Done`);
   },
 
@@ -141,7 +134,7 @@ const handlers = {
     const checks = [
       { name: 'PostgreSQL', cmd: 'pg_isready -h localhost -p 5432 -U postgres 2>&1' },
       { name: 'Redis',      cmd: 'redis-cli ping 2>&1' },
-      { name: 'API (3000)', cmd: 'curl -s http://localhost:3000/health' },
+      { name: 'API (3000)', cmd: 'curl -s http://localhost:3000/health 2>&1 | head -1' },
     ];
     checks.forEach(c => {
       try {

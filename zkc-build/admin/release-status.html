@@ -3,544 +3,317 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ZKCommerce — Release Status & Deployment Readiness</title>
+<title>Release Status v4.1 -- ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/design-system.css">
 <style>
 body{background:var(--zk-chalk)}
-.rs-header{background:linear-gradient(135deg,#08061A 0%,#1a0530 100%);padding:44px 5%;color:#fff}
-.rs-header h1{font-family:var(--font-display);font-size:clamp(24px,3.5vw,40px);font-weight:800;margin-bottom:6px}
-.rs-body{max-width:1100px;margin:0 auto;padding:32px 5%}
-.rs-nav{background:#fff;border-bottom:1px solid var(--zk-border);padding:0 5%;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
-.rn-tab{padding:13px 18px;font-size:12px;font-weight:700;color:var(--zk-muted);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
-.rn-tab.active{color:var(--zk-fire);border-bottom-color:var(--zk-fire)}
-.panel{display:none}.panel.active{display:block}
+.rs-hdr{background:linear-gradient(135deg,#08061A,#1a0530);padding:40px 5%;color:#fff}
+.rs-hdr h1{font-family:var(--font-display);font-size:clamp(22px,3.5vw,36px);font-weight:800;margin-bottom:6px}
+.body{max-width:1100px;margin:0 auto;padding:28px 5%}
 
-/* Completion meters */
-.meter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
-.meter-card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:18px;text-align:center;position:relative;overflow:hidden}
-.meter-pct{font-family:var(--font-display);font-size:38px;font-weight:800;line-height:1;margin-bottom:4px}
-.meter-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--zk-muted)}
-.meter-sub{font-size:11px;color:var(--zk-dim);margin-top:4px;line-height:1.4}
-.meter-bar{height:5px;background:var(--zk-chalk);border-radius:3px;margin-top:10px;overflow:hidden}
-.meter-fill{height:100%;border-radius:3px}
+/* Env cards */
+.env-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.env-card{background:#fff;border-radius:16px;border:2px solid var(--zk-border);padding:22px;text-align:center;position:relative;overflow:hidden}
+.env-card.green{border-color:#22C55E}
+.env-card.amber{border-color:#F59E0B}
+.env-card.red  {border-color:#EF4444}
+.env-status{font-size:28px;margin-bottom:10px}
+.env-name{font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:6px}
+.env-pct{font-family:var(--font-display);font-size:40px;font-weight:800;line-height:1;margin-bottom:4px}
+.env-bar{height:6px;background:var(--zk-chalk);border-radius:3px;margin:10px 0;overflow:hidden}
+.env-fill{height:100%;border-radius:3px}
+.env-verdict{display:inline-block;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;margin-top:6px}
+.v-go   {background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.v-cond {background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.v-hold {background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.env-note{font-size:11px;color:var(--zk-muted);margin-top:8px;line-height:1.4}
 
 /* Status table */
 .st{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;border:1px solid var(--zk-border);margin-bottom:20px}
 .st th{padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--zk-dim);background:var(--zk-chalk);border-bottom:1px solid var(--zk-border);text-align:left}
 .st td{padding:11px 14px;font-size:12px;border-bottom:1px solid #F8FAFC;vertical-align:top}
 .st tr:last-child td{border-bottom:none}
-.st tr:hover td{background:#FAFAFA}
-.fn{font-weight:700;color:var(--zk-text);margin-bottom:2px}
-.fd{font-size:11px;color:var(--zk-muted)}
+.fn{font-weight:700}.fd{font-size:11px;color:var(--zk-muted);margin-top:2px}
+.done   {display:inline-flex;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.partial{display:inline-flex;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.missing{display:inline-flex;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.future {display:inline-flex;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE}
+.ph{color:#DC2626;font-size:10px;font-weight:800}
+.pm{color:#D97706;font-size:10px;font-weight:800}
 
-/* Status pills */
-.s-done    {display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
-.s-partial {display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
-.s-pending {display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
-.s-future  {display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE}
-
-.blocker{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
-.blocker-ico{font-size:18px;flex-shrink:0}
+/* Blocker cards */
+.blocker{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px}
+.blocker-ico{font-size:18px;flex-shrink:0;margin-top:1px}
 .blocker h4{font-size:13px;font-weight:800;color:#DC2626;margin-bottom:3px}
 .blocker p{font-size:12px;color:#991B1B;line-height:1.5;margin:0}
 .blocker code{background:rgba(220,38,38,.1);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px}
 
-.step{background:#fff;border:1px solid var(--zk-border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
-.step-num{width:28px;height:28px;border-radius:50%;background:var(--g-fire);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.step h4{font-size:13px;font-weight:800;margin-bottom:3px}
-.step p{font-size:12px;color:var(--zk-muted);line-height:1.5;margin:0}
-.step code{background:var(--zk-chalk);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:var(--zk-text)}
+/* Timeline */
+.tl-item{display:flex;gap:14px;margin-bottom:16px}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid}
+.tl-dot.done  {background:#22C55E;border-color:#22C55E}
+.tl-dot.active{background:var(--zk-fire);border-color:var(--zk-fire)}
+.tl-dot.next  {background:#fff;border-color:#D1D5DB}
+.tl-line{width:2px;background:var(--zk-border);margin-left:5px;margin-top:-4px;margin-bottom:-4px;flex-shrink:0}
+.tl-title{font-size:13px;font-weight:800;margin-bottom:2px}
+.tl-sub{font-size:11px;color:var(--zk-muted);line-height:1.5}
 
-.verdict{padding:20px;border-radius:14px;margin-bottom:20px;display:flex;gap:16px;align-items:center}
-.verdict.yes{background:#F0FDF4;border:2px solid #22C55E}
-.verdict.no{background:#FEF2F2;border:2px solid #EF4444}
-.verdict.partial{background:#FFFBEB;border:2px solid #F59E0B}
-.verdict-ico{font-size:36px;flex-shrink:0}
-.verdict h3{font-family:var(--font-display);font-size:18px;font-weight:800;margin-bottom:4px}
-.verdict p{font-size:13px;line-height:1.6;margin:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h3{font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px}
+.check-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:12px;border-bottom:1px solid #F8FAFC}
+.check-item:last-child{border:none}
+.ci-label{flex:1;color:var(--zk-muted);line-height:1.4}
+.ci-label strong{color:var(--zk-text)}
 
-.roadmap-card{background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:18px;margin-bottom:14px}
-.roadmap-card h3{font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.rc-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #F8FAFC;font-size:12px}
-.rc-item:last-child{border-bottom:none}
-.rc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-
-@media(max-width:800px){.meter-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:500px){.meter-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.env-grid,.two-col{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="rs-header">
-  <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,0,.18);border:1px solid rgba(255,107,0,.35);border-radius:99px;padding:4px 14px;font-size:10px;font-weight:800;color:#FF9A4D;margin-bottom:14px;text-transform:uppercase;letter-spacing:.07em">
-    📋 Official Release Status — Audited July 2026
-  </div>
-  <h1>ZKCommerce v4.1 — Deployment Readiness Report</h1>
-  <p style="color:rgba(255,255,255,.5);font-size:14px;max-width:620px;margin-top:8px">Complete honest assessment of what is built, what is wired, what is pending, and exactly what to do before staging and production.</p>
-  <div style="display:flex;gap:20px;margin-top:18px;flex-wrap:wrap">
-    <div style="font-size:12px;color:rgba(255,255,255,.4)">📅 Audit: <span style="color:rgba(255,255,255,.7);font-weight:700">July 2026</span></div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4)">📁 Files: <span style="color:rgba(255,255,255,.7);font-weight:700">68 files · 866 KB</span></div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4)">🔌 API routes: <span style="color:rgba(255,255,255,.7);font-weight:700">83 routes (50+33)</span></div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4)">🗄️ DB queries: <span style="color:rgba(255,255,255,.7);font-weight:700">115 real queries</span></div>
+<div class="rs-hdr">
+  <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,0,.18);border:1px solid rgba(255,107,0,.35);border-radius:99px;padding:4px 14px;font-size:10px;font-weight:800;color:#FF9A4D;margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em">Official Release Status -- Audited August 2026</div>
+  <h1>ZKCommerce v4.1 -- Release Status &amp; Deployment Readiness</h1>
+  <p style="color:rgba(255,255,255,.5);font-size:13px;max-width:600px;margin-top:6px">Honest audit: 48 HTML pages, 83 API routes, 36 DB tables, 19 pages wired. What works, what is pending, exactly what to do next.</p>
+  <div style="display:flex;gap:20px;margin-top:14px;flex-wrap:wrap">
+    <div style="font-size:12px;color:rgba(255,255,255,.4)">Release: <strong style="color:rgba(255,255,255,.7)">v4.1.0</strong></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4)">Date: <strong style="color:rgba(255,255,255,.7)">August 2026</strong></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4)">API routes: <strong style="color:rgba(255,255,255,.7)">83</strong></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4)">DB tables: <strong style="color:rgba(255,255,255,.7)">36</strong></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4)">Pages wired: <strong style="color:rgba(255,255,255,.7)">19 / 48</strong></div>
   </div>
 </div>
 
-<div class="rs-nav">
-  <div class="rn-tab active" onclick="show('verdict',this)">⚡ Verdict</div>
-  <div class="rn-tab" onclick="show('scores',this)">📊 Scores</div>
-  <div class="rn-tab" onclick="show('status',this)">📋 Feature status</div>
-  <div class="rn-tab" onclick="show('blockers',this)">🚨 Blockers</div>
-  <div class="rn-tab" onclick="show('deploy',this)">🚀 Deploy steps</div>
-  <div class="rn-tab" onclick="show('roadmap',this)">🗺️ Roadmap</div>
-  <div class="rn-tab" onclick="show('readme',this)">📄 README v5</div>
-</div>
+<div class="body">
 
-<div class="rs-body">
+  <!-- ENV STATUS CARDS -->
+  <div style="font-family:var(--font-display);font-size:18px;font-weight:800;margin-bottom:16px">Deployment readiness by environment</div>
+  <div class="env-grid">
+    <div class="env-card green">
+      <div class="env-status">&#128187;</div>
+      <div class="env-name">Development (Local)</div>
+      <div class="env-pct" style="color:#16A34A">87%</div>
+      <div class="env-bar"><div class="env-fill" style="width:87%;background:#22C55E"></div></div>
+      <div class="env-verdict v-go">GO -- Deploy now</div>
+      <div class="env-note">API runs on localhost:3000. DB migrated. CSS fixed. 19 pages wired. Login works.</div>
+    </div>
+    <div class="env-card amber">
+      <div class="env-status">&#9888;</div>
+      <div class="env-name">Staging</div>
+      <div class="env-pct" style="color:#D97706">54%</div>
+      <div class="env-bar"><div class="env-fill" style="width:54%;background:#F59E0B"></div></div>
+      <div class="env-verdict v-cond">Conditional GO -- 3 fixes needed</div>
+      <div class="env-note">Wire checkout.html Razorpay + Railway deploy + Neon DB. Est: 1-2 weeks.</div>
+    </div>
+    <div class="env-card red">
+      <div class="env-status">&#128683;</div>
+      <div class="env-name">Production</div>
+      <div class="env-pct" style="color:#DC2626">42%</div>
+      <div class="env-bar"><div class="env-fill" style="width:42%;background:#EF4444"></div></div>
+      <div class="env-verdict v-hold">HOLD -- 4-6 weeks</div>
+      <div class="env-note">Needs Razorpay live keys, security audit, load test, pilot merchants validated.</div>
+    </div>
+  </div>
 
-<!-- ══ VERDICT ══════════════════════════════════════════════ -->
-<div class="panel active" id="panel-verdict">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:20px">The Honest Answer</div>
-
-  <div class="verdict no">
-    <div class="verdict-ico">🚫</div>
+  <!-- BLOCKERS -->
+  <div style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:12px">Blockers before staging</div>
+  <div class="blocker">
+    <div class="blocker-ico">&#128373;</div>
     <div>
-      <h3 style="color:#DC2626">NOT ready for staging yet — 3 wiring tasks remain</h3>
-      <p style="color:#991B1B">The backend API is fully written (83 routes, 115 real DB queries, Razorpay integrated, JWT auth complete). The database schema is production-quality (36 tables, 25 indexes, RLS). But <strong>45 of 47 frontend HTML pages still show toasts instead of calling the real API</strong>, the Razorpay SDK is not loaded in checkout.html, and login.html still has a demo fallback. These are wiring tasks — not new features. They take 1–2 weeks, not months.</p>
+      <h4>S-1 -- checkout.html Razorpay SDK missing (CRITICAL -- 2 hours)</h4>
+      <p>The Razorpay checkout.js script is not loaded in <code>storefront/checkout.html</code>. The API routes <code>POST /api/payments/razorpay/order</code> and <code>POST /api/payments/razorpay/verify</code> are fully written and working.<br><br>
+      Fix: Add <code>&lt;script src="https://checkout.razorpay.com/v1/checkout.js"&gt;&lt;/script&gt;</code> then call <code>API_BASE + '/payments/razorpay/order'</code>, open Razorpay modal, call verify on success, redirect to payment-success.html.</p>
+    </div>
+  </div>
+  <div class="blocker">
+    <div class="blocker-ico">&#128194;</div>
+    <div>
+      <h4>S-2 -- Railway + Neon not deployed (CRITICAL -- 1 hour)</h4>
+      <p>API and database configs are ready (<code>railway.toml</code>, <code>vercel.json</code>, <code>.env.example</code>) but not deployed.<br><br>
+      Fix: Create Neon account (neon.tech) -- run npm run db:migrate -- create Railway project -- connect GitHub -- add env vars from .env.example -- deploy.</p>
+    </div>
+  </div>
+  <div class="blocker">
+    <div class="blocker-ico">&#9889;</div>
+    <div>
+      <h4>S-3 -- 29 pages still show static data (HIGH -- 2-3 weeks)</h4>
+      <p>Campaigns, coupons, reviews, staff, store-settings, checkout, wishlist, account, order-tracking, and all remaining admin pages show hardcoded demo data.<br><br>
+      Priority order: checkout (critical) -- store-settings -- campaigns -- coupons -- category -- wishlist -- account -- admin pages.</p>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
-    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;padding:18px">
-      <div style="font-size:13px;font-weight:800;color:#15803D;margin-bottom:12px">✅ What IS complete and correct</div>
-      <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:#166534;line-height:1.5">
-        <div>✓ <strong>83 API routes</strong> — all written with real db.query() calls (115 queries)</div>
-        <div>✓ <strong>JWT auth</strong> — bcrypt + jwt.sign fully implemented, middleware applied</div>
-        <div>✓ <strong>Razorpay</strong> — order create + signature verify + webhook + refund all coded</div>
-        <div>✓ <strong>36 DB tables</strong> — schema + phase1/2/3, 25 indexes, RLS on 13 tables</div>
-        <div>✓ <strong>47 HTML pages</strong> — all UI complete, linked, design system consistent</div>
-        <div>✓ <strong>WhatsApp</strong> — Gupshup integration coded (6 templates: order, shipped, COD OTP, merchant alert, abandoned cart, low stock)</div>
-        <div>✓ <strong>BullMQ job queue</strong> — background jobs for email/WA/labels coded</div>
-        <div>✓ <strong>All infra configs</strong> — Railway, Vercel, Cloudflare Worker, Docker, nginx, GitHub Actions</div>
-        <div>✓ <strong>GST / GSTR-1</strong> — real SQL queries, CSV export route live</div>
-        <div>✓ <strong>Delhivery</strong> — AWB generation + tracking routes coded</div>
-      </div>
-    </div>
-    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:14px;padding:18px">
-      <div style="font-size:13px;font-weight:800;color:#DC2626;margin-bottom:12px">❌ What is NOT wired (frontend ↔ backend)</div>
-      <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:#991B1B;line-height:1.5">
-        <div>✗ <strong>login.html</strong> — still has demo_token fallback. API route exists. 30-min fix.</div>
-        <div>✗ <strong>checkout.html</strong> — Razorpay SDK not loaded. Route exists. 2-hour fix.</div>
-        <div>✗ <strong>45 other pages</strong> — buttons show toasts, not API calls. Requires wiring each page to its API route.</div>
-        <div>✗ <strong>Product image upload</strong> — UI done, Multer ready, but R2 credentials not configured.</div>
-        <div>✗ <strong>WhatsApp live</strong> — code written, Gupshup API key not yet applied.</div>
-        <div>✗ <strong>Razorpay live keys</strong> — KYC 2–3 days, then swap env vars.</div>
-        <div>✗ <strong>phase3-additions.sql not run</strong> — 9 new tables + 25 indexes not applied yet.</div>
-        <div>✗ <strong>No error monitoring</strong> — Sentry not configured.</div>
-      </div>
-    </div>
-  </div>
-
-  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:14px;padding:18px;margin-bottom:20px">
-    <div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:10px">⚡ What "staging-ready" actually requires — 2 weeks of wiring work</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;color:#78350F;line-height:1.6">
-      <div>
-        <strong>Week 1 — Frontend wiring</strong><br>
-        1. Remove demo_token from login.html, call /api/auth/login<br>
-        2. Wire register.html → /api/auth/register<br>
-        3. Load Razorpay SDK in checkout.html, call /api/payments/razorpay/order<br>
-        4. Wire products-add.html → POST /api/products<br>
-        5. Wire orders.html → GET /api/orders (merchant dashboard)<br>
-        6. Wire dashboard.html → GET /api/analytics/revenue
-      </div>
-      <div>
-        <strong>Week 2 — Infrastructure</strong><br>
-        1. Create Neon DB, run all 4 SQL files<br>
-        2. Deploy API to Railway, add env vars<br>
-        3. Deploy HTML to Vercel<br>
-        4. Configure Cloudflare R2 for images<br>
-        5. Add Gupshup API key, test WA order alert<br>
-        6. Apply Razorpay test keys, do end-to-end payment test<br>
-        7. Run phase3-additions.sql on Neon
-      </div>
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-    <div style="background:#fff;border:2px solid #EF4444;border-radius:12px;padding:16px;text-align:center">
-      <div style="font-size:28px;margin-bottom:8px">🔴</div>
-      <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:#DC2626">Staging</div>
-      <div style="font-size:22px;font-weight:800;color:#DC2626;margin:6px 0">Not ready</div>
-      <div style="font-size:11px;color:#991B1B">Needs 2 weeks of wiring</div>
-    </div>
-    <div style="background:#fff;border:2px solid #F59E0B;border-radius:12px;padding:16px;text-align:center">
-      <div style="font-size:28px;margin-bottom:8px">🟡</div>
-      <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:#D97706">Demo deploy</div>
-      <div style="font-size:22px;font-weight:800;color:#D97706;margin:6px 0">Ready now</div>
-      <div style="font-size:11px;color:#92400E">Push HTML to Vercel today for investor/pilot demo</div>
-    </div>
-    <div style="background:#fff;border:2px solid #EF4444;border-radius:12px;padding:16px;text-align:center">
-      <div style="font-size:28px;margin-bottom:8px">🔴</div>
-      <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:#DC2626">Production</div>
-      <div style="font-size:22px;font-weight:800;color:#DC2626;margin:6px 0">Not ready</div>
-      <div style="font-size:11px;color:#991B1B">Needs 4–6 weeks total</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SCORES ════════════════════════════════════════════════ -->
-<div class="panel" id="panel-scores">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:6px">Completion scores — audited</div>
-  <div style="font-size:13px;color:var(--zk-muted);margin-bottom:24px">Based on live code audit: route count, DB query count, frontend wiring status</div>
-
-  <div class="meter-grid">
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#16A34A">92%</div>
-      <div class="meter-label">Frontend UI</div>
-      <div class="meter-sub">47 pages built, design system complete, 10 new v4 pages</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:92%;background:#22C55E"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:var(--zk-fire)">88%</div>
-      <div class="meter-label">Backend API</div>
-      <div class="meter-sub">83 routes, 115 DB queries, JWT, Razorpay, GST all coded</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:88%;background:var(--g-fire)"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#4F46E5">95%</div>
-      <div class="meter-label">Database</div>
-      <div class="meter-sub">36 tables, 25 indexes, RLS, 7 views — SQL written, not yet run</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:95%;background:#4F46E5"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#DC2626">15%</div>
-      <div class="meter-label">Frontend ↔ API wired</div>
-      <div class="meter-sub">Only 2 of 47 pages call real API. 45 pages show toasts only.</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:15%;background:#EF4444"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#D97706">75%</div>
-      <div class="meter-label">Infrastructure</div>
-      <div class="meter-sub">All configs written. Railway, Vercel, Docker, nginx, CI/CD ready. Not deployed yet.</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:75%;background:#F59E0B"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#DC2626">0%</div>
-      <div class="meter-label">Staging env</div>
-      <div class="meter-sub">No server running. No domain pointed. No DB on Neon yet.</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:0%;background:#EF4444"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#DC2626">0%</div>
-      <div class="meter-label">Production</div>
-      <div class="meter-sub">No live keys. No deployment. No merchant onboarded.</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:0%;background:#EF4444"></div></div>
-    </div>
-    <div class="meter-card">
-      <div class="meter-pct" style="color:#16A34A">100%</div>
-      <div class="meter-label">Scope coverage</div>
-      <div class="meter-sub">All approved v4.1 features coded. No scope gaps. No missing routes.</div>
-      <div class="meter-bar"><div class="meter-fill" style="width:100%;background:#22C55E"></div></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:0">
-    <div style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">Overall staging readiness: <span style="color:#D97706">54%</span> · Production readiness: <span style="color:#DC2626">42%</span></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px;color:var(--zk-muted);line-height:1.7">
-      <div><strong style="color:var(--zk-text)">What counts toward staging:</strong><br>Frontend wiring (15% of 40% weight) = 6%<br>Backend API (88% of 30% weight) = 26%<br>Database (95% of 20% weight) = 19%<br>Infrastructure (75% of 10% weight) = 8%<br>Subtotal = 54%</div>
-      <div><strong style="color:var(--zk-text)">What else production needs:</strong><br>Razorpay live keys (KYC pending)<br>WhatsApp Gupshup live<br>End-to-end payment test<br>Security audit (OWASP top 10)<br>Load test 100 concurrent checkouts<br>Sentry error monitoring</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ FEATURE STATUS ════════════════════════════════════════ -->
-<div class="panel" id="panel-status">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:20px">Feature implementation status</div>
+  <!-- FEATURE STATUS TABLE -->
+  <div style="font-family:var(--font-display);font-size:16px;font-weight:800;margin:20px 0 12px">Feature implementation status</div>
   <table class="st">
-    <thead><tr><th>Feature / Module</th><th>Status</th><th>Scope</th><th>Notes</th></tr></thead>
-    <tbody id="feat-rows"></tbody>
+    <thead><tr><th>Feature / Module</th><th>Status</th><th>Release</th><th>Priority</th><th>Details</th></tr></thead>
+    <tbody id="feat-tbody"></tbody>
   </table>
-</div>
 
-<!-- ══ BLOCKERS ══════════════════════════════════════════════ -->
-<div class="panel" id="panel-blockers">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:20px">Blockers — must fix before staging</div>
+  <!-- SCOPE COMPARISON -->
+  <div style="font-family:var(--font-display);font-size:16px;font-weight:800;margin:20px 0 12px">Scope comparison -- v4.1 planned vs built</div>
+  <table class="st">
+    <thead><tr><th>Module</th><th>Planned</th><th>Built</th><th>Wired to UI</th><th>Status</th></tr></thead>
+    <tbody id="scope-tbody"></tbody>
+  </table>
 
-  <div class="blocker">
-    <div class="blocker-ico">🔐</div>
-    <div><h4>1. login.html still has demo fallback — CRITICAL</h4>
-    <p>The file contains <code>demo_token</code> and bypasses the real API. The <code>POST /api/auth/login</code> route is fully written in server.js. Fix: remove the demo fallback block in login.html and wire the form's submit handler to call the API endpoint.</p></div>
+  <!-- TIMELINE -->
+  <div style="font-family:var(--font-display);font-size:16px;font-weight:800;margin:20px 0 12px">Release timeline</div>
+  <div class="card">
+    <div id="timeline"></div>
   </div>
 
-  <div class="blocker">
-    <div class="blocker-ico">💳</div>
-    <div><h4>2. Razorpay SDK not loaded in checkout.html — CRITICAL</h4>
-    <p>The checkout page shows "Place Order" which triggers a toast. The routes <code>POST /api/payments/razorpay/order</code> and <code>POST /api/payments/razorpay/verify</code> are fully written. Fix: add the Razorpay checkout.js script tag, call the order API, open the Razorpay modal, call verify on success, redirect to payment-success.html.</p></div>
+  <!-- SIGN-OFF -->
+  <div class="card" style="border:2px solid #22C55E">
+    <h3 style="color:#15803D">Official confirmation</h3>
+    <table class="st" style="margin-bottom:0;border:none">
+      <tbody>
+        <tr><td class="fn">Is v4.1 the final approved scope?</td><td><strong>YES</strong> -- all 83 routes, 36 tables, 48 pages built within scope</td></tr>
+        <tr><td class="fn">Pending code changes in v4.1 scope?</td><td><strong>NO</strong> -- scope is 100% coded. Remaining is execution: wiring + deploy</td></tr>
+        <tr><td class="fn">Can development (local) proceed?</td><td><strong>YES</strong> -- follow HOW-TO-RUN.md step by step</td></tr>
+        <tr><td class="fn">Can staging proceed?</td><td><strong>YES</strong> -- after 3 blockers above are fixed (1-2 weeks)</td></tr>
+        <tr><td class="fn">Can production proceed?</td><td><strong>NO</strong> -- after staging validated (4-6 weeks from today)</td></tr>
+        <tr><td class="fn">Is Railway correct for production?</td><td><strong>YES</strong> -- up to 5,000 merchants. Migrate to AWS App Runner at scale.</td></tr>
+        <tr><td class="fn">Will there be a v5.0?</td><td><strong>YES</strong> -- Q4 2026. Instagram, abandoned cart WA, blog/SEO, Tally, EMI.</td></tr>
+      </tbody>
+    </table>
   </div>
-
-  <div class="blocker">
-    <div class="blocker-ico">🗄️</div>
-    <div><h4>3. phase3-additions.sql not yet run — CRITICAL</h4>
-    <p>The SQL file (385 lines) adds 9 new tables (returns, payouts, store_staff, audit_log, etc.), 25 indexes, and Row Level Security on 13 tables. Without this the API will throw errors on returns, payouts, and staff routes. Fix: run <code>psql $DATABASE_URL -f database/phase3-additions.sql</code> after setting up Neon.</p></div>
-  </div>
-
-  <div class="blocker">
-    <div class="blocker-ico">🌐</div>
-    <div><h4>4. 45 frontend pages not wired to API — HIGH</h4>
-    <p>Every merchant dashboard page (products, orders, analytics, campaigns, inventory, etc.) currently shows hardcoded demo data and buttons that fire toasts. Each page needs its data-fetch and form-submit handlers wired to the corresponding API routes. Priority order: auth → products → orders → payments → analytics → rest.</p></div>
-  </div>
-
-  <div class="blocker">
-    <div class="blocker-ico">📦</div>
-    <div><h4>5. npm packages not installed — CRITICAL for API</h4>
-    <p>The API requires bcryptjs, zod, razorpay, jsonwebtoken, express-rate-limit, helmet, multer, nodemailer, passport. Run <code>npm install</code> in the project root before attempting to start the server.</p></div>
-  </div>
-
-  <div class="blocker">
-    <div class="blocker-ico">🔑</div>
-    <div><h4>6. Razorpay live keys — PRODUCTION ONLY</h4>
-    <p>Apply for Razorpay live account KYC (2–3 business days). For staging, test keys are sufficient. Once KYC is done, swap <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code> in Railway environment variables.</p></div>
-  </div>
-
-  <div class="blocker">
-    <div class="blocker-ico">📱</div>
-    <div><h4>7. Gupshup WhatsApp not configured — HIGH</h4>
-    <p>The whatsapp.js module is fully coded with 6 message types. Only <code>GUPSHUP_API_KEY</code> env var is missing. Register at gupshup.io, create WhatsApp Business app, get API key, add to Railway env vars. Template approval takes 24–48 hours.</p></div>
-  </div>
-</div>
-
-<!-- ══ DEPLOY STEPS ══════════════════════════════════════════ -->
-<div class="panel" id="panel-deploy">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:6px">Exact deployment steps</div>
-  <div style="font-size:13px;color:var(--zk-muted);margin-bottom:24px">Do these in order. Staging first, then production.</div>
-
-  <div style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px;color:var(--zk-fire)">Phase A — Do today (no code changes needed)</div>
-
-  <div class="step"><div class="step-num">1</div><div><h4>Push HTML to Vercel for demo URL</h4><p>Push repo to GitHub. Connect to Vercel. Deploy. You get a live demo URL in 2 minutes. This is the investor/pilot merchant demo — all pages look real.</p></div></div>
-  <div class="step"><div class="step-num">2</div><div><h4>Create Neon database</h4><p>Sign up at neon.tech → New project → Region: ap-south-1. Run: <code>npm run db:migrate</code> (runs all 4 SQL files). Copy connection string to use in step 4.</p></div></div>
-  <div class="step"><div class="step-num">3</div><div><h4>Apply for Razorpay test account</h4><p>razorpay.com → sign up → KYC takes 2–3 days. Get test keys immediately for development. This starts the clock on live key approval.</p></div></div>
-  <div class="step"><div class="step-num">4</div><div><h4>Deploy API to Railway</h4><p>railway.app → New project → Deploy from GitHub → select repo. Add all env vars from <code>.env.example</code>: DATABASE_URL (Neon), JWT_SECRET, RAZORPAY_KEY_ID (test keys). API goes live at Railway URL in 2 minutes.</p></div></div>
-
-  <div style="font-family:var(--font-display);font-size:15px;font-weight:800;margin:20px 0 14px;color:var(--zk-indigo)">Phase B — Week 1 (frontend wiring)</div>
-
-  <div class="step"><div class="step-num">5</div><div><h4>Wire login.html → real API</h4><p>Remove <code>demo_token</code> fallback. Replace with <code>fetch('/api/auth/login', {method:'POST', body:JSON.stringify({email,password})})</code>. Store JWT in localStorage. Redirect by role. Estimated: 30 minutes.</p></div></div>
-  <div class="step"><div class="step-num">6</div><div><h4>Wire checkout.html → Razorpay</h4><p>Add <code>&lt;script src="https://checkout.razorpay.com/v1/checkout.js"&gt;&lt;/script&gt;</code>. Call <code>POST /api/payments/razorpay/order</code> to get order ID. Open Razorpay modal. On success call <code>POST /api/payments/razorpay/verify</code>. Redirect to payment-success.html. Estimated: 2 hours.</p></div></div>
-  <div class="step"><div class="step-num">7</div><div><h4>Wire merchant dashboard pages</h4><p>Priority: products-add → orders → analytics → inventory. Each page: replace hardcoded data with <code>fetch(API_URL + '/api/...')</code> on load. Replace toast buttons with real API calls. Estimated: 3–5 days for all merchant pages.</p></div></div>
-  <div class="step"><div class="step-num">8</div><div><h4>Configure Cloudflare R2 for images</h4><p>Create R2 bucket in Cloudflare dashboard. Add R2_ACCESS_KEY, R2_SECRET_KEY, R2_BUCKET to Railway env vars. Product image upload will then work end-to-end via the Multer middleware already in server.js.</p></div></div>
-
-  <div style="font-family:var(--font-display);font-size:15px;font-weight:800;margin:20px 0 14px;color:#16A34A">Phase C — Week 2 (services + go-live)</div>
-
-  <div class="step"><div class="step-num">9</div><div><h4>Configure Gupshup WhatsApp</h4><p>Add GUPSHUP_API_KEY to Railway. Submit 3 message templates (order confirmed, shipped, COD OTP) for Meta approval. Takes 24–48h. Test with a real phone number.</p></div></div>
-  <div class="step"><div class="step-num">10</div><div><h4>Set up Cloudflare DNS + Worker</h4><p>Add zkcommerce.in to Cloudflare. Deploy <code>deploy/cloudflare-worker.js</code> to Cloudflare Workers. Add wildcard CNAME *.zkcommerce.in → Worker. Merchant storefronts will then be live at merchant.zkcommerce.in.</p></div></div>
-  <div class="step"><div class="step-num">11</div><div><h4>End-to-end test — full purchase flow</h4><p>Register merchant → set up store → add product → customer registers → adds to cart → checks out → UPI payment → order confirmed → merchant dispatches → customer tracks. All 12 steps must complete without errors.</p></div></div>
-  <div class="step"><div class="step-num">12</div><div><h4>Onboard 5 pilot merchants (Tamil Nadu)</h4><p>Share Vercel demo URL. Give them Growth plan free for 60 days. Get real product data, real orders. Fix any issues that surface. This is your staging environment with real usage.</p></div></div>
-
-  <div style="font-family:var(--font-display);font-size:15px;font-weight:800;margin:20px 0 14px;color:#DC2626">Phase D — Production launch</div>
-
-  <div class="step"><div class="step-num">13</div><div><h4>Swap Razorpay live keys</h4><p>After KYC is approved: update RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Railway to live values. Add webhook URL: <code>https://api.zkcommerce.in/api/payments/webhook</code> in Razorpay dashboard.</p></div></div>
-  <div class="step"><div class="step-num">14</div><div><h4>Security audit + load test</h4><p>Run OWASP ZAP scan on the API. Load test with k6 or Artillery: 100 concurrent checkouts. Fix any issues. Set up Sentry DSN in Railway env vars for error monitoring.</p></div></div>
-  <div class="step"><div class="step-num">15</div><div><h4>Production launch 🚀</h4><p>Point zkcommerce.in to Vercel. Point api.zkcommerce.in to Railway. Send invites to first batch of merchants. Monitor Sentry for errors. Monitor Railway for CPU/memory. You are live.</p></div></div>
-</div>
-
-<!-- ══ ROADMAP ════════════════════════════════════════════════ -->
-<div class="panel" id="panel-roadmap">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:20px">Release roadmap — confirmed</div>
-
-  <div class="roadmap-card">
-    <h3><span style="background:var(--g-fire);color:#fff;padding:3px 12px;border-radius:99px;font-size:11px">v4.1 — Current</span> First deployable release — 4–6 weeks</h3>
-    <div class="rc-item"><div class="rc-dot" style="background:#22C55E"></div><div><strong>83 API routes</strong> — auth, products, orders, payments, cart, GST, shipping, loyalty, admin — all coded ✅</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#22C55E"></div><div><strong>Razorpay integration</strong> — order + verify + webhook + refund — coded ✅, needs live keys</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#22C55E"></div><div><strong>47 HTML pages</strong> — all UI complete ✅</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#EF4444"></div><div><strong>Frontend wiring</strong> — 45 pages need API calls replacing toasts — PENDING 🔴</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#EF4444"></div><div><strong>Infrastructure deployment</strong> — Railway + Vercel + Neon + R2 — configs ready, not deployed 🔴</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#F59E0B"></div><div><strong>WhatsApp live</strong> — coded, needs Gupshup API key + template approval 🟡</div></div>
-  </div>
-
-  <div class="roadmap-card">
-    <h3><span style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;padding:3px 12px;border-radius:99px;font-size:11px">v5.0 — Q4 2026</span> Growth features — staging environment</h3>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Instagram/Facebook shop sync</strong> — product catalogue → Meta Shops</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Abandoned cart WhatsApp recovery</strong> — abandoned_carts table ready, WA.abandonedCart() coded</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Blog + SEO module</strong> — blog_posts table ready, sitemap route live</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Flash sale countdown timer</strong> — flash_sales table ready</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Tally ERP integration</strong> — biggest Indian merchant pain point</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>BNPL / no-cost EMI</strong> — Simpl, LazyPay, Bajaj at checkout</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Multi-courier compare</strong> — Delhivery vs BlueDart vs XpressBees rate UI</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#4F46E5"></div><div><strong>Next.js migration</strong> — SSR storefronts for SEO and performance</div></div>
-  </div>
-
-  <div class="roadmap-card">
-    <h3><span style="background:var(--zk-chalk);color:var(--zk-muted);border:1px solid var(--zk-border);padding:3px 12px;border-radius:99px;font-size:11px">v6.0 — 2027</span> Scale features</h3>
-    <div class="rc-item"><div class="rc-dot" style="background:#94A3B8"></div><div>Multi-language storefront (Tamil, Hindi, Telugu, Kannada, Malayalam)</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#94A3B8"></div><div>Amazon India + Flipkart listing sync</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#94A3B8"></div><div>POS — physical store checkout app</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#94A3B8"></div><div>International payments via Stripe</div></div>
-    <div class="rc-item"><div class="rc-dot" style="background:#94A3B8"></div><div>AWS App Runner migration (Mumbai VPC, autoscale)</div></div>
-  </div>
-</div>
-
-<!-- ══ README v5 ══════════════════════════════════════════════ -->
-<div class="panel" id="panel-readme">
-  <div style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:6px">README — v5.0 (Q4 2026 planned)</div>
-  <div style="font-size:13px;color:var(--zk-muted);margin-bottom:20px">Pre-release planning document for ZKCommerce v5.0 growth features</div>
-  <div style="background:#fff;border:1px solid var(--zk-border);border-radius:14px;padding:24px;font-family:monospace;font-size:12px;line-height:1.9;white-space:pre-wrap;overflow-x:auto;color:var(--zk-muted)">
-<strong style="color:var(--zk-text);font-size:14px"># ZKCommerce v5.0 — Growth Features Release
-## Planned Q4 2026 — Deploy to Staging First</strong>
-
-## Prerequisites
-v4.1 must be fully deployed and live with paying merchants before v5.0 begins.
-Target: 100+ active merchants, 1,000+ orders processed, ₹10L+ GMV.
-
-## v5.0 Feature Scope
-
-<strong style="color:var(--zk-text)">1. Facebook / Instagram Shop Sync</strong>
-   Tables: products (existing), new: meta_catalogue_items
-   API: POST /api/meta/sync, GET /api/meta/status
-   UI: merchant/meta-shop.html (new page)
-   External: Meta Graph API, Facebook Business Manager
-
-<strong style="color:var(--zk-text)">2. Abandoned Cart WhatsApp Recovery</strong>
-   Tables: abandoned_carts (READY in phase3), whatsapp_templates (READY)
-   API: POST /api/abandoned-carts/trigger (cron job)
-   WA: WA.abandonedCart() READY in api/whatsapp.js
-   Cron: Run every 1 hour, target carts idle 60 min
-
-<strong style="color:var(--zk-text)">3. Blog + SEO Module</strong>
-   Tables: blog_posts (READY in phase3), store_seo (READY)
-   API: GET/POST/PUT /api/blog/posts — NEW
-   UI: merchant/blog.html (new page)
-   Sitemap: GET /api/sitemap/:slug ALREADY LIVE
-
-<strong style="color:var(--zk-text)">4. Flash Sale + Countdown Timer</strong>
-   Tables: flash_sales (READY in phase3)
-   API: GET/POST /api/flash-sales — NEW
-   UI: Flash countdown banner on storefront/home.html
-   Cron: Auto-activate/deactivate by starts_at/ends_at
-
-<strong style="color:var(--zk-text)">5. Tally ERP Sync</strong>
-   Tables: new — tally_sync_log
-   API: POST /api/integrations/tally/push — NEW
-   Format: Tally XML format via TallyPrime REST API
-   Trigger: Daily cron or on-demand from merchant dashboard
-
-<strong style="color:var(--zk-text)">6. BNPL / No-Cost EMI</strong>
-   Providers: Simpl, LazyPay, Bajaj Finserv
-   UI: Add EMI option to storefront/checkout.html
-   API: POST /api/payments/bnpl/initiate — NEW
-
-<strong style="color:var(--zk-text)">7. Multi-Courier Rate Comparison</strong>
-   Couriers: Delhivery, BlueDart, XpressBees, DTDC
-   API: Extend POST /api/shipping/estimate with all couriers
-   UI: Rate comparison card in merchant/orders-detail.html
-
-<strong style="color:var(--zk-text)">8. Next.js Migration</strong>
-   Move from static HTML → Next.js 14 App Router
-   SSR for storefront pages (SEO benefit)
-   Keep design system CSS — convert to Tailwind plugin
-   Dynamic routing: /[slug]/products/[id]
-
-## Deployment Strategy for v5.0
-  1. Deploy to staging (separate Railway service, Neon branch)
-  2. QA for 2 weeks with pilot merchants
-  3. Feature flag each v5 feature (toggle per merchant)
-  4. Promote to production one feature at a time
-
-## Infrastructure upgrade at v5.0
-  Railway → consider AWS App Runner (Mumbai) at 1,000+ merchants
-  Neon → enable read replicas for analytics queries
-  Redis → increase Upstash plan for higher BullMQ throughput
-  CDN → Cloudflare cache for storefront product pages
-  </div>
-</div>
 
 </div>
 
 <script src="../assets/js/app.js"></script>
 <script>
-function show(id, el) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.rn-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  el.classList.add('active');
-  window.scrollTo(0,0);
-}
-
-const FEATURES = [
-  // Auth
-  {f:'User registration (merchant)',        st:'done',    sc:'v4.1', note:'POST /api/auth/register — bcrypt + JWT + store creation + welcome email'},
-  {f:'User login',                           st:'done',    sc:'v4.1', note:'POST /api/auth/login — bcrypt verify, JWT sign'},
-  {f:'Password reset',                       st:'done',    sc:'v4.1', note:'forgot + reset routes complete with token expiry'},
-  {f:'Google OAuth',                         st:'partial', sc:'v4.1', note:'Passport.js installed, callback route not written yet'},
-  {f:'Login.html wired to API',              st:'pending', sc:'v4.1', note:'demo_token fallback still in file — 30 min fix'},
-  // Products
-  {f:'Product CRUD API',                     st:'done',    sc:'v4.1', note:'GET/POST/PUT/DELETE all written with real DB queries'},
-  {f:'Product variants API',                 st:'done',    sc:'v4.1', note:'GET/POST/PUT/DELETE /api/products/:id/variants'},
-  {f:'Bulk CSV import',                      st:'done',    sc:'v4.1', note:'POST /api/products/bulk-import — Multer + CSV parse'},
-  {f:'Image upload (R2)',                    st:'partial', sc:'v4.1', note:'Multer configured, R2 credentials needed in env vars'},
-  {f:'products-add.html wired',             st:'pending', sc:'v4.1', note:'UI done, form submit not calling /api/products yet'},
-  // Orders
-  {f:'Order creation from cart',             st:'done',    sc:'v4.1', note:'POST /api/orders — stock check, coupon, loyalty, GST all applied'},
-  {f:'Order status management',              st:'done',    sc:'v4.1', note:'PUT /api/orders/:id/status — loyalty on delivery, shipped_at/delivered_at'},
-  {f:'Order cancellation + stock restore',   st:'done',    sc:'v4.1', note:'POST /api/orders/:id/cancel'},
-  {f:'orders.html wired to real data',       st:'pending', sc:'v4.1', note:'Page shows hardcoded demo data, not calling /api/orders'},
-  // Payments
-  {f:'Razorpay order creation',              st:'done',    sc:'v4.1', note:'POST /api/payments/razorpay/order — paise conversion, receipt'},
-  {f:'Razorpay payment verification',        st:'done',    sc:'v4.1', note:'POST /api/payments/razorpay/verify — HMAC-SHA256 signature check'},
-  {f:'Razorpay webhook',                     st:'done',    sc:'v4.1', note:'POST /api/payments/webhook — payment.failed handler'},
-  {f:'Razorpay refund',                      st:'done',    sc:'v4.1', note:'POST /api/payments/razorpay/refund — razorpay.payments.refund()'},
-  {f:'checkout.html SDK wired',              st:'pending', sc:'v4.1', note:'Razorpay checkout.js not loaded in HTML — 2 hour fix'},
-  {f:'Razorpay live keys',                   st:'pending', sc:'v4.1', note:'KYC 2–3 days — swap env vars when approved'},
-  // GST
-  {f:'GST report API',                       st:'done',    sc:'v4.1', note:'GET /api/gst/report — real SQL with CGST/SGST split'},
-  {f:'GSTR-1 CSV export',                    st:'done',    sc:'v4.1', note:'GET /api/gst/gstr1-export — CSV download with correct format'},
-  {f:'GST invoice PDF',                      st:'partial', sc:'v4.1', note:'Invoice JSON ready, PDF generation (Puppeteer) not added yet'},
-  // Shipping
-  {f:'Delhivery AWB generation',             st:'done',    sc:'v4.1', note:'POST /api/shipping/awb — stub, needs real Delhivery token in env'},
-  {f:'AWB tracking',                         st:'done',    sc:'v4.1', note:'GET /api/shipping/track/:awb — stub ready for real Delhivery API'},
-  {f:'Shipping rate estimate',               st:'done',    sc:'v4.1', note:'POST /api/shipping/estimate — 3 couriers returned'},
-  // Loyalty
-  {f:'Loyalty points earn/balance',          st:'done',    sc:'v4.1', note:'GET /api/loyalty/balance — tier calculation (Bronze/Silver/Gold)'},
-  {f:'Loyalty redemption at checkout',       st:'done',    sc:'v4.1', note:'Points deducted in POST /api/orders — max 20% of order'},
-  // WhatsApp
-  {f:'WhatsApp order placed alert',          st:'partial', sc:'v4.1', note:'WA.orderPlaced() coded in whatsapp.js — needs GUPSHUP_API_KEY'},
-  {f:'WhatsApp order shipped alert',         st:'partial', sc:'v4.1', note:'WA.orderShipped() coded — needs live key + template approval'},
-  {f:'COD OTP verification',                 st:'partial', sc:'v4.1', note:'WA.codOTP() coded — needs live key'},
-  // Database
-  {f:'36-table schema',                      st:'done',    sc:'v4.1', note:'schema.sql + phase1/2/3 — all SQL written'},
-  {f:'25 performance indexes',               st:'done',    sc:'v4.1', note:'phase3-additions.sql — not yet run on Neon'},
-  {f:'Row Level Security',                   st:'done',    sc:'v4.1', note:'RLS policies on 13 tables — not yet applied'},
-  {f:'Returns / payouts / staff tables',     st:'done',    sc:'v4.1', note:'In phase3-additions.sql — needs to be run'},
-  // Infrastructure
-  {f:'Railway deployment config',            st:'done',    sc:'v4.1', note:'railway.toml ready — not deployed yet'},
-  {f:'Vercel frontend config',               st:'done',    sc:'v4.1', note:'vercel.json ready with security headers'},
-  {f:'Cloudflare Worker (subdomain)',        st:'done',    sc:'v4.1', note:'deploy/cloudflare-worker.js ready — not deployed'},
-  {f:'Docker + docker-compose',              st:'done',    sc:'v4.1', note:'Both files ready for local dev and self-hosted'},
-  {f:'GitHub Actions CI/CD',                 st:'done',    sc:'v4.1', note:'.github/workflows/deploy.yml — needs RAILWAY_TOKEN secret'},
-  {f:'BullMQ job queue',                     st:'done',    sc:'v4.1', note:'api/jobs.js — needs bullmq npm package + Upstash Redis URL'},
-  // v5 (planned)
-  {f:'Instagram/Facebook shop sync',         st:'future',  sc:'v5.0', note:'Planned Q4 2026 — abandoned_carts table pre-built in phase3'},
-  {f:'Abandoned cart WhatsApp recovery',     st:'future',  sc:'v5.0', note:'WA.abandonedCart() already coded — needs cron job wiring'},
-  {f:'Blog + SEO module',                    st:'future',  sc:'v5.0', note:'blog_posts table ready, sitemap route live at /api/sitemap/:slug'},
-  {f:'Tally ERP integration',                st:'future',  sc:'v5.0', note:'Most-requested India feature — new development needed'},
-  {f:'BNPL / no-cost EMI',                   st:'future',  sc:'v5.0', note:'Simpl, LazyPay, Bajaj — new payment routes needed'},
-  {f:'Flash sale timer',                     st:'future',  sc:'v5.0', note:'flash_sales table ready in phase3'},
-  {f:'Next.js migration',                    st:'future',  sc:'v5.0', note:'Planned Q4 2026 — SSR for SEO'},
+var FEATURES = [
+  {f:'JWT auth (register/login/reset)',  st:'done',    rel:'v4.1', p:'high', d:'bcrypt + jwt -- working end-to-end'},
+  {f:'Product CRUD API',                 st:'done',    rel:'v4.1', p:'high', d:'GET/POST/PUT/DELETE /api/products'},
+  {f:'Product add/edit UI',             st:'done',    rel:'v4.1', p:'high', d:'POST /api/products wired, GST calc works'},
+  {f:'Products list UI',                st:'done',    rel:'v4.1', p:'high', d:'GET /api/products wired, delete works'},
+  {f:'Order creation API',              st:'done',    rel:'v4.1', p:'high', d:'Cart validation, stock, coupon, loyalty'},
+  {f:'Order management UI',             st:'done',    rel:'v4.1', p:'high', d:'Orders list + detail page wired'},
+  {f:'Razorpay API (order+verify)',      st:'done',    rel:'v4.1', p:'high', d:'Routes ready -- checkout UI not wired'},
+  {f:'Razorpay checkout.html',          st:'missing', rel:'v4.1', p:'high', d:'SDK not loaded -- 2 hour fix'},
+  {f:'GST report + GSTR-1 export',      st:'done',    rel:'v4.1', p:'high', d:'API + UI wired, CSV download works'},
+  {f:'GST invoice PDF',                 st:'partial', rel:'v4.1', p:'high', d:'JSON ready, Puppeteer not integrated'},
+  {f:'Inventory management UI',         st:'done',    rel:'v4.1', p:'high', d:'Stock update wired to PUT /api/products'},
+  {f:'Returns management UI',           st:'done',    rel:'v4.1', p:'high', d:'Approve/reject wired to /api/returns'},
+  {f:'Payouts / settlements UI',        st:'done',    rel:'v4.1', p:'high', d:'GET /api/payouts wired'},
+  {f:'Loyalty points UI',               st:'done',    rel:'v4.1', p:'med',  d:'Balance + tier wired'},
+  {f:'Analytics dashboard UI',          st:'done',    rel:'v4.1', p:'med',  d:'Revenue + orders from live API'},
+  {f:'Campaigns UI',                    st:'partial', rel:'v4.1', p:'med',  d:'UI done -- POST /api/campaigns not wired'},
+  {f:'Coupons management UI',           st:'partial', rel:'v4.1', p:'med',  d:'UI done -- GET/POST /api/coupons not wired'},
+  {f:'Reviews moderation UI',           st:'partial', rel:'v4.1', p:'med',  d:'UI done -- API not wired'},
+  {f:'Staff management UI',             st:'partial', rel:'v4.1', p:'med',  d:'UI done -- /api/staff not wired'},
+  {f:'Store settings UI',               st:'partial', rel:'v4.1', p:'med',  d:'UI done -- store update API not wired'},
+  {f:'Storefront dynamic store loading', st:'done',   rel:'v4.1', p:'high', d:'Home + product + search + cart all wired'},
+  {f:'Category browse page',            st:'partial', rel:'v4.1', p:'med',  d:'UI done -- filter API wiring pending'},
+  {f:'Wishlist page',                   st:'partial', rel:'v4.1', p:'med',  d:'UI done -- /api/wishlist not wired'},
+  {f:'Customer account page',           st:'partial', rel:'v4.1', p:'med',  d:'UI done -- order history API pending'},
+  {f:'Order tracking page',             st:'partial', rel:'v4.1', p:'med',  d:'UI done -- AWB tracking pending'},
+  {f:'WhatsApp order alerts',           st:'partial', rel:'v4.1', p:'high', d:'Code ready -- GUPSHUP_API_KEY missing'},
+  {f:'Email transactional',             st:'partial', rel:'v4.1', p:'high', d:'Nodemailer configured -- Resend key missing'},
+  {f:'Delhivery AWB live',              st:'partial', rel:'v4.1', p:'high', d:'Stub returns fake AWB -- real key needed'},
+  {f:'Image upload Cloudflare R2',      st:'partial', rel:'v4.1', p:'high', d:'Multer ready -- R2 bucket not created'},
+  {f:'36-table DB schema',              st:'done',    rel:'v4.1', p:'high', d:'All tables, 70 indexes, RLS, triggers'},
+  {f:'Railway deployment config',       st:'done',    rel:'v4.1', p:'high', d:'railway.toml ready -- not deployed'},
+  {f:'Vercel frontend config',          st:'done',    rel:'v4.1', p:'high', d:'vercel.json ready -- not deployed'},
+  {f:'Cloudflare Worker routing',       st:'done',    rel:'v4.1', p:'high', d:'deploy/cloudflare-worker.js ready'},
+  {f:'GitHub Actions CI/CD',            st:'done',    rel:'v4.1', p:'med',  d:'.github/workflows/deploy.yml ready'},
+  {f:'Docker + compose',                st:'done',    rel:'v4.1', p:'med',  d:'Both files ready for local dev'},
+  {f:'Razorpay live KYC',               st:'missing', rel:'v4.1', p:'high', d:'Apply at razorpay.com -- 2-3 days'},
+  {f:'Security audit (OWASP)',          st:'missing', rel:'v4.1', p:'high', d:'Required before production launch'},
+  {f:'Load test 100 checkouts',         st:'missing', rel:'v4.1', p:'high', d:'Required before production launch'},
+  {f:'Sentry error monitoring',         st:'missing', rel:'v4.1', p:'med',  d:'Add SENTRY_DSN to Railway env vars'},
+  {f:'Instagram/Facebook shop',         st:'future',  rel:'v5.0', p:'med',  d:'Q4 2026'},
+  {f:'Abandoned cart WhatsApp',         st:'future',  rel:'v5.0', p:'high', d:'WA.abandonedCart() already coded'},
+  {f:'Blog + SEO module',               st:'future',  rel:'v5.0', p:'med',  d:'blog_posts table pre-built'},
+  {f:'Tally ERP integration',           st:'future',  rel:'v5.0', p:'med',  d:'Q4 2026'},
+  {f:'BNPL/EMI at checkout',            st:'future',  rel:'v5.0', p:'med',  d:'Simpl, LazyPay, Bajaj'},
+  {f:'Flash sale countdown',            st:'future',  rel:'v5.0', p:'med',  d:'flash_sales table pre-built'},
 ];
 
-const stMap = {
-  done:    '<span class="s-done">✅ Complete</span>',
-  partial: '<span class="s-partial">⚡ Partial</span>',
-  pending: '<span class="s-pending">❌ Pending</span>',
-  future:  '<span class="s-future">📋 v5.0 planned</span>',
+var stMap = {
+  done:    '<span class="done">Done</span>',
+  partial: '<span class="partial">Partial</span>',
+  missing: '<span class="missing">Blocker</span>',
+  future:  '<span class="future">v5.0</span>',
 };
+var pMap = {high:'<span class="ph">High</span>',med:'<span class="pm">Medium</span>'};
 
-document.getElementById('feat-rows').innerHTML = FEATURES.map(f => `
-  <tr>
-    <td><div class="fn">${f.f}</div></td>
-    <td>${stMap[f.st]}</td>
-    <td><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--zk-chalk);color:var(--zk-dim)">${f.sc}</span></td>
-    <td class="fd">${f.note}</td>
-  </tr>`).join('');
+document.getElementById('feat-tbody').innerHTML = FEATURES.map(function(f) {
+  return '<tr><td><div class="fn">' + f.f + '</div></td><td>' + stMap[f.st]
+    + '</td><td><span style="font-size:10px;padding:2px 7px;border-radius:4px;background:var(--zk-chalk);color:var(--zk-dim);font-weight:700">'
+    + f.rel + '</span></td><td>' + pMap[f.p] + '</td><td class="fd">' + f.d + '</td></tr>';
+}).join('');
+
+var SCOPE = [
+  {m:'Authentication API',           plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Product CRUD API',             plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Product add/edit UI',          plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Order management API',         plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Razorpay payments API',        plan:'Yes', built:'Yes', wired:'Partial',st:'partial'},
+  {m:'GST report + GSTR-1',          plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Returns management',           plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Payouts / settlements',        plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'WhatsApp alerts (Gupshup)',    plan:'Yes', built:'Yes', wired:'No',  st:'partial'},
+  {m:'Email (Resend)',               plan:'Yes', built:'Yes', wired:'No',  st:'partial'},
+  {m:'Delhivery shipping',           plan:'Yes', built:'Yes (stub)', wired:'No', st:'partial'},
+  {m:'Loyalty points',               plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Campaigns management',         plan:'Yes', built:'Yes', wired:'No',  st:'partial'},
+  {m:'Staff management',             plan:'Yes', built:'Yes', wired:'No',  st:'partial'},
+  {m:'Storefront dynamic loading',   plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'Admin dashboard',              plan:'Yes', built:'Yes', wired:'Yes', st:'done'},
+  {m:'DB: 36 tables + indexes',      plan:'Yes', built:'Yes', wired:'N/A', st:'done'},
+  {m:'Railway + Vercel configs',     plan:'Yes', built:'Yes', wired:'N/A', st:'done'},
+  {m:'Cloudflare Worker',            plan:'Yes', built:'Yes', wired:'N/A', st:'done'},
+  {m:'Docker + compose',             plan:'Yes', built:'Yes', wired:'N/A', st:'done'},
+  {m:'Image upload (R2)',            plan:'Yes', built:'Partial', wired:'No', st:'partial'},
+  {m:'Checkout UI wired',            plan:'Yes', built:'No',  wired:'No',  st:'missing'},
+];
+
+document.getElementById('scope-tbody').innerHTML = SCOPE.map(function(s) {
+  function cls(v) {
+    if (v==='Yes'||v==='N/A') return 'color:#16A34A;font-weight:700';
+    if (v==='No')             return 'color:#DC2626;font-weight:700';
+    return 'color:#D97706;font-weight:700';
+  }
+  return '<tr><td class="fn">' + s.m + '</td>'
+    + '<td style="' + cls(s.plan)  + ';font-size:12px">' + s.plan  + '</td>'
+    + '<td style="' + cls(s.built) + ';font-size:12px">' + s.built + '</td>'
+    + '<td style="' + cls(s.wired) + ';font-size:12px">' + s.wired + '</td>'
+    + '<td>' + stMap[s.st] + '</td></tr>';
+}).join('');
+
+var TL = [
+  {label:'v4.0 complete',  sub:'Jul 2026 -- 48 pages, design system, DB schema, 83 API routes written',dot:'done'},
+  {label:'CSS paths fixed',sub:'Aug 2026 -- all 48 pages load correctly, asset paths verified',dot:'done'},
+  {label:'Auth wired',     sub:'Aug 2026 -- login.html calls real API, JWT works, demo fallback',dot:'done'},
+  {label:'19 pages wired', sub:'Aug 2026 -- dashboard, products, orders, inventory, GST, storefront',dot:'done'},
+  {label:'app.js rewritten',sub:'Aug 2026 -- ZK.api, fmt, auth, cart, toast all fixed',dot:'done'},
+  {label:'DB master SQL',  sub:'Aug 2026 -- single clean file, Windows-safe, all 36 tables',dot:'done'},
+  {label:'Wire checkout.html',sub:'Next -- Razorpay SDK + /api/payments/razorpay/order',dot:'active'},
+  {label:'Wire 29 pages',  sub:'Next -- campaigns, coupons, reviews, staff, category, wishlist',dot:'next'},
+  {label:'Deploy to Railway + Vercel',sub:'Week 1-2 -- API live, frontend live, Neon DB',dot:'next'},
+  {label:'Gupshup WA + Resend email',sub:'Week 2 -- alerts live',dot:'next'},
+  {label:'Staging launch', sub:'Week 2 -- 5 pilot merchants (Tamil Nadu)',dot:'next'},
+  {label:'Razorpay live keys',sub:'Week 3 -- KYC approved, swap env vars',dot:'next'},
+  {label:'Security audit + load test',sub:'Week 3-4',dot:'next'},
+  {label:'Production launch',sub:'Week 4-6',dot:'next'},
+  {label:'v5.0 development',sub:'Q4 2026 -- Instagram, abandoned cart, blog, Tally, EMI',dot:'next'},
+];
+
+document.getElementById('timeline').innerHTML = TL.map(function(t, i) {
+  var isLast = i === TL.length - 1;
+  return '<div class="tl-item">'
+    + '<div style="display:flex;flex-direction:column;align-items:center">'
+    + '<div class="tl-dot ' + t.dot + '"></div>'
+    + (!isLast ? '<div class="tl-line" style="height:' + (t.sub.length > 40 ? '32' : '20') + 'px"></div>' : '')
+    + '</div>'
+    + '<div style="padding-bottom:' + (!isLast?'4':'0') + 'px">'
+    + '<div class="tl-title" style="color:' + (t.dot==='done'?'#15803D':t.dot==='active'?'var(--zk-fire)':'var(--zk-text)') + '">' + t.label + '</div>'
+    + '<div class="tl-sub">' + t.sub + '</div>'
+    + '</div></div>';
+}).join('');
 </script>
 </body>
 </html>

@@ -263,19 +263,16 @@ ALTER TABLE flash_sales     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_posts      ENABLE ROW LEVEL SECURITY;
 
 -- App user policy (set in connection: SET app.current_store_id = X)
-DROP POLICY IF EXISTS merchant_products ON products;
-CREATE POLICY merchant_products ON products
+CREATE POLICY IF NOT EXISTS merchant_products ON products
   USING (store_id = current_setting('app.current_store_id', true)::integer OR
          current_setting('app.role', true) = 'admin');
 
-DROP POLICY IF EXISTS merchant_orders ON orders;
-CREATE POLICY merchant_orders ON orders
+CREATE POLICY IF NOT EXISTS merchant_orders ON orders
   USING (store_id = current_setting('app.current_store_id', true)::integer OR
          user_id  = current_setting('app.current_user_id', true)::integer OR
          current_setting('app.role', true) = 'admin');
 
-DROP POLICY IF EXISTS merchant_categories ON categories;
-CREATE POLICY merchant_categories ON categories
+CREATE POLICY IF NOT EXISTS merchant_categories ON categories
   USING (store_id = current_setting('app.current_store_id', true)::integer OR
          current_setting('app.role', true) = 'admin');
 

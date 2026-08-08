@@ -214,13 +214,15 @@ function checkDisk() {
   const dbDir   = path.join(process.cwd(), 'database');
   const apiDir  = path.join(process.cwd(), 'api');
   const assDir  = path.join(process.cwd(), 'assets');
-  const sqlFile = path.join(dbDir, 'schema.sql');
+  const envEx   = path.join(process.cwd(), '.env.example');
+  const sqlFile = path.join(dbDir, 'zkcommerce-master.sql');
 
   [
     { p: dbDir,   label: 'database/ folder' },
     { p: apiDir,  label: 'api/ folder' },
     { p: assDir,  label: 'assets/ folder' },
-    { p: sqlFile, label: 'schema.sql' },
+    { p: envEx,   label: '.env.example' },
+    { p: sqlFile, label: 'zkcommerce-master.sql' },
   ].forEach(function(item) {
     if (fs.existsSync(item.p)) {
       record('pass', item.label, 'exists');

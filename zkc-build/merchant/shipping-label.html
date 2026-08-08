@@ -6,7 +6,7 @@
 <title>Shipping Labels — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -72,6 +72,44 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadReadyOrders() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/orders?status=processing&limit=50', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('labels-tbody');
+    if (!tbody || !d.orders) return;
+    if (!d.orders.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--zk-muted)">No orders ready for dispatch.</td></tr>'; return; }
+    tbody.innerHTML = d.orders.map(function(o) {
+      return '<tr>'
+        + '<td><input type="checkbox" value="' + o.id + '" class="order-check" style="width:16px;height:16px"></td>'
+        + '<td class="col-primary">' + fmt.orderId(o.id) + '</td>'
+        + '<td>' + (o.customer_name||'-') + '</td>'
+        + '<td>' + fmt.inr(o.total) + '</td>'
+        + '<td>' + (o.awb_number ? '<span class="badge badge-green">' + o.awb_number + '</span>' : '<span style="color:var(--zk-muted)">Not generated</span>') + '</td>'
+        + '<td><button class="btn btn-primary btn-sm" onclick="genAWB(' + o.id + ')">Generate AWB</button></td>'
+        + '</tr>';
+    }).join('');
+  } catch(e) {}
+}
+async function genAWB(orderId) {
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/shipping/awb', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ order_id: orderId, courier: 'delhivery', weight_kg: 1.0 })
+    });
+    var d = await r.json();
+    if (d.awb_number) { toast.success('AWB: ' + d.awb_number); loadReadyOrders(); }
+    else toast.error(d.error || 'AWB generation failed');
+  } catch(e) { toast.error('Server error'); }
+}
+document.addEventListener('DOMContentLoaded', loadReadyOrders);
+</script>
 </body>
 </html>

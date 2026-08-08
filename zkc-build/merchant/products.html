@@ -6,7 +6,7 @@
 <title>Products — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -89,6 +89,73 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : (window.ZK ? ZK.api : '/api');
+
+async function loadProducts(page, search, status) {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+
+  var url = API_BASE + '/products?page=' + (page||1) + '&limit=20';
+  if (search)  url += '&search='  + encodeURIComponent(search);
+  if (status)  url += '&status='  + status;
+
+  try {
+    var r    = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    var data = await r.json();
+
+    var tbody = document.getElementById('products-tbody');
+    if (!tbody) return;
+
+    if (!data.products || !data.products.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--zk-muted)">No products found. <a href="products-add.html" style="color:var(--zk-fire);font-weight:700">Add your first product</a></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.products.map(function(p) {
+      return '<tr>'
+        + '<td><div style="display:flex;align-items:center;gap:10px">'
+        + (p.main_image ? '<img src="' + p.main_image + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover">' : '<div style="width:40px;height:40px;border-radius:8px;background:var(--zk-chalk);display:flex;align-items:center;justify-content:center;font-size:18px">&#128722;</div>')
+        + '<div><div class="col-primary">' + p.name + '</div><div style="font-size:11px;color:var(--zk-dim)">' + (p.category_name||'Uncategorised') + '</div></div></div></td>'
+        + '<td>' + fmt.inr(p.price) + '</td>'
+        + '<td><span style="color:' + (p.stock <= p.low_stock_alert ? '#DC2626' : '#16A34A') + ';font-weight:700">' + p.stock + '</span></td>'
+        + '<td><span class="status status-' + (p.status === 'published' ? 'delivered' : 'processing') + '">' + p.status + '</span></td>'
+        + '<td>' + fmt.date(p.created_at) + '</td>'
+        + '<td><div style="display:flex;gap:6px">'
+        + '<a href="products-add.html?id=' + p.id + '" class="btn btn-secondary btn-sm">Edit</a>'
+        + '<button class="btn btn-secondary btn-sm" onclick="deleteProduct(' + p.id + ')" style="color:#DC2626">Delete</button>'
+        + '</div></td>'
+        + '</tr>';
+    }).join('');
+
+    var totEl = document.getElementById('products-total');
+    if (totEl) totEl.textContent = (data.total || data.products.length) + ' products';
+
+  } catch(e) { console.warn('Products load error:', e); }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Archive this product? It will be hidden from your store.')) return;
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/products/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    if (data.message) {
+      toast.success('Product archived');
+      loadProducts(1);
+    } else {
+      toast.error(data.error || 'Delete failed');
+    }
+  } catch(e) { toast.error('Server error'); }
+}
+
+document.addEventListener('DOMContentLoaded', function(){ loadProducts(1); });
+</script>
 </body>
 </html>

@@ -49,4 +49,49 @@
     </div>
   </div>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script></body></html>
+</div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var MID = new URLSearchParams(window.location.search).get('id');
+
+async function loadMerchantDetail() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token') || !MID) return;
+  try {
+    var r = await fetch(API_BASE + '/admin/merchants/' + MID, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    var m = d.merchant || d;
+    if (!m || !m.name) return;
+    setEl('merchant-name',  m.name);
+    setEl('merchant-email', m.owner_email || '-');
+    setEl('merchant-plan',  m.plan || '-');
+    setEl('merchant-gmv',   fmt.inrCompact(m.total_gmv || 0));
+    setEl('merchant-orders',m.order_count || 0);
+    setEl('merchant-products', m.product_count || 0);
+    setEl('merchant-status', m.is_active ? 'Active' : 'Suspended');
+    setEl('merchant-since',  fmt.date(m.created_at));
+  } catch(e) { console.warn('Merchant detail error:', e.message); }
+}
+
+async function suspendMerchant() {
+  var token = auth.token;
+  if (!MID || !token || token.startsWith('demo_token')) { toast.info('Demo mode'); return; }
+  if (!confirm('Suspend this merchant? Their store will go offline.')) return;
+  try {
+    var r = await fetch(API_BASE + '/admin/merchants/' + MID, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ is_active: false })
+    });
+    var d = await r.json();
+    toast.success('Merchant suspended');
+    loadMerchantDetail();
+  } catch(e) { toast.error('Server error'); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadMerchantDetail);
+</script>
+</body></html>

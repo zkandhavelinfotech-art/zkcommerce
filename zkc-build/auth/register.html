@@ -6,7 +6,7 @@
 <title>Create account — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -67,6 +67,57 @@ async function doRegister(){
   }
 }
 </script>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : (window.ZK ? ZK.api : '/api');
+
+async function doRegister() {
+  var btn = event.currentTarget;
+  var ab  = document.getElementById('alert-box');
+  var data = {
+    firstName: document.getElementById('fname').value.trim(),
+    lastName:  document.getElementById('lname').value.trim(),
+    email:     document.getElementById('email').value.trim(),
+    phone:     document.getElementById('phone').value.trim(),
+    storeName: document.getElementById('store').value.trim(),
+    password:  document.getElementById('password').value,
+  };
+  if (!data.email || !data.password || !data.storeName || !data.phone) {
+    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Please fill all required fields.</div>';
+    return;
+  }
+  if (data.password.length < 8) {
+    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Password must be at least 8 characters.</div>';
+    return;
+  }
+  var phoneRe = /^[6-9][0-9]{9}$/;
+  if (!phoneRe.test(data.phone)) {
+    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Enter a valid 10-digit Indian mobile number.</div>';
+    return;
+  }
+  btnLoading(btn, true);
+  try {
+    var res  = await fetch(API_BASE + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    var json = await res.json();
+    if (json.token) {
+      auth.save(json.token, json.user);
+      localStorage.setItem('zk_setup_complete', '');
+      window.location.href = '../merchant/setup.html';
+      return;
+    }
+    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">' +
+      (json.error || json.message || 'Registration failed. Try again.') + '</div>';
+  } catch(e) {
+    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Cannot reach server. Make sure <strong>npm run dev</strong> is running at http://localhost:3000</div>';
+  }
+  btnLoading(btn, false);
+}
+</script>
 </body>
 </html>

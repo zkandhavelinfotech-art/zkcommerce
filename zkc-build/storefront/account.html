@@ -6,7 +6,7 @@
 <title>My Account — Rajan Textiles — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100">
   <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800">
@@ -57,6 +57,45 @@
     <div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳 Made in Tamil Nadu</div>
     <div style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Rajan Textiles. All rights reserved.</div>
   </div>
-</footer><script src="../../assets/js/app.js"></script>
+</footer><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadAccount() {
+  var token = auth.token;
+  var user  = auth.user;
+  if (!token || token.startsWith('demo_token')) { showDemoProfile(); return; }
+  setEl('user-name',  user ? user.name : '');
+  setEl('user-email', user ? user.email : '');
+  try {
+    var r = await fetch(API_BASE + '/orders', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('account-orders');
+    if (tbody && d.orders && d.orders.length) {
+      tbody.innerHTML = d.orders.map(function(o) {
+        return '<tr><td class="col-primary">' + fmt.orderId(o.id) + '</td>'
+          + '<td>' + (o.item_count||1) + ' items</td>'
+          + '<td>' + fmt.inr(o.total) + '</td>'
+          + '<td><span class="status status-' + o.status + '">' + o.status + '</span></td>'
+          + '<td>' + fmt.date(o.created_at) + '</td>'
+          + '<td><a href="order-tracking.html?id=' + o.id + '" class="btn btn-secondary btn-sm">Track</a></td>'
+          + '</tr>';
+      }).join('');
+    }
+    var lr = await fetch(API_BASE + '/loyalty/balance', { headers: { 'Authorization': 'Bearer ' + token }});
+    var ld = await lr.json();
+    if (ld.balance !== undefined) {
+      setEl('loyalty-balance', ld.balance.toLocaleString('en-IN'));
+      setEl('loyalty-tier',   ld.tier || 'Bronze');
+      setEl('loyalty-worth',  fmt.inr(ld.worth || 0));
+    }
+  } catch(e) {}
+}
+function showDemoProfile() {
+  setEl('user-name',  'Priya Nair (Demo)');
+  setEl('user-email', 'customer@zkcommerce.in');
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAccount);
+</script>
 </body>
 </html>

@@ -1,410 +1,252 @@
-/* ═══════════════════════════════════════════════════════
-   ZKCommerce App Utilities v3
-   ZKanadavel Infotech Pvt Ltd & ZK Infotech INC
-   ═══════════════════════════════════════════════════════ */
-
+/**
+ * ZKCommerce v4.1 — Unified Utility Library
+ * URL auto-detection: file:// → localhost:3000 | Railway/custom → env-based
+ */
 'use strict';
 
-/* ── CONFIG ────────────────────────────────────────── */
-const ZK = {
-  version: '3.0.0',
-  brand:   'ZKCommerce',
-  company: 'ZKanadavel Infotech Pvt Ltd',
-  api:     window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api',
-  currency:'₹',
-};
+/* ── API base URL — works for ALL environments ───────────────
+   file://        → http://localhost:3000/api  (local dev, HTML opened directly)
+   localhost      → http://localhost:3000/api  (local dev via http-server)
+   railway.app    → /api                       (Railway deployment, same-origin proxy)
+   custom domain  → uses window.ZK_API_URL if injected, else /api
+*/
+window.ZK = window.ZK || {};
 
-/* ── FORMAT HELPERS ────────────────────────────────── */
-const fmt = {
-  /** Format number as Indian currency: ₹1,23,456 */
-  inr(n, decimals = 0) {
-    if (n === null || n === undefined) return '₹0';
-    return ZK.currency + Number(n).toLocaleString('en-IN', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
+(function detectAPI() {
+  var proto = window.location.protocol;
+  var host  = window.location.hostname;
+
+  // Explicit override — set by Cloudflare Worker or server-side injection
+  if (window.ZK_API_URL) { ZK.api = window.ZK_API_URL; return; }
+
+  // Local file opened directly
+  if (proto === 'file:') { ZK.api = 'http://localhost:3000/api'; return; }
+
+  // localhost or 127.0.0.1 — local dev
+  if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+    ZK.api = 'http://localhost:3000/api'; return;
+  }
+
+  // Vercel preview URLs (*.vercel.app) — point to Railway staging
+  if (host.endsWith('.vercel.app')) {
+    // Read from meta tag if injected, else use Railway staging URL
+    var metaApi = document.querySelector('meta[name="zk-api-url"]');
+    ZK.api = metaApi ? metaApi.content : (window.RAILWAY_API_URL || 'https://zkcommerce-api.up.railway.app/api');
+    return;
+  }
+
+  // Custom domains
+  if (host.endsWith('zkcommerce.in')) {
+    ZK.api = 'https://api.zkcommerce.in/api'; return;
+  }
+
+  // Railway app domain
+  if (host.endsWith('.railway.app')) {
+    ZK.api = '/api'; return;
+  }
+
+  // Fallback — relative URL (works when frontend and API on same domain)
+  ZK.api = '/api';
+})();
+
+/* ── Auth ─────────────────────────────────────────────────── */
+var auth = {
+  get token() {
+    return localStorage.getItem('zk_token') || '';
   },
-
-  /** Compact INR: ₹1.2L, ₹4.5Cr */
-  inrCompact(n) {
-    if (n >= 10000000) return ZK.currency + (n / 10000000).toFixed(1) + 'Cr';
-    if (n >= 100000)   return ZK.currency + (n / 100000).toFixed(1) + 'L';
-    if (n >= 1000)     return ZK.currency + (n / 1000).toFixed(1) + 'K';
-    return fmt.inr(n);
+  get user() {
+    try { return JSON.parse(localStorage.getItem('zk_user') || 'null'); }
+    catch(e) { return null; }
   },
-
-  /** Date: 15 Jul 2026 */
-  date(d) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const dt = new Date(d);
-    return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
-  },
-
-  /** DateTime: 15 Jul 2026, 10:32 AM */
-  datetime(d) {
-    const dt = new Date(d);
-    const time = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    return `${fmt.date(d)}, ${time}`;
-  },
-
-  /** Relative time: 2 hours ago */
-  relative(d) {
-    const diff = Date.now() - new Date(d).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1)   return 'just now';
-    if (mins < 60)  return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24)   return `${hrs}h ago`;
-    const days = Math.floor(hrs / 24);
-    if (days < 30)  return `${days}d ago`;
-    return fmt.date(d);
-  },
-
-  /** Order ID: #ZK-2026-00123 */
-  orderId(id) {
-    return `#ZK-${new Date().getFullYear()}-${String(id).padStart(5, '0')}`;
-  },
-
-  /** Truncate: "Long text that..." */
-  truncate(str, n = 40) {
-    return str && str.length > n ? str.slice(0, n) + '…' : (str || '');
-  },
-
-  /** Phone: +91 98765 43210 */
-  phone(p) {
-    const s = String(p).replace(/\D/g, '');
-    if (s.length === 10) return `+91 ${s.slice(0,5)} ${s.slice(5)}`;
-    return p;
-  },
-
-  /** Percentage change */
-  pct(val, total) {
-    if (!total) return '0%';
-    return (val / total * 100).toFixed(1) + '%';
-  },
-};
-
-/* ── API HELPER ────────────────────────────────────── */
-const api = {
-  token: () => localStorage.getItem('zk_token'),
-
-  headers(extra = {}) {
-    const h = { 'Content-Type': 'application/json', ...extra };
-    const t = api.token();
-    if (t) h['Authorization'] = `Bearer ${t}`;
-    return h;
-  },
-
-  async get(path) {
-    const res = await fetch(ZK.api + path, { headers: api.headers() });
-    if (res.status === 401) { auth.logout(); return null; }
-    return res.json();
-  },
-
-  async post(path, data) {
-    const res = await fetch(ZK.api + path, {
-      method: 'POST', headers: api.headers(), body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  async put(path, data) {
-    const res = await fetch(ZK.api + path, {
-      method: 'PUT', headers: api.headers(), body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  async del(path) {
-    const res = await fetch(ZK.api + path, {
-      method: 'DELETE', headers: api.headers(),
-    });
-    return res.json();
-  },
-
-  async upload(path, formData) {
-    const h = {};
-    const t = api.token();
-    if (t) h['Authorization'] = `Bearer ${t}`;
-    const res = await fetch(ZK.api + path, { method: 'POST', headers: h, body: formData });
-    return res.json();
-  },
-};
-
-/* ── AUTH ──────────────────────────────────────────── */
-const auth = {
-  get user()  { try { return JSON.parse(localStorage.getItem('zk_user') || 'null'); } catch { return null; } },
-  get token() { return localStorage.getItem('zk_token'); },
-
-  isLoggedIn() { return !!this.token && !!this.user; },
-
-  save(token, user) {
+  save: function(token, user) {
     localStorage.setItem('zk_token', token);
     localStorage.setItem('zk_user', JSON.stringify(user));
   },
-
-  logout() {
+  clear: function() {
     localStorage.removeItem('zk_token');
     localStorage.removeItem('zk_user');
+    localStorage.removeItem('zk_setup_complete');
+    localStorage.removeItem('zk_store_slug');
     localStorage.removeItem('zk_cart');
-    window.location.href = '/auth/login.html';
+    localStorage.removeItem('zk_coupon');
   },
-
-  requireAuth(role = null) {
-    if (!this.isLoggedIn()) {
-      window.location.href = '/auth/login.html?next=' + encodeURIComponent(location.pathname);
-      return false;
-    }
-    if (role && this.user?.role !== role) {
-      toast.error('Access denied');
+  isLoggedIn: function() { return !!this.token && !this.token.startsWith('demo_token'); },
+  requireAuth: function(redirectTo) {
+    if (!this.token) {
+      window.location.href = (redirectTo || '../auth/login.html');
       return false;
     }
     return true;
-  },
-
-  isMerchant() { return this.user?.role === 'merchant'; },
-  isAdmin()    { return this.user?.role === 'admin'; },
-  isCustomer() { return this.user?.role === 'customer'; },
-};
-
-/* ── TOAST NOTIFICATIONS ────────────────────────────── */
-const toast = {
-  show(message, type = 'info', duration = 3500) {
-    const existing = document.querySelector('.zk-toast');
-    if (existing) existing.remove();
-
-    const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
-    const el = document.createElement('div');
-    el.className = `zk-toast zk-toast-${type}`;
-    el.innerHTML = `<span>${icons[type] || '💬'}</span><span>${message}</span>`;
-    document.body.appendChild(el);
-
-    setTimeout(() => {
-      el.style.animation = 'slideUp .3s ease reverse';
-      setTimeout(() => el.remove(), 300);
-    }, duration);
-  },
-  success(msg, d) { this.show(msg, 'success', d); },
-  error(msg, d)   { this.show(msg, 'error', d); },
-  info(msg, d)    { this.show(msg, 'info', d); },
-  warning(msg, d) { this.show(msg, 'warning', d); },
-};
-
-/* ── CART ───────────────────────────────────────────── */
-const cart = {
-  get items() { try { return JSON.parse(localStorage.getItem('zk_cart') || '[]'); } catch { return []; } },
-  save(items) { localStorage.setItem('zk_cart', JSON.stringify(items)); cart.updateBadge(); },
-
-  add(product, qty = 1, variant = null) {
-    const items = this.items;
-    const key = `${product.id}_${variant?.id || 'default'}`;
-    const existing = items.find(i => i.key === key);
-    if (existing) {
-      existing.qty += qty;
-    } else {
-      items.push({ key, product, variant, qty, addedAt: Date.now() });
-    }
-    this.save(items);
-    toast.success(`${fmt.truncate(product.name, 24)} added to cart`);
-  },
-
-  remove(key) {
-    this.save(this.items.filter(i => i.key !== key));
-  },
-
-  update(key, qty) {
-    if (qty < 1) return this.remove(key);
-    const items = this.items;
-    const item = items.find(i => i.key === key);
-    if (item) { item.qty = qty; this.save(items); }
-  },
-
-  clear() { localStorage.removeItem('zk_cart'); cart.updateBadge(); },
-
-  get count() { return this.items.reduce((s, i) => s + i.qty, 0); },
-
-  get subtotal() {
-    return this.items.reduce((s, i) => {
-      const price = i.variant?.price || i.product.price;
-      return s + price * i.qty;
-    }, 0);
-  },
-
-  updateBadge() {
-    document.querySelectorAll('.cart-count').forEach(el => {
-      el.textContent = cart.count;
-      el.style.display = cart.count > 0 ? 'flex' : 'none';
-    });
-  },
-};
-
-/* ── NAV SCROLL EFFECT ──────────────────────────────── */
-function initNav() {
-  const nav = document.getElementById('nav') || document.querySelector('.zk-nav');
-  if (!nav) return;
-  const onScroll = () => nav.classList.toggle('solid', window.scrollY > 40);
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-}
-
-/* ── SIDEBAR ACTIVE LINK ────────────────────────────── */
-function initSidebar() {
-  const path = location.pathname;
-  document.querySelectorAll('.zk-sidebar-link').forEach(link => {
-    const href = link.getAttribute('href') || '';
-    if (href && path.includes(href.replace('../', '').replace('.html', ''))) {
-      link.classList.add('active');
-    }
-  });
-}
-
-/* ── ACCORDION ──────────────────────────────────────── */
-function initAccordion() {
-  document.querySelectorAll('.zk-accordion-q, .faq-q').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const item = btn.closest('.zk-accordion-item, .faq-item, .fi');
-      const isOpen = item.classList.contains('open');
-      item.closest('.zk-accordion, .faq-list, div')
-        ?.querySelectorAll('.zk-accordion-item.open, .faq-item.open, .fi.open')
-        .forEach(i => i.classList.remove('open'));
-      if (!isOpen) item.classList.add('open');
-    });
-  });
-}
-
-/* ── SMOOTH SCROLL ──────────────────────────────────── */
-function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    });
-  });
-}
-
-/* ── TABS ───────────────────────────────────────────── */
-function initTabs() {
-  document.querySelectorAll('.zk-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const group = tab.closest('[data-tabs]') || tab.parentElement;
-      const target = tab.dataset.tab;
-      group.querySelectorAll('.zk-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      if (target) {
-        document.querySelectorAll(`[data-tab-panel]`).forEach(p => {
-          p.style.display = p.dataset.tabPanel === target ? 'block' : 'none';
-        });
-      }
-    });
-  });
-}
-
-/* ── FORM VALIDATION ────────────────────────────────── */
-const validate = {
-  email(v)  { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); },
-  phone(v)  { return /^[6-9]\d{9}$/.test(v.replace(/\D/g,'')); },
-  gstin(v)  { return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v.toUpperCase()); },
-  pincode(v){ return /^[1-9][0-9]{5}$/.test(v); },
-  required(v){ return v !== null && v !== undefined && String(v).trim() !== ''; },
-
-  form(formEl) {
-    let valid = true;
-    formEl.querySelectorAll('[required]').forEach(field => {
-      const err = field.parentElement.querySelector('.field-error');
-      if (!validate.required(field.value)) {
-        field.style.borderColor = '#DC2626';
-        if (err) err.textContent = 'This field is required';
-        valid = false;
-      } else if (field.type === 'email' && !validate.email(field.value)) {
-        field.style.borderColor = '#DC2626';
-        if (err) err.textContent = 'Enter a valid email address';
-        valid = false;
-      } else {
-        field.style.borderColor = '';
-        if (err) err.textContent = '';
-      }
-    });
-    return valid;
-  },
-};
-
-/* ── COPY TO CLIPBOARD ──────────────────────────────── */
-async function copyText(text, label = 'Copied!') {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast.success(label);
-  } catch {
-    toast.error('Could not copy');
   }
-}
+};
 
-/* ── LOADING BUTTON ─────────────────────────────────── */
-function btnLoading(btn, loading = true) {
+/* ── Format helpers ───────────────────────────────────────── */
+var fmt = {
+  inr: function(amount, decimals) {
+    var n = parseFloat(amount) || 0;
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency', currency: 'INR',
+      minimumFractionDigits: decimals !== undefined ? decimals : 0,
+      maximumFractionDigits: decimals !== undefined ? decimals : 0
+    }).format(n);
+  },
+  inrCompact: function(amount) {
+    var n = parseFloat(amount) || 0;
+    if (n >= 10000000) return fmt.inr(n/10000000) + ' Cr';
+    if (n >= 100000)   return fmt.inr(n/100000) + ' L';
+    if (n >= 1000)     return fmt.inr(n/1000) + ' K';
+    return fmt.inr(n);
+  },
+  orderId: function(id) { return '#ZK-' + String(id).padStart(5,'0'); },
+  date: function(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  },
+  datetime: function(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleString('en-IN', {
+      day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+  }
+};
+
+/* ── API helper ───────────────────────────────────────────── */
+var api = {
+  _req: async function(method, path, body) {
+    var token = auth.token;
+    var opts = { method: method, headers: { 'Content-Type': 'application/json' } };
+    if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+    if (body)  opts.body = JSON.stringify(body);
+    var res  = await fetch(ZK.api + path, opts);
+    var data = await res.json();
+    return data;
+  },
+  get:    function(path)       { return this._req('GET',    path, null); },
+  post:   function(path, body) { return this._req('POST',   path, body); },
+  put:    function(path, body) { return this._req('PUT',    path, body); },
+  delete: function(path)       { return this._req('DELETE', path, null); }
+};
+
+/* ── Cart (localStorage) ─────────────────────────────────── */
+var cart = {
+  get items() {
+    try { return JSON.parse(localStorage.getItem('zk_cart') || '[]'); }
+    catch(e) { return []; }
+  },
+  get count() { return this.items.reduce(function(s,i){ return s+i.quantity; }, 0); },
+  get total() { return this.items.reduce(function(s,i){ return s+i.price*i.quantity; }, 0); },
+  _save: function(items) {
+    localStorage.setItem('zk_cart', JSON.stringify(items));
+    this._updateBadge();
+  },
+  add: function(p) {
+    var items = this.items;
+    var ex = items.find(function(i){ return i.id===p.id; });
+    if (ex) ex.quantity = (ex.quantity||1)+1;
+    else items.push({ id:p.id, name:p.name, price:p.price, image:p.image||'', quantity:1 });
+    this._save(items);
+  },
+  remove:  function(id) { this._save(this.items.filter(function(i){ return i.id!==id; })); },
+  update:  function(id,qty) {
+    var items = this.items;
+    var item = items.find(function(i){ return i.id===id; });
+    if (item) { item.quantity = Math.max(1,qty); this._save(items); }
+  },
+  clear:   function() { this._save([]); },
+  _updateBadge: function() {
+    var count = this.count;
+    document.querySelectorAll('.cart-count').forEach(function(el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'flex' : 'none';
+    });
+  }
+};
+
+/* ── Toast ───────────────────────────────────────────────── */
+var toast = (function() {
+  var queue = [], showing = false;
+  function show(msg, type) { queue.push({msg:msg, type:type||'info'}); if(!showing) next(); }
+  function next() {
+    if (!queue.length) { showing=false; return; }
+    showing = true;
+    var item = queue.shift();
+    var el = document.getElementById('zk-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'zk-toast';
+      el.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none';
+      document.body.appendChild(el);
+    }
+    var C = {
+      success:{bg:'#F0FDF4',border:'#22C55E',color:'#15803D',icon:'&#10003;'},
+      error:  {bg:'#FEF2F2',border:'#EF4444',color:'#DC2626',icon:'&#10007;'},
+      warning:{bg:'#FFFBEB',border:'#F59E0B',color:'#92400E',icon:'&#9888;'},
+      info:   {bg:'#EFF6FF',border:'#3B82F6',color:'#1D4ED8',icon:'&#8505;'}
+    };
+    var c = C[item.type] || C.info;
+    var t = document.createElement('div');
+    t.style.cssText = 'background:'+c.bg+';border:1px solid '+c.border+';color:'+c.color
+      +';padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600'
+      +';font-family:"Plus Jakarta Sans",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.12)'
+      +';display:flex;align-items:center;gap:8px;max-width:340px;pointer-events:auto';
+    t.innerHTML = '<span>'+c.icon+'</span><span>'+item.msg+'</span>';
+    el.appendChild(t);
+    if (!document.getElementById('zk-spin-css')) {
+      var s = document.createElement('style');
+      s.id = 'zk-spin-css';
+      s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}';
+      document.head.appendChild(s);
+    }
+    t.style.animation = 'slideIn .2s ease';
+    setTimeout(function(){
+      t.style.transition='opacity .3s,transform .3s';
+      t.style.opacity='0'; t.style.transform='translateX(110%)';
+      setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); next(); }, 300);
+    }, 3200);
+  }
+  return {
+    success: function(m){ show(m,'success'); },
+    error:   function(m){ show(m,'error'); },
+    warning: function(m){ show(m,'warning'); },
+    info:    function(m){ show(m,'info'); }
+  };
+})();
+
+/* ── Button loading ──────────────────────────────────────── */
+function btnLoading(btn, loading) {
+  if (!btn) return;
   if (loading) {
-    btn._originalText = btn.innerHTML;
-    btn.innerHTML = '<div class="zk-spinner" style="width:16px;height:16px;border-width:2px"></div> Loading…';
+    btn._orig = btn.innerHTML;
+    btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px"></span>Loading...';
     btn.disabled = true;
   } else {
-    btn.innerHTML = btn._originalText || 'Submit';
+    if (btn._orig) btn.innerHTML = btn._orig;
     btn.disabled = false;
   }
 }
 
-/* ── DEBOUNCE ───────────────────────────────────────── */
-function debounce(fn, ms = 300) {
-  let timer;
-  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
-}
-
-/* ── LOCAL STORAGE HELPERS ──────────────────────────── */
-const store = {
-  get(key, fallback = null) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-    catch { return fallback; }
-  },
-  set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} },
-  del(key)      { localStorage.removeItem(key); },
+/* ── GST split ───────────────────────────────────────────── */
+var gst = {
+  split: function(amount, rate) {
+    var r = parseFloat(rate)/100;
+    var base = amount/(1+r);
+    var half = (amount-base)/2;
+    return { base: Math.round(base*100)/100, cgst: Math.round(half*100)/100, sgst: Math.round(half*100)/100 };
+  }
 };
 
-/* ── GST CALCULATOR ─────────────────────────────────── */
-const gst = {
-  rates: { '5': .05, '12': .12, '18': .18, '28': .28 },
-
-  split(amount, rateStr, isInclusive = true) {
-    const rate = gst.rates[rateStr] || 0;
-    const base = isInclusive ? amount / (1 + rate) : amount;
-    const total = base * rate;
-    return {
-      base:  Math.round(base * 100) / 100,
-      cgst:  Math.round(total / 2 * 100) / 100,
-      sgst:  Math.round(total / 2 * 100) / 100,
-      total: Math.round(total * 100) / 100,
-      gross: Math.round((base + total) * 100) / 100,
-    };
-  },
+/* ── Loyalty ─────────────────────────────────────────────── */
+var loyalty = {
+  tier: function(pts) { return pts>=25000?'Gold':pts>=5000?'Silver':'Bronze'; },
+  worth: function(pts) { return pts*0.5; }
 };
 
-/* ── LOYALTY POINTS ─────────────────────────────────── */
-const loyalty = {
-  RATE: 1,        // 1 point per ₹1 spent
-  VALUE: 0.50,    // 1 point = ₹0.50
-
-  earn(amount)  { return Math.floor(amount * this.RATE); },
-  worth(points) { return points * this.VALUE; },
-  fmt(points)   { return points.toLocaleString('en-IN') + ' pts'; },
-};
-
-/* ── INIT ON DOM READY ──────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  initNav();
-  initSidebar();
-  initAccordion();
-  initSmoothScroll();
-  initTabs();
-  cart.updateBadge();
+/* ── Init ────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  cart._updateBadge();
+  var user = auth.user;
+  if (user) {
+    document.querySelectorAll('.zk-merchant-name').forEach(function(el){ el.textContent = user.name||user.email||''; });
+    document.querySelectorAll('.zk-merchant-initial').forEach(function(el){ el.textContent = (user.name||user.email||'U')[0].toUpperCase(); });
+  }
 });
-
-/* ── EXPORT (for module contexts) ───────────────────── */
-if (typeof module !== 'undefined') {
-  module.exports = { ZK, fmt, api, auth, toast, cart, validate, gst, loyalty, debounce, store };
-}

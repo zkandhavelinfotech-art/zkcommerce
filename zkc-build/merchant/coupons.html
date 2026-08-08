@@ -73,5 +73,59 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </table>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadCoupons() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/coupons', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('coupons-tbody');
+    if (!tbody || !d.coupons) return;
+    if (!d.coupons.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--zk-muted)">No coupons yet.</td></tr>'; return; }
+    tbody.innerHTML = d.coupons.map(function(c) {
+      return '<tr><td class="col-primary" style="font-family:monospace">' + c.code + '</td>'
+        + '<td><span class="badge badge-amber">' + c.type + '</span></td>'
+        + '<td>' + (c.type==='percentage' ? c.value+'%' : fmt.inr(c.value)) + '</td>'
+        + '<td>' + fmt.inr(c.min_order || 0) + '</td>'
+        + '<td>' + c.used_count + ' / ' + (c.max_uses || 'unlimited') + '</td>'
+        + '<td><span class="status status-' + (c.is_active?'delivered':'cancelled') + '">' + (c.is_active?'Active':'Inactive') + '</span></td>'
+        + '<td><button class="btn btn-secondary btn-sm" onclick="toggleCoupon(' + c.id + ',' + c.is_active + ')">' + (c.is_active?'Disable':'Enable') + '</button></td>'
+        + '</tr>';
+    }).join('');
+  } catch(e) {}
+}
+async function toggleCoupon(id, active) {
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/coupons/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ is_active: !active })
+    });
+    var d = await r.json();
+    if (d.coupon) { toast.success('Coupon ' + (!active?'enabled':'disabled')); loadCoupons(); }
+  } catch(e) { toast.error('Server error'); }
+}
+async function createCoupon() {
+  var code    = prompt('Coupon code (e.g. SAVE20):','').toUpperCase();
+  if (!code) return;
+  var type    = prompt('Type (percentage/fixed/free_shipping):', 'percentage');
+  var value   = parseFloat(prompt('Value (% or INR amount):', '20')) || 20;
+  var token   = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/coupons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ code: code, type: type || 'percentage', value: value, min_order: 0 })
+    });
+    var d = await r.json();
+    if (d.coupon) { toast.success('Coupon ' + code + ' created!'); loadCoupons(); }
+    else toast.error(d.error || 'Failed -- code may already exist');
+  } catch(e) { toast.error('Server error'); }
+}
+document.addEventListener('DOMContentLoaded', loadCoupons);
+</script>
 </body>
 </html>

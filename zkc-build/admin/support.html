@@ -71,5 +71,26 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </table>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+
+async function loadSupport() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  // Support ticket system is a v5.0 feature
+  // For now show merchant count for context
+  try {
+    var r = await fetch(API_BASE + '/admin/stats', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    setEl('merchant-count', d.merchants || 0);
+  } catch(e) {}
+  toast.info('Full support ticket system coming in v5.0');
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadSupport);
+</script>
 </body>
 </html>

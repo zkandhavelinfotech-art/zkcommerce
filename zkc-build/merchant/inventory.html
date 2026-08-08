@@ -6,7 +6,7 @@
 <title>Inventory — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -79,6 +79,62 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadInventory() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/products?limit=100', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    var tbody = document.getElementById('inventory-tbody');
+    if (!tbody || !data.products) return;
+
+    var products = data.products;
+    tbody.innerHTML = products.map(function(p) {
+      var stockColor = p.stock === 0 ? '#DC2626' : (p.stock <= p.low_stock_alert ? '#D97706' : '#16A34A');
+      var badge = p.stock === 0 ? 'Out of stock' : (p.stock <= p.low_stock_alert ? 'Low stock' : 'In stock');
+      var badgeClass = p.stock === 0 ? 'badge-red' : (p.stock <= p.low_stock_alert ? 'badge-amber' : 'badge-green');
+      return '<tr>'
+        + '<td class="col-primary">' + p.name + '</td>'
+        + '<td>' + (p.sku || '—') + '</td>'
+        + '<td><span style="font-size:18px;font-weight:800;font-family:var(--font-display);color:' + stockColor + '">' + p.stock + '</span></td>'
+        + '<td>' + p.low_stock_alert + '</td>'
+        + '<td><span class="badge ' + badgeClass + '">' + badge + '</span></td>'
+        + '<td><div style="display:flex;gap:6px;align-items:center">'
+        + '<input type="number" id="stock-' + p.id + '" value="' + p.stock + '" style="width:70px;padding:4px 8px;border:1px solid var(--zk-border);border-radius:6px;font-size:12px" min="0">'
+        + '<button class="btn btn-secondary btn-sm" onclick="updateStock(' + p.id + ')">Update</button>'
+        + '</div></td>'
+        + '</tr>';
+    }).join('');
+
+    var lowCount = products.filter(function(p){ return p.stock <= p.low_stock_alert && p.status==='published'; }).length;
+    var lsEl = document.getElementById('low-stock-count');
+    if (lsEl) lsEl.textContent = lowCount;
+  } catch(e) { console.warn('Inventory load error:', e); }
+}
+
+async function updateStock(productId) {
+  var token = auth.token;
+  var newStock = parseInt(document.getElementById('stock-' + productId).value);
+  if (isNaN(newStock) || newStock < 0) { toast.error('Invalid stock value'); return; }
+  try {
+    var r = await fetch(API_BASE + '/products/' + productId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ stock: newStock })
+    });
+    var data = await r.json();
+    if (data.product) { toast.success('Stock updated to ' + newStock); }
+    else toast.error(data.error || 'Update failed');
+  } catch(e) { toast.error('Server error'); }
+}
+
+document.addEventListener('DOMContentLoaded', loadInventory);
+</script>
 </body>
 </html>

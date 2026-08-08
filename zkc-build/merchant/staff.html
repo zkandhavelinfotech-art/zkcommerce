@@ -15,4 +15,52 @@
   </tbody></table>
 </div>
 <script>function invS(){const e=prompt('Staff email:');if(e){const r=prompt('Role (Manager/Warehouse/Support):','Manager');if(r)toast.success('Invite sent to '+e+' as '+r);}}</script>
-</div></div></div><script src="../assets/js/app.js"></script></body></html>
+</div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+async function loadStaff() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/staff', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('staff-tbody');
+    if (!tbody || !d.staff) return;
+    if (!d.staff.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--zk-muted)">No staff yet. Invite your first team member.</td></tr>'; return; }
+    tbody.innerHTML = d.staff.map(function(s) {
+      return '<tr><td><div class="col-primary">' + (s.name||'Pending') + '</div><div style="font-size:11px;color:var(--zk-dim)">' + (s.email||'-') + '</div></td>'
+        + '<td><span class="badge badge-brand">' + s.role + '</span></td>'
+        + '<td>' + (s.last_login ? fmt.date(s.last_login) : 'Never') + '</td>'
+        + '<td><span class="status status-' + (s.status==='active'?'delivered':'processing') + '">' + s.status + '</span></td>'
+        + '<td><button class="btn btn-secondary btn-sm" onclick="removeStaff(' + s.user_id + ')">Remove</button></td>'
+        + '</tr>';
+    }).join('');
+  } catch(e) {}
+}
+async function inviteStaff() {
+  var email = prompt('Staff email address:');
+  if (!email) return;
+  var role = prompt('Role (manager/warehouse/support):', 'support');
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/staff/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ email: email, role: role || 'support', permissions: {} })
+    });
+    var d = await r.json();
+    toast.success(d.message || 'Invite sent to ' + email);
+    loadStaff();
+  } catch(e) { toast.error('Server error'); }
+}
+async function removeStaff(userId) {
+  if (!confirm('Remove this staff member?')) return;
+  var token = auth.token;
+  try {
+    await fetch(API_BASE + '/staff/' + userId, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }});
+    toast.success('Staff removed'); loadStaff();
+  } catch(e) { toast.error('Server error'); }
+}
+document.addEventListener('DOMContentLoaded', loadStaff);
+</script>
+</body></html>

@@ -90,5 +90,36 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </table>
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+
+async function loadAdminRevenue() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r    = await fetch(API_BASE + '/admin/stats', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    setEl('total-gmv',       fmt.inrCompact(data.gmv_30d || data.total_gmv || 0));
+    setEl('mrr',             fmt.inrCompact(data.mrr || 0));
+    setEl('orders-30d',      data.orders_30d || 0);
+    setEl('active-merchants',data.merchants || 0);
+    setEl('active-trials',   data.active_trials || 0);
+    setEl('avg-order',       fmt.inr(data.avg_order_value || 0));
+
+    // Load revenue chart data
+    var rr = await fetch(API_BASE + '/analytics/revenue?period=30days', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var rd = await rr.json();
+    if (rd.totals) {
+      setEl('platform-revenue', fmt.inr(rd.totals.total_revenue || 0));
+    }
+  } catch(e) { console.warn('Admin revenue error:', e.message); }
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAdminRevenue);
+</script>
 </body>
 </html>

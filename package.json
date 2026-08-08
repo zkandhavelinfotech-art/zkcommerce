@@ -1,0 +1,14 @@
+{
+  "name": "zkcommerce-v4-complete",
+  "version": "4.1.0",
+  "private": true,
+  "workspaces": ["zkc-build"],
+  "scripts": {
+    "build": "npm --workspace zkc-build run build",
+    "start": "npm --workspace zkc-build start",
+    "dev": "npm --workspace zkc-build run dev",
+    "test": "npm --workspace zkc-build test",
+    "db:migrate": "npm --workspace zkc-build run db:migrate"
+  },
+  "engines": { "node": ">=20.0.0" }
+}

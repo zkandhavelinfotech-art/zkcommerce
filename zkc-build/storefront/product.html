@@ -6,7 +6,7 @@
 <title>Kanjivaram Silk Saree — Rajan Textiles — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100">
   <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800">
@@ -72,6 +72,40 @@
     <div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳 Made in Tamil Nadu</div>
     <div style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Rajan Textiles. All rights reserved.</div>
   </div>
-</footer><script src="../../assets/js/app.js"></script>
+</footer><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadProduct() {
+  var params = new URLSearchParams(window.location.search);
+  var id    = params.get('id');
+  var slug  = params.get('store') || 'rajanTextiles';
+  if (!id) return;
+  try {
+    var r = await fetch(API_BASE + '/storefront/' + slug + '/products?limit=100');
+    var d = await r.json();
+    var product = d.products && d.products.find(function(p){ return String(p.id)===String(id); });
+    if (!product) return;
+    setEl('product-name',  product.name);
+    setEl('product-price', fmt.inr(product.price));
+    setEl('product-mrp',   product.mrp ? fmt.inr(product.mrp) : '');
+    setEl('product-desc',  product.description || '');
+    document.title = product.name + ' — ' + slug;
+    if (product.image_url) {
+      var imgEl = document.getElementById('product-main-img');
+      if (imgEl) imgEl.src = product.image_url;
+    }
+    var addBtn = document.getElementById('add-to-cart-btn');
+    if (addBtn) {
+      addBtn.onclick = function() {
+        cart.add({ id: product.id, name: product.name, price: product.price });
+        toast.success('Added to cart!');
+      };
+    }
+  } catch(e) { console.warn('Product load error:', e); }
+}
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadProduct);
+</script>
 </body>
 </html>

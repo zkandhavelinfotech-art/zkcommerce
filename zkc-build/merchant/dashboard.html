@@ -6,7 +6,7 @@
 <title>Dashboard — ZKCommerce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/design-system.css">
+<link rel="stylesheet" href='../assets/css/design-system.css">
 </head>
 <body>
 <style>
@@ -122,6 +122,80 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 </div>
 </div>
-<script src="../../assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : (window.ZK ? ZK.api : '/api');
+
+async function loadDashboard() {
+  var token = auth.token;
+  var user  = auth.user;
+  if (!token) return;
+
+  // Update user name in sidebar
+  var nameEl = document.getElementById('merchant-name');
+  if (nameEl && user) nameEl.textContent = user.name || user.email;
+
+  if (token.startsWith('demo_token')) {
+    console.log('Demo mode: showing static data');
+    return;
+  }
+
+  try {
+    // Load revenue analytics
+    var r = await fetch(API_BASE + '/analytics/revenue', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+
+    if (data.totals) {
+      var t = data.totals;
+      setEl('stat-revenue',  fmt.inrCompact(t.total_revenue || 0));
+      setEl('stat-orders',   t.total_orders || 0);
+      setEl('stat-customers',t.unique_customers || 0);
+    }
+
+    // Load recent orders
+    var ro = await fetch(API_BASE + '/orders?limit=5', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var orderData = await ro.json();
+    var tbody = document.getElementById('recent-orders-body');
+    if (tbody && orderData.orders && orderData.orders.length) {
+      tbody.innerHTML = orderData.orders.map(function(o) {
+        return '<tr>'
+          + '<td class="col-primary">' + fmt.orderId(o.id) + '</td>'
+          + '<td>' + (o.customer_name || '-') + '</td>'
+          + '<td>' + fmt.inr(o.total) + '</td>'
+          + '<td><span class="status status-' + o.status + '">' + o.status + '</span></td>'
+          + '<td>' + fmt.date(o.created_at) + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    // Load low stock
+    var ls = await fetch(API_BASE + '/products?status=published&limit=100', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var prodData = await ls.json();
+    if (prodData.products) {
+      var lowStock = prodData.products.filter(function(p){ return p.stock <= p.low_stock_alert; });
+      setEl('stat-low-stock', lowStock.length);
+      setEl('stat-products', prodData.total || prodData.products.length);
+    }
+
+  } catch(e) {
+    console.warn('Dashboard load error:', e.message);
+  }
+}
+
+function setEl(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
 </body>
 </html>
