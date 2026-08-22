@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 130" width="520" height="130">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1565C0"/>
+      <stop offset="40%"  stop-color="#0EA5E9"/>
+      <stop offset="75%"  stop-color="#26C6A6"/>
+      <stop offset="100%" stop-color="#43D68C"/>
+    </linearGradient>
+    <linearGradient id="arr" x1="0%" y1="100%" x2="60%" y2="0%">
+      <stop offset="0%"   stop-color="rgba(255,255,255,0.75)"/>
+      <stop offset="100%" stop-color="white"/>
+    </linearGradient>
+  </defs>
+  <rect width="520" height="130" fill="url(#bg)"/>
+  <line x1="24"  y1="22" x2="62"  y2="22"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
+  <line x1="62"  y1="22" x2="24"  y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
+  <line x1="24"  y1="78" x2="62"  y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
+  <line x1="72"  y1="22" x2="72"  y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
+  <line x1="72"  y1="50" x2="102" y2="22"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
+  <line x1="72"  y1="50" x2="102" y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
+  <line x1="82"  y1="72" x2="106" y2="16"  stroke="url(#arr)" stroke-width="5.5" stroke-linecap="round"/>
+  <polygon points="106,16 99,23 109,26" fill="white"/>
+  <path d="M20 91 Q44 104 74 98 Q90 95 108 88" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M92 96 L97 96 L102 109 L118 109 L123 96" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="97"  y1="96"  x2="95" y2="89" stroke="rgba(255,255,255,0.75)" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="95"  y1="89"  x2="89" y2="89" stroke="rgba(255,255,255,0.75)" stroke-width="2.8" stroke-linecap="round"/>
+  <circle cx="104" cy="114" r="3.5" fill="rgba(255,255,255,0.75)"/>
+  <circle cx="118" cy="114" r="3.5" fill="rgba(255,255,255,0.75)"/>
+  <text x="144" y="62"  font-family="Arial Black,Arial,sans-serif" font-size="34" font-weight="900" fill="white">ZK</text>
+  <text x="197" y="62"  font-family="Arial,sans-serif" font-size="34" font-weight="300" fill="white">Commerce</text>
+  <text x="144" y="82"  font-family="Arial,sans-serif" font-size="9.5" font-weight="600" fill="rgba(255,255,255,0.7)" letter-spacing="0.13em">SMART COMMERCE. LIMITLESS GROWTH.</text>
+  <text x="144" y="112" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="rgba(255,255,255,0.5)" letter-spacing="0.18em">GRADIENT — BRAND COLOURS</text>
+</svg>

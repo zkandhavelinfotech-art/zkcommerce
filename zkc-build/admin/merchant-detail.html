@@ -1,4 +1,8 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Merchant Detail — Admin — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar"><div class="zk-sidebar-logo"><div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>Admin<span style="font-size:9px;background:rgba(255,107,0,.3);color:#FF9A4D;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800">ADMIN</span></div>
+<!DOCTYPE html><html lang="en"><head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Merchant Detail — Admin — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar"><div class="zk-sidebar-logo"><div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>Admin<span style="font-size:9px;background:rgba(255,107,0,.3);color:#FF9A4D;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800">ADMIN</span></div>
 <nav class="zk-sidebar-nav"><div class="zk-sidebar-section-label">Platform</div>
 <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
 <a href="merchants.html" class="zk-sidebar-link active"><span class="sl-icon">🏪</span>Merchants</a>
@@ -49,49 +53,77 @@
     </div>
   </div>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
-var MID = new URLSearchParams(window.location.search).get('id');
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+var MID=new URLSearchParams(window.location.search).get('id');
 
-async function loadMerchantDetail() {
-  var token = auth.token;
-  if (!token || token.startsWith('demo_token') || !MID) return;
-  try {
-    var r = await fetch(API_BASE + '/admin/merchants/' + MID, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    var d = await r.json();
-    var m = d.merchant || d;
-    if (!m || !m.name) return;
-    setEl('merchant-name',  m.name);
-    setEl('merchant-email', m.owner_email || '-');
-    setEl('merchant-plan',  m.plan || '-');
-    setEl('merchant-gmv',   fmt.inrCompact(m.total_gmv || 0));
-    setEl('merchant-orders',m.order_count || 0);
-    setEl('merchant-products', m.product_count || 0);
-    setEl('merchant-status', m.is_active ? 'Active' : 'Suspended');
+async function loadMerchantDetail(){
+  if(!MID) return;
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants/'+MID,{headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+    var m=d.merchant||d;
+    if(!m||!m.name) return;
+    setEl('merchant-name',   m.name);
+    setEl('merchant-email',  m.owner_email||'-');
+    setEl('merchant-plan',   m.plan||'-');
+    setEl('merchant-status', m.is_active?'Active':'Suspended');
+    setEl('merchant-gmv',    fmt.inrCompact(m.total_gmv||0));
+    setEl('merchant-orders', m.order_count||0);
+    setEl('merchant-products',m.product_count||0);
     setEl('merchant-since',  fmt.date(m.created_at));
-  } catch(e) { console.warn('Merchant detail error:', e.message); }
+    setEl('merchant-slug',   m.slug||'-');
+
+    // Load store orders
+    var or=await fetch(API_BASE+'/admin/orders?store_id='+MID+'&limit=10',
+      {headers:{'Authorization':'Bearer '+token}});
+    var od=await or.json();
+    var tbody=document.getElementById('merchant-orders-tbody');
+    if(tbody&&od.orders&&od.orders.length){
+      tbody.innerHTML=od.orders.map(function(o){
+        return '<tr><td class="col-primary">'+fmt.orderId(o.id)+'</td>'
+          +'<td>'+fmt.inr(o.total)+'</td>'
+          +'<td><span class="status status-'+o.status+'">'+o.status+'</span></td>'
+          +'<td>'+fmt.date(o.created_at)+'</td></tr>';
+      }).join('');
+    }
+  }catch(e){console.warn('Merchant detail:',e.message);}
 }
 
-async function suspendMerchant() {
-  var token = auth.token;
-  if (!MID || !token || token.startsWith('demo_token')) { toast.info('Demo mode'); return; }
-  if (!confirm('Suspend this merchant? Their store will go offline.')) return;
-  try {
-    var r = await fetch(API_BASE + '/admin/merchants/' + MID, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ is_active: false })
+async function changePlan(plan){
+  var token=auth.token;
+  if(!MID||!token||token.startsWith('demo_token')){toast.info('Demo mode');return;}
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants/'+MID,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({plan:plan})
     });
-    var d = await r.json();
-    toast.success('Merchant suspended');
-    loadMerchantDetail();
-  } catch(e) { toast.error('Server error'); }
+    var d=await r.json();
+    if(d.merchant||d.id){toast.success('Plan changed to '+plan);loadMerchantDetail();}
+    else toast.error(d.error||'Failed to update plan');
+  }catch(e){toast.error('Server error');}
 }
 
-function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
-document.addEventListener('DOMContentLoaded', loadMerchantDetail);
+async function suspendMerchant(){
+  if(!confirm('Suspend this merchant? Their store will go offline.')) return;
+  var token=auth.token;
+  try{
+    await fetch(API_BASE+'/admin/merchants/'+MID,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({is_active:false})
+    });
+    toast.success('Merchant suspended');
+    setEl('merchant-status','Suspended');
+  }catch(e){toast.error('Server error');}
+}
+
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',loadMerchantDetail);
 </script>
 </body></html>

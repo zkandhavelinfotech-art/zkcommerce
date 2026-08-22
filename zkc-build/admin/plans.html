@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Plans & Billing — ZKCommerce</title>
@@ -84,50 +88,85 @@ body{background:var(--zk-chalk);overflow-x:hidden}
     <div class="field-group"><label class="field-label">Credit card required for trial</label><select class="field"><option>No (conversion optimised)</option><option>Yes</option></select></div>
   </div>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
 
-async function loadPlans() {
-  var token = auth.token;
-  if (!token || token.startsWith('demo_token')) return;
-  try {
-    var r    = await fetch(API_BASE + '/admin/merchants?limit=100', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    var data = await r.json();
-    if (!data.merchants) return;
+async function loadPlans(){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants?limit=100',
+      {headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+    if(!d.merchants) return;
+    var ms=d.merchants;
 
-    var starter    = data.merchants.filter(function(m){ return m.plan==='starter'; }).length;
-    var growth     = data.merchants.filter(function(m){ return m.plan==='growth'; }).length;
-    var enterprise = data.merchants.filter(function(m){ return m.plan==='enterprise'; }).length;
-    var trials     = data.merchants.filter(function(m){ return m.status==='trial'; }).length;
+    var starter   =ms.filter(function(m){return m.plan==='starter';}).length;
+    var growth    =ms.filter(function(m){return m.plan==='growth';}).length;
+    var enterprise=ms.filter(function(m){return m.plan==='enterprise';}).length;
+    var trial     =ms.filter(function(m){return m.status==='trial';}).length;
+    var mrr=(starter*399)+(growth*799)+(enterprise*1999);
 
     setEl('plan-starter',    starter);
     setEl('plan-growth',     growth);
     setEl('plan-enterprise', enterprise);
-    setEl('plan-trials',     trials);
-    setEl('plan-total',      data.merchants.length);
+    setEl('plan-trials',     trial);
+    setEl('plan-mrr',        fmt.inr(mrr));
+    setEl('plan-total',      ms.length);
 
-    var mrr = (starter * 399) + (growth * 799) + (enterprise * 1999);
-    setEl('plan-mrr', fmt.inr(mrr));
-
-    var tbody = document.getElementById('plans-tbody');
-    if (tbody) {
-      tbody.innerHTML = data.merchants.slice(0, 20).map(function(m) {
+    var tbody=document.getElementById('plans-tbody');
+    if(tbody){
+      tbody.innerHTML=ms.map(function(m){
         return '<tr>'
-          + '<td class="col-primary">' + m.name + '</td>'
-          + '<td>' + (m.owner_email || '-') + '</td>'
-          + '<td><span class="badge badge-brand">' + m.plan + '</span></td>'
-          + '<td>' + fmt.date(m.created_at) + '</td>'
-          + '<td><a href="merchant-detail.html?id=' + m.id + '" class="btn btn-secondary btn-sm">Manage</a></td>'
-          + '</tr>';
+          +'<td class="col-primary">'+m.name+'</td>'
+          +'<td>'+(m.owner_email||'-')+'</td>'
+          +'<td><span class="badge badge-brand">'+m.plan+'</span></td>'
+          +'<td><span class="status status-'+(m.is_active?'delivered':'cancelled')+'">'+(m.is_active?'Active':'Suspended')+'</span></td>'
+          +'<td>'+fmt.date(m.created_at)+'</td>'
+          +'<td><div style="display:flex;gap:6px">'
+          +'<a href="merchant-detail.html?id='+m.id+'" class="btn btn-secondary btn-sm">View</a>'
+          +'<button class="btn btn-secondary btn-sm" onclick="changePlan('+m.id+',\'growth\')">Upgrade</button>'
+          +'</div></td></tr>';
       }).join('');
     }
-  } catch(e) { console.warn('Plans load error:', e.message); }
+  }catch(e){console.warn('Plans:',e.message);}
 }
-function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
-document.addEventListener('DOMContentLoaded', loadPlans);
+
+async function changePlan(merchantId, plan){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')){toast.info('Demo mode');return;}
+  if(!confirm('Change merchant plan to '+plan+'?')) return;
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants/'+merchantId,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({plan:plan})
+    });
+    var d=await r.json();
+    if(d.merchant||d.id){toast.success('Plan updated to '+plan);loadPlans();}
+    else toast.error(d.error||'Failed');
+  }catch(e){toast.error('Server error');}
+}
+
+async function extendTrial(merchantId){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')){toast.info('Demo mode');return;}
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants/'+merchantId,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({extend_trial:30})
+    });
+    var d=await r.json();
+    toast.success(d.message||'Trial extended 30 days');
+    loadPlans();
+  }catch(e){toast.error('Server error');}
+}
+
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',loadPlans);
 </script>
 </body>
 </html>

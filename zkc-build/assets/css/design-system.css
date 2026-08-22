@@ -1,3 +1,15 @@
+/* ── ZKCommerce brand colours (approved Aug 2026) ──────────── */
+:root {
+  --zk-blue:    #1565C0;
+  --zk-sky:     #0EA5E9;
+  --zk-teal:    #43C6AC;
+  --zk-growth:  #76C442;
+  --zk-navy:    #0D1B3E;
+  --zk-grad: linear-gradient(135deg, #1565C0, #0EA5E9, #43C6AC, #76C442);
+}
+/* Brand tagline: Smart Commerce. Limitless Growth. */
+/* Company: ZKandavel Infotech Pvt Ltd | Product: ZKCommerce™ */
+
 /* ═══════════════════════════════════════════════════════
    ZKCommerce Design System v3
    ZKanadavel Infotech Pvt Ltd & ZK Infotech INC

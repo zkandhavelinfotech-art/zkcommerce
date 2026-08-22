@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Revenue — ZKCommerce</title>
@@ -89,37 +93,93 @@ body{background:var(--zk-chalk);overflow-x:hidden}
     </tbody>
   </table>
 </div>
-</div></div></div><script src="../assets/js/app.js"></script>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+var revenueChart=null, planChart=null;
 
-async function loadAdminRevenue() {
-  var token = auth.token;
-  if (!token || token.startsWith('demo_token')) return;
-  try {
-    var r    = await fetch(API_BASE + '/admin/stats', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    var data = await r.json();
-    setEl('total-gmv',       fmt.inrCompact(data.gmv_30d || data.total_gmv || 0));
-    setEl('mrr',             fmt.inrCompact(data.mrr || 0));
-    setEl('orders-30d',      data.orders_30d || 0);
-    setEl('active-merchants',data.merchants || 0);
-    setEl('active-trials',   data.active_trials || 0);
-    setEl('avg-order',       fmt.inr(data.avg_order_value || 0));
+async function loadRevenue(period){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  period=period||'30days';
+  try{
+    var r=await fetch(API_BASE+'/admin/revenue?period='+period,
+      {headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
 
-    // Load revenue chart data
-    var rr = await fetch(API_BASE + '/analytics/revenue?period=30days', {
-      headers: { 'Authorization': 'Bearer ' + token }
+    // Stats
+    var totalRev=d.daily.reduce(function(s,row){return s+parseFloat(row.revenue||0);},0);
+    var totalOrd=d.daily.reduce(function(s,row){return s+parseInt(row.orders||0);},0);
+    setEl('total-revenue', fmt.inrCompact(totalRev));
+    setEl('total-orders',  totalOrd);
+    setEl('avg-order',     totalOrd>0?fmt.inr(totalRev/totalOrd):'₹0');
+
+    // MRR from plan distribution
+    var mrr=0;
+    d.byPlan.forEach(function(p){
+      var rates={starter:399,growth:799,enterprise:1999};
+      mrr+=(rates[p.plan]||0)*parseInt(p.stores||0);
     });
-    var rd = await rr.json();
-    if (rd.totals) {
-      setEl('platform-revenue', fmt.inr(rd.totals.total_revenue || 0));
+    setEl('platform-mrr', fmt.inrCompact(mrr));
+
+    // Revenue line chart
+    var labels=d.daily.map(function(row){return row.date?row.date.toString().slice(5,10):'-';});
+    var revenues=d.daily.map(function(row){return parseFloat(row.revenue||0);});
+    var ctx1=document.getElementById('revenue-chart');
+    if(ctx1){
+      if(revenueChart) revenueChart.destroy();
+      revenueChart=new Chart(ctx1.getContext('2d'),{
+        type:'line',
+        data:{
+          labels:labels,
+          datasets:[{
+            label:'Daily Revenue (₹)',
+            data:revenues,
+            borderColor:'#FF6B00',
+            backgroundColor:'rgba(255,107,0,.1)',
+            tension:.4,fill:true,pointRadius:3
+          }]
+        },
+        options:{responsive:true,plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true,ticks:{callback:function(v){return '₹'+v.toLocaleString('en-IN');}}}}}
+      });
     }
-  } catch(e) { console.warn('Admin revenue error:', e.message); }
+
+    // Plan pie chart
+    var ctx2=document.getElementById('plan-chart');
+    if(ctx2&&d.byPlan.length){
+      if(planChart) planChart.destroy();
+      planChart=new Chart(ctx2.getContext('2d'),{
+        type:'doughnut',
+        data:{
+          labels:d.byPlan.map(function(p){return p.plan;}),
+          datasets:[{
+            data:d.byPlan.map(function(p){return p.stores;}),
+            backgroundColor:['#FF6B00','#4F46E5','#22C55E','#F59E0B']
+          }]
+        },
+        options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+      });
+    }
+
+    // Top stores table
+    var tbody=document.getElementById('top-stores-tbody');
+    if(tbody&&d.topStores&&d.topStores.length){
+      tbody.innerHTML=d.topStores.map(function(s,i){
+        return '<tr><td style="font-weight:800;color:#FF6B00">'+(i+1)+'</td>'
+          +'<td class="col-primary">'+s.name+'</td>'
+          +'<td><span class="badge">'+s.plan+'</span></td>'
+          +'<td>'+fmt.inr(s.gmv)+'</td>'
+          +'<td>'+s.orders+'</td></tr>';
+      }).join('');
+    }
+  }catch(e){console.warn('Admin revenue:',e.message);}
 }
-function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
-document.addEventListener('DOMContentLoaded', loadAdminRevenue);
+
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',function(){loadRevenue('30days');});
 </script>
 </body>
 </html>

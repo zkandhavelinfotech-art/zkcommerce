@@ -29,7 +29,10 @@
     "docker:logs": "docker-compose -f deployment/docker/docker-compose.yml logs -f api",
     "docker:build": "docker build -f Dockerfile -t zkcommerce-api:latest .",
     "db:migrate:dev": "node deployment/scripts/neon-migrate.js",
-    "db:migrate:neon": "node deployment/scripts/neon-migrate.js"
+    "db:migrate:neon": "node deployment/scripts/neon-migrate.js",
+    "cron:abandoned": "curl -X POST http://localhost:3000/api/cron/abandoned-carts -H 'x-cron-secret: '${CRON_SECRET}",
+    "cron:recurring": "curl -X POST http://localhost:3000/api/cron/recurring-orders -H 'x-cron-secret: '${CRON_SECRET}",
+    "meta:sync": "node -e \"require('http').request({hostname:'localhost',port:3000,path:'/api/meta/sync',method:'POST'},r=>r.pipe(process.stdout)).end()\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

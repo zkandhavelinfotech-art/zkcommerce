@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Subscriptions — ZKCommerce</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+</head>
+<body class="app-body">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div class="page-header">
+    <div><h1 class="page-title">Recurring Orders</h1>
+      <p class="page-sub">Customers subscribed to auto-reorder products monthly.</p></div>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    <div class="stat-card"><div id="sub-active" class="stat-number" style="color:#22C55E">0</div><div class="stat-label">Active subscriptions</div></div>
+    <div class="stat-card"><div id="sub-mrr" class="stat-number" style="color:var(--zk-fire)">₹0</div><div class="stat-label">Monthly recurring revenue</div></div>
+    <div class="stat-card"><div id="sub-next" class="stat-number">0</div><div class="stat-label">Orders due this week</div></div>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr><th>Customer</th><th>Product</th><th>Frequency</th><th>Next order</th><th>Value</th><th>Status</th></tr></thead>
+      <tbody id="sub-tbody"><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--zk-muted)">No subscriptions yet. Customers can set up recurring orders from the product page.</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+async function loadSubs(){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  try{
+    var r=await fetch(API_BASE+'/admin/recurring?store_id='+(auth.user&&auth.user.store_id||''),
+      {headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+    var tbody=document.getElementById('sub-tbody');
+    if(!tbody||!d.subscriptions||!d.subscriptions.length) return;
+    var active=d.subscriptions.filter(function(s){return s.status==='active';});
+    var mrr=active.reduce(function(s,sub){return s+(parseFloat(sub.price||0)*sub.quantity);},0);
+    var nextWeek=new Date(); nextWeek.setDate(nextWeek.getDate()+7);
+    var due=active.filter(function(s){return new Date(s.next_order_date)<=nextWeek;}).length;
+    setEl('sub-active',active.length);
+    setEl('sub-mrr',fmt.inr(mrr));
+    setEl('sub-next',due);
+    tbody.innerHTML=d.subscriptions.map(function(s){
+      return '<tr><td class="col-primary">'+(s.customer_name||'Customer')+'</td>'
+        +'<td>'+s.product_name+'</td>'
+        +'<td>Every '+s.frequency_days+' days</td>'
+        +'<td>'+fmt.date(s.next_order_date)+'</td>'
+        +'<td>'+fmt.inr((parseFloat(s.price||0)*s.quantity))+'</td>'
+        +'<td><span class="status status-'+(s.status==='active'?'delivered':'cancelled')+'">'+s.status+'</span></td></tr>';
+    }).join('');
+  }catch(e){console.warn('Subscriptions:',e.message);}
+}
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',loadSubs);
+</script>
+</body>
+</html>

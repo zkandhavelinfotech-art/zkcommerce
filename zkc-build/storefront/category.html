@@ -1,4 +1,8 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop — Rajan Textiles — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100"><div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800"><div style="width:30px;height:30px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">⚡</div>Rajan Textiles</div><div style="display:flex;align-items:center;gap:20px"><a href="home.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Home</a><a href="category.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Shop</a><a href="wishlist.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">❤️</a><a href="account.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Account</a><a href="cart.html" style="font-size:13px;font-weight:600;color:var(--zk-muted);position:relative">🛒<span class="cart-count" style="position:absolute;top:-6px;right:-10px;background:var(--zk-fire);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">0</span></a></div></nav>
+<!DOCTYPE html><html lang="en"><head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop — Rajan Textiles — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100"><div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800"><div style="width:30px;height:30px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">⚡</div>Rajan Textiles</div><div style="display:flex;align-items:center;gap:20px"><a href="home.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Home</a><a href="category.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Shop</a><a href="wishlist.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">❤️</a><a href="account.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Account</a><a href="cart.html" style="font-size:13px;font-weight:600;color:var(--zk-muted);position:relative">🛒<span class="cart-count" style="position:absolute;top:-6px;right:-10px;background:var(--zk-fire);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">0</span></a></div></nav>
 <div style="max-width:1180px;margin:0 auto;padding:32px 5%">
   <div style="font-size:13px;color:var(--zk-muted);margin-bottom:20px"><a href="home.html" style="color:var(--zk-fire)">Home</a> → Sarees</div>
   <div style="display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start">
@@ -37,37 +41,43 @@
 </div>
 <footer style="background:var(--zk-deep);padding:32px 5%;margin-top:60px"><div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px"><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</div><div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳</div></div></footer>
 
+
+
+
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
-var params = new URLSearchParams(window.location.search);
-var SLUG = params.get('store') || localStorage.getItem('zk_store_slug') || 'rajanTextiles';
-var CAT  = params.get('cat') || '';
-
-async function loadCategory(page) {
-  var url = API_BASE + '/storefront/' + SLUG + '/products?page=' + (page||1) + '&limit=9';
-  if (CAT) url += '&category=' + CAT;
-  try {
-    var r = await fetch(url);
-    var d = await r.json();
-    var grid = document.getElementById('cat-grid');
-    if (!grid) return;
-    if (!d.products || !d.products.length) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--zk-muted)">No products found</div>';
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+var params=new URLSearchParams(window.location.search);
+var SLUG=params.get('store')||localStorage.getItem('zk_store_slug')||'rajanTextiles';
+var CAT=params.get('cat')||'';
+async function loadCategory(page){
+  var url=API_BASE+'/storefront/'+SLUG+'/products?page='+(page||1)+'&limit=9';
+  if(CAT)url+='&category='+encodeURIComponent(CAT);
+  try{
+    var r=await fetch(url);
+    var d=await r.json();
+    var grid=document.getElementById('cat-grid');
+    if(!grid)return;
+    if(!d.products||!d.products.length){
+      grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--zk-muted)">No products in this category yet.</div>';
       return;
     }
-    grid.innerHTML = d.products.map(function(p) {
+    grid.innerHTML=d.products.map(function(p){
+      var disc=p.mrp?Math.round((p.mrp-p.price)/p.mrp*100):0;
       return '<div class="zk-product-card" onclick="window.location.href=\'product.html?id='+p.id+'&store='+SLUG+'\'">'
-        +'<div style="height:180px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);display:flex;align-items:center;justify-content:center;font-size:40px">&#128722;</div>'
+        +'<div style="height:180px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">'
+        +(disc>0?'<span style="position:absolute;top:8px;left:8px;background:#FF6B00;color:#fff;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800">'+disc+'% off</span>':'')
+        +'&#128722;</div>'
         +'<div style="padding:12px"><div style="font-weight:700;margin-bottom:4px">'+p.name+'</div>'
-        +'<div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--zk-fire)">'+fmt.inr(p.price)+'</div>'
-        +'<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px" onclick="event.stopPropagation();cart.add({id:'+p.id+',name:\''+p.name.replace(/'/g,"\\'")+ '\',price:'+p.price+'});toast.success(\'Added!\')">Add to cart</button>'
+        +'<div style="font-family:var(--font-display);font-size:17px;font-weight:800;color:#FF6B00">'+fmt.inr(p.price)+'</div>'
+        +'<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px"'
+        +' onclick="event.stopPropagation();cart.add({id:'+p.id+',name:\''+p.name.replace(/'/g,"\\'")+'\',price:'+p.price+'});toast.success(\'Added!\')">Add to cart</button>'
         +'</div></div>';
     }).join('');
-    var totEl = document.getElementById('product-count');
-    if (totEl) totEl.textContent = (d.total||d.products.length) + ' products';
-  } catch(e) { console.warn('Category:', e.message); }
+    var t=document.getElementById('product-count');
+    if(t)t.textContent=(d.total||d.products.length)+' products';
+  }catch(e){console.warn('Category:',e.message);}
 }
-document.addEventListener('DOMContentLoaded', function(){ loadCategory(1); });
+document.addEventListener('DOMContentLoaded',function(){loadCategory(1);});
 </script>
 </body></html>

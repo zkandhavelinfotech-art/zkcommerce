@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Setup Your Store — ZKCommerce</title>
@@ -370,184 +374,98 @@ body{background:var(--zk-chalk);min-height:100vh}
 </div>
 
 
+
 <script src="../assets/js/app.js"></script>
 <script>
-/* ── Setup wizard: creates store via POST /api/auth/register or POST /api/stores ── */
-var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
-
-// Read token — may be set from register or login
-var WIZARD_STEP = 1;
-var STORE_DATA  = {
-  storeName: '', industry: '', theme: 'sunrise',
-  primaryColor: '#FF6B00', gstin: '', phone: ''
-};
+var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : 'http://localhost:3000/api';
+var STORE_DATA = { name:'', theme:'sunrise', primaryColor:'#FF6B00', gstin:'', industry:'general' };
 
 function nextStep(step) {
-  // Validate current step
-  if (step === 2) {
-    var name = document.getElementById('s-store-name');
-    if (!name || !name.value.trim()) { toast.error('Please enter your store name'); return; }
-    STORE_DATA.storeName = name.value.trim();
-  }
-  if (step === 3) {
-    var ind = document.querySelector('input[name="industry"]:checked') ||
-              document.querySelector('.industry-card.selected');
-    STORE_DATA.industry = ind ? (ind.value || ind.dataset.value || 'general') : 'general';
-  }
-  if (step === 4) {
-    var theme = document.querySelector('.theme-card.selected, input[name="theme"]:checked');
-    if (theme) STORE_DATA.theme = theme.dataset.theme || theme.value || 'sunrise';
-  }
-
-  document.querySelectorAll('.wizard-step').forEach(function(s){ s.style.display='none'; });
+  var nameEl = document.getElementById('s-store-name');
+  if (step === 2 && nameEl && !nameEl.value.trim()) { toast.error('Enter your store name'); return; }
+  if (nameEl) STORE_DATA.name = nameEl.value.trim();
+  document.querySelectorAll('.wizard-step,[id^="step-"]').forEach(function(s){ s.style.display='none'; });
   var next = document.getElementById('step-' + step);
-  if (next) { next.style.display='block'; WIZARD_STEP = step; }
-  updateProgress(step);
-}
-
-function updateProgress(step) {
-  var dots = document.querySelectorAll('.step-dot, .progress-step, [data-step]');
-  dots.forEach(function(d, i) {
-    var s = d.dataset.step || (i+1);
-    d.classList.toggle('active', parseInt(s) === step);
-    d.classList.toggle('done',   parseInt(s) < step);
+  if (next) { next.style.display='block'; }
+  document.querySelectorAll('.step-dot,[data-step]').forEach(function(d,i){
+    d.classList.toggle('active', (parseInt(d.dataset.step)||i+1)===step);
+    d.classList.toggle('done',   (parseInt(d.dataset.step)||i+1)<step);
   });
 }
 
+function selectTheme(theme) {
+  STORE_DATA.theme = theme;
+  document.querySelectorAll('.theme-card').forEach(function(c){ c.classList.remove('selected'); });
+  var sel = document.querySelector('[data-theme="' + theme + '"],.theme-' + theme);
+  if (sel) sel.classList.add('selected');
+}
+
 async function launchStore() {
-  var btn = event.currentTarget;
   var token = auth.token;
-
-  // Get store name
-  var nameEl = document.getElementById('s-store-name') || document.querySelector('[name="storeName"]');
-  if (nameEl) STORE_DATA.storeName = nameEl.value.trim();
-  if (!STORE_DATA.storeName) { toast.error('Store name is required'); return; }
-
-  if (!token) {
-    toast.error('Please login first');
-    setTimeout(function(){ window.location.href = '../auth/login.html'; }, 1500);
-    return;
-  }
-
-  // Demo mode — just redirect
+  var nameEl = document.getElementById('s-store-name');
+  if (nameEl) STORE_DATA.name = nameEl.value.trim();
+  if (!STORE_DATA.name) { toast.error('Store name is required'); return; }
+  if (!token) { window.location.href = '../auth/login.html'; return; }
   if (token.startsWith('demo_token')) {
-    toast.success('Store setup complete! (Demo mode)');
-    localStorage.setItem('zk_setup_complete', '1');
-    setTimeout(function(){ window.location.href = 'dashboard.html'; }, 1500);
+    toast.success('Demo mode: redirecting to dashboard');
+    localStorage.setItem('zk_setup_complete','1');
+    setTimeout(function(){ window.location.href = 'dashboard.html'; }, 1200);
     return;
   }
-
+  var btn = document.getElementById('launch-btn') || event.currentTarget;
   btnLoading(btn, true);
-
+  var slug = STORE_DATA.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').substring(0,50);
+  var user = auth.user || {};
+  var payload = { name: STORE_DATA.name, slug: slug, theme: STORE_DATA.theme,
+    primary_color: STORE_DATA.primaryColor, gstin: STORE_DATA.gstin || '', industry: STORE_DATA.industry };
   try {
-    // Generate slug from store name
-    var slug = STORE_DATA.storeName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g,'-')
-      .replace(/^-|-$/g,'')
-      .substring(0, 50);
-
-    // POST to create/update store
-    var user = auth.user;
-    var payload = {
-      name:         STORE_DATA.storeName,
-      slug:         slug,
-      theme:        STORE_DATA.theme || 'sunrise',
-      primary_color: STORE_DATA.primaryColor || '#FF6B00',
-      gstin:        STORE_DATA.gstin || '',
-      industry:     STORE_DATA.industry || 'general',
-    };
-
-    var url, method;
-    if (user && user.store_id) {
-      // Update existing store
-      url    = API_BASE + '/stores/' + user.store_id;
-      method = 'PUT';
-    } else {
-      // Create new store via auth/setup endpoint
-      url    = API_BASE + '/stores';
-      method = 'POST';
-    }
-
-    var res  = await fetch(url, {
+    var method = user.store_id ? 'PUT' : 'POST';
+    var url    = user.store_id ? API_BASE + '/stores/' + user.store_id : API_BASE + '/stores';
+    var res = await fetch(url, {
       method: method,
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': 'Bearer ' + token
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify(payload)
     });
-    var data = await res.json();
-
-    if (data.store || data.id) {
-      var store = data.store || data;
-      // Update auth user with new store info
-      var updatedUser = Object.assign({}, user, {
-        store_id:   store.id,
-        store_slug: store.slug,
-        store_name: store.name
-      });
-      auth.save(token, updatedUser);
-      localStorage.setItem('zk_setup_complete', '1');
+    var d = await res.json();
+    var store = d.store || d;
+    if (store && store.id) {
+      auth.save(token, Object.assign({}, user, { store_id: store.id, store_slug: store.slug, store_name: store.name }));
+      localStorage.setItem('zk_setup_complete','1');
       localStorage.setItem('zk_store_slug', store.slug);
-
-      toast.success('Store "' + store.name + '" is live!');
-
-      // Show the store URL
       var storeUrl = getStoreURL(store.slug);
+      toast.success('Store "' + store.name + '" created!');
       var urlEl = document.getElementById('store-live-url');
-      if (urlEl) urlEl.textContent = storeUrl;
-      var urlLink = document.getElementById('store-live-link');
-      if (urlLink) urlLink.href = storeUrl;
-
-      // Go to dashboard after short delay
-      setTimeout(function(){ window.location.href = 'dashboard.html'; }, 2500);
+      if (urlEl) { urlEl.textContent = storeUrl; urlEl.href = storeUrl; }
+      setTimeout(function(){ window.location.href = 'dashboard.html'; }, 2000);
     } else {
-      toast.error(data.error || data.message || 'Store creation failed');
+      toast.error(d.error || d.message || 'Store creation failed');
       btnLoading(btn, false);
     }
   } catch(e) {
-    console.error(e);
-    toast.error('Cannot reach API. Is npm run dev running?');
+    toast.error('Cannot reach API — is npm run dev running?');
     btnLoading(btn, false);
   }
 }
 
 function getStoreURL(slug) {
-  var host = window.location.hostname;
-  // Local dev
-  if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
+  var host = window.location.hostname, proto = window.location.protocol;
+  if (proto === 'file:' || host === 'localhost' || host === '127.0.0.1')
     return '../storefront/home.html?store=' + slug;
-  }
-  // Vercel preview
-  if (host.endsWith('.vercel.app')) {
+  if (host.endsWith('.vercel.app'))
     return window.location.origin + '/storefront/home.html?store=' + slug;
-  }
-  // Production custom domain — subdomain per store
   return 'https://' + slug + '.zkcommerce.in';
 }
 
 function previewStore() {
-  var slug = localStorage.getItem('zk_store_slug');
   var user = auth.user;
-  if (!slug && user) slug = user.store_slug;
-  if (!slug) {
-    // Use store name to make slug
-    var nameEl = document.getElementById('s-store-name');
-    slug = nameEl ? nameEl.value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-') : 'my-store';
-  }
-  var url = getStoreURL(slug);
-  window.open(url, '_blank');
+  var slug = (user && user.store_slug) || localStorage.getItem('zk_store_slug');
+  if (!slug) { var n=document.getElementById('s-store-name'); slug=n?n.value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-'):'my-store'; }
+  window.open(getStoreURL(slug), '_blank');
 }
 
-// Auto-populate if logged in with existing store
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function(){
   var user = auth.user;
-  if (user && user.store_name) {
-    var nameEl = document.getElementById('s-store-name');
-    if (nameEl) nameEl.value = user.store_name;
-  }
-  // Show first step
+  if (user && user.store_name) { var n=document.getElementById('s-store-name'); if(n) n.value=user.store_name; }
   nextStep(1);
 });
 </script>

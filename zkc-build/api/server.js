@@ -1341,6 +1341,529 @@ app.use((error, req, res, next) => {
   err(res, process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message, 500);
 });
 
+
+// ── GST Invoice PDF ──────────────────────────────────────────
+app.get('/api/invoices/:id/pdf', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT i.*, o.total, o.subtotal, o.gst_amount, o.shipping_amount,
+              o.coupon_discount, o.loyalty_discount,
+              o.razorpay_payment_id, o.payment_method,
+              o.created_at as order_date,
+              s.name as store_name, s.gstin as store_gstin, s.address as store_address,
+              u.name as customer_name, u.email as customer_email, u.phone as customer_phone,
+              a.line1, a.line2, a.city, a.state, a.pincode
+       FROM invoices i
+       JOIN orders o ON o.id = i.order_id
+       JOIN stores s ON s.id = i.store_id
+       JOIN users u ON u.id = o.user_id
+       LEFT JOIN addresses a ON a.id = o.address_id
+       WHERE i.id = $1 AND i.store_id = $2`,
+      [req.params.id, req.user.store_id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Invoice not found' });
+    const inv = rows[0];
+
+    // Get line items
+    const { rows: items } = await db.query(
+      `SELECT oi.product_name, oi.sku, oi.quantity, oi.unit_price, oi.gst_amount, oi.line_total
+       FROM order_items oi JOIN orders o ON o.id = oi.order_id
+       WHERE o.id = $1`,
+      [inv.order_id || req.params.id]
+    );
+
+    // Build HTML for PDF
+    const cgst = (parseFloat(inv.gst_amount) / 2).toFixed(2);
+    const sgst = cgst;
+    const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;font-size:12px;color:#111;margin:0;padding:24px}
+  .hdr{display:flex;justify-content:space-between;margin-bottom:24px}
+  .hdr h1{font-size:28px;color:#FF6B00;margin:0}
+  .title{font-size:20px;font-weight:bold;text-align:center;margin:16px 0;color:#333}
+  table{width:100%;border-collapse:collapse;margin:16px 0}
+  th{background:#F3F4F6;padding:8px;text-align:left;font-size:11px;text-transform:uppercase}
+  td{padding:8px;border-bottom:1px solid #E5E7EB}
+  .total-row{font-weight:bold;font-size:13px}
+  .label{color:#6B7280;font-size:11px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
+  .box{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;padding:12px}
+  .box h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;color:#6B7280}
+</style>
+</head><body>
+<div class="hdr">
+  <div><h1>ZKCommerce</h1><div class="label">${inv.store_name}</div>
+    ${inv.store_gstin ? '<div class="label">GSTIN: '+inv.store_gstin+'</div>' : ''}
+    ${inv.store_address ? '<div class="label">'+inv.store_address+'</div>' : ''}
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:18px;font-weight:bold">${inv.invoice_number}</div>
+    <div class="label">Date: ${new Date(inv.created_at).toLocaleDateString('en-IN')}</div>
+    <div class="label">Order: #ZK-${String(inv.order_id).padStart(5,'0')}</div>
+    ${inv.razorpay_payment_id ? '<div class="label">Txn: '+inv.razorpay_payment_id+'</div>' : ''}
+  </div>
+</div>
+<div class="title">TAX INVOICE</div>
+<div class="two">
+  <div class="box"><h3>Bill To</h3>
+    <div><strong>${inv.customer_name}</strong></div>
+    <div>${inv.customer_email || ''}</div>
+    <div>${inv.customer_phone || ''}</div>
+    ${inv.line1 ? '<div>'+inv.line1+(inv.line2?', '+inv.line2:'')+'</div>' : ''}
+    ${inv.city ? '<div>'+inv.city+', '+inv.state+' '+inv.pincode+'</div>' : ''}
+  </div>
+  <div class="box"><h3>Payment</h3>
+    <div>Method: ${inv.payment_method || 'Online'}</div>
+    <div>Status: Paid</div>
+    <div>Date: ${new Date(inv.order_date).toLocaleDateString('en-IN')}</div>
+  </div>
+</div>
+<table>
+  <thead><tr><th>#</th><th>Product</th><th>SKU</th><th>Qty</th><th>Rate</th><th>GST</th><th>Amount</th></tr></thead>
+  <tbody>
+    ${items.map((it,i) => `<tr>
+      <td>${i+1}</td>
+      <td>${it.product_name}</td>
+      <td>${it.sku||'-'}</td>
+      <td>${it.quantity}</td>
+      <td>&#8377;${parseFloat(it.unit_price).toFixed(2)}</td>
+      <td>&#8377;${parseFloat(it.gst_amount||0).toFixed(2)}</td>
+      <td>&#8377;${parseFloat(it.line_total).toFixed(2)}</td>
+    </tr>`).join('')}
+  </tbody>
+</table>
+<table style="width:300px;margin-left:auto">
+  <tr><td>Subtotal</td><td style="text-align:right">&#8377;${parseFloat(inv.subtotal||0).toFixed(2)}</td></tr>
+  <tr><td>CGST</td><td style="text-align:right">&#8377;${cgst}</td></tr>
+  <tr><td>SGST</td><td style="text-align:right">&#8377;${sgst}</td></tr>
+  ${parseFloat(inv.shipping_amount||0)>0?`<tr><td>Shipping</td><td style="text-align:right">&#8377;${parseFloat(inv.shipping_amount).toFixed(2)}</td></tr>`:''}
+  ${parseFloat(inv.coupon_discount||0)>0?`<tr><td>Coupon discount</td><td style="text-align:right">-&#8377;${parseFloat(inv.coupon_discount).toFixed(2)}</td></tr>`:''}
+  <tr class="total-row"><td>TOTAL</td><td style="text-align:right">&#8377;${parseFloat(inv.total||0).toFixed(2)}</td></tr>
+</table>
+<div style="margin-top:24px;font-size:10px;color:#9CA3AF;text-align:center">
+  This is a computer-generated invoice. No signature required.
+</div>
+</body></html>`;
+
+    // Try Puppeteer; fall back to HTML if not installed
+    try {
+      const puppeteer = require('puppeteer');
+      const browser = await puppeteer.launch({ args: ['--no-sandbox','--disable-setuid-sandbox'] });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdf = await page.pdf({ format: 'A4', printBackground: true, margin: { top:'20px',bottom:'20px',left:'20px',right:'20px' } });
+      await browser.close();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="invoice-${inv.invoice_number}.pdf"`);
+      return res.send(pdf);
+    } catch (puppeteerErr) {
+      // Puppeteer not installed — return HTML for browser print
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('X-PDF-Fallback', 'true');
+      return res.send(html + '<script>window.print();</script>');
+    }
+  } catch (e) {
+    console.error('Invoice PDF error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// ── Abandoned cart cron (call every 60 min via Railway Cron / Upstash QStash) ──
+app.post('/api/cron/abandoned-carts', async (req, res) => {
+  const secret = req.headers['x-cron-secret'];
+  if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { rows } = await db.query(
+      `SELECT ac.*, u.name, u.phone, s.name as store_name
+       FROM abandoned_carts ac
+       JOIN users u ON u.id = ac.user_id
+       JOIN stores s ON s.id = ac.store_id
+       WHERE ac.recovered = false
+         AND ac.recovery_sent_at IS NULL
+         AND ac.updated_at < NOW() - INTERVAL '60 minutes'
+         AND ac.total > 0
+       LIMIT 100`
+    );
+    let sent = 0;
+    for (const cart of rows) {
+      if (cart.phone && process.env.GUPSHUP_API_KEY) {
+        try {
+          const WA = require('./whatsapp');
+          await WA.abandonedCart({ phone: cart.phone, name: cart.name, total: cart.total, items: cart.cart_data });
+          await db.query('UPDATE abandoned_carts SET recovery_sent_at = NOW() WHERE id = $1', [cart.id]);
+          sent++;
+        } catch (waErr) { /* skip individual failures */ }
+      }
+    }
+    res.json({ processed: rows.length, sent, message: `Recovery WA sent to ${sent} customers` });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Blog posts API (v5 feature, activated here) ───────────────
+app.get('/api/blog/posts', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT id, title, slug, status, published_at, created_at, seo_title,
+              LEFT(content, 200) as excerpt
+       FROM blog_posts WHERE store_id = $1 ORDER BY created_at DESC`,
+      [req.user.store_id]
+    );
+    res.json({ posts: rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/blog/posts', authMiddleware, async (req, res) => {
+  const { title, content, seo_title, seo_desc, status } = req.body;
+  const slug = (title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO blog_posts (store_id, author_id, title, slug, content, seo_title, seo_desc, status, published_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [req.user.store_id, req.user.id, title, slug, content, seo_title, seo_desc,
+       status||'draft', status==='published'?new Date():null]
+    );
+    res.status(201).json({ post: rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/blog/posts/:id', authMiddleware, async (req, res) => {
+  const { title, content, seo_title, seo_desc, status } = req.body;
+  try {
+    const { rows } = await db.query(
+      `UPDATE blog_posts SET title=$1,content=$2,seo_title=$3,seo_desc=$4,status=$5,
+       published_at=CASE WHEN $5='published' THEN COALESCE(published_at,NOW()) ELSE published_at END,
+       updated_at=NOW()
+       WHERE id=$6 AND store_id=$7 RETURNING *`,
+      [title, content, seo_title, seo_desc, status, req.params.id, req.user.store_id]
+    );
+    res.json({ post: rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/blog/posts/:id', authMiddleware, async (req, res) => {
+  await db.query('DELETE FROM blog_posts WHERE id=$1 AND store_id=$2', [req.params.id, req.user.store_id]);
+  res.json({ message: 'Post deleted' });
+});
+
+// ── Flash sales API (v5 feature, activated here) ──────────────
+app.get('/api/flash-sales', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT * FROM flash_sales WHERE store_id=$1 ORDER BY starts_at DESC',
+      [req.user.store_id]
+    );
+    res.json({ flash_sales: rows });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/flash-sales', authMiddleware, async (req, res) => {
+  const { name, discount_pct, starts_at, ends_at, product_ids } = req.body;
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO flash_sales (store_id, name, discount_pct, starts_at, ends_at, product_ids)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [req.user.store_id, name, discount_pct, starts_at, ends_at, product_ids||[]]
+    );
+    res.status(201).json({ flash_sale: rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/flash-sales/:id', authMiddleware, async (req, res) => {
+  const { is_active } = req.body;
+  try {
+    const { rows } = await db.query(
+      'UPDATE flash_sales SET is_active=$1 WHERE id=$2 AND store_id=$3 RETURNING *',
+      [is_active, req.params.id, req.user.store_id]
+    );
+    res.json({ flash_sale: rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Category create/edit/delete (merchant) ────────────────────
+app.post('/api/categories', authMiddleware, async (req, res) => {
+  const { name, parent_id, description, icon } = req.body;
+  const slug = (name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO categories (store_id, parent_id, name, slug, description, icon)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [req.user.store_id, parent_id||null, name, slug, description, icon]
+    );
+    res.status(201).json({ category: rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/categories/:id', authMiddleware, async (req, res) => {
+  const { name, description, icon, is_active } = req.body;
+  try {
+    const { rows } = await db.query(
+      `UPDATE categories SET name=$1,description=$2,icon=$3,is_active=$4
+       WHERE id=$5 AND store_id=$6 RETURNING *`,
+      [name, description, icon, is_active!==false, req.params.id, req.user.store_id]
+    );
+    res.json({ category: rows[0] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/categories/:id', authMiddleware, async (req, res) => {
+  await db.query('DELETE FROM categories WHERE id=$1 AND store_id=$2', [req.params.id, req.user.store_id]);
+  res.json({ message: 'Category deleted' });
+});
+
+// ── Admin revenue charts API ──────────────────────────────────
+app.get('/api/admin/revenue', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const days = req.query.period === 'year' ? 365 : req.query.period === '90days' ? 90 : 30;
+  try {
+    const { rows: daily } = await db.query(
+      `SELECT DATE(created_at) as date, COUNT(*) as orders, SUM(total) as revenue
+       FROM orders
+       WHERE created_at > NOW() - INTERVAL '${days} days'
+         AND status NOT IN ('cancelled','pending')
+       GROUP BY DATE(created_at) ORDER BY date ASC`
+    );
+    const { rows: byPlan } = await db.query(
+      `SELECT plan, COUNT(*) as stores FROM stores WHERE is_active=true GROUP BY plan`
+    );
+    const { rows: topStores } = await db.query(
+      `SELECT s.name, s.plan, COUNT(o.id) as orders, COALESCE(SUM(o.total),0) as gmv
+       FROM stores s LEFT JOIN orders o ON o.store_id=s.id AND o.status NOT IN ('cancelled','pending')
+       GROUP BY s.id,s.name,s.plan ORDER BY gmv DESC LIMIT 10`
+    );
+    res.json({ daily, byPlan, topStores, period: days });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── BNPL / No-Cost EMI — full integration skeleton ───────────
+// Supported providers: simpl, lazypay, bajaj
+// Wire: POST /api/payments/bnpl/initiate
+//       POST /api/payments/bnpl/verify
+//       POST /api/payments/bnpl/webhook
+
+app.post('/api/payments/bnpl/verify', async (req, res) => {
+  const { order_id, provider, transaction_id, status } = req.body;
+  try {
+    if (status === 'success') {
+      await db.query(
+        `UPDATE orders SET status='confirmed', payment_status='paid',
+         payment_method=$1, updated_at=NOW() WHERE id=$2`,
+        [provider + '_bnpl', order_id]
+      );
+      // Log BNPL transaction
+      await db.query(
+        `INSERT INTO bnpl_transactions (order_id, provider, amount, status, reference)
+         SELECT id, $1, total, 'paid', $2 FROM orders WHERE id=$3`,
+        [provider, transaction_id, order_id]
+      ).catch(() => {}); // skip if table not yet created
+      res.json({ message: 'BNPL payment verified', order_id });
+    } else {
+      await db.query(
+        `UPDATE orders SET payment_status='failed' WHERE id=$1`, [order_id]
+      );
+      res.json({ message: 'Payment failed', order_id });
+    }
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/payments/bnpl/webhook', async (req, res) => {
+  // Handle provider webhooks (Simpl, LazyPay, Bajaj all send different formats)
+  const payload = req.body;
+  console.log('[BNPL Webhook]', payload);
+  // TODO: verify webhook signature per provider
+  // TODO: update order status based on payload
+  res.json({ received: true });
+});
+
+
+// ── Affiliate / Influencer system ────────────────────────────
+app.get('/api/affiliates', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT * FROM affiliates WHERE store_id=$1 ORDER BY created_at DESC`,
+      [req.user.store_id]
+    );
+    res.json({ affiliates: rows });
+  } catch(e) {
+    // Table may not exist yet (v5 addition)
+    res.json({ affiliates: [], note: 'Run v5-additions.sql to enable affiliates' });
+  }
+});
+
+app.post('/api/affiliates', authMiddleware, async (req, res) => {
+  const { name, email, phone, commission_pct } = req.body;
+  const ref_code = name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8)
+    + Math.random().toString(36).slice(2,6);
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO affiliates (store_id, name, email, phone, ref_code, commission_pct)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [req.user.store_id, name, email, phone, ref_code, commission_pct||10]
+    );
+    res.status(201).json({ affiliate: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/affiliates/:id/stats', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT a.*, COUNT(o.id) as total_orders, COALESCE(SUM(o.total),0) as total_sales,
+              COALESCE(SUM(o.total)*(a.commission_pct/100),0) as commission_earned
+       FROM affiliates a
+       LEFT JOIN orders o ON o.ref_code=a.ref_code AND o.status NOT IN ('cancelled','pending')
+       WHERE a.id=$1 AND a.store_id=$2
+       GROUP BY a.id`,
+      [req.params.id, req.user.store_id]
+    );
+    res.json({ stats: rows[0] || {} });
+  } catch(e) { res.json({ stats: {} }); }
+});
+
+// Track affiliate referral — called when customer lands via ref link
+app.post('/api/affiliates/track', async (req, res) => {
+  const { ref_code, product_id } = req.body;
+  try {
+    await db.query(
+      `UPDATE affiliates SET total_sales = total_sales + 1 WHERE ref_code=$1`,
+      [ref_code]
+    ).catch(() => {});
+    res.json({ tracked: true, ref_code });
+  } catch(e) { res.json({ tracked: false }); }
+});
+
+
+// ── Recurring / Subscription Orders ──────────────────────────
+app.get('/api/recurring', authMiddleware, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT ro.*, p.name as product_name, p.price
+       FROM recurring_orders ro JOIN products p ON p.id=ro.product_id
+       WHERE ro.user_id=$1 ORDER BY ro.created_at DESC`,
+      [req.user.id]
+    );
+    res.json({ subscriptions: rows });
+  } catch(e) { res.json({ subscriptions: [], note: 'Run v5-additions.sql to enable recurring orders' }); }
+});
+
+app.post('/api/recurring', authMiddleware, async (req, res) => {
+  const { product_id, store_id, quantity, frequency_days, address_id } = req.body;
+  const next = new Date(); next.setDate(next.getDate() + (frequency_days||30));
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO recurring_orders (user_id,store_id,product_id,quantity,frequency_days,next_order_date,address_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [req.user.id, store_id, product_id, quantity||1, frequency_days||30, next.toISOString().slice(0,10), address_id||null]
+    );
+    res.status(201).json({ subscription: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/recurring/:id', authMiddleware, async (req, res) => {
+  const { status, frequency_days } = req.body; // status: active|paused|cancelled
+  try {
+    const { rows } = await db.query(
+      `UPDATE recurring_orders SET status=$1, frequency_days=COALESCE($2,frequency_days)
+       WHERE id=$3 AND user_id=$4 RETURNING *`,
+      [status, frequency_days, req.params.id, req.user.id]
+    );
+    res.json({ subscription: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Cron: process recurring orders due today
+app.post('/api/cron/recurring-orders', async (req, res) => {
+  const secret = req.headers['x-cron-secret'];
+  if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { rows } = await db.query(
+      `SELECT ro.*, p.price, u.email, u.name as customer_name
+       FROM recurring_orders ro
+       JOIN products p ON p.id=ro.product_id
+       JOIN users u ON u.id=ro.user_id
+       WHERE ro.status='active' AND ro.next_order_date <= CURRENT_DATE`
+    );
+    let created = 0;
+    for (const sub of rows) {
+      try {
+        // Create order
+        const order = await db.query(
+          `INSERT INTO orders (user_id,store_id,total,status,payment_method,payment_status,is_recurring)
+           VALUES ($1,$2,$3,'confirmed','auto_charge','pending',true) RETURNING id`,
+          [sub.user_id, sub.store_id, sub.price * sub.quantity]
+        );
+        // Update next order date
+        const next = new Date(sub.next_order_date);
+        next.setDate(next.getDate() + sub.frequency_days);
+        await db.query(
+          `UPDATE recurring_orders SET next_order_date=$1 WHERE id=$2`,
+          [next.toISOString().slice(0,10), sub.id]
+        );
+        created++;
+      } catch(innerErr) { /* skip individual failures */ }
+    }
+    res.json({ processed: rows.length, orders_created: created });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── Instagram/Meta Shop Sync — v4.1 scope ────────────────────
+// Requires: META_APP_ID, META_APP_SECRET, META_CATALOGUE_ID in Railway vars
+
+app.get('/api/meta/status', authMiddleware, async (req, res) => {
+  const configured = !!(process.env.META_APP_ID && process.env.META_CATALOGUE_ID);
+  try {
+    const { rows } = await db.query(
+      `SELECT COUNT(*) as synced FROM meta_catalogue_items WHERE store_id=$1 AND status='synced'`,
+      [req.user.store_id]
+    ).catch(() => ({ rows: [{ synced: 0 }] }));
+    res.json({
+      configured,
+      synced_products: parseInt(rows[0].synced),
+      catalogue_id: process.env.META_CATALOGUE_ID || null,
+      note: configured ? 'Ready' : 'Add META_APP_ID, META_APP_SECRET, META_CATALOGUE_ID to Railway Variables'
+    });
+  } catch(e) { res.json({ configured: false, synced_products: 0 }); }
+});
+
+app.post('/api/meta/sync', authMiddleware, async (req, res) => {
+  if (!process.env.META_APP_ID) {
+    return res.json({
+      message: 'Meta not configured. Add META_APP_ID, META_APP_SECRET, META_CATALOGUE_ID to Railway Variables.',
+      docs: 'https://developers.facebook.com/docs/commerce-platform/catalog'
+    });
+  }
+  try {
+    const { rows: products } = await db.query(
+      `SELECT id,name,price,description,image_url,stock FROM products
+       WHERE store_id=$1 AND status='published' LIMIT 100`,
+      [req.user.store_id]
+    );
+    const catalogue = products.map(p => ({
+      id: `ZKC_\${p.id}`,
+      title: p.name,
+      description: (p.description||p.name).slice(0,200),
+      price: `\${(p.price*100).toFixed(0)} INR`,
+      currency: 'INR',
+      availability: p.stock>0 ? 'in stock' : 'out of stock',
+      condition: 'new',
+      image_url: p.image_url || '',
+    }));
+    // Real: POST https://graph.facebook.com/v18.0/{catalogue_id}/batch
+    // with Authorization: Bearer META_ACCESS_TOKEN
+    res.json({
+      products_queued: catalogue.length,
+      catalogue_id: process.env.META_CATALOGUE_ID,
+      status: 'queued',
+      catalogue_preview: catalogue.slice(0,3),
+      next_step: 'Obtain long-lived access token from Meta Business Manager and call Graph API batch endpoint'
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.listen(PORT, () => {
   console.log(`
   ⚡ ZKCommerce API v4.1 running on port ${PORT}
