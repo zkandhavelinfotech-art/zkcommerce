@@ -4,7 +4,7 @@
   "private": true,
   "workspaces": ["zkc-build"],
   "scripts": {
-    "build": "npm --workspace zkc-build run build",
+    "build": "npm --workspace zkc-build run build --output public",
     "start": "npm --workspace zkc-build start",
     "dev": "npm --workspace zkc-build run dev",
     "test": "npm --workspace zkc-build test",
