@@ -2,10 +2,10 @@
   "name": "zkcommerce-api",
   "version": "4.1.0",
   "description": "ZKCommerce v4.1 Production API \u2014 ZKanadavel Infotech",
-  "main": "api/server.js",
+  "main": "zkc-build/api/server.js",
   "scripts": {
-    "start": "node api/server.js",
-    "dev": "nodemon api/server.js",
+    "start": "node zkc-build/api/server.js",
+    "dev": "nodemon zkc-build/api/server.js",
     "db:migrate": "node deployment/scripts/neon-migrate.js",
     "db:seed": "psql $DATABASE_URL -f database/phase3-additions.sql",
     "test": "jest --coverage",
