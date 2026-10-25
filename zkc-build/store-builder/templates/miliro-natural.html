@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Miliro — Liquid Dishwash | Powerful Grease Cutting. Safe on Hands.</title>
+<meta name="description" content="Miliro Liquid Dishwash — plant-based, LABSA-free, lemon fresh. Powerful grease cutting, gentle on hands. Made in India by Lumipure Essentials Pvt Ltd. Buy 400ml online.">
+<meta name="theme-color" content="#1A4D2E">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --g1:#1A4D2E;   /* dark forest green — primary */
+  --g2:#2E7D32;   /* medium green */
+  --g3:#4CAF50;   /* leaf green */
+  --g4:#81C784;   /* soft green */
+  --g5:#C8E6C9;   /* pale green */
+  --gl:#F1F8E9;   /* near-white green tint */
+  --lemon:#AEEA00;/* lemon accent */
+  --lime:#8BC34A; /* lime */
+  --dark:#1A2E1A; /* near-black green */
+  --text:#2E3D2E;
+  --muted:#5D7A5D;
+  --border:#D4E6D4;
+  --white:#FFFFFF;
+  --offwhite:#FAFDF7;
+}
+body{font-family:'Inter',sans-serif;color:var(--text);background:var(--white);overflow-x:hidden}
+
+/* ── ANNOUNCEMENT BAR ── */
+.ann-bar{background:var(--g1);color:rgba(255,255,255,.92);text-align:center;
+  padding:9px 20px;font-size:12px;font-weight:600;letter-spacing:.04em}
+.ann-bar span{color:var(--lemon)}
+
+/* ── NAV ── */
+nav{background:var(--white);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(26,77,46,.06)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:68px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px}
+
+/* Miliro logo — matching image 2: dark green serif Miliro */
+.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none}
+.miliro-wordmark{display:flex;align-items:center}
+.miliro-wordmark svg{height:42px;width:auto}
+
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--g1)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-tag{font-size:11px;color:var(--muted);background:var(--gl);padding:4px 10px;border-radius:99px;border:1px solid var(--g5)}
+.cart-btn{background:var(--g1);color:#fff;padding:9px 20px;border-radius:99px;
+  font-size:13px;font-weight:700;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:7px;transition:background .2s;font-family:'Inter',sans-serif}
+.cart-btn:hover{background:var(--g2)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(160deg,#0D3318 0%,#1A4D2E 45%,#2E7D32 80%,#388E3C 100%);
+  min-height:88vh;display:flex;align-items:center;position:relative;overflow:hidden}
+/* grid overlay */
+.hero::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none}
+/* right glow */
+.hero::after{content:'';position:absolute;right:-100px;top:-50px;
+  width:550px;height:550px;border-radius:50%;
+  background:radial-gradient(circle,rgba(174,234,0,.1) 0%,transparent 65%);pointer-events:none}
+.hero-inner{max-width:1200px;margin:0 auto;padding:60px 24px;
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+  width:100%;position:relative;z-index:1}
+
+/* Hero left */
+.hero-launch{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(174,234,0,.15);border:1px solid rgba(174,234,0,.35);
+  border-radius:99px;padding:6px 16px;font-size:11px;font-weight:700;
+  color:var(--lemon);text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px}
+.hero h1{font-family:'Playfair Display',serif;
+  font-size:clamp(36px,5vw,62px);font-weight:900;line-height:1.06;
+  color:#fff;margin-bottom:10px}
+.hero h1 em{font-style:italic;color:var(--lemon)}
+.hero-tagline{font-size:clamp(13px,1.6vw,16px);font-weight:600;
+  color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:14px}
+.hero-sub{font-size:15px;color:rgba(255,255,255,.6);line-height:1.8;
+  margin-bottom:28px;max-width:460px}
+.hero-sub b{color:rgba(255,255,255,.9)}
+.hero-pills{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+.hp{font-size:12px;color:rgba(255,255,255,.7);
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:99px;padding:5px 14px;display:flex;align-items:center;gap:5px}
+.hp::before{content:'✓';color:var(--lemon);font-weight:800}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px}
+.btn-primary{background:var(--lemon);color:var(--g1);padding:15px 32px;
+  border-radius:12px;font-size:15px;font-weight:800;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all .2s;box-shadow:0 6px 24px rgba(174,234,0,.3)}
+.btn-primary:hover{background:#C8E600;transform:translateY(-1px)}
+.btn-ghost{border:1.5px solid rgba(255,255,255,.3);padding:15px 32px;
+  border-radius:12px;font-size:15px;font-weight:600;color:#fff;
+  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.06);font-family:'Inter',sans-serif;transition:all .2s}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.hero-offer{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.15);
+  border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:16px;
+  flex-wrap:wrap}
+.hero-offer-ico{font-size:28px}
+.hero-offer-text b{display:block;font-size:14px;font-weight:700;color:#fff}
+.hero-offer-text span{font-size:12px;color:rgba(255,255,255,.5)}
+.hero-offer-price{margin-left:auto;text-align:center}
+.hero-offer-price .price{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--lemon)}
+.hero-offer-price .mrp{font-size:11px;color:rgba(255,255,255,.4);text-decoration:line-through}
+
+/* Hero right — spout pouch illustration */
+.hero-visual{display:flex;flex-direction:column;align-items:center;gap:16px;position:relative}
+.pouch-wrap{position:relative;filter:drop-shadow(0 32px 64px rgba(0,0,0,.4))}
+.pouch-glow{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);
+  width:200px;height:40px;background:rgba(174,234,0,.25);border-radius:50%;filter:blur(20px)}
+.pouch-badge{position:absolute;top:-10px;right:-10px;background:var(--lemon);
+  color:var(--g1);padding:6px 14px;border-radius:99px;font-size:11px;font-weight:800;
+  transform:rotate(8deg);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.hero-stars{text-align:center;color:rgba(255,255,255,.8)}
+.hero-stars .s{color:#FFD600;font-size:18px;letter-spacing:2px}
+.hero-stars .r{font-size:13px;margin-top:4px;color:rgba(255,255,255,.45)}
+/* certifications */
+.cert-strip{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.cert{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;padding:8px 14px;text-align:center}
+.cert div:first-child{font-size:16px;margin-bottom:3px}
+.cert div:last-child{font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+
+/* ── TRUST BAND ── */
+.trust-band{background:var(--g1);padding:16px 24px}
+.trust-inner{max-width:1200px;margin:0 auto;display:flex;
+  justify-content:center;gap:40px;flex-wrap:wrap}
+.ti{font-size:13px;font-weight:600;color:rgba(255,255,255,.85);
+  display:flex;align-items:center;gap:7px}
+.ti::before{content:'✓';color:var(--lemon);font-weight:900;font-size:14px}
+
+/* ── COMMON SECTION STYLES ── */
+.sec{padding:80px 24px}
+.si{max-width:1200px;margin:0 auto}
+.sec-tag{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--g2);margin-bottom:10px}
+.sec-title{font-family:'Playfair Display',serif;
+  font-size:clamp(26px,4vw,42px);font-weight:700;color:var(--g1);
+  margin-bottom:12px;letter-spacing:-.2px}
+.sec-sub{font-size:15px;color:var(--muted);line-height:1.75;
+  max-width:540px;margin-bottom:44px}
+.ctr{text-align:center}.ctr .sec-sub{margin:0 auto 44px}
+
+/* ── PRODUCT SECTION ── */
+.product-hero{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:48px}
+.product-gallery{position:relative}
+.gallery-main{background:var(--gl);border-radius:24px;padding:48px;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--g5);min-height:440px}
+.gallery-badges{position:absolute;top:20px;left:20px;display:flex;flex-direction:column;gap:8px}
+.gb{padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800}
+.gb-live{background:var(--g1);color:#fff}
+.gb-launch{background:var(--lemon);color:var(--g1)}
+.gallery-thumbs{display:flex;gap:10px;margin-top:14px}
+.thumb{width:64px;height:64px;border-radius:12px;background:var(--gl);
+  border:2px solid transparent;cursor:pointer;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;transition:border-color .2s}
+.thumb.active{border-color:var(--g1)}
+.product-info{}
+.product-name{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;
+  color:var(--g1);margin-bottom:4px}
+.product-sub{font-size:14px;color:var(--muted);font-weight:500;margin-bottom:16px}
+.product-stars{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.product-stars .s{color:#FFD600;font-size:16px}
+.product-stars .rc{font-size:13px;color:var(--muted)}
+.product-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.product-price{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:var(--g1)}
+.product-mrp{font-size:18px;color:var(--muted);text-decoration:line-through}
+.product-save{font-size:13px;font-weight:700;color:#fff;background:var(--g2);
+  padding:3px 10px;border-radius:99px}
+.product-gst{font-size:12px;color:var(--muted);margin-bottom:20px}
+/* Size selector */
+.size-label{font-size:13px;font-weight:700;color:var(--g1);margin-bottom:10px}
+.size-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.sz{border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--white);transition:all .2s}
+.sz.active{border-color:var(--g1);background:var(--gl)}
+.sz.active .sz-ml{color:var(--g1)}
+.sz.soon{opacity:.5;cursor:default}
+.sz-ml{font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px}
+.sz-name{font-size:10px;color:var(--muted);margin-bottom:4px}
+.sz-price{font-size:13px;font-weight:700;color:var(--g1)}
+.sz-cs{font-size:10px;color:var(--muted);font-style:italic}
+/* Ingredients highlight */
+.ingr-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.ingr-tag{font-size:11px;font-weight:700;color:var(--g1);
+  background:var(--gl);border:1px solid var(--g5);
+  border-radius:99px;padding:4px 12px}
+.ingr-bad{color:#C62828;background:#FFEBEE;border-color:#FFCDD2}
+/* Key claims */
+.claims-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.claim{display:flex;align-items:flex-start;gap:9px;background:var(--gl);
+  border-radius:10px;padding:12px 14px;border:1px solid var(--g5)}
+.claim-icon{font-size:18px;flex-shrink:0}
+.claim-text{font-size:12px;font-weight:600;color:var(--g1);line-height:1.4}
+/* CTA */
+.cta-add{width:100%;padding:16px;background:var(--g1);color:#fff;
+  border:none;border-radius:14px;font-size:16px;font-weight:800;
+  cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+.cta-add:hover{background:var(--g2);transform:translateY(-1px)}
+.cta-notify{width:100%;padding:16px;border:1.5px solid var(--g1);color:var(--g1);
+  background:transparent;border-radius:14px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;margin-bottom:14px}
+.cta-notify:hover{background:var(--gl)}
+.delivery-info{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.delivery-info::before{content:'🚚';font-size:15px}
+
+/* ── WHY MILIRO ── */
+.why-sec{background:var(--g1)}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.wc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:28px;transition:transform .2s}
+.wc:hover{transform:translateY(-4px)}
+.wc-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;
+  justify-content:center;font-size:26px;margin-bottom:18px;
+  background:rgba(174,234,0,.12);border:1px solid rgba(174,234,0,.2)}
+.wc-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+  color:#fff;margin-bottom:8px}
+.wc-desc{font-size:13px;color:rgba(255,255,255,.55);line-height:1.7}
+.wc-tag{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;
+  color:var(--lemon);background:rgba(174,234,0,.1);
+  border:1px solid rgba(174,234,0,.25);border-radius:99px;padding:3px 10px}
+
+/* ── INGREDIENTS ── */
+.ingr-sec{background:var(--offwhite)}
+.formula-box{background:var(--g1);color:#fff;border-radius:20px;padding:36px;
+  display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:8px}
+.formula-col h3{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;
+  margin-bottom:16px}
+.formula-col.in h3{color:var(--lemon)}
+.formula-col.out h3{color:#FF7043}
+.formula-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.fi-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+.fi-dot.yes{background:rgba(174,234,0,.2);color:var(--lemon)}
+.fi-dot.no{background:rgba(255,112,67,.2);color:#FF7043}
+.fi-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
+.fi-desc{font-size:11px;color:rgba(255,255,255,.45)}
+.ifra-badge{margin-top:24px;background:rgba(174,234,0,.08);
+  border:1px solid rgba(174,234,0,.2);border-radius:10px;padding:14px;
+  font-size:12px;color:rgba(255,255,255,.7);text-align:center}
+.ifra-badge b{color:var(--lemon)}
+
+/* ── HOW TO USE ── */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:8px}
+.hc{text-align:center;padding:28px 20px}
+.hc-step{width:52px;height:52px;border-radius:50%;background:var(--g1);
+  color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 18px;font-family:'Playfair Display',serif}
+.hc-icon{font-size:32px;margin-bottom:14px;display:block}
+.hc-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;
+  color:var(--g1);margin-bottom:8px}
+.hc-desc{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* ── SPOUT POUCH SECTION ── */
+.pouch-sec{background:var(--gl);border-top:1px solid var(--g5);border-bottom:1px solid var(--g5)}
+.pouch-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:8px}
+.pouch-spec-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
+.ps{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--g5)}
+.ps-title{font-size:12px;font-weight:700;color:var(--g1);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:4px}
+.ps-val{font-size:14px;font-weight:600;color:var(--text)}
+.pouch-benefits{margin-top:24px}
+.pb{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.pb::before{content:'✓';color:var(--g1);font-weight:900;font-size:15px;flex-shrink:0;margin-top:1px}
+.pb-text{font-size:14px;color:var(--text);font-weight:500}
+
+/* ── TESTIMONIALS ── */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.tc{background:#fff;border:1px solid var(--border);border-radius:16px;
+  padding:28px;transition:box-shadow .2s}
+.tc:hover{box-shadow:0 12px 40px rgba(26,77,46,.1)}
+.tc-stars{color:#FFD600;font-size:16px;margin-bottom:12px;letter-spacing:2px}
+.tc-text{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:20px;
+  font-style:italic}
+.tc-author{display:flex;align-items:center;gap:12px}
+.tc-av{width:42px;height:42px;border-radius:50%;background:var(--g1);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:16px;color:#fff;flex-shrink:0}
+.tc-name{font-size:14px;font-weight:700;color:var(--g1)}
+.tc-role{font-size:12px;color:var(--muted);margin-top:1px}
+.tc-product{font-size:11px;color:var(--g3);font-weight:600;margin-top:3px}
+
+/* ── COMING SOON SIZES ── */
+.coming-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.cc{background:#fff;border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;transition:transform .2s}
+.cc:hover{transform:translateY(-3px)}
+.cc-img{height:180px;display:flex;align-items:center;justify-content:center;
+  background:var(--gl);position:relative;padding:20px}
+.cc-badge{position:absolute;top:12px;left:12px;background:var(--g1);
+  color:#fff;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700}
+.cc-body{padding:20px}
+.cc-size{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--g1);margin-bottom:3px}
+.cc-variant{font-size:13px;color:var(--muted);margin-bottom:14px}
+.cc-eta{font-size:12px;color:var(--g2);font-weight:600;
+  background:var(--g5);padding:4px 12px;border-radius:99px;display:inline-block;margin-bottom:14px}
+.notify-row{display:flex;gap:8px}
+.notify-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none}
+.notify-input:focus{border-color:var(--g1)}
+.notify-btn{padding:10px 16px;background:var(--g1);color:#fff;border:none;
+  border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Inter',sans-serif;white-space:nowrap}
+.notify-btn:hover{background:var(--g2)}
+.notify-done{display:none;font-size:13px;font-weight:700;color:var(--g1);
+  background:var(--gl);border:1px solid var(--g4);border-radius:8px;padding:10px 14px;text-align:center}
+
+/* ── BRAND STORY ── */
+.brand-sec{background:var(--g1)}
+.brand-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:8px}
+.brand-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+.bs{text-align:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px}
+.bs-n{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--lemon);margin-bottom:4px}
+.bs-l{font-size:12px;color:rgba(255,255,255,.5);font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.brand-promise{margin-top:28px}
+.bp{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.bp-icon{width:36px;height:36px;border-radius:50%;background:rgba(174,234,0,.12);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.bp-text{font-size:14px;color:rgba(255,255,255,.7);line-height:1.6}
+.bp-text b{color:#fff}
+
+/* ── NOTIFY HERO ── */
+.notify-sec{background:linear-gradient(135deg,var(--g1),var(--g2));padding:80px 24px;text-align:center}
+.notify-inner{max-width:600px;margin:0 auto}
+.notify-inner h2{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,42px);font-weight:700;color:#fff;margin-bottom:12px}
+.notify-inner p{font-size:16px;color:rgba(255,255,255,.65);margin-bottom:32px}
+.notify-form-hero{display:flex;gap:10px;max-width:480px;margin:0 auto 16px}
+.nfh-input{flex:1;padding:15px 20px;border-radius:12px;border:1.5px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;font-size:15px;font-family:'Inter',sans-serif;outline:none}
+.nfh-input::placeholder{color:rgba(255,255,255,.4)}
+.nfh-input:focus{border-color:var(--lemon)}
+.nfh-btn{padding:15px 24px;border-radius:12px;background:var(--lemon);
+  color:var(--g1);font-size:15px;font-weight:800;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;white-space:nowrap}
+.nfh-msg{display:none;color:var(--lemon);font-size:16px;font-weight:700}
+.notify-trust{font-size:12px;color:rgba(255,255,255,.4);margin-top:12px}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);padding:56px 24px 28px}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-top{display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand p{font-size:13px;color:rgba(255,255,255,.4);line-height:1.75;margin-top:14px;max-width:280px}
+.footer-company{font-size:12px;color:rgba(255,255,255,.3);margin-top:10px;font-style:italic}
+.footer-col h4{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.4);
+  text-decoration:none;margin-bottom:9px;transition:color .2s}
+.footer-col a:hover{color:rgba(255,255,255,.85)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:24px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-copy{font-size:12px;color:rgba(255,255,255,.25)}
+.footer-zk{font-size:12px;color:rgba(255,255,255,.2)}
+.footer-zk b{color:rgba(255,255,255,.4)}
+.social-row{display:flex;gap:12px;margin-top:16px}
+.social-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;
+  justify-content:center;font-size:14px;text-decoration:none;transition:background .2s}
+.social-btn:hover{background:rgba(255,255,255,.12)}
+
+/* ── CART TOAST ── */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--g1);color:#fff;
+  padding:16px 24px;border-radius:14px;font-size:14px;font-weight:700;
+  box-shadow:0 8px 32px rgba(26,77,46,.35);
+  transform:translateY(120px);opacity:0;transition:all .35s;z-index:1000;
+  display:flex;align-items:center;gap:10px}
+.toast.show{transform:none;opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hero-inner,.product-hero,.brand-grid,.pouch-grid,.formula-box{grid-template-columns:1fr}
+  .hero-visual{display:none}
+  .product-gallery{display:none}
+  .why-grid,.testi-grid,.coming-grid,.how-grid{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .notify-form-hero{flex-direction:column}
+}
+@media(max-width:600px){
+  .claims-grid,.pouch-spec-list,.brand-stat-row{grid-template-columns:1fr}
+  .size-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- CART TOAST -->
+<div class="toast" id="toast">🛒 Added to cart — 400ml Lemon Fresh ₹89</div>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="ann-bar">🌿 Now launching in Coimbatore &amp; Tamil Nadu D2C — <span>Free delivery on orders above ₹199</span> &nbsp;·&nbsp; Plant-based &amp; LABSA-free</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <!-- Miliro logo — faithful to image 2 style: dark green serif + leaf + drop -->
+    <a href="#" class="nav-logo">
+      <svg class="miliro-wordmark" viewBox="0 0 220 52" xmlns="http://www.w3.org/2000/svg">
+        <!-- Wordmark: Miliro in dark green serif style -->
+        <text x="0" y="40" font-family="Playfair Display, Georgia, serif" font-size="42" font-weight="700" fill="#1A4D2E" letter-spacing="-1">Miliro</text>
+        <!-- Leaf on the i dot -->
+        <ellipse cx="73" cy="6" rx="5" ry="3.5" fill="#4CAF50" transform="rotate(-20,73,6)"/>
+        <ellipse cx="76" cy="4" rx="3.5" ry="2.5" fill="#2E7D32" transform="rotate(-20,76,4)"/>
+        <!-- Water drop after o -->
+        <path d="M195 20 Q201 28 201 34 Q201 42 195 44 Q189 42 189 34 Q189 28 195 20Z" fill="#4CAF50" opacity="0.85"/>
+        <ellipse cx="192" cy="30" rx="2.5" ry="4" fill="white" opacity="0.3" transform="rotate(-20,192,30)"/>
+        <!-- Leaf curl around drop -->
+        <path d="M195 18 Q202 12 207 16 Q201 22 195 18Z" fill="#2E7D32" opacity="0.85"/>
+        <!-- Small leaf below -->
+        <path d="M191 43 Q188 50 192 52 Q196 50 194 43Z" fill="#4CAF50" opacity="0.7"/>
+        <!-- Tagline -->
+        <text x="0" y="50" font-family="Arial, sans-serif" font-size="8.5" fill="#5D7A5D" letter-spacing="1.5">LIQUID DISHWASH</text>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#product">Product</a></li>
+      <li><a href="#why">Why Miliro</a></li>
+      <li><a href="#ingredients">Ingredients</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+      <li><a href="#coming">Coming Soon</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="nav-tag">Powered by ZKCommerce™</div>
+      <button class="cart-btn" id="navCart">🛒 Cart <span id="cartCount">0</span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-launch">🚀 Now Available — 400ml Launch Edition</div>
+      <h1>Powerful grease cutting.<br><em>Safe on hands.</em></h1>
+      <div class="hero-tagline">LEMON FRESH · PLANT-BASED · MADE IN INDIA</div>
+      <p class="hero-sub">
+        Miliro is <b>India's first home-care brand</b> to completely eliminate LABSA from its dishwash formulation — replacing it with safer, plant-derived surfactants that are just as powerful, and far kinder to your hands and family.
+      </p>
+      <div class="hero-pills">
+        <div class="hp">No LABSA · No Sulphates</div>
+        <div class="hp">Plant-Derived Surfactants</div>
+        <div class="hp">IFRA-Compliant Fragrance</div>
+        <div class="hp">Biodegradable Formula</div>
+      </div>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="addToCart()">🛒 Buy Now — ₹89 (400ml)</button>
+        <a href="#product" class="btn-ghost">See full details ↓</a>
+      </div>
+      <div class="hero-offer">
+        <div class="hero-offer-ico">📅</div>
+        <div class="hero-offer-text">
+          <b>Launch Offer — Limited Time</b>
+          <span>Free delivery · No minimum order · Coimbatore & Tamil Nadu</span>
+        </div>
+        <div class="hero-offer-price">
+          <div class="price">₹89</div>
+          <div class="mrp">MRP ₹110</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="pouch-wrap">
+        <div class="pouch-badge">★ Launch Price ₹89</div>
+        <!-- Miliro spout pouch SVG — matching image 1 packaging -->
+        <svg width="220" height="340" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="pouchBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1A4D2E"/>
+              <stop offset="40%" stop-color="#2E7D32"/>
+              <stop offset="100%" stop-color="#388E3C"/>
+            </linearGradient>
+            <linearGradient id="pouchHL" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+            </linearGradient>
+            <linearGradient id="lemonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#AEEA00"/>
+              <stop offset="100%" stop-color="#8BC34A"/>
+            </linearGradient>
+            <radialGradient id="steelGrad" cx="50%" cy="40%">
+              <stop offset="0%" stop-color="#ECEFF1"/>
+              <stop offset="60%" stop-color="#B0BEC5"/>
+              <stop offset="100%" stop-color="#78909C"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Pouch body shape (spout pouch style) -->
+          <!-- Bottom rounded corners, slightly wider at middle (typical spout pouch) -->
+          <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#pouchBg)"/>
+
+          <!-- Highlight left edge -->
+          <path d="M30 60 Q18 70 16 100 L16 200 Q18 160 35 65 Z" fill="url(#pouchHL)"/>
+
+          <!-- Spout top (center) -->
+          <rect x="90" y="14" width="40" height="52" rx="6" fill="#1A4D2E"/>
+          <rect x="96" y="6" width="28" height="18" rx="5" fill="#2E7D32"/>
+          <!-- Flip top cap (green) -->
+          <rect x="88" y="0" width="44" height="16" rx="8" fill="#4CAF50"/>
+          <ellipse cx="110" cy="0" rx="22" ry="6" fill="#388E3C"/>
+
+          <!-- Label area (white card on pouch) -->
+          <rect x="28" y="76" width="164" height="210" rx="14" fill="rgba(255,255,255,0.92)"/>
+
+          <!-- Miliro logo on label -->
+          <text x="110" y="118" font-family="Playfair Display, Georgia, serif" font-size="26" font-weight="700" fill="#1A4D2E" text-anchor="middle" letter-spacing="-0.5">Miliro</text>
+          <!-- Leaf on i -->
+          <ellipse cx="106" cy="97" rx="5" ry="3" fill="#4CAF50" transform="rotate(-25,106,97)"/>
+
+          <!-- LIQUID DISHWASH sub -->
+          <text x="110" y="133" font-family="Arial,sans-serif" font-size="9" fill="#2E7D32" text-anchor="middle" letter-spacing="2" font-weight="700">LIQUID DISHWASH</text>
+
+          <!-- Green divider line -->
+          <line x1="50" y1="140" x2="170" y2="140" stroke="#C8E6C9" stroke-width="1"/>
+
+          <!-- Tagline on label -->
+          <text x="110" y="157" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="700">POWERFUL GREASE CUTTING</text>
+          <text x="110" y="169" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="700">SAFE ON HANDS</text>
+
+          <!-- Lemon Fresh badge on label -->
+          <rect x="78" y="173" width="64" height="16" rx="8" fill="#AEEA00"/>
+          <text x="110" y="184" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="800">LEMON FRESH</text>
+
+          <!-- Lemon + Steel vessel illustration -->
+          <!-- Steel vessel (simplified circles) -->
+          <ellipse cx="78" cy="232" rx="28" ry="20" fill="url(#steelGrad)" opacity="0.9"/>
+          <ellipse cx="78" cy="226" rx="26" ry="10" fill="#ECEFF1" opacity="0.6"/>
+          <rect x="50" y="226" width="56" height="18" rx="3" fill="url(#steelGrad)" opacity="0.7"/>
+
+          <!-- Lemon half -->
+          <ellipse cx="140" cy="238" rx="22" ry="22" fill="#AEEA00"/>
+          <ellipse cx="140" cy="238" rx="18" ry="18" fill="#C5E500"/>
+          <!-- Lemon segments -->
+          <line x1="140" y1="220" x2="140" y2="256" stroke="#AEEA00" stroke-width="1.5"/>
+          <line x1="122" y1="228" x2="158" y2="248" stroke="#AEEA00" stroke-width="1.5"/>
+          <line x1="122" y1="248" x2="158" y2="228" stroke="#AEEA00" stroke-width="1.5"/>
+          <!-- Leaf on lemon -->
+          <path d="M155 220 Q162 212 168 216 Q162 222 155 220Z" fill="#4CAF50"/>
+
+          <!-- Green leaf water drop graphic -->
+          <path d="M110 198 Q115 204 115 208 Q115 214 110 215 Q105 214 105 208 Q105 204 110 198Z" fill="#4CAF50" opacity="0.7"/>
+
+          <!-- Feature icons row on label -->
+          <text x="55" y="275" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" font-weight="600">Removes</text>
+          <text x="55" y="283" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" font-weight="600">Tough Grease</text>
+          <text x="110" y="275" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" font-weight="600">Rich Foam</text>
+          <text x="110" y="283" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" font-weight="600">Long Lasting</text>
+          <text x="165" y="275" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" font-weight="600">Gentle on</text>
+          <text x="165" y="283" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" font-weight="600">Hands</text>
+
+          <!-- Net Content -->
+          <text x="44" y="296" font-family="Arial,sans-serif" font-size="9" fill="#5D7A5D" font-weight="500">Net Content</text>
+          <text x="44" y="308" font-family="Playfair Display,serif" font-size="16" fill="#1A4D2E" font-weight="700">400 ml</text>
+          <!-- Made in India -->
+          <text x="176" y="300" font-family="Arial,sans-serif" font-size="7" fill="#5D7A5D" text-anchor="middle">Made in India</text>
+          <text x="176" y="310" font-family="Arial,sans-serif" font-size="11" text-anchor="middle">🇮🇳</text>
+        </svg>
+        <div class="pouch-glow"></div>
+      </div>
+      <div class="hero-stars">
+        <div class="s">★★★★★</div>
+        <div class="r">4.9 out of 5 · 128 early reviews</div>
+      </div>
+      <div class="cert-strip">
+        <div class="cert"><div>🌿</div><div>Plant-Based</div></div>
+        <div class="cert"><div>🚫</div><div>LABSA-Free</div></div>
+        <div class="cert"><div>🇮🇳</div><div>Made in India</div></div>
+        <div class="cert"><div>♻️</div><div>Recyclable</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAND -->
+<div class="trust-band">
+  <div class="trust-inner">
+    <div class="ti">No LABSA · No Sulphates · No Paraffins</div>
+    <div class="ti">Plant-Derived Surfactants</div>
+    <div class="ti">IFRA-Compliant Fragrance</div>
+    <div class="ti">100% Biodegradable Formula</div>
+    <div class="ti">Spout Pouch — Easy to Pour</div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<section class="sec" id="product" style="background:#FAFDF7">
+  <div class="si">
+    <div class="sec-tag">Product</div>
+    <div class="sec-title">Miliro Liquid Dishwash — 400ml</div>
+    <div class="product-hero">
+      <div class="product-gallery">
+        <div class="gallery-main">
+          <div class="gallery-badges">
+            <div class="gb gb-live">✓ Available Now</div>
+            <div class="gb gb-launch">Launch Price ₹89</div>
+          </div>
+          <!-- Product image placeholder: spout pouch front view -->
+          <svg width="180" height="280" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="pBg2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1A4D2E"/>
+                <stop offset="50%" stop-color="#2E7D32"/>
+                <stop offset="100%" stop-color="#388E3C"/>
+              </linearGradient>
+            </defs>
+            <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#pBg2)"/>
+            <path d="M30 60 Q18 70 16 100 L16 200 Q18 160 35 65 Z" fill="rgba(255,255,255,0.12)"/>
+            <rect x="90" y="14" width="40" height="52" rx="6" fill="#1A4D2E"/>
+            <rect x="88" y="0" width="44" height="16" rx="8" fill="#4CAF50"/>
+            <rect x="28" y="76" width="164" height="210" rx="14" fill="rgba(255,255,255,0.92)"/>
+            <text x="110" y="118" font-family="Playfair Display,Georgia,serif" font-size="26" font-weight="700" fill="#1A4D2E" text-anchor="middle">Miliro</text>
+            <text x="110" y="133" font-family="Arial,sans-serif" font-size="9" fill="#2E7D32" text-anchor="middle" letter-spacing="2" font-weight="700">LIQUID DISHWASH</text>
+            <line x1="50" y1="140" x2="170" y2="140" stroke="#C8E6C9" stroke-width="1"/>
+            <text x="110" y="155" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="700">POWERFUL GREASE CUTTING</text>
+            <text x="110" y="167" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="700">SAFE ON HANDS</text>
+            <rect x="78" y="171" width="64" height="16" rx="8" fill="#AEEA00"/>
+            <text x="110" y="182" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="800">LEMON FRESH</text>
+            <ellipse cx="78" cy="228" rx="26" ry="19" fill="#B0BEC5" opacity="0.85"/>
+            <ellipse cx="78" cy="222" rx="24" ry="10" fill="#ECEFF1" opacity="0.7"/>
+            <ellipse cx="145" cy="234" rx="22" ry="22" fill="#AEEA00"/>
+            <ellipse cx="145" cy="234" rx="17" ry="17" fill="#C5E500"/>
+            <line x1="145" y1="216" x2="145" y2="252" stroke="#AEEA00" stroke-width="1.5"/>
+            <line x1="127" y1="224" x2="163" y2="244" stroke="#AEEA00" stroke-width="1.5"/>
+            <line x1="127" y1="244" x2="163" y2="224" stroke="#AEEA00" stroke-width="1.5"/>
+            <text x="44" y="300" font-family="Playfair Display,serif" font-size="16" fill="#1A4D2E" font-weight="700">400 ml</text>
+          </svg>
+        </div>
+        <div class="gallery-thumbs">
+          <div class="thumb active" title="Front view"><div style="font-size:22px">🫙</div></div>
+          <div class="thumb" title="Back view"><div style="font-size:22px">📋</div></div>
+          <div class="thumb" title="In use"><div style="font-size:22px">🍽️</div></div>
+          <div class="thumb" title="Spout close-up"><div style="font-size:22px">🔬</div></div>
+        </div>
+      </div>
+      <div class="product-info">
+        <div class="product-name">Miliro Liquid Dishwash</div>
+        <div class="product-sub">Lemon Fresh · Plant-Based Formula · Spout Pouch</div>
+        <div class="product-stars">
+          <span class="s">★★★★★</span>
+          <span class="rc">4.9 (128 reviews) · <a href="#reviews" style="color:var(--g1)">Read reviews</a></span>
+        </div>
+        <div class="product-price-row">
+          <div class="product-price">₹89</div>
+          <div class="product-mrp">₹110</div>
+          <div class="product-save">Save 19%</div>
+        </div>
+        <div class="product-gst">Inclusive of all taxes · MRP ₹110 (400ml)</div>
+
+        <!-- Size selector -->
+        <div class="size-label">Select Size</div>
+        <div class="size-grid">
+          <div class="sz active" onclick="selectSize(this,'400ml','₹89')">
+            <div class="sz-ml">400ml</div>
+            <div class="sz-name">Lemon Fresh</div>
+            <div class="sz-price">₹89</div>
+          </div>
+          <div class="sz soon" title="Coming soon">
+            <div class="sz-ml">250ml</div>
+            <div class="sz-name">Rose Petal</div>
+            <div class="sz-cs">Coming soon</div>
+          </div>
+          <div class="sz soon" title="Coming soon">
+            <div class="sz-ml">750ml</div>
+            <div class="sz-name">Orange Burst</div>
+            <div class="sz-cs">Coming soon</div>
+          </div>
+          <div class="sz soon" title="Coming soon">
+            <div class="sz-ml">1L</div>
+            <div class="sz-name">Mint Breeze</div>
+            <div class="sz-cs">Coming soon</div>
+          </div>
+        </div>
+
+        <!-- Ingredients highlight -->
+        <div class="size-label">What's in it &amp; what's not</div>
+        <div class="ingr-row">
+          <div class="ingr-tag">🌿 Plant surfactants</div>
+          <div class="ingr-tag">🍋 Lemon extract</div>
+          <div class="ingr-tag">🌸 Aloe vera</div>
+          <div class="ingr-tag">💧 Purified water</div>
+          <div class="ingr-tag ingr-bad">✗ No LABSA</div>
+          <div class="ingr-tag ingr-bad">✗ No Sulphates</div>
+          <div class="ingr-tag ingr-bad">✗ No Paraffins</div>
+        </div>
+
+        <!-- Key claims -->
+        <div class="claims-grid">
+          <div class="claim"><span class="claim-icon">💪</span><div class="claim-text">Removes tough grease — even in cold water</div></div>
+          <div class="claim"><span class="claim-icon">🤲</span><div class="claim-text">Gentle on hands — safe for daily use</div></div>
+          <div class="claim"><span class="claim-icon">🫧</span><div class="claim-text">Rich, long-lasting foam per drop</div></div>
+          <div class="claim"><span class="claim-icon">🇮🇳</span><div class="claim-text">Made in India — Coimbatore, Tamil Nadu</div></div>
+        </div>
+
+        <button class="cta-add" onclick="addToCart()">🛒 Add to Cart — ₹89</button>
+        <div class="delivery-info">Free delivery in Coimbatore &amp; Tamil Nadu · Ships within 24 hours</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY MILIRO -->
+<section class="sec why-sec" id="why">
+  <div class="si">
+    <div class="sec-tag" style="color:var(--lemon)">Why Choose Miliro</div>
+    <div class="sec-title" style="color:#fff">The safer choice for<br>every Indian household.</div>
+    <div class="why-grid">
+      <div class="wc">
+        <div class="wc-icon">🚫</div>
+        <div class="wc-title">Zero LABSA. Zero compromise.</div>
+        <div class="wc-desc">LABSA (Linear Alkylbenzene Sulphonic Acid) is linked to skin irritation and potential carcinogenic effects. We are one of the first Indian dishwash brands to completely eliminate it — replacing it with plant-derived surfactants that clean just as powerfully.</div>
+        <div class="wc-tag">No LABSA · No Sulphates · No Paraffins</div>
+      </div>
+      <div class="wc">
+        <div class="wc-icon">🌿</div>
+        <div class="wc-title">Plant-derived. Fully biodegradable.</div>
+        <div class="wc-desc">Our formula uses plant-based surfactants and detergent enzymes that are 100% biodegradable. They break down naturally after use — safe for drains, waterways, and the environment. Cleaning your dishes should not cost the planet anything extra.</div>
+        <div class="wc-tag">Biodegradable · Eco-Friendly · BPA-Free Pack</div>
+      </div>
+      <div class="wc">
+        <div class="wc-icon">⚡</div>
+        <div class="wc-title">Hard water? No problem.</div>
+        <div class="wc-desc">Miliro's formula is engineered to deliver consistent cleaning performance even in hard water conditions — a common challenge across Tamil Nadu and much of India. Strong cleaning results regardless of your water quality.</div>
+        <div class="wc-tag">Hard Water Effective · High Foam · Long Lasting</div>
+      </div>
+      <div class="wc">
+        <div class="wc-icon">🏷️</div>
+        <div class="wc-title">Mass-to-masstige pricing.</div>
+        <div class="wc-desc">Premium ingredient integrity should not mean premium-only pricing. Miliro sits between the mass market and masstige — bringing genuinely plant-based, safe formulation within reach of everyday Indian households.</div>
+        <div class="wc-tag">₹89 for 400ml · Quality without exclusivity</div>
+      </div>
+      <div class="wc">
+        <div class="wc-icon">🛍️</div>
+        <div class="wc-title">Convenient spout pouch design.</div>
+        <div class="wc-desc">Our 400ml spout pouch features a flip-top cap for controlled pouring. Leak-proof, tamper-proof, and easy to handle. The pouch uses less plastic than traditional bottles — lighter to transport, easier to store.</div>
+        <div class="wc-tag">Spout Pouch · Flip-Top Cap · Recyclable</div>
+      </div>
+      <div class="wc">
+        <div class="wc-icon">🔬</div>
+        <div class="wc-title">IFRA-compliant fragrance.</div>
+        <div class="wc-desc">Every fragrance used in Miliro is IFRA-compliant — meeting recognized international safety standards for consumer products. The Lemon Fresh scent is clean, natural-smelling, and free from allergens that common synthetic fragrances contain.</div>
+        <div class="wc-tag">IFRA Compliant · No Synthetic Allergens</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO USE -->
+<section class="sec" style="background:#FAFDF7">
+  <div class="si">
+    <div class="sec-tag ctr">Simple to Use</div>
+    <div class="sec-title ctr">Works in 3 easy steps</div>
+    <div class="sec-sub ctr sec-sub" style="text-align:center;margin:0 auto 44px">A few drops of Miliro go a long way — rich foam, powerful clean, every time.</div>
+    <div class="how-grid">
+      <div class="hc">
+        <span class="hc-icon">💧</span>
+        <div class="hc-step">1</div>
+        <div class="hc-title">Take a few drops</div>
+        <div class="hc-desc">Squeeze 3–5ml of Miliro onto a wet sponge or scrubber. The plant-based formula activates instantly with water.</div>
+      </div>
+      <div class="hc">
+        <span class="hc-icon">🫧</span>
+        <div class="hc-step">2</div>
+        <div class="hc-title">Scrub utensils gently</div>
+        <div class="hc-desc">The rich lemon-fresh lather coats every surface. One application handles a full sink of dishes — even oil and masala residue.</div>
+      </div>
+      <div class="hc">
+        <span class="hc-icon">✨</span>
+        <div class="hc-step">3</div>
+        <div class="hc-title">Rinse with clean water</div>
+        <div class="hc-desc">Rinse thoroughly. No residue, no chemical smell. Sparkling clean dishes — and hands that feel soft, not stripped dry.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INGREDIENTS -->
+<section class="sec ingr-sec" id="ingredients">
+  <div class="si">
+    <div class="sec-tag">Ingredients & Formulation</div>
+    <div class="sec-title">Transparent ingredients.<br>Nothing hidden.</div>
+    <div class="sec-sub">We believe you have the right to know exactly what is — and is not — in every product you use at home.</div>
+    <div class="formula-box">
+      <div class="formula-col in">
+        <h3>✓ What's IN Miliro</h3>
+        <div class="formula-item">
+          <div class="fi-dot yes">✓</div>
+          <div><div class="fi-name">Plant-derived surfactants</div><div class="fi-desc">Coconut and palm kernel oil derived. Effective, biodegradable, gentle.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot yes">✓</div>
+          <div><div class="fi-name">Detergent enzymes</div><div class="fi-desc">Natural enzymes that break down grease, protein, and starch residue.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot yes">✓</div>
+          <div><div class="fi-name">Lemon extract</div><div class="fi-desc">Natural degreaser with fresh citrus scent. IFRA-compliant fragrance.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot yes">✓</div>
+          <div><div class="fi-name">Aloe vera extract</div><div class="fi-desc">Soothes and moisturises skin. Prevents dryness from daily dish washing.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot yes">✓</div>
+          <div><div class="fi-name">Purified water</div><div class="fi-desc">Triple-filtered base with no heavy metals or impurities.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot yes">✓</div>
+          <div><div class="fi-name">Natural preservative system</div><div class="fi-desc">Maintains formula stability and shelf life — no harsh chemicals.</div></div>
+        </div>
+        <div class="ifra-badge"><b>IFRA Compliant</b> — All fragrances meet International Fragrance Association safety standards</div>
+      </div>
+      <div class="formula-col out">
+        <h3>✗ What's NOT in Miliro</h3>
+        <div class="formula-item">
+          <div class="fi-dot no">✗</div>
+          <div><div class="fi-name">LABSA</div><div class="fi-desc">Linear Alkylbenzene Sulphonic Acid — linked to skin irritation and carcinogenic potential. Completely eliminated.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot no">✗</div>
+          <div><div class="fi-name">Sulphates (SLS/SLES)</div><div class="fi-desc">Common synthetic surfactants that strip skin of natural oils and cause dryness.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot no">✗</div>
+          <div><div class="fi-name">Paraffins</div><div class="fi-desc">Petroleum-derived compounds used as cheap fillers in conventional dishwash liquids.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot no">✗</div>
+          <div><div class="fi-name">Parabens</div><div class="fi-desc">Synthetic preservatives associated with hormone disruption. Not in any Miliro product.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot no">✗</div>
+          <div><div class="fi-name">Phosphates</div><div class="fi-desc">Harmful to aquatic ecosystems. Our formula is phosphate-free and drain-safe.</div></div>
+        </div>
+        <div class="formula-item">
+          <div class="fi-dot no">✗</div>
+          <div><div class="fi-name">Synthetic colorants</div><div class="fi-desc">No artificial dyes that could cause skin sensitivity or allergic reactions.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPOUT POUCH PACKAGING -->
+<section class="sec pouch-sec" id="packaging">
+  <div class="si">
+    <div class="sec-tag">Packaging</div>
+    <div class="sec-title">Smarter packaging.<br>Designed for everyday use.</div>
+    <div class="pouch-grid">
+      <div>
+        <p style="font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:20px">Miliro uses a premium spout pouch format — a thoughtful packaging choice that makes every use convenient, controlled, and waste-free. The 400ml launch pack features a 11mm food-grade polyethylene spout with a flip-top cap for one-handed opening.</p>
+        <div class="pouch-spec-list">
+          <div class="ps"><div class="ps-title">Spout Type</div><div class="ps-val">11mm diameter — Food Grade PE</div></div>
+          <div class="ps"><div class="ps-title">Cap Style</div><div class="ps-val">Flip Top Cap (Green)</div></div>
+          <div class="ps"><div class="ps-title">Pouch Material</div><div class="ps-val">PET + OPP + Nylon + LLDPE</div></div>
+          <div class="ps"><div class="ps-title">Total Thickness</div><div class="ps-val">100–120 Micron</div></div>
+          <div class="ps"><div class="ps-title">Spout Position</div><div class="ps-val">Top Corner (most common)</div></div>
+          <div class="ps"><div class="ps-title">Shelf Life</div><div class="ps-val">24 months from Mfg. Date</div></div>
+        </div>
+        <div class="pouch-benefits">
+          <div class="pb"><div class="pb-text">Leak-proof and tamper-proof design</div></div>
+          <div class="pb"><div class="pb-text">Easy to pour — controlled usage, zero wastage</div></div>
+          <div class="pb"><div class="pb-text">Lightweight and easy to transport and store</div></div>
+          <div class="pb"><div class="pb-text">Uses significantly less plastic than rigid bottles</div></div>
+          <div class="pb"><div class="pb-text">Reclosable flip-top keeps product safe between uses</div></div>
+          <div class="pb"><div class="pb-text">100% recyclable — food-grade PE spout material</div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center">
+        <!-- Spout pouch visual: front + back views side by side -->
+        <div style="display:flex;gap:20px;align-items:flex-end">
+          <div style="text-align:center">
+            <svg width="130" height="200" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+              <defs><linearGradient id="pBg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A4D2E"/><stop offset="50%" stop-color="#2E7D32"/><stop offset="100%" stop-color="#388E3C"/></linearGradient></defs>
+              <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#pBg3)"/>
+              <rect x="90" y="14" width="40" height="52" rx="6" fill="#1A4D2E"/>
+              <rect x="88" y="0" width="44" height="16" rx="8" fill="#4CAF50"/>
+              <rect x="28" y="76" width="164" height="210" rx="14" fill="rgba(255,255,255,0.9)"/>
+              <text x="110" y="118" font-family="Playfair Display,Georgia,serif" font-size="26" font-weight="700" fill="#1A4D2E" text-anchor="middle">Miliro</text>
+              <text x="110" y="133" font-family="Arial,sans-serif" font-size="9" fill="#2E7D32" text-anchor="middle" letter-spacing="2" font-weight="700">LIQUID DISHWASH</text>
+              <rect x="78" y="145" width="64" height="16" rx="8" fill="#AEEA00"/>
+              <text x="110" y="156" font-family="Arial,sans-serif" font-size="8" fill="#1A4D2E" text-anchor="middle" font-weight="800">LEMON FRESH</text>
+              <text x="44" y="295" font-family="Playfair Display,serif" font-size="16" fill="#1A4D2E" font-weight="700">400 ml</text>
+            </svg>
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:8px">Front View</div>
+          </div>
+          <div style="text-align:center">
+            <svg width="110" height="200" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+              <defs><linearGradient id="pBg4" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#1A4D2E"/><stop offset="50%" stop-color="#2E7D32"/><stop offset="100%" stop-color="#388E3C"/></linearGradient></defs>
+              <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#pBg4)"/>
+              <rect x="170" y="14" width="40" height="52" rx="6" fill="#1A4D2E"/>
+              <rect x="168" y="0" width="44" height="16" rx="8" fill="#4CAF50"/>
+              <rect x="28" y="76" width="164" height="240" rx="14" fill="rgba(255,255,255,0.88)"/>
+              <text x="110" y="105" font-family="Playfair Display,Georgia,serif" font-size="18" font-weight="700" fill="#1A4D2E" text-anchor="middle">Miliro</text>
+              <text x="110" y="120" font-family="Arial,sans-serif" font-size="7" fill="#2E7D32" text-anchor="middle" letter-spacing="1">LIQUID DISHWASH</text>
+              <!-- Back label content -->
+              <rect x="40" y="130" width="140" height="16" rx="5" fill="#1A4D2E"/>
+              <text x="110" y="142" font-family="Arial,sans-serif" font-size="8" fill="#AEEA00" text-anchor="middle" font-weight="700">DIRECTIONS FOR USE</text>
+              <text x="55" y="162" font-family="Arial,sans-serif" font-size="7" fill="#333" text-anchor="middle">Take drops</text>
+              <text x="110" y="162" font-family="Arial,sans-serif" font-size="7" fill="#333" text-anchor="middle">Scrub gently</text>
+              <text x="165" y="162" font-family="Arial,sans-serif" font-size="7" fill="#333" text-anchor="middle">Rinse well</text>
+              <rect x="40" y="173" width="140" height="14" rx="4" fill="#C8E6C9"/>
+              <text x="110" y="183" font-family="Arial,sans-serif" font-size="7" fill="#1A4D2E" text-anchor="middle" font-weight="700">INGREDIENTS</text>
+              <text x="110" y="197" font-family="Arial,sans-serif" font-size="6" fill="#555" text-anchor="middle">Water, Plant Surfactants,</text>
+              <text x="110" y="207" font-family="Arial,sans-serif" font-size="6" fill="#555" text-anchor="middle">Glycerin, Sodium Citrate,</text>
+              <text x="110" y="217" font-family="Arial,sans-serif" font-size="6" fill="#555" text-anchor="middle">Lemon Extract, Aloe Vera,</text>
+              <text x="110" y="227" font-family="Arial,sans-serif" font-size="6" fill="#555" text-anchor="middle">IFRA Fragrance, Colour.</text>
+              <text x="55" y="260" font-family="Arial,sans-serif" font-size="7" fill="#555">NET CONTENT : 400 ml</text>
+              <text x="55" y="274" font-family="Arial,sans-serif" font-size="7" fill="#555">MFG: _____ Best Before 24m</text>
+              <text x="55" y="288" font-family="Arial,sans-serif" font-size="7" fill="#1A4D2E" font-weight="700">MADE IN INDIA 🇮🇳</text>
+            </svg>
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:8px">Back View</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="sec" id="reviews" style="background:var(--offwhite)">
+  <div class="si">
+    <div class="sec-tag ctr">Customer Reviews</div>
+    <div class="sec-title ctr">Early users love Miliro</div>
+    <div class="testi-grid">
+      <div class="tc">
+        <div class="tc-stars">★★★★★</div>
+        <p class="tc-text">"I switched from Vim to Miliro and will never go back. My hands used to crack by evening from dishwashing — now they feel completely normal. The lemon smell is natural, not chemical. Highly recommended for anyone with sensitive skin."</p>
+        <div class="tc-author">
+          <div class="tc-av" style="background:var(--g1)">P</div>
+          <div>
+            <div class="tc-name">Priya Suresh</div>
+            <div class="tc-role">Coimbatore, Tamil Nadu</div>
+            <div class="tc-product">Verified Purchase · 400ml Lemon Fresh</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc">
+        <div class="tc-stars">★★★★★</div>
+        <p class="tc-text">"As a mother of two young children, I am extremely particular about what cleaning products we use at home. Miliro gave me the confidence that there are no harmful chemicals. Cleans brilliantly, smells fresh, and I love the spout pouch — no more spills!"</p>
+        <div class="tc-author">
+          <div class="tc-av" style="background:var(--g2)">K</div>
+          <div>
+            <div class="tc-name">Kavitha Rajan</div>
+            <div class="tc-role">Chennai, Tamil Nadu</div>
+            <div class="tc-product">Verified Purchase · 400ml Lemon Fresh</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc">
+        <div class="tc-stars">★★★★★</div>
+        <p class="tc-text">"Our household uses hard water and almost every dishwash liquid fails to lather properly. Miliro works perfectly — rich foam, cuts oil from heavy vessels, and the 400ml lasted us almost 6 weeks with daily use. Very economical at ₹89."</p>
+        <div class="tc-author">
+          <div class="tc-av" style="background:var(--g3)">A</div>
+          <div>
+            <div class="tc-name">Anbu Selvam</div>
+            <div class="tc-role">Madurai, Tamil Nadu</div>
+            <div class="tc-product">Verified Purchase · 400ml Lemon Fresh</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMING SOON SIZES -->
+<section class="sec" id="coming" style="background:var(--gl)">
+  <div class="si">
+    <div class="sec-tag ctr">More Sizes Coming</div>
+    <div class="sec-title ctr">Be first for the next sizes</div>
+    <div class="sec-sub" style="text-align:center;margin:0 auto 44px">New pack sizes launching soon — sign up to get early access and exclusive launch pricing.</div>
+    <div class="coming-grid">
+      <div class="cc">
+        <div class="cc-img">
+          <div class="cc-badge">Coming Soon</div>
+          <svg width="90" height="148" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="cs250" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6A1B9A"/><stop offset="100%" stop-color="#8E24AA"/></linearGradient></defs>
+            <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#cs250)" opacity="0.7"/>
+            <rect x="90" y="14" width="40" height="52" rx="6" fill="#4A148C"/>
+            <rect x="88" y="0" width="44" height="16" rx="8" fill="#AB47BC"/>
+            <rect x="28" y="76" width="164" height="210" rx="14" fill="rgba(255,255,255,0.85)"/>
+            <text x="110" y="118" font-family="Playfair Display,Georgia,serif" font-size="22" font-weight="700" fill="#4A148C" text-anchor="middle">Miliro</text>
+            <text x="110" y="133" font-family="Arial,sans-serif" font-size="8" fill="#6A1B9A" text-anchor="middle" letter-spacing="1.5" font-weight="700">LIQUID DISHWASH</text>
+            <rect x="78" y="145" width="64" height="16" rx="8" fill="#CE93D8"/>
+            <text x="110" y="156" font-family="Arial,sans-serif" font-size="8" fill="#4A148C" text-anchor="middle" font-weight="800">ROSE PETAL</text>
+            <text x="44" y="295" font-family="Playfair Display,serif" font-size="16" fill="#4A148C" font-weight="700">250 ml</text>
+          </svg>
+        </div>
+        <div class="cc-body">
+          <div class="cc-size">250ml</div>
+          <div class="cc-variant">Rose Petal Variant</div>
+          <div class="cc-eta">Q2 2026</div>
+          <div class="notify-row">
+            <input type="email" class="notify-input" placeholder="your@email.com" id="ne250">
+            <button class="notify-btn" onclick="notifySize('250ml','ne250','nd250')">Notify</button>
+          </div>
+          <div class="notify-done" id="nd250">✅ You're on the list!</div>
+        </div>
+      </div>
+      <div class="cc">
+        <div class="cc-img">
+          <div class="cc-badge">Coming Soon</div>
+          <svg width="100" height="148" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="cs750" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#BF360C"/><stop offset="100%" stop-color="#E64A19"/></linearGradient></defs>
+            <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#cs750)" opacity="0.7"/>
+            <rect x="90" y="14" width="40" height="52" rx="6" fill="#870000"/>
+            <rect x="88" y="0" width="44" height="16" rx="8" fill="#FF7043"/>
+            <rect x="28" y="76" width="164" height="210" rx="14" fill="rgba(255,255,255,0.85)"/>
+            <text x="110" y="118" font-family="Playfair Display,Georgia,serif" font-size="22" font-weight="700" fill="#BF360C" text-anchor="middle">Miliro</text>
+            <text x="110" y="133" font-family="Arial,sans-serif" font-size="8" fill="#BF360C" text-anchor="middle" letter-spacing="1.5" font-weight="700">LIQUID DISHWASH</text>
+            <rect x="78" y="145" width="64" height="16" rx="8" fill="#FFAB91"/>
+            <text x="110" y="156" font-family="Arial,sans-serif" font-size="8" fill="#BF360C" text-anchor="middle" font-weight="800">ORANGE BURST</text>
+            <text x="44" y="295" font-family="Playfair Display,serif" font-size="16" fill="#BF360C" font-weight="700">750 ml</text>
+          </svg>
+        </div>
+        <div class="cc-body">
+          <div class="cc-size">750ml</div>
+          <div class="cc-variant">Orange Burst Variant</div>
+          <div class="cc-eta">Q2 2026</div>
+          <div class="notify-row">
+            <input type="email" class="notify-input" placeholder="your@email.com" id="ne750">
+            <button class="notify-btn" onclick="notifySize('750ml','ne750','nd750')">Notify</button>
+          </div>
+          <div class="notify-done" id="nd750">✅ You're on the list!</div>
+        </div>
+      </div>
+      <div class="cc">
+        <div class="cc-img">
+          <div class="cc-badge">Coming Soon</div>
+          <svg width="110" height="148" viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="cs1L" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0D47A1"/><stop offset="100%" stop-color="#1565C0"/></linearGradient></defs>
+            <path d="M30 60 Q18 70 16 100 L14 240 Q14 300 30 316 Q50 330 110 330 Q170 330 190 316 Q206 300 206 240 L204 100 Q202 70 190 60 L160 48 L60 48 Z" fill="url(#cs1L)" opacity="0.7"/>
+            <rect x="90" y="14" width="40" height="52" rx="6" fill="#0A3570"/>
+            <rect x="88" y="0" width="44" height="16" rx="8" fill="#42A5F5"/>
+            <rect x="28" y="76" width="164" height="210" rx="14" fill="rgba(255,255,255,0.85)"/>
+            <text x="110" y="118" font-family="Playfair Display,Georgia,serif" font-size="22" font-weight="700" fill="#0D47A1" text-anchor="middle">Miliro</text>
+            <text x="110" y="133" font-family="Arial,sans-serif" font-size="8" fill="#0D47A1" text-anchor="middle" letter-spacing="1.5" font-weight="700">LIQUID DISHWASH</text>
+            <rect x="78" y="145" width="64" height="16" rx="8" fill="#90CAF9"/>
+            <text x="110" y="156" font-family="Arial,sans-serif" font-size="8" fill="#0D47A1" text-anchor="middle" font-weight="800">MINT BREEZE</text>
+            <text x="44" y="295" font-family="Playfair Display,serif" font-size="16" fill="#0D47A1" font-weight="700">1 Litre</text>
+          </svg>
+        </div>
+        <div class="cc-body">
+          <div class="cc-size">1 Litre</div>
+          <div class="cc-variant">Mint Breeze Variant</div>
+          <div class="cc-eta">Q3 2026</div>
+          <div class="notify-row">
+            <input type="email" class="notify-input" placeholder="your@email.com" id="ne1L">
+            <button class="notify-btn" onclick="notifySize('1L','ne1L','nd1L')">Notify</button>
+          </div>
+          <div class="notify-done" id="nd1L">✅ You're on the list!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRAND STORY -->
+<section class="sec brand-sec" id="about">
+  <div class="si">
+    <div class="brand-grid">
+      <div>
+        <div class="sec-tag" style="color:var(--lemon)">Our Story</div>
+        <div class="sec-title" style="color:#fff">Born from a belief —<br>clean homes shouldn't cost health.</div>
+        <p style="font-size:15px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:20px">Lumipure Essentials Pvt Ltd was founded with a clear vision: to redefine household care by delivering high-quality, plant-based products that are gentle on hands and tough on grime — while eliminating the harsh chemicals that most brands quietly include.</p>
+        <p style="font-size:15px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:24px">Miliro positions itself between mass-market and masstige — bringing genuinely safe, plant-based home care within reach of everyday Indian households. We believe true quality starts with what you choose to <em style="color:var(--lemon)">leave out</em>, not just what you put in.</p>
+        <div class="brand-stat-row">
+          <div class="bs"><div class="bs-n">₹50L</div><div class="bs-l">Year 1 revenue target</div></div>
+          <div class="bs"><div class="bs-n">3T</div><div class="bs-l">Monthly capacity planned</div></div>
+          <div class="bs"><div class="bs-n">4</div><div class="bs-l">Pack sizes in 12 months</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="brand-promise">
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:20px">Our promises to you</div>
+          <div class="bp"><div class="bp-icon">🚫</div><div class="bp-text"><b>Zero harmful chemicals.</b> No LABSA, sulphates, paraffins or parabens — ever. In any product we make.</div></div>
+          <div class="bp"><div class="bp-icon">🌿</div><div class="bp-text"><b>Plant-based, always.</b> Every product we create will use plant-derived ingredients as its cleaning foundation.</div></div>
+          <div class="bp"><div class="bp-icon">🔬</div><div class="bp-text"><b>Safety tested.</b> Formal lab testing underway — full safety, efficacy and quality validation before full scale-up.</div></div>
+          <div class="bp"><div class="bp-icon">🇮🇳</div><div class="bp-text"><b>Proudly Indian.</b> Manufactured in Coimbatore. Built for Tamil Nadu households first, then the world.</div></div>
+          <div class="bp"><div class="bp-icon">📈</div><div class="bp-text"><b>Expanding portfolio.</b> Handwash, bathroom cleaner, kitchen cleaner, floor cleaner — coming within 3 years.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFY HERO -->
+<div class="notify-sec">
+  <div class="notify-inner">
+    <h2>First to know. First to buy.</h2>
+    <p>Join the Miliro early access list — get exclusive launch offers, new size alerts, and product updates directly.</p>
+    <div class="notify-form-hero">
+      <input type="email" class="nfh-input" id="heroEmail" placeholder="your@email.com">
+      <button class="nfh-btn" onclick="heroNotify()">Join List →</button>
+    </div>
+    <div class="nfh-msg" id="heroMsg">✅ You're on the list! Watch for an email from us.</div>
+    <div class="notify-trust">No spam. Unsubscribe anytime. We respect your privacy.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <!-- Miliro logo in footer -->
+        <svg viewBox="0 0 200 52" height="40" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="40" font-family="Playfair Display,Georgia,serif" font-size="38" font-weight="700" fill="#4CAF50" letter-spacing="-1">Miliro</text>
+          <ellipse cx="68" cy="7" rx="5" ry="3.5" fill="#4CAF50" transform="rotate(-20,68,7)"/>
+          <path d="M170 20 Q175 27 175 33 Q175 40 170 42 Q165 40 165 33 Q165 27 170 20Z" fill="#4CAF50" opacity="0.7"/>
+          <path d="M170 18 Q177 12 181 15 Q176 21 170 18Z" fill="#2E7D32" opacity="0.8"/>
+        </svg>
+        <p>Miliro Liquid Dishwash — plant-based, LABSA-free, made in India. Powerful grease cutting. Safe on hands. Gentle on the earth.</p>
+        <p class="footer-company">A brand by Lumipure Essentials Pvt Ltd · Coimbatore, Tamil Nadu</p>
+        <div class="social-row">
+          <a href="#" class="social-btn">📘</a>
+          <a href="#" class="social-btn">📸</a>
+          <a href="#" class="social-btn">▶️</a>
+          <a href="#" class="social-btn">🐦</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Products</h4>
+        <a href="#product">400ml — Lemon Fresh</a>
+        <a href="#coming">250ml — Coming soon</a>
+        <a href="#coming">750ml — Coming soon</a>
+        <a href="#coming">1 Litre — Coming soon</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#about">Our Story</a>
+        <a href="#ingredients">Ingredients</a>
+        <a href="#packaging">Packaging</a>
+        <a href="#why">Why Miliro</a>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <a href="#">Shipping & Returns</a>
+        <a href="#">Track Order</a>
+        <a href="#">Contact Us</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Sale</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Lumipure Essentials Pvt Ltd · Miliro® · All rights reserved · Made in India</div>
+      <div class="footer-zk">Store powered by <b>ZKCommerce™</b> — a product of ZKandavel Infotech Pvt Ltd</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+var cartCount = 0;
+
+function addToCart(){
+  cartCount++;
+  document.getElementById('cartCount').textContent = cartCount;
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+function selectSize(el, size, price){
+  document.querySelectorAll('.sz').forEach(function(s){ s.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+function notifySize(size, inputId, doneId){
+  var v = document.getElementById(inputId).value.trim();
+  if(!v || !v.includes('@')){ document.getElementById(inputId).style.borderColor='#E57373'; return; }
+  document.querySelector('[onclick*="'+inputId+'"]').closest('.notify-row').style.display='none';
+  document.getElementById(doneId).style.display='block';
+}
+
+function heroNotify(){
+  var v = document.getElementById('heroEmail').value.trim();
+  if(!v || !v.includes('@')){ document.getElementById('heroEmail').style.borderColor='rgba(255,107,107,.7)'; return; }
+  document.querySelector('.notify-form-hero').style.display='none';
+  document.getElementById('heroMsg').style.display='block';
+}
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener('click', function(e){
+    var t = document.querySelector(this.getAttribute('href'));
+    if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
+</html>

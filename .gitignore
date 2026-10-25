@@ -26,5 +26,6 @@ build/
 **/.vercel/
 .idea/
 .vscode/
+coverage/
 .DS_Store
 Thumbs.db
