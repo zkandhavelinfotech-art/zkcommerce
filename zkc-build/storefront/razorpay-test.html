@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Razorpay Standard Checkout Test — ZKCommerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/design-system.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .checkout-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 36px; max-width: 480px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+    .badge { display: inline-block; background: #0284c7; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .field-label { font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; display: block; }
+    .input-box { width: 100%; background: #0f172a; border: 1.5px solid #334155; border-radius: 10px; color: #fff; padding: 12px 16px; font-size: 15px; font-weight: 600; outline: none; margin-bottom: 16px; transition: border-color .2s; }
+    .input-box:focus { border-color: #38bdf8; }
+    .btn-pay { width: 100%; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-pay:hover { opacity: 0.95; transform: translateY(-1px); }
+    .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result-box { margin-top: 20px; padding: 16px; border-radius: 12px; font-size: 13px; line-height: 1.6; display: none; }
+    .result-success { background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; color: #86efac; }
+    .result-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; }
+  </style>
+</head>
+<body>
+
+  <div class="checkout-card">
+    <span class="badge">Razorpay Standard Checkout</span>
+    <h2 style="font-size:24px; font-weight:800; margin-bottom: 6px;">Test Payment</h2>
+    <p style="font-size:14px; color:#94a3b8; margin-bottom:24px;">Test live order creation and cryptographic signature verification with Razorpay.</p>
+
+    <div class="form-group">
+      <label class="field-label">Customer Name</label>
+      <input type="text" id="cust-name" class="input-box" value="Test Customer">
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Customer Email</label>
+      <input type="email" id="cust-email" class="input-box" value="customer@zkcommerce.in">
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Customer Phone</label>
+      <input type="tel" id="cust-phone" class="input-box" value="9876543210">
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Amount (INR ₹)</label>
+      <input type="number" id="pay-amount" class="input-box" value="500" min="1" step="1">
+    </div>
+
+    <button id="pay-button" class="btn-pay" onclick="startRazorpayPayment()">
+      <span>Pay with Razorpay</span>
+      <span id="btn-amt">₹500</span>
+    </button>
+
+    <div id="status-box" class="result-box"></div>
+  </div>
+
+  <script>
+    var amountInput = document.getElementById('pay-amount');
+    var btnAmt = document.getElementById('btn-amt');
+    amountInput.addEventListener('input', function() {
+      btnAmt.textContent = '₹' + (amountInput.value || 0);
+    });
+
+    async function startRazorpayPayment() {
+      var btn = document.getElementById('pay-button');
+      var statusBox = document.getElementById('status-box');
+      statusBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = 'Connecting to Razorpay...';
+
+      var inrAmount = parseFloat(amountInput.value) || 1;
+      var paiseAmount = Math.round(inrAmount * 100);
+
+      try {
+        // Step 1: Call Backend to Create Order
+        var orderResp = await fetch('/api/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: paiseAmount,
+            currency: 'INR',
+            receipt: 'rcpt_' + Date.now()
+          })
+        });
+
+        var orderData = await orderResp.json();
+        if (!orderResp.ok || !orderData.order_id) {
+          throw new Error(orderData.error || 'Failed to initialize Razorpay order');
+        }
+
+        // Step 2: Open Razorpay Standard Checkout Modal
+        var options = {
+          key: orderData.key_id,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: 'ZKCommerce',
+          description: 'Standard Checkout Test Payment',
+          order_id: orderData.order_id,
+          prefill: {
+            name: document.getElementById('cust-name').value,
+            email: document.getElementById('cust-email').value,
+            contact: document.getElementById('cust-phone').value
+          },
+          theme: { color: '#0284c7' },
+          handler: async function(response) {
+            // Step 3: Call Backend to Verify Payment Signature
+            statusBox.className = 'result-box';
+            statusBox.style.display = 'block';
+            statusBox.style.background = '#1e293b';
+            statusBox.style.color = '#38bdf8';
+            statusBox.innerHTML = 'Verifying cryptographic signature...';
+
+            try {
+              var verifyResp = await fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              });
+
+              var verifyData = await verifyResp.json();
+              if (verifyResp.ok && verifyData.success) {
+                statusBox.className = 'result-box result-success';
+                statusBox.innerHTML = '<strong>✅ Payment Verified Successfully!</strong><br>'
+                  + 'Payment ID: ' + response.razorpay_payment_id + '<br>'
+                  + 'Order ID: ' + response.razorpay_order_id;
+              } else {
+                throw new Error(verifyData.error || 'Payment signature mismatch');
+              }
+            } catch (verErr) {
+              statusBox.className = 'result-box result-error';
+              statusBox.innerHTML = '<strong>❌ Verification Error:</strong> ' + verErr.message;
+            }
+          },
+          modal: {
+            ondismiss: function() {
+              btn.disabled = false;
+              btn.innerHTML = '<span>Pay with Razorpay</span> <span>₹' + amountInput.value + '</span>';
+            }
+          }
+        };
+
+        var rzpInstance = new Razorpay(options);
+        rzpInstance.on('payment.failed', function(resp) {
+          statusBox.className = 'result-box result-error';
+          statusBox.style.display = 'block';
+          statusBox.innerHTML = '<strong>❌ Payment Failed:</strong> ' + (resp.error.description || resp.error.reason);
+          btn.disabled = false;
+          btn.innerHTML = '<span>Pay with Razorpay</span> <span>₹' + amountInput.value + '</span>';
+        });
+
+        rzpInstance.open();
+      } catch (err) {
+        statusBox.className = 'result-box result-error';
+        statusBox.style.display = 'block';
+        statusBox.innerHTML = '<strong>❌ Order Error:</strong> ' + err.message;
+        btn.disabled = false;
+        btn.innerHTML = '<span>Pay with Razorpay</span> <span>₹' + amountInput.value + '</span>';
+      }
+    }
+  </script>
+</body>
+</html>

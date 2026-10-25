@@ -23,21 +23,16 @@ const { z }        = require('zod');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Database ─────────────────────────────────────────────────────
-const db = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// ── Database (Dual MySQL / PostgreSQL) ───────────────────────────
+const db = require('./db');
 
-db.on('error', (err) => console.error('Unexpected DB error', err));
+// ── Razorpay Standard Checkout ───────────────────────────────────
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TryQ4PdsrTEyBB';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'SZfOuock8WVvSdxy2f5Uvrb5';
 
-// ── Razorpay ─────────────────────────────────────────────────────
 const razorpay = new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID     || 'rzp_test_placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder',
+  key_id:     RAZORPAY_KEY_ID,
+  key_secret: RAZORPAY_KEY_SECRET,
 });
 
 // ── Email (Resend-compatible SMTP) ───────────────────────────────
@@ -767,6 +762,77 @@ app.post('/api/payments/razorpay/verify', verifyToken, asyncHandler(async (req, 
   }).catch(console.error);
 
   respond(res, { message: 'Payment verified', order_id, payment_id: razorpay_payment_id });
+}));
+
+// ════════════════════════════════════════════════════════════════
+// RAZORPAY STANDARD WEB CHECKOUT (STANDALONE & STOREFRONT)
+// ════════════════════════════════════════════════════════════════
+
+// STEP 1: Backend - Create Order
+app.post('/api/create-order', asyncHandler(async (req, res) => {
+  const { amount, currency = 'INR', receipt, notes = {} } = req.body;
+  const numAmount = parseInt(amount, 10);
+
+  // Validate amount >= 100 paise (₹1 minimum)
+  if (!numAmount || numAmount < 100) {
+    return res.status(400).json({ error: 'Amount must be at least 100 paise (₹1)' });
+  }
+
+  try {
+    const order = await razorpay.orders.create({
+      amount:   numAmount,
+      currency: currency.toUpperCase(),
+      receipt:  receipt || `rcpt_${Date.now()}`,
+      notes,
+    });
+
+    return res.json({
+      order_id: order.id,
+      amount:   order.amount,
+      currency: order.currency,
+      key_id:   RAZORPAY_KEY_ID,
+    });
+  } catch (err) {
+    console.error('Razorpay create-order error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to create Razorpay order' });
+  }
+}));
+
+// STEP 3: Backend - Verify Signature
+app.post('/api/verify-payment', asyncHandler(async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, order_id } = req.body;
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return res.status(400).json({ error: 'Missing required signature verification fields' });
+  }
+
+  const generatedSignature = crypto
+    .createHmac('sha256', RAZORPAY_KEY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest('hex');
+
+  if (generatedSignature !== razorpay_signature) {
+    return res.status(400).json({ success: false, error: 'Signature verification failed' });
+  }
+
+  // Update order record if database is connected
+  if (db && db.type !== 'none' && order_id) {
+    try {
+      await db.query(
+        "UPDATE orders SET payment_status='paid', status='processing', razorpay_payment_id=$1, updated_at=NOW() WHERE id=$2",
+        [razorpay_payment_id, order_id]
+      );
+    } catch (e) {
+      console.warn('Could not update order status in DB:', e.message);
+    }
+  }
+
+  return res.json({
+    success: true,
+    message: 'Payment verified successfully',
+    order_id: razorpay_order_id,
+    payment_id: razorpay_payment_id,
+  });
 }));
 
 // POST /api/payments/webhook  — Razorpay webhook

@@ -57,7 +57,7 @@
         <hr style="border:none;border-top:1px solid var(--zk-border)">
         <div style="display:flex;justify-content:space-between"><span style="font-weight:800">Total</span><span style="font-weight:800;font-family:var(--font-display);font-size:22px;color:var(--zk-fire)">₹19,940</span></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="toast.success('Order placed! You will receive a WhatsApp confirmation shortly.')">Place order →</button>
+      <button id="place-order-btn" class="btn btn-primary btn-full" onclick="placeOrder()">Place order & Pay with Razorpay →</button>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:11px;color:var(--zk-dim)">🔒 Secured by Razorpay</div>
     </div>
   </div>
@@ -185,6 +185,10 @@ async function placeOrder() {
         } catch(e) { toast.error('Verification error'); }
       },
       modal: { ondismiss: function(){ toast.info('Payment cancelled'); btnLoading(btn, false); } }
+    });
+    rzp.on('payment.failed', function(resp) {
+      toast.error(resp.error ? resp.error.description : 'Payment failed');
+      btnLoading(btn, false);
     });
     rzp.open();
 
