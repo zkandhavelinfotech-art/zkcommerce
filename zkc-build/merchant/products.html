@@ -161,24 +161,28 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </div>
   <nav class="zk-sidebar-nav">
     <div class="zk-sidebar-section-label">Main</div>
-    <a href="../merchant/dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
-    <a href="../merchant/analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+    <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
     <div class="zk-sidebar-section-label">Catalogue</div>
-    <a href="../merchant/products.html" class="zk-sidebar-link active"><span class="sl-icon">🛍️</span>Products</a>
-    <a href="../merchant/inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+    <a href="products.html" class="zk-sidebar-link active"><span class="sl-icon">🛍️</span>Products</a>
+    <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+    <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+
+    <div class="zk-sidebar-section-label">Online Store</div>
+    <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+    <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
+
     <div class="zk-sidebar-section-label">Orders</div>
-    <a href="../merchant/orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
-    <a href="../merchant/shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
-    <div class="zk-sidebar-section-label">Finance</div>
-    <a href="../merchant/gst-report.html" class="zk-sidebar-link"><span class="sl-icon">🧾</span>GST reports</a>
-    <div class="zk-sidebar-section-label">Marketing</div>
-    <a href="../merchant/campaigns.html" class="zk-sidebar-link"><span class="sl-icon">📣</span>Campaigns</a>
+    <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
     <div class="zk-sidebar-section-label">Settings</div>
-    <a href="../merchant/store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
+    <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
   </nav>
   <div class="zk-sidebar-footer">
-    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View store</a>
-    <a href="setup.html" style="font-size:12px;color:rgba(255,107,0,.6);font-weight:700;margin-bottom:8px;display:block">🧙 Setup wizard</a>
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View storefront</a>
+    <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
     <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
   </div>
 </aside>
@@ -558,7 +562,7 @@ function openEditModal(prodId) {
   document.getElementById('modal-pdesc').value   = p.description || '';
   document.getElementById('modal-pprice').value  = p.price || '';
   document.getElementById('modal-pmrp').value    = p.mrp || '';
-  document.getElementById('modal-pstock').value  = p.stock !== undefined ? p.stock : 0;
+  document.getElementById('modal-pstock').value  = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100);
   document.getElementById('modal-pcat').value    = p.category_name || 'Hair Care';
   document.getElementById('modal-pbrand').value  = p.brand || '';
   document.getElementById('modal-pstatus').value = p.status || 'published';
@@ -664,6 +668,7 @@ async function saveProductFromModal() {
     price: price,
     mrp: mrp,
     stock: stock,
+    quantity: stock,
     category_name: cat,
     brand: brand,
     status: status,

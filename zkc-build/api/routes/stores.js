@@ -1,5 +1,10 @@
 const router = require('express').Router();
-const { exportStoreDeployment } = require('../services/deployment-exporter');
+const fs = require('fs');
+const path = require('path');
+const { exportStoreDeployment, exportDbMigration, DEPLOY_ROOT } = require('../services/deployment-exporter');
+const mysqlMigrations = require('../services/mysql-migrations');
+const deploySettings = require('../services/deployment-settings');
+const ftpDeployer = require('../services/ftp-deployer');
 const pool   = require('../db');
 const auth   = require('../middleware/auth');
 const { renderStore } = require('../store-renderer');
@@ -97,7 +102,8 @@ router.get('/:id/builder', auth, async (req, res) => {
         pages = refetched;
       } catch (_) {}
     }
-    res.json({ store: stores[0], products: products.rows, pages: pages.rows, categories: categories.rows });
+    res.json({ store: stores[0], products: products.rows, pages: pages.rows, categories: categories.rows,
+      payments: { razorpay_configured: !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET), razorpay_mode: /^rzp_live_/.test(process.env.RAZORPAY_KEY_ID || '') ? 'live' : 'test' } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -219,29 +225,106 @@ router.post('/:id/publish', auth, async (req, res) => {
 });
 
 
-// POST /api/stores/:id/publish-portal
-// Atomically publishes snapshot, exports multi-cloud deployment package, updates custom domain
+// ── Deployment: environments, packages, FTP ──────────────────────────────
+
+const VERSION_RE = /^\d{1,4}(\.\d{1,4}){0,3}$/;
+const sendError = (res, e) => res.status(e.status || 500).json({ error: e.message });
+
+async function loadPackageData(storeId, db = pool) {
+  const [products, pages, categories] = await Promise.all([
+    db.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC', [storeId]),
+    db.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id", [storeId]),
+    db.query('SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id', [storeId])
+  ]);
+  return { products: products.rows, pages: pages.rows, categories: categories.rows };
+}
+
+// Razorpay keys for a package: this environment's saved keys, else the keys this server runs with.
+function razorpayKeysFor(saved) {
+  const p = saved.payments || {};
+  const key_id = p.key_id && p.key_secret ? p.key_id : (process.env.RAZORPAY_KEY_ID || '');
+  const key_secret = p.key_id && p.key_secret ? p.key_secret : (process.env.RAZORPAY_KEY_SECRET || '');
+  return key_id && key_secret ? { key_id, key_secret, mode: /^rzp_live_/.test(key_id) ? 'live' : 'test', source: p.key_id ? 'environment' : 'server' } : null;
+}
+
+// Build a versioned package for one environment, using saved settings with optional request overrides.
+async function buildPackage(store, merchantId, body, data) {
+  const env = deploySettings.normalizeEnv(body.env) || 'production';
+  const loaded = await deploySettings.loadSettings(store.id, merchantId);
+  const { settings } = loaded;
+  const saved = deploySettings.resolvedEnv(settings, env);
+  const technology = deploySettings.TECHNOLOGIES.includes(body.technology) ? body.technology : (saved.technology || 'php');
+  if (body.version && !VERSION_RE.test(String(body.version))) throw Object.assign(new Error('Version must look like 1.0.3'), { status: 400 });
+  const version = body.version ? String(body.version) : deploySettings.nextVersion(settings, env, technology);
+  const sdb = saved.db || {};
+  const db = {
+    type: body.db_type || sdb.type, host: body.db_host || sdb.host, port: body.db_port || sdb.port,
+    name: body.db_name || sdb.name, user: body.db_user || sdb.user, password: body.db_password || sdb.password
+  };
+  const customDomain = env === 'production' ? (store.custom_domain || saved.custom_domain) : (body.custom_domain || saved.custom_domain);
+  const deployment = await exportStoreDeployment({
+    store, themeConfig: store.theme_config || {}, ...(data || await loadPackageData(store.id)),
+    options: { env, technology, version, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved) }
+  });
+  settings.versions[`${env}:${technology}`] = version;
+  const envSettings = settings.environments[env] || {};
+  // Build history drives "migrate from version X": each entry remembers the schema that version shipped with.
+  // Read it before last_package is replaced so a pre-history build is carried over.
+  const history = deploySettings.buildHistory(envSettings).filter(b => !(b.version === version && b.technology === technology));
+  envSettings.technology = technology;
+  envSettings.last_package = { technology, version, schema: deployment.schema, zip_name: deployment.zip_name, zip_path: deployment.zip_path, export_dir: deployment.export_dir, built_at: deployment.built_at };
+  envSettings.builds = [{ version, technology, schema: deployment.schema, zip_name: deployment.zip_name, zip_path: deployment.zip_path, built_at: deployment.built_at }, ...history].slice(0, 50);
+  settings.environments[env] = envSettings;
+  settings.active_env = env;
+  await deploySettings.persist(store.id, settings);
+  return deployment;
+}
+
+// GET /api/stores/:id/deployment-settings — saved per-environment settings (no passwords)
+router.get('/:id/deployment-settings', auth, async (req, res) => {
+  try {
+    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+    if (!loaded) return res.status(404).json({ error: 'Store not found' });
+    const view = deploySettings.publicView(loaded.settings);
+    view.next_versions = {};
+    for (const env of deploySettings.ENVIRONMENTS) for (const t of deploySettings.TECHNOLOGIES)
+      view.next_versions[`${env}:${t}`] = deploySettings.nextVersion(loaded.settings, env, t);
+    view.schema = { latest: mysqlMigrations.latestId(), migrations: mysqlMigrations.MIGRATIONS.map(m => ({ id: m.id, description: m.description })) };
+    res.json(view);
+  } catch (e) { sendError(res, e); }
+});
+
+// PUT /api/stores/:id/deployment-settings/:env — save db / ftp / domain / technology for one environment
+router.put('/:id/deployment-settings/:env', auth, async (req, res) => {
+  try {
+    const env = deploySettings.normalizeEnv(req.params.env);
+    if (!env) return res.status(400).json({ error: 'Environment must be development, stage, preview or production' });
+    const view = await deploySettings.saveEnvironment(req.params.id, req.user.id, env, req.body || {});
+    if (!view) return res.status(404).json({ error: 'Store not found' });
+    res.json({ success: true, env, settings: view });
+  } catch (e) { sendError(res, e); }
+});
+
+// POST /api/stores/:id/publish-portal — publish snapshot, then build the selected environment's package
 router.post('/:id/publish-portal', auth, async (req, res) => {
+  const env = deploySettings.normalizeEnv(req.body.env) || 'production';
   const client = await pool.connect();
+  let committed = false, released = false;
+  const release = () => { if (!released) { released = true; client.release(); } };
   try {
     await client.query('BEGIN');
     const { rows } = await client.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2 FOR UPDATE', [req.params.id, req.user.id]);
-    if (!rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Store not found' }); }
-    let store = rows[0];
+    if (!rows.length) { await client.query('ROLLBACK'); release(); return res.status(404).json({ error: 'Store not found' }); }
+    const store = rows[0];
 
-    // Optional custom domain update
-    if (req.body.custom_domain !== undefined) {
+    // Only production owns the store's real custom domain; other environments keep theirs in deployment settings.
+    if (env === 'production' && req.body.custom_domain !== undefined) {
       const cd = String(req.body.custom_domain || '').trim().toLowerCase();
       await client.query('UPDATE stores SET custom_domain=$1 WHERE id=$2', [cd || null, store.id]);
       store.custom_domain = cd || null;
     }
 
-    const [products, pages, categories] = await Promise.all([
-      client.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC',[store.id]),
-      client.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id",[store.id]),
-      client.query("SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id",[store.id])
-    ]);
-
+    const data = await loadPackageData(store.id, client);
     const snapshot = {
       version: 1,
       published_at: new Date().toISOString(),
@@ -253,107 +336,214 @@ router.post('/:id/publish-portal', auth, async (req, res) => {
         instagram_handle: store.instagram_handle, address: store.address, city: store.city, state: store.state
       },
       theme_config: store.theme_config || {},
-      products: products.rows,
-      pages: pages.rows,
-      categories: categories.rows
+      ...data
     };
-
     const updated = await client.query(
       `UPDATE stores SET published_snapshot=$2::jsonb,status=CASE WHEN status='live' THEN 'live' ELSE 'published' END,published_at=NOW(),updated_at=NOW() WHERE id=$1 RETURNING id,slug,status,custom_domain,published_at`,
       [store.id, JSON.stringify(snapshot)]
     );
     await client.query('COMMIT');
+    committed = true;
+    release();
 
-    // Run Deployment Exporter
-    const deployment = await exportStoreDeployment({
-      store: { ...store, ...updated.rows[0] },
-      themeConfig: store.theme_config || {},
-      products: products.rows,
-      categories: categories.rows,
-      pages: pages.rows,
-      options: req.body || {}
-    });
-
+    if (env !== 'production' && req.body.custom_domain !== undefined) {
+      await deploySettings.saveEnvironment(store.id, req.user.id, env, { custom_domain: req.body.custom_domain });
+    }
+    const deployment = await buildPackage({ ...store, ...updated.rows[0] }, req.user.id, { ...req.body, env }, data);
+    const envDomain = env === 'production' ? store.custom_domain : req.body.custom_domain;
     res.json({
       success: true,
       store: updated.rows[0],
       published_snapshot: snapshot,
       deployment,
-      live_url: store.custom_domain ? 'https://' + store.custom_domain : '/store/' + store.slug
+      live_url: envDomain ? 'https://' + envDomain : '/store/' + store.slug
     });
   } catch (e) {
-    await client.query('ROLLBACK');
-    res.status(500).json({ error: e.message });
-  } finally {
-    client.release();
+    if (!committed) await client.query('ROLLBACK').catch(() => {});
+    release();
+    sendError(res, e);
   }
 });
 
-// GET /api/stores/:id/deployment-zip
-// Downloads the compiled deployment zip package
+// POST /api/stores/:id/deployment-package — build a versioned ZIP (php | nodejs | static) without re-publishing
+router.post('/:id/deployment-package', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
+    const deployment = await buildPackage(rows[0], req.user.id, req.body || {});
+    if (!deployment.zip_path) return res.status(500).json({ error: 'Package folder was built but the ZIP failed: ' + deployment.zip_error, deployment });
+    res.json({ success: true, deployment });
+  } catch (e) { sendError(res, e); }
+});
+
+// Find a built ZIP for this store: a recorded package, or an older version still on disk.
+// Returns { zip_path, zip_name } | { error, status } | null (nothing built yet and no file asked for).
+function resolvePackage(loaded, file) {
+  const packages = Object.values(loaded.settings.environments).map(e => e.last_package).filter(p => p && p.zip_path)
+    .sort((a, b) => String(b.built_at).localeCompare(String(a.built_at)));
+  if (!file) return packages[0] || null;
+  const name = path.basename(String(file));
+  const pkg = packages.find(p => p.zip_name === name);
+  if (pkg && fs.existsSync(pkg.zip_path)) return pkg;
+  const candidates = [path.join(DEPLOY_ROOT, name), path.join(DEPLOY_ROOT, 'published', name), path.join(DEPLOY_ROOT, 'db-migrations', name)];
+  const found = name.startsWith(loaded.store.slug) && name.endsWith('.zip') && candidates.find(f => fs.existsSync(f));
+  return found ? { zip_path: found, zip_name: name } : { error: `${name} was not found. Build it again.`, status: 404 };
+}
+
+// deployment/<client>/downloads — the "project folder" download target on the server PC.
+const downloadsDirFor = slug => path.join(DEPLOY_ROOT, String(slug).toLowerCase().replace(/[^a-z0-9_-]/g, '-'), 'downloads');
+
+// GET /api/stores/:id/deployment-zip?file=<zip name> — download a built package (latest when no file is given)
 router.get('/:id/deployment-zip', auth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
-    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
-    const store = rows[0];
-    const path = require('path');
-    const fs = require('fs');
-    const zipPath = path.join('D:\\ZK Software\\Stage\\zkcommerce\\zkcommerce-v4-complete\\deployment\\published', `${store.slug}-deployment.zip`);
-    if (!fs.existsSync(zipPath)) {
-      // Generate on the fly if not exists
-      const [products, pages, categories] = await Promise.all([
-        pool.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC',[store.id]),
-        pool.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id",[store.id]),
-        pool.query("SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id",[store.id])
-      ]);
-      await exportStoreDeployment({
-        store,
-        themeConfig: store.theme_config || {},
-        products: products.rows,
-        categories: categories.rows,
-        pages: pages.rows,
-        options: { provider: 'godaddy', db_type: 'mysql' }
-      });
+    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+    if (!loaded) return res.status(404).json({ error: 'Store not found' });
+    let pkg = resolvePackage(loaded, req.query.file);
+    if (pkg && pkg.error) return res.status(pkg.status).json({ error: pkg.error });
+    if (!pkg) {
+      const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
+      const built = await buildPackage(rows[0], req.user.id, { env: loaded.settings.active_env || 'production' });
+      pkg = { zip_path: built.zip_path, zip_name: built.zip_name };
     }
-    if (!fs.existsSync(zipPath)) return res.status(404).json({ error: 'Deployment archive not found' });
-    res.download(zipPath, `${store.slug}-deployment.zip`);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+    if (!pkg.zip_path || !fs.existsSync(pkg.zip_path)) return res.status(404).json({ error: 'Deployment archive not found. Build the package again.' });
+    res.download(pkg.zip_path, pkg.zip_name);
+  } catch (e) { sendError(res, e); }
 });
 
-// POST /api/stores/:id/deploy-ftp
-router.post('/:id/deploy-ftp', auth, async (req, res) => {
+// POST /api/stores/:id/deployment-zip/save { file } — copy a built ZIP into deployment/<client>/downloads on this server
+router.post('/:id/deployment-zip/save', auth, async (req, res) => {
   try {
-    const { host, port = 21, user, password, path: remotePath = '/public_html' } = req.body;
-    if (!host || !user || !password) return res.status(400).json({ error: 'FTP Host, Username, and Password are required' });
-    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
-    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
-    const store = rows[0];
+    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+    if (!loaded) return res.status(404).json({ error: 'Store not found' });
+    if (!req.body.file) return res.status(400).json({ error: 'file is required' });
+    const pkg = resolvePackage(loaded, req.body.file);
+    if (!pkg || pkg.error) return res.status(404).json({ error: (pkg && pkg.error) || 'Package not found' });
+    const dir = downloadsDirFor(loaded.store.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    const dest = path.join(dir, pkg.zip_name);
+    fs.copyFileSync(pkg.zip_path, dest);
+    res.json({ success: true, saved_path: dest, folder: dir, bytes: fs.statSync(dest).size });
+  } catch (e) { sendError(res, e); }
+});
 
-    // PowerShell FTP test / deployment
-    const { execSync } = require('child_process');
-    const psScript = `
-      try {
-        $ftp = [System.Net.FtpWebRequest]::Create('ftp://${host}${remotePath.startsWith('/') ? remotePath : '/' + remotePath}');
-        $ftp.Credentials = New-Object System.Net.NetworkCredential('${user}', '${password}');
-        $ftp.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectory;
-        $ftp.Timeout = 10000;
-        $response = $ftp.GetResponse();
-        $response.Close();
-        Write-Output "FTP_SUCCESS";
-      } catch {
-        Write-Output ("FTP_ERROR: " + $_.Exception.Message);
-      }
-    `;
-    const output = execSync(`powershell -NoProfile -Command "${psScript.replace(/\n/g, ' ')}"`, { encoding: 'utf8' }).trim();
-    if (output.includes('FTP_ERROR')) {
-      return res.status(400).json({ error: output.replace('FTP_ERROR:', '').trim() });
+// POST /api/stores/:id/deployment-zip/open-folder { file? } — open Explorer on the server PC.
+// Only for requests made on the server machine itself (localhost) on Windows.
+router.post('/:id/deployment-zip/open-folder', auth, async (req, res) => {
+  try {
+    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+    if (!loaded) return res.status(404).json({ error: 'Store not found' });
+    const ip = String(req.socket.remoteAddress || '');
+    if (!/^(::1|127\.0\.0\.1|::ffff:127\.0\.0\.1)$/.test(ip)) return res.status(403).json({ error: 'Open folder only works in a browser on the server PC. The file is saved on the PC at: ' + downloadsDirFor(loaded.store.slug) });
+    if (process.platform !== 'win32') return res.status(400).json({ error: 'Open folder is only available on Windows' });
+    const dir = downloadsDirFor(loaded.store.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    const target = req.body.file ? path.join(dir, path.basename(String(req.body.file))) : null;
+    const args = target && fs.existsSync(target) ? ['/select,', target] : [dir];
+    require('child_process').spawn('explorer.exe', args, { detached: true, stdio: 'ignore' }).unref();
+    res.json({ success: true, folder: dir });
+  } catch (e) { sendError(res, e); }
+});
+
+// POST /api/stores/:id/db-migration — only the DB changes since a deployed version (+ optional catalog refresh)
+// body: { env, from_version ('' = fresh database), to_version?, include_seed }
+router.post('/:id/db-migration', auth, async (req, res) => {
+  try {
+    const env = deploySettings.normalizeEnv(req.body.env) || 'production';
+    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+    if (!loaded) return res.status(404).json({ error: 'Store not found' });
+    const envSettings = loaded.settings.environments[env] || {};
+    const builds = deploySettings.buildHistory(envSettings);
+    const fromVersion = String(req.body.from_version || '');
+    let fromSchema = '';
+    if (fromVersion) {
+      const from = builds.find(b => b.version === fromVersion);
+      if (!from) return res.status(400).json({ error: `No ${env} build v${fromVersion} found` });
+      fromSchema = from.schema;
     }
-    res.json({ success: true, message: 'FTP server connected and ready for transfer!' });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+    if (req.body.to_version && !VERSION_RE.test(String(req.body.to_version))) return res.status(400).json({ error: 'Version must look like 1.0.3' });
+    const toVersion = String(req.body.to_version || (builds[0] && builds[0].version) || deploySettings.nextVersion(loaded.settings, env, 'php'));
+    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
+    const migration = await exportDbMigration({
+      store: rows[0], ...(await loadPackageData(req.params.id)),
+      env, fromVersion, fromSchema, toVersion, includeSeed: req.body.include_seed !== false
+    });
+    if (!migration.zip_path) return res.status(500).json({ error: 'Could not create the migration ZIP: ' + migration.zip_error });
+    envSettings.last_migration = { from_version: migration.from_version, to_version: toVersion, zip_name: migration.zip_name, zip_path: migration.zip_path, built_at: migration.built_at };
+    loaded.settings.environments[env] = envSettings;
+    await deploySettings.persist(req.params.id, loaded.settings);
+    res.json({ success: true, migration });
+  } catch (e) { sendError(res, e); }
+});
+
+// FTP settings for a request: typed values win, the saved password fills in when the field is left blank.
+async function ftpConfigFor(req, env) {
+  const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+  if (!loaded) return null;
+  const saved = deploySettings.resolvedEnv(loaded.settings, env).ftp || {};
+  const b = req.body || {};
+  return {
+    loaded,
+    cfg: {
+      host: deploySettings.normalizeFtpHost(b.host || saved.host),
+      port: Number(b.port || saved.port) || 21,
+      user: String(b.user || saved.user || '').trim(),
+      password: b.password || saved.password || '',
+      path: deploySettings.normalizeRemotePath(b.path || saved.path),
+      secure: b.secure !== undefined ? !!b.secure : !!saved.secure
+    },
+    saved
+  };
+}
+
+// POST /api/stores/:id/deploy-ftp/test — check login and the remote folder
+async function ftpTest(req, res) {
+  try {
+    const env = deploySettings.normalizeEnv(req.body.env) || 'production';
+    const ctx = await ftpConfigFor(req, env);
+    if (!ctx) return res.status(404).json({ error: 'Store not found' });
+    const { cfg, saved, loaded } = ctx;
+    if (!cfg.host || !cfg.user || !cfg.password) return res.status(400).json({ error: 'FTP Host, Username, and Password are required' });
+    let info;
+    try { info = await ftpDeployer.testConnection(cfg); }
+    catch (e) { return res.status(400).json({ error: ftpDeployer.friendlyError(e) }); }
+    const matchesSaved = saved.host === cfg.host && saved.user === cfg.user && saved.password === cfg.password;
+    if (matchesSaved) {
+      loaded.settings.environments[env].ftp_tested_at = new Date().toISOString();
+      await deploySettings.persist(req.params.id, loaded.settings);
+    }
+    res.json({
+      success: true,
+      saved: matchesSaved,
+      ...info,
+      message: info.path_exists
+        ? `Connected. ${cfg.path} is ready (${info.entries} items).`
+        : `Connected, but ${cfg.path} does not exist yet — it will be created on upload.`
+    });
+  } catch (e) { sendError(res, e); }
+}
+router.post('/:id/deploy-ftp/test', auth, ftpTest);
+router.post('/:id/deploy-ftp', auth, ftpTest);
+
+// POST /api/stores/:id/deploy-ftp/upload — build a new version and upload it with the saved FTP settings
+router.post('/:id/deploy-ftp/upload', auth, async (req, res) => {
+  try {
+    const env = deploySettings.normalizeEnv(req.body.env) || 'production';
+    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+    if (!loaded) return res.status(404).json({ error: 'Store not found' });
+    const ftpCfg = deploySettings.resolvedEnv(loaded.settings, env).ftp;
+    if (!ftpCfg || !ftpCfg.host || !ftpCfg.password) return res.status(400).json({ error: 'Save the FTP settings for this environment first' });
+    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
+    const deployment = await buildPackage(rows[0], req.user.id, { ...req.body, env });
+    let result;
+    try { result = await ftpDeployer.uploadDirectory(ftpCfg, deployment.upload_dir, { skipEnv: deployment.technology === 'nodejs' }); }
+    catch (e) { return res.status(400).json({ error: 'Upload failed: ' + ftpDeployer.friendlyError(e), deployment }); }
+    res.json({
+      success: true,
+      deployment,
+      ...result,
+      message: `Uploaded v${deployment.version} (${result.files} files, ${(result.bytes / 1048576).toFixed(1)} MB) to ${ftpCfg.host}${result.remote_path}`
+    });
+  } catch (e) { sendError(res, e); }
 });
 
 // POST /api/stores/:id/deploy-github

@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS \`products\` (
   \`benefits\` TEXT DEFAULT NULL,
   \`additional_note\` VARCHAR(255) DEFAULT 'Inclusive of GST and free shipping.',
   \`images\` LONGTEXT DEFAULT NULL,
+  \`quantity\` INT DEFAULT 100,
   \`in_stock\` BOOLEAN DEFAULT TRUE,
   \`active\` BOOLEAN DEFAULT TRUE,
   \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -140,9 +141,10 @@ ON DUPLICATE KEY UPDATE \`name\`=VALUES(\`name\`), \`image_url\`=VALUES(\`image_
     sql += `-- PRODUCTS SEED\n`;
     for (const p of products) {
       const imgJson = Array.isArray(p.images) ? JSON.stringify(p.images) : (p.images ? JSON.stringify([p.images]) : '[]');
-      sql += `INSERT INTO \`products\` (\`id\`, \`store_id\`, \`category_id\`, \`name\`, \`slug\`, \`sku\`, \`price\`, \`compare_price\`, \`product_size\`, \`offer_text\`, \`badge_text\`, \`description\`, \`ingredients\`, \`user_instructions\`, \`benefits\`, \`additional_note\`, \`images\`, \`in_stock\`, \`active\`)
-VALUES (${Number(p.id)}, ${Number(store.id)}, ${p.category_id ? Number(p.category_id) : 'NULL'}, ${escapeSqlString(p.name)}, ${escapeSqlString(p.slug)}, ${escapeSqlString(p.sku)}, ${Number(p.price || 0)}, ${p.compare_price ? Number(p.compare_price) : 'NULL'}, ${escapeSqlString(p.product_size || p.size)}, ${escapeSqlString(p.offer_text || p.offer)}, ${escapeSqlString(p.badge_text)}, ${escapeSqlString(p.description)}, ${escapeSqlString(p.ingredients)}, ${escapeSqlString(p.user_instructions)}, ${escapeSqlString(p.benefits)}, ${escapeSqlString(p.additional_note || 'Inclusive of GST and free shipping.')}, ${escapeSqlString(imgJson)}, ${p.in_stock !== false ? 1 : 0}, ${p.active !== false ? 1 : 0})
-ON DUPLICATE KEY UPDATE \`name\`=VALUES(\`name\`), \`price\`=VALUES(\`price\`), \`images\`=VALUES(\`images\`), \`user_instructions\`=VALUES(\`user_instructions\`), \`benefits\`=VALUES(\`benefits\`);\n`;
+      const qty = (p.quantity !== undefined && p.quantity !== null) ? Number(p.quantity) : (p.stock !== undefined ? Number(p.stock) : 100);
+      sql += `INSERT INTO \`products\` (\`id\`, \`store_id\`, \`category_id\`, \`name\`, \`slug\`, \`sku\`, \`price\`, \`compare_price\`, \`product_size\`, \`offer_text\`, \`badge_text\`, \`description\`, \`ingredients\`, \`user_instructions\`, \`benefits\`, \`additional_note\`, \`images\`, \`quantity\`, \`in_stock\`, \`active\`)
+VALUES (${Number(p.id)}, ${Number(store.id)}, ${p.category_id ? Number(p.category_id) : 'NULL'}, ${escapeSqlString(p.name)}, ${escapeSqlString(p.slug)}, ${escapeSqlString(p.sku)}, ${Number(p.price || 0)}, ${p.compare_price ? Number(p.compare_price) : 'NULL'}, ${escapeSqlString(p.product_size || p.size)}, ${escapeSqlString(p.offer_text || p.offer)}, ${escapeSqlString(p.badge_text)}, ${escapeSqlString(p.description)}, ${escapeSqlString(p.ingredients)}, ${escapeSqlString(p.user_instructions)}, ${escapeSqlString(p.benefits)}, ${escapeSqlString(p.additional_note || 'Inclusive of GST and free shipping.')}, ${escapeSqlString(imgJson)}, ${qty}, ${p.in_stock !== false ? 1 : 0}, ${p.active !== false ? 1 : 0})
+ON DUPLICATE KEY UPDATE \`name\`=VALUES(\`name\`), \`price\`=VALUES(\`price\`), \`images\`=VALUES(\`images\`), \`quantity\`=VALUES(\`quantity\`), \`user_instructions\`=VALUES(\`user_instructions\`), \`benefits\`=VALUES(\`benefits\`);\n`;
     }
     sql += '\n';
   }
@@ -223,6 +225,7 @@ CREATE TABLE IF NOT EXISTS products (
   benefits TEXT,
   additional_note VARCHAR(255) DEFAULT 'Inclusive of GST and free shipping.',
   images JSONB DEFAULT '[]',
+  quantity INT DEFAULT 100,
   in_stock BOOLEAN DEFAULT TRUE,
   active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -319,14 +322,18 @@ const helmet = require('helmet');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const STORE_ID = ${Number(store.id)};
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static assets and pre-rendered frontend
+// Serve static assets, pre-rendered frontend, and client admin
 app.use('/assets', express.static(path.join(__dirname, '..', 'static', 'assets')));
+app.use('/merchant', express.static(path.join(__dirname, '..', 'static', 'merchant')));
+app.use('/store-builder', express.static(path.join(__dirname, '..', 'static', 'store-builder')));
+app.use('/auth', express.static(path.join(__dirname, '..', 'static', 'auth')));
 app.use(express.static(path.join(__dirname, '..', 'static')));
 
 // Database connection
@@ -335,14 +342,213 @@ const db = require('./db');
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', store: '${store.slug}', time: new Date() }));
 
-// API: Place Order
+// ── STORE & BUILDER APIS ──
+app.get('/api/stores', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM stores WHERE id=$1', [STORE_ID]);
+    res.json({ stores: rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/stores/:id', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM stores WHERE id=$1', [STORE_ID]);
+    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
+    res.json({ store: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/stores/:id/builder', async (req, res) => {
+  try {
+    const [sRes, pRes, cRes, pgRes] = await Promise.all([
+      db.query('SELECT * FROM stores WHERE id=$1', [STORE_ID]),
+      db.query('SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 ORDER BY p.id DESC', [STORE_ID]),
+      db.query('SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order, name', [STORE_ID]),
+      db.query('SELECT * FROM store_pages WHERE store_id=$1 ORDER BY sort_order, id', [STORE_ID])
+    ]);
+    res.json({
+      store: sRes.rows[0],
+      products: pRes.rows,
+      categories: cRes.rows,
+      pages: pgRes.rows,
+      payments: { razorpay_configured: false, razorpay_mode: 'test' }
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/stores/:id/draft', async (req, res) => {
+  try {
+    const { theme_config, store_fields } = req.body;
+    const f = store_fields || {};
+    const tc = typeof theme_config === 'object' ? JSON.stringify(theme_config) : theme_config;
+    await db.query(
+      \`UPDATE stores SET 
+        theme_config=COALESCE($2, theme_config),
+        primary_colour=COALESCE($3, primary_colour),
+        accent_colour=COALESCE($4, accent_colour),
+        hero_cta_text=COALESCE($5, hero_cta_text),
+        tagline=COALESCE($6, tagline),
+        updated_at=NOW()
+      WHERE id=$1\`,
+      [STORE_ID, tc, f.primary_colour, f.accent_colour, f.hero_cta_text, f.tagline]
+    );
+    const { rows } = await db.query('SELECT * FROM stores WHERE id=$1', [STORE_ID]);
+    res.json({ store: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PRODUCTS APIS (WITH QUANTITY & STOCK) ──
+app.get('/api/products', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 ORDER BY p.id DESC',
+      [STORE_ID]
+    );
+    res.json({ products: rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM products WHERE id=$1 AND store_id=$2', [req.params.id, STORE_ID]);
+    if (!rows.length) return res.status(404).json({ error: 'Product not found' });
+    res.json({ product: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/products', async (req, res) => {
+  try {
+    const { name, price, compare_price, cost_price, sku, description, ingredients, user_instructions, benefits, additional_note, images, category_id, stock, quantity } = req.body;
+    const finalQty = (quantity !== undefined && quantity !== null) ? Number(quantity) : (stock !== undefined ? Number(stock) : 100);
+    const inStock = finalQty > 0;
+    const imgJson = Array.isArray(images) ? JSON.stringify(images) : (images ? JSON.stringify([images]) : '[]');
+    const { rows } = await db.query(
+      \`INSERT INTO products (store_id, category_id, name, price, compare_price, sku, description, ingredients, user_instructions, benefits, additional_note, images, quantity, in_stock, active)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,true) RETURNING *\`,
+      [STORE_ID, category_id || null, name, Number(price || 0), compare_price ? Number(compare_price) : null, sku || null, description || '', ingredients || '', user_instructions || null, benefits || null, additional_note || 'Inclusive of GST and free shipping.', imgJson, finalQty, inStock]
+    );
+    res.status(201).json({ product: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const { name, price, compare_price, description, user_instructions, benefits, additional_note, category_id, stock, quantity } = req.body;
+    const finalQty = quantity !== undefined ? Number(quantity) : (stock !== undefined ? Number(stock) : undefined);
+    const inStock = finalQty !== undefined ? (finalQty > 0) : undefined;
+    const { rows } = await db.query(
+      \`UPDATE products SET 
+        name=COALESCE($3, name),
+        price=COALESCE($4, price),
+        compare_price=COALESCE($5, compare_price),
+        description=COALESCE($6, description),
+        user_instructions=COALESCE($7, user_instructions),
+        benefits=COALESCE($8, benefits),
+        additional_note=COALESCE($9, additional_note),
+        category_id=COALESCE($10, category_id),
+        quantity=COALESCE($11, quantity),
+        in_stock=COALESCE($12, in_stock),
+        updated_at=NOW()
+      WHERE id=$1 AND store_id=$2 RETURNING *\`,
+      [req.params.id, STORE_ID, name, price, compare_price, description, user_instructions, benefits, additional_note, category_id, finalQty, inStock]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Product not found' });
+    res.json({ product: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── CATEGORIES APIS ──
+app.get('/api/categories', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      \`SELECT c.*, COUNT(p.id)::int AS product_count 
+       FROM categories c 
+       LEFT JOIN products p ON p.category_id=c.id AND p.active=true 
+       WHERE c.store_id=$1 GROUP BY c.id ORDER BY c.sort_order, c.name\`,
+      [STORE_ID]
+    );
+    res.json({ categories: rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/categories', async (req, res) => {
+  try {
+    const { name, slug, image_url, sort_order } = req.body;
+    const { rows } = await db.query(
+      'INSERT INTO categories (store_id, name, slug, image_url, sort_order, active) VALUES ($1,$2,$3,$4,$5,true) RETURNING *',
+      [STORE_ID, name, slug, image_url || null, sort_order || 0]
+    );
+    res.status(201).json({ category: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/categories/:id', async (req, res) => {
+  try {
+    const { name, slug, image_url, sort_order } = req.body;
+    const { rows } = await db.query(
+      'UPDATE categories SET name=COALESCE($3,name), slug=COALESCE($4,slug), image_url=COALESCE($5,image_url), sort_order=COALESCE($6,sort_order) WHERE id=$1 AND store_id=$2 RETURNING *',
+      [req.params.id, STORE_ID, name, slug, image_url, sort_order]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Category not found' });
+    res.json({ category: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PAGES APIS ──
+app.get('/api/stores/:id/pages', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM store_pages WHERE store_id=$1 ORDER BY sort_order, id', [STORE_ID]);
+    res.json({ pages: rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/stores/:id/pages', async (req, res) => {
+  try {
+    const { title, slug, content={}, status='published', sort_order=0 } = req.body;
+    const contentVal = typeof content === 'object' ? JSON.stringify(content) : content;
+    const { rows } = await db.query(
+      'INSERT INTO store_pages (store_id, title, slug, content, status, sort_order) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+      [STORE_ID, title, slug, contentVal, status, sort_order]
+    );
+    res.status(201).json({ page: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/stores/:id/pages/:pageId', async (req, res) => {
+  try {
+    const { title, slug, content, status, sort_order } = req.body;
+    const contentVal = content !== undefined ? (typeof content === 'object' ? JSON.stringify(content) : content) : null;
+    const { rows } = await db.query(
+      'UPDATE store_pages SET title=COALESCE($3,title), slug=COALESCE($4,slug), content=COALESCE($5,content), status=COALESCE($6,status), sort_order=COALESCE($7,sort_order) WHERE id=$1 AND store_id=$2 RETURNING *',
+      [req.params.pageId, STORE_ID, title, slug, contentVal, status, sort_order]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Page not found' });
+    res.json({ page: rows[0] });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/stores/:id/pages/:pageId', async (req, res) => {
+  try {
+    await db.query('DELETE FROM store_pages WHERE id=$1 AND store_id=$2', [req.params.pageId, STORE_ID]);
+    res.json({ deleted: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ORDERS API ──
+app.get('/api/orders', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM orders WHERE store_id=$1 ORDER BY id DESC LIMIT 50', [STORE_ID]);
+    res.json({ orders: rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/orders', async (req, res) => {
   try {
     const { customer_name, customer_phone, customer_email, shipping_address, items, total_amount, payment_method } = req.body;
     const orderNumber = 'ORD-' + Date.now();
     const itemsJson = JSON.stringify(items || []);
     const q = 'INSERT INTO orders (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, items_json, total_amount, payment_method) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)';
-    await db.query(q, [${Number(store.id)}, orderNumber, customer_name, customer_phone, customer_email || '', shipping_address, itemsJson, total_amount || 0, payment_method || 'cod']);
+    await db.query(q, [STORE_ID, orderNumber, customer_name, customer_phone, customer_email || '', shipping_address, itemsJson, total_amount || 0, payment_method || 'cod']);
     res.json({ success: true, order_number: orderNumber });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -356,6 +562,9 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(\`✅ \${'${store.store_name}'} running on port \${PORT}\`);
+  console.log(\`   🛍️ Storefront:   http://localhost:\${PORT}/\`);
+  console.log(\`   💼 Client Admin: http://localhost:\${PORT}/merchant/dashboard.html\`);
+  console.log(\`   🎨 StoreBuilder: http://localhost:\${PORT}/store-builder/\`);
 });
 `;
 }
@@ -481,14 +690,17 @@ async function exportStoreDeployment({ store, themeConfig, products, categories,
       }
     }
 
-    // 2. Copy Assets directory
-    const sourceAssets = path.join('D:\\ZK Software\\Dev\\zkcommerce\\zkcommerce-v4.1.0-source\\zkc', 'assets');
-    const targetAssets = path.join(staticDir, 'assets');
-    if (fs.existsSync(sourceAssets)) {
-      try {
-        fs.cpSync(sourceAssets, targetAssets, { recursive: true });
-      } catch (e) {
-        console.warn('Assets cp warning:', e.message);
+    // 2. Copy Assets, Merchant Client Admin, StoreBuilder, and Auth directories
+    const devSourceRoot = 'D:\\ZK Software\\Dev\\zkcommerce\\zkcommerce-v4.1.0-source\\zkc';
+    for (const folder of ['assets', 'merchant', 'store-builder', 'auth']) {
+      const src = path.join(devSourceRoot, folder);
+      const dst = path.join(staticDir, folder);
+      if (fs.existsSync(src)) {
+        try {
+          fs.cpSync(src, dst, { recursive: true });
+        } catch (e) {
+          console.warn(`Export cp warning (${folder}):`, e.message);
+        }
       }
     }
 
@@ -540,9 +752,12 @@ async function exportStoreDeployment({ store, themeConfig, products, categories,
 
 ## 📁 Package Contents
 
-- **\`static/\`**: Pre-rendered, ultra-fast static HTML storefront + all assets (images, CSS, JS).
-- **\`api/\`**: Standalone production Node.js API server for processing orders, WhatsApp notifications, and payment webhooks.
-- **\`database/\`**: Complete SQL schema & seed files for MySQL (phpMyAdmin) and PostgreSQL.
+- **\`static/\`**: Pre-rendered, ultra-fast static HTML storefront + client admin dashboard + StoreBuilder + assets.
+  - **Storefront**: \`/index.html\`, \`/collections/\`, \`/products/\`
+  - **Merchant Client Admin**: \`/merchant/dashboard.html\`, \`/merchant/products.html\` (with Stock & Quantity), \`/merchant/categories.html\`, \`/merchant/pages.html\`, \`/merchant/themes.html\`
+  - **Visual StoreBuilder**: \`/store-builder/\`
+- **\`api/\`**: Standalone production Node.js API server for processing orders, WhatsApp notifications, payment webhooks, and merchant CRUD operations.
+- **\`database/\`**: Complete SQL schema & seed files for MySQL (phpMyAdmin) and PostgreSQL with stock quantity columns and seeds.
 - **\`.env\`**: Configured environment file with connection strings and production secrets.
 
 ---
@@ -563,6 +778,18 @@ async function exportStoreDeployment({ store, themeConfig, products, categories,
 ### Option 3: Railway / Docker / VPS
 1. Run \`railway up\` or \`docker build -t ${slug}-store .\`.
 2. Connect your MySQL or PostgreSQL database.
+
+---
+
+## 💼 Merchant Client Admin & StoreBuilder (Shopify / WordPress Model)
+
+On your custom hosting deployment, manage your autonomous store directly:
+- **Merchant Dashboard**: \`http://your-domain.com/merchant/dashboard.html\`
+- **Products & Stock Quantity**: \`http://your-domain.com/merchant/products.html\`
+- **Categories & Hero Cards**: \`http://your-domain.com/merchant/categories.html\`
+- **Content Pages & Legal Policies**: \`http://your-domain.com/merchant/pages.html\`
+- **Themes & Customizer**: \`http://your-domain.com/merchant/themes.html\`
+- **Live Visual Customizer**: \`http://your-domain.com/store-builder/\`
 `;
     fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), readme, 'utf8');
 

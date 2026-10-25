@@ -106,24 +106,24 @@
   <div class="card">
     <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">💰 Pricing</h3>
     <div class="field-group" style="margin-bottom:12px"><label class="field-label">Selling price (₹) *</label><input type="number" class="field" id="sprice" placeholder="12500" oninput="calcG()"></div>
-    <div class="field-group" style="margin-bottom:12px"><label class="field-label">MRP / Compare price (₹)</label><input type="number" class="field" placeholder="15000"></div>
-    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Cost price (₹)</label><input type="number" class="field" placeholder="8000"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">MRP / Compare price (₹)</label><input type="number" class="field" id="pmrp" placeholder="15000"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Cost price (₹)</label><input type="number" class="field" id="pcost" placeholder="8000"></div>
     <div class="field-group" style="margin-bottom:12px"><label class="field-label">GST rate</label><select class="field" id="grate" onchange="calcG()"><option value="0">0%</option><option value="5">5% — Textiles</option><option value="12" selected>12% — Fashion</option><option value="18">18% — Electronics</option><option value="28">28% — Luxury</option></select></div>
     <div id="gbox" style="display:none;background:var(--zk-pale);border-radius:9px;padding:12px;font-size:12px"><div style="font-weight:700;color:var(--zk-indigo);margin-bottom:7px">GST breakdown</div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Taxable</span><span id="gtx" style="font-weight:700">—</span></div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>CGST</span><span id="gcg" style="font-weight:700">—</span></div><div style="display:flex;justify-content:space-between"><span>SGST</span><span id="gsg" style="font-weight:700">—</span></div></div>
   </div>
   <div class="card">
-    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">📦 Inventory</h3>
-    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Total stock *</label><input type="number" class="field" placeholder="50"></div>
-    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Low stock alert at</label><input type="number" class="field" placeholder="5"></div>
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">📦 Inventory &amp; Stock</h3>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Stock Quantity (Units) *</label><input type="number" class="field" id="pstock" placeholder="100" min="0" value="100" style="font-weight:700"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Low stock alert at</label><input type="number" class="field" id="plowstock" placeholder="5" value="5"></div>
     <div class="field-group" style="margin-bottom:12px"><label class="field-label">Warehouse</label><select class="field"><option>Chennai Main</option><option>Madurai WH</option></select></div>
     <div class="field-group"><label class="field-label">Weight (kg)</label><input type="number" class="field" placeholder="0.8" step="0.1"></div>
   </div>
   <div class="card">
     <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">⚙️ Status</h3>
-    <div class="field-group"><label class="field-label">Visibility</label><select class="field"><option>Published</option><option>Draft</option><option>Archived</option></select></div>
+    <div class="field-group"><label class="field-label">Visibility</label><select class="field" id="pstatus"><option value="published">Published</option><option value="draft">Draft</option><option value="archived">Archived</option></select></div>
   </div>
-  <button class="btn btn-primary btn-full" onclick="doPublish()">🚀 Publish product</button>
-  <button class="btn btn-secondary btn-full" onclick="toast.success('Draft saved')">Save draft</button>
+  <button class="btn btn-primary btn-full" id="publish-btn" onclick="doPublish('published')">🚀 Publish product</button>
+  <button class="btn btn-secondary btn-full" onclick="doPublish('draft')">Save draft</button>
   <a href="products.html" style="text-align:center;font-size:13px;color:var(--zk-muted);display:block">← Cancel</a>
 </div>
 </div>
@@ -180,7 +180,7 @@ async function loadProductForEdit(id) {
       setVal('sprice', p.price);
       setVal('pmrp',   p.mrp || '');
       setVal('pcost',  p.cost_price || '');
-      setVal('pstock', p.stock);
+      setVal('pstock', (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100));
       setVal('grate',  p.gst_rate || '12');
       setVal('pcat',   p.category_id || '');
 
@@ -258,6 +258,7 @@ async function doPublish(status) {
     gst_rate:    getVal('grate') || '12',
     category_id: document.getElementById('pcat').value ? parseInt(document.getElementById('pcat').value) : null,
     stock:       parseInt(document.getElementById('pstock') ? document.getElementById('pstock').value : 0) || 0,
+    quantity:    parseInt(document.getElementById('pstock') ? document.getElementById('pstock').value : 0) || 0,
     status:      status || 'published',
     is_cod:      true,
     low_stock_alert: 5,
