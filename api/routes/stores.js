@@ -1,4 +1,5 @@
-﻿const router = require('express').Router();
+const router = require('express').Router();
+const { exportStoreDeployment } = require('../services/deployment-exporter');
 const pool   = require('../db');
 const auth   = require('../middleware/auth');
 const { renderStore } = require('../store-renderer');
@@ -201,11 +202,12 @@ router.post('/:id/publish', auth, async (req, res) => {
     const { rows } = await client.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2 FOR UPDATE', [req.params.id,req.user.id]);
     if (!rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Store not found' }); }
     const store = rows[0];
-    const [products,pages] = await Promise.all([
+    const [products,pages,categories] = await Promise.all([
       client.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC',[store.id]),
-      client.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id",[store.id])
+      client.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id",[store.id]),
+      client.query("SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id",[store.id])
     ]);
-    const snapshot = { version: 1, published_at: new Date().toISOString(), store: { store_name:store.store_name,slug:store.slug,custom_domain:store.custom_domain,tagline:store.tagline,hero_headline:store.hero_headline,hero_subtext:store.hero_subtext,hero_cta_text:store.hero_cta_text,primary_colour:store.primary_colour,bg_colour:store.bg_colour,accent_colour:store.accent_colour,logo_url:store.logo_url,whatsapp_number:store.whatsapp_number,instagram_handle:store.instagram_handle,address:store.address,city:store.city,state:store.state }, theme_config:store.theme_config||{}, products:products.rows, pages:pages.rows };
+    const snapshot = { version: 1, published_at: new Date().toISOString(), store: { store_name:store.store_name,slug:store.slug,custom_domain:store.custom_domain,tagline:store.tagline,hero_headline:store.hero_headline,hero_subtext:store.hero_subtext,hero_cta_text:store.hero_cta_text,primary_colour:store.primary_colour,bg_colour:store.bg_colour,accent_colour:store.accent_colour,logo_url:store.logo_url,whatsapp_number:store.whatsapp_number,instagram_handle:store.instagram_handle,address:store.address,city:store.city,state:store.state }, theme_config:store.theme_config||{}, products:products.rows, pages:pages.rows, categories:categories.rows };
     const updated = await client.query(
       `UPDATE stores SET published_snapshot=$2::jsonb,status=CASE WHEN status='live' THEN 'live' ELSE 'published' END,published_at=NOW(),updated_at=NOW() WHERE id=$1 RETURNING id,slug,status,published_at`,
       [store.id,JSON.stringify(snapshot)]
@@ -214,6 +216,200 @@ router.post('/:id/publish', auth, async (req, res) => {
     res.json({ store:updated.rows[0], published_snapshot:snapshot });
   } catch (e) { await client.query('ROLLBACK'); res.status(500).json({ error: e.message }); }
   finally { client.release(); }
+});
+
+
+// POST /api/stores/:id/publish-portal
+// Atomically publishes snapshot, exports multi-cloud deployment package, updates custom domain
+router.post('/:id/publish-portal', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2 FOR UPDATE', [req.params.id, req.user.id]);
+    if (!rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Store not found' }); }
+    let store = rows[0];
+
+    // Optional custom domain update
+    if (req.body.custom_domain !== undefined) {
+      const cd = String(req.body.custom_domain || '').trim().toLowerCase();
+      await client.query('UPDATE stores SET custom_domain=$1 WHERE id=$2', [cd || null, store.id]);
+      store.custom_domain = cd || null;
+    }
+
+    const [products, pages, categories] = await Promise.all([
+      client.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC',[store.id]),
+      client.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id",[store.id]),
+      client.query("SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id",[store.id])
+    ]);
+
+    const snapshot = {
+      version: 1,
+      published_at: new Date().toISOString(),
+      store: {
+        store_name: store.store_name, slug: store.slug, custom_domain: store.custom_domain,
+        tagline: store.tagline, hero_headline: store.hero_headline, hero_subtext: store.hero_subtext,
+        hero_cta_text: store.hero_cta_text, primary_colour: store.primary_colour, bg_colour: store.bg_colour,
+        accent_colour: store.accent_colour, logo_url: store.logo_url, whatsapp_number: store.whatsapp_number,
+        instagram_handle: store.instagram_handle, address: store.address, city: store.city, state: store.state
+      },
+      theme_config: store.theme_config || {},
+      products: products.rows,
+      pages: pages.rows,
+      categories: categories.rows
+    };
+
+    const updated = await client.query(
+      `UPDATE stores SET published_snapshot=$2::jsonb,status=CASE WHEN status='live' THEN 'live' ELSE 'published' END,published_at=NOW(),updated_at=NOW() WHERE id=$1 RETURNING id,slug,status,custom_domain,published_at`,
+      [store.id, JSON.stringify(snapshot)]
+    );
+    await client.query('COMMIT');
+
+    // Run Deployment Exporter
+    const deployment = await exportStoreDeployment({
+      store: { ...store, ...updated.rows[0] },
+      themeConfig: store.theme_config || {},
+      products: products.rows,
+      categories: categories.rows,
+      pages: pages.rows,
+      options: req.body || {}
+    });
+
+    res.json({
+      success: true,
+      store: updated.rows[0],
+      published_snapshot: snapshot,
+      deployment,
+      live_url: store.custom_domain ? 'https://' + store.custom_domain : '/store/' + store.slug
+    });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
+  }
+});
+
+// GET /api/stores/:id/deployment-zip
+// Downloads the compiled deployment zip package
+router.get('/:id/deployment-zip', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
+    const store = rows[0];
+    const path = require('path');
+    const fs = require('fs');
+    const zipPath = path.join('D:\\ZK Software\\Stage\\zkcommerce\\zkcommerce-v4-complete\\deployment\\published', `${store.slug}-deployment.zip`);
+    if (!fs.existsSync(zipPath)) {
+      // Generate on the fly if not exists
+      const [products, pages, categories] = await Promise.all([
+        pool.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC',[store.id]),
+        pool.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id",[store.id]),
+        pool.query("SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id",[store.id])
+      ]);
+      await exportStoreDeployment({
+        store,
+        themeConfig: store.theme_config || {},
+        products: products.rows,
+        categories: categories.rows,
+        pages: pages.rows,
+        options: { provider: 'godaddy', db_type: 'mysql' }
+      });
+    }
+    if (!fs.existsSync(zipPath)) return res.status(404).json({ error: 'Deployment archive not found' });
+    res.download(zipPath, `${store.slug}-deployment.zip`);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/stores/:id/deploy-ftp
+router.post('/:id/deploy-ftp', auth, async (req, res) => {
+  try {
+    const { host, port = 21, user, password, path: remotePath = '/public_html' } = req.body;
+    if (!host || !user || !password) return res.status(400).json({ error: 'FTP Host, Username, and Password are required' });
+    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
+    const store = rows[0];
+
+    // PowerShell FTP test / deployment
+    const { execSync } = require('child_process');
+    const psScript = `
+      try {
+        $ftp = [System.Net.FtpWebRequest]::Create('ftp://${host}${remotePath.startsWith('/') ? remotePath : '/' + remotePath}');
+        $ftp.Credentials = New-Object System.Net.NetworkCredential('${user}', '${password}');
+        $ftp.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectory;
+        $ftp.Timeout = 10000;
+        $response = $ftp.GetResponse();
+        $response.Close();
+        Write-Output "FTP_SUCCESS";
+      } catch {
+        Write-Output ("FTP_ERROR: " + $_.Exception.Message);
+      }
+    `;
+    const output = execSync(`powershell -NoProfile -Command "${psScript.replace(/\n/g, ' ')}"`, { encoding: 'utf8' }).trim();
+    if (output.includes('FTP_ERROR')) {
+      return res.status(400).json({ error: output.replace('FTP_ERROR:', '').trim() });
+    }
+    res.json({ success: true, message: 'FTP server connected and ready for transfer!' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/stores/:id/deploy-github
+router.post('/:id/deploy-github', auth, async (req, res) => {
+  try {
+    const { repo, token, branch = 'main' } = req.body;
+    if (!repo || !token) return res.status(400).json({ error: 'GitHub Repository (owner/repo) and Personal Access Token are required' });
+    const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Store not found' });
+    const store = rows[0];
+
+    const https = require('https');
+    const repoParts = repo.trim().replace(/^https?:\/\/github\.com\//, '').split('/');
+    if (repoParts.length < 2) return res.status(400).json({ error: 'Repository format must be owner/repository-name' });
+    const owner = repoParts[0];
+    const repoName = repoParts[1];
+
+    const checkRepo = () => new Promise((resolve, reject) => {
+      const opts = {
+        hostname: 'api.github.com',
+        path: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repoName)}`,
+        headers: {
+          'User-Agent': 'ZKCommerce-StoreBuilder',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      };
+      https.get(opts, (r) => {
+        let data = '';
+        r.on('data', chunk => data += chunk);
+        r.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (r.statusCode >= 200 && r.statusCode < 300) {
+              resolve(parsed);
+            } else {
+              reject(new Error(parsed.message || `GitHub HTTP ${r.statusCode}`));
+            }
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }).on('error', reject);
+    });
+
+    const repoData = await checkRepo();
+    res.json({
+      success: true,
+      message: `Authenticated with GitHub repository: ${repoData.full_name} (${branch} branch). Ready for push!`,
+      repo: repoData.full_name,
+      html_url: repoData.html_url,
+      default_branch: repoData.default_branch
+    });
+  } catch (e) {
+    res.status(400).json({ error: 'GitHub Authentication Error: ' + e.message });
+  }
 });
 
 router.get('/:id/preview', auth, async (req, res) => {

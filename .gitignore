@@ -29,3 +29,4 @@ build/
 coverage/
 .DS_Store
 Thumbs.db
+deployment/published/
