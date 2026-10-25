@@ -22,7 +22,7 @@ for (const output of targets) {
     fs.rmSync(output, { recursive: true, force: true });
     fs.mkdirSync(output, { recursive: true });
 
-    const directories = ['admin', 'assets', 'auth', 'merchant', 'storefront'];
+    const directories = ['admin', 'assets', 'auth', 'merchant', 'storefront', 'store-builder'];
     for (const dir of directories) {
       const src = path.join(sourceDir, dir);
       if (fs.existsSync(src)) {
