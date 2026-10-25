@@ -9,10 +9,52 @@
   <div class="card">
     <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Basic information</h3>
     <div class="field-group" style="margin-bottom:12px"><label class="field-label">Product name *</label><input type="text" class="field" id="pname" placeholder="e.g. Kanjivaram Silk Saree — Red"></div>
-    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Description *</label><textarea class="field" rows="5" placeholder="Fabric, dimensions, care instructions, origin..."></textarea></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Description *</label><textarea class="field" id="pdesc" rows="5" placeholder="Fabric, dimensions, care instructions, origin..."></textarea></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field-group"><label class="field-label">Category *</label><select class="field"><option>Select…</option><option>Sarees</option><option>Kurtas</option><option>Blouses</option><option>Accessories</option></select></div>
-      <div class="field-group"><label class="field-label">Brand</label><input type="text" class="field" placeholder="Rajan Weavers"></div>
+      <div class="field-group"><label class="field-label">Category *</label><select class="field" id="pcat"><option>Select…</option><option>Sarees</option><option>Kurtas</option><option>Blouses</option><option>Accessories</option></select></div>
+      <div class="field-group"><label class="field-label">Brand</label><input type="text" class="field" id="pbrand" placeholder="Rajan Weavers"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800">✨ Additional Parameters (Optional)</h3>
+      <span class="badge badge-green" style="font-size:11px">Optional Details</span>
+    </div>
+    
+    <!-- Additional Note Field (Inclusive of GST and free shipping) -->
+    <div style="border:1px solid var(--zk-border);border-radius:10px;padding:14px;margin-bottom:14px;background:#FAFAFB">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="chk_note" checked onchange="toggleField('chk_note','box_note')">
+        <span>🏷️ Additional Note (e.g. GST & Free Shipping)</span>
+      </label>
+      <div id="box_note">
+        <input type="text" class="field" id="pnote" value="Inclusive of GST and free shipping." placeholder="e.g. Inclusive of GST and free shipping.">
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Appears as an attractive trust badge below the price on storefront.</div>
+      </div>
+    </div>
+
+    <!-- User Instructions Field -->
+    <div style="border:1px solid var(--zk-border);border-radius:10px;padding:14px;margin-bottom:14px;background:#FAFAFB">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="chk_instructions" onchange="toggleField('chk_instructions','box_instructions')">
+        <span>📋 User Instructions (How to use / Care)</span>
+      </label>
+      <div id="box_instructions" style="display:none">
+        <textarea class="field" id="pinstructions" rows="3" placeholder="e.g. Dry clean only. Store in muslin cloth. Or dosage/usage instructions..."></textarea>
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Displayed on product details page under 'Instructions / How to Use'.</div>
+      </div>
+    </div>
+
+    <!-- Benefits Field -->
+    <div style="border:1px solid var(--zk-border);border-radius:10px;padding:14px;background:#FAFAFB">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="chk_benefits" onchange="toggleField('chk_benefits','box_benefits')">
+        <span>⭐ Key Benefits / Highlights</span>
+      </label>
+      <div id="box_benefits" style="display:none">
+        <textarea class="field" id="pbenefits" rows="3" placeholder="e.g. • 100% Pure Mulberry Silk&#10;• Certified Silk Mark&#10;• Handcrafted by Master Weavers"></textarea>
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Displayed as bullet points or highlights on product page.</div>
+      </div>
     </div>
   </div>
   <div class="card">
@@ -98,6 +140,12 @@ async function loadCategories() {
   } catch(e) {}
 }
 
+function toggleField(chkId, boxId) {
+  var chk = document.getElementById(chkId);
+  var box = document.getElementById(boxId);
+  if (chk && box) box.style.display = chk.checked ? 'block' : 'none';
+}
+
 // Load existing product for editing
 async function loadProductForEdit(id) {
   var token = auth.token;
@@ -117,9 +165,32 @@ async function loadProductForEdit(id) {
       setVal('pstock', p.stock);
       setVal('grate',  p.gst_rate || '12');
       setVal('pcat',   p.category_id || '');
+
+      // Load additional parameters
+      if (p.additional_note) {
+        setVal('pnote', p.additional_note);
+        var c = document.getElementById('chk_note'); if (c) c.checked = true;
+        toggleField('chk_note', 'box_note');
+      } else if (p.additional_note === null) {
+        var c = document.getElementById('chk_note'); if (c) c.checked = false;
+        toggleField('chk_note', 'box_note');
+      }
+
+      if (p.user_instructions) {
+        setVal('pinstructions', p.user_instructions);
+        var c = document.getElementById('chk_instructions'); if (c) c.checked = true;
+        toggleField('chk_instructions', 'box_instructions');
+      }
+
+      if (p.benefits) {
+        setVal('pbenefits', p.benefits);
+        var c = document.getElementById('chk_benefits'); if (c) c.checked = true;
+        toggleField('chk_benefits', 'box_benefits');
+      }
+
       // Update page title
-      var h1 = document.querySelector('h1, .page-title');
-      if (h1) h1.textContent = 'Edit Product';
+      var h1 = document.querySelector('h1, .page-title, .zk-page-title');
+      if (h1) h1.textContent = 'Edit Product — ' + p.name;
       // Update button text
       var btn = document.getElementById('publish-btn');
       if (btn) btn.textContent = 'Save Changes';
@@ -156,11 +227,15 @@ async function doPublish(status) {
   var btn = event.currentTarget;
   btnLoading(btn, true);
 
+  var chkNote = document.getElementById('chk_note');
+  var chkInst = document.getElementById('chk_instructions');
+  var chkBen  = document.getElementById('chk_benefits');
+
   var payload = {
     name:        name,
     description: getVal('pdesc'),
     price:       price,
-    mrp:         parseFloat(document.getElementById('pmrp').value) || null,
+    mrp:         parseFloat(document.getElementById('pmrp') ? document.getElementById('pmrp').value : 0) || null,
     cost_price:  parseFloat(document.getElementById('pcost') ? document.getElementById('pcost').value : 0) || null,
     gst_rate:    getVal('grate') || '12',
     category_id: document.getElementById('pcat').value ? parseInt(document.getElementById('pcat').value) : null,
@@ -168,6 +243,9 @@ async function doPublish(status) {
     status:      status || 'published',
     is_cod:      true,
     low_stock_alert: 5,
+    additional_note:   (chkNote && chkNote.checked) ? (getVal('pnote') || 'Inclusive of GST and free shipping.') : null,
+    user_instructions: (chkInst && chkInst.checked) ? getVal('pinstructions') : null,
+    benefits:          (chkBen && chkBen.checked) ? getVal('pbenefits') : null,
   };
 
   try {

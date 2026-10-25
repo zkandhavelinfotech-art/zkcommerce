@@ -28,6 +28,23 @@ const PORT = process.env.PORT || 3000;
 // ── Database (Dual MySQL / PostgreSQL) ───────────────────────────
 const db = require('./db');
 
+// Auto-ensure additional columns exist in products table
+if (db && db.type !== 'none') {
+  (async () => {
+    try {
+      if (db.type === 'mysql') {
+        await db.query("ALTER TABLE products ADD COLUMN `user_instructions` TEXT DEFAULT NULL").catch(() => {});
+        await db.query("ALTER TABLE products ADD COLUMN `benefits` TEXT DEFAULT NULL").catch(() => {});
+        await db.query("ALTER TABLE products ADD COLUMN `additional_note` VARCHAR(255) DEFAULT 'Inclusive of GST and free shipping.'").catch(() => {});
+      } else {
+        await db.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS user_instructions TEXT").catch(() => {});
+        await db.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS benefits TEXT").catch(() => {});
+        await db.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS additional_note VARCHAR(255) DEFAULT 'Inclusive of GST and free shipping.'").catch(() => {});
+      }
+    } catch (e) { /* ignore */ }
+  })();
+}
+
 // ── Razorpay (Smart Mode Selection: Test vs Live) ────────────────
 const rzpMode = (process.env.RAZORPAY_MODE || (process.env.NODE_ENV === 'production' && process.env.RAZORPAY_Live_KEY_ID ? 'live' : 'test')).toLowerCase();
 const isLiveMode = rzpMode === 'live';
@@ -220,6 +237,9 @@ const schemas = {
     seo_title:   z.string().max(60).optional(),
     seo_desc:    z.string().max(160).optional(),
     slug:        z.string().regex(/^[a-z0-9-]+$/).optional(),
+    user_instructions: z.string().optional().nullable(),
+    benefits:          z.string().optional().nullable(),
+    additional_note:   z.string().optional().nullable(),
   }),
   order: z.object({
     address_id:    z.number().int().positive(),
@@ -415,12 +435,13 @@ app.post('/api/products', verifyToken, requireRole('merchant'), validate(schemas
   const { rows: [prod] } = await db.query(
     `INSERT INTO products (store_id,name,description,price,mrp,cost_price,gst_rate,
       category_id,stock,low_stock_alert,weight_kg,is_cod,is_featured,status,
-      seo_title,seo_desc,slug,created_at,updated_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,NOW(),NOW())
+      seo_title,seo_desc,slug,user_instructions,benefits,additional_note,created_at,updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,NOW(),NOW())
      RETURNING *`,
     [storeId, d.name, d.description, d.price, d.mrp, d.cost_price, d.gst_rate,
      d.category_id, d.stock, d.low_stock_alert, d.weight_kg, d.is_cod,
-     d.is_featured, d.status, d.seo_title, d.seo_desc, slug]
+     d.is_featured, d.status, d.seo_title, d.seo_desc, slug,
+     d.user_instructions || null, d.benefits || null, d.additional_note || null]
   );
   // Log inventory
   await db.query(
@@ -452,9 +473,16 @@ app.put('/api/products/:id', verifyToken, requireRole('merchant'), asyncHandler(
   const { rows } = await db.query(
     `UPDATE products SET name=COALESCE($1,name), description=COALESCE($2,description),
       price=COALESCE($3,price), mrp=COALESCE($4,mrp), status=COALESCE($5,status),
-      stock=COALESCE($6,stock), is_featured=COALESCE($7,is_featured), updated_at=NOW()
-     WHERE id=$8 AND store_id=$9 RETURNING *`,
+      stock=COALESCE($6,stock), is_featured=COALESCE($7,is_featured),
+      user_instructions=COALESCE($8,user_instructions),
+      benefits=COALESCE($9,benefits),
+      additional_note=COALESCE($10,additional_note),
+      updated_at=NOW()
+     WHERE id=$11 AND store_id=$12 RETURNING *`,
     [d.name, d.description, d.price, d.mrp, d.status, d.stock, d.is_featured,
+     d.user_instructions !== undefined ? d.user_instructions : null,
+     d.benefits !== undefined ? d.benefits : null,
+     d.additional_note !== undefined ? d.additional_note : null,
      req.params.id, req.user.store_id]
   );
   if (!rows.length) return err(res, 'Product not found', 404);
@@ -1324,7 +1352,8 @@ app.get('/api/storefront/:slug/products', asyncHandler(async (req, res) => {
   const orderBy = sortMap[sort] || 'p.created_at DESC';
 
   const { rows } = await db.query(
-    `SELECT p.id, p.name, p.price, p.mrp, p.slug, p.is_cod,
+    `SELECT p.id, p.name, p.price, p.mrp, p.slug, p.is_cod, p.description,
+            p.user_instructions, p.benefits, p.additional_note,
             (SELECT url FROM product_images WHERE product_id=p.id LIMIT 1) as image_url,
             c.name as category_name, COUNT(*) OVER() as total_count
      FROM products p
@@ -1334,6 +1363,24 @@ app.get('/api/storefront/:slug/products', asyncHandler(async (req, res) => {
     [...params, limit, offset]
   );
   respond(res, { products: rows, total: rows[0]?.total_count || 0 });
+}));
+
+// GET /api/storefront/:slug/products/:id (single product details)
+app.get('/api/storefront/:slug/products/:id', asyncHandler(async (req, res) => {
+  const { rows: [store] } = await db.query('SELECT id, name FROM stores WHERE slug=$1', [req.params.slug]);
+  if (!store) return err(res, 'Store not found', 404);
+
+  const { rows } = await db.query(
+    `SELECT p.*,
+            (SELECT url FROM product_images WHERE product_id=p.id LIMIT 1) as image_url,
+            c.name as category_name
+     FROM products p
+     LEFT JOIN categories c ON c.id=p.category_id
+     WHERE (p.id=$1 OR p.slug=$1) AND p.store_id=$2 AND p.status='published'`,
+    [req.params.id, store.id]
+  );
+  if (!rows.length) return err(res, 'Product not found', 404);
+  respond(res, { product: rows[0], store_name: store.name });
 }));
 
 app.get('/api/categories', asyncHandler(async (req, res) => {

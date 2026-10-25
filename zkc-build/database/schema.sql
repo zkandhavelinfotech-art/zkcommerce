@@ -158,6 +158,9 @@ CREATE TABLE products (
   weight_grams    INT,
   dimensions      JSONB,          -- {length, width, height, unit}
   is_digital      BOOLEAN         NOT NULL DEFAULT FALSE,
+  user_instructions TEXT,
+  benefits          TEXT,
+  additional_note   VARCHAR(255)    DEFAULT 'Inclusive of GST and free shipping.',
   status          product_status  NOT NULL DEFAULT 'active',
   meta_title      VARCHAR(160),
   meta_desc       VARCHAR(320),
