@@ -5,7 +5,7 @@
   "main": "zkc-build/api/server.js",
   "scripts": {
     "start": "node zkc-build/api/server.js",
-    "dev": "nodemon zkc-build/api/server.js",
+    "dev": "node zkc-build/api/server.js",
     "db:migrate": "node deployment/scripts/neon-migrate.js",
     "db:seed": "psql $DATABASE_URL -f database/phase3-additions.sql",
     "test": "jest --coverage",
