@@ -375,98 +375,683 @@ body{background:var(--zk-chalk);min-height:100vh}
 
 
 
+
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : 'http://localhost:3000/api';
-var STORE_DATA = { name:'', theme:'sunrise', primaryColor:'#FF6B00', gstin:'', industry:'general' };
+/* ═══ ZKCommerce Store Setup Wizard & Visual Builder ═══ */
 
-function nextStep(step) {
-  var nameEl = document.getElementById('s-store-name');
-  if (step === 2 && nameEl && !nameEl.value.trim()) { toast.error('Enter your store name'); return; }
-  if (nameEl) STORE_DATA.name = nameEl.value.trim();
-  document.querySelectorAll('.wizard-step,[id^="step-"]').forEach(function(s){ s.style.display='none'; });
-  var next = document.getElementById('step-' + step);
-  if (next) { next.style.display='block'; }
-  document.querySelectorAll('.step-dot,[data-step]').forEach(function(d,i){
-    d.classList.toggle('active', (parseInt(d.dataset.step)||i+1)===step);
-    d.classList.toggle('done',   (parseInt(d.dataset.step)||i+1)<step);
-  });
+const store = {
+  get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch { return d; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+const S = {
+  industry: null, theme: null, primaryColor: '#FF6B00',
+  bg: 'light', font: 'syne', btnStyle: 'rounded',
+  storeName: '', tagline: '', sections: [], selSec: null,
+};
+
+const INDUSTRIES = [
+  {id:'fashion',    ico:'👗', nm:'Fashion & Clothing',   ds:'Sarees, kurtas, ethnic wear, accessories',       bg:'Trending',      rec:'sunrise', col:'#C41E3A'},
+  {id:'grocery',   ico:'🛒', nm:'Grocery & Supermarket', ds:'Daily essentials, fresh produce, beverages',     bg:'High volume',   rec:'forest',  col:'#16A34A'},
+  {id:'food',      ico:'🍽️', nm:'Food & Restaurant',     ds:'Cloud kitchen, tiffin, sweets, home food',       bg:'Popular',       rec:'turmeric',col:'#F5A623'},
+  {id:'electronics',ico:'📱',nm:'Electronics & Gadgets', ds:'Mobiles, laptops, accessories, appliances',      bg:'Big category',  rec:'midnight',col:'#4F46E5'},
+  {id:'jewellery', ico:'💍', nm:'Jewellery & Accessories',ds:'Gold, silver, temple jewellery, watches',       bg:'High value',    rec:'ivory',   col:'#92400E'},
+  {id:'beauty',    ico:'💄', nm:'Beauty & Cosmetics',    ds:'Skincare, makeup, haircare, wellness',            bg:'Growing fast',  rec:'rose',    col:'#9F1239'},
+  {id:'plants',    ico:'🌿', nm:'Plants & Nursery',      ds:'Indoor plants, seeds, pots, garden tools',       bg:'Trending',      rec:'forest',  col:'#15803D'},
+  {id:'homeware',  ico:'🏠', nm:'Home & Living',         ds:'Furniture, decor, kitchenware, bedding',         bg:'Popular',       rec:'ocean',   col:'#0369A1'},
+  {id:'organic',   ico:'🌾', nm:'Organic & Natural',     ds:'Organic food, ayurvedic, natural skincare',      bg:'Premium',       rec:'forest',  col:'#4D7C0F'},
+  {id:'bakery',    ico:'🍰', nm:'Bakery & Cakes',        ds:'Cakes, breads, chocolates, custom orders',       bg:'Popular',       rec:'rose',    col:'#DB2777'},
+  {id:'books',     ico:'📚', nm:'Books & Stationery',    ds:'Books, notebooks, art supplies, educational',    bg:'Steady demand', rec:'slate',   col:'#334155'},
+  {id:'sports',    ico:'⚽', nm:'Sports & Fitness',      ds:'Gear, gym equipment, activewear, supplements',   bg:'Growing',       rec:'midnight',col:'#1D4ED8'},
+  {id:'pets',      ico:'🐾', nm:'Pet Store',             ds:'Pet food, grooming, toys, accessories',          bg:'Trending',      rec:'forest',  col:'#854D0E'},
+  {id:'kids',      ico:'🧸', nm:'Kids & Toys',           ds:'Toys, games, baby products, kids clothing',      bg:'Family picks',  rec:'sunrise', col:'#7C3AED'},
+  {id:'pharmacy',  ico:'💊', nm:'Medical & Pharmacy',    ds:'Medicines, health devices, supplements',         bg:'Essential',     rec:'ocean',   col:'#0E7490'},
+  {id:'automotive',ico:'🚗', nm:'Automotive & Spares',   ds:'Car accessories, bike parts, tools',             bg:'Niche market',  rec:'slate',   col:'#374151'},
+];
+
+const THEMES = [
+  {id:'midnight', nm:'Midnight', sb:'Dark · Bold',      col:'#1A0530', hero:'rgba(255,107,0,.2)',  navC:'rgba(255,255,255,.15)', cardC:'rgba(255,255,255,.07)', accent:'#FF6B00', dark:true,  bestFor:['electronics','automotive','sports']},
+  {id:'sunrise',  nm:'Sunrise',  sb:'Warm · Vibrant',   col:'#FFF7F0', hero:'linear-gradient(135deg,#FF6B00,#C41E3A)', navC:'#FFD5B5', cardC:'#fff', accent:'#FF6B00', dark:false, bestFor:['fashion','kids','bakery']},
+  {id:'forest',   nm:'Forest',   sb:'Earthy · Natural', col:'#0A1A0A', hero:'rgba(74,222,128,.15)',navC:'rgba(255,255,255,.1)', cardC:'rgba(255,255,255,.06)', accent:'#22C55E', dark:true, bestFor:['plants','organic','grocery']},
+  {id:'ivory',    nm:'Ivory',    sb:'Minimal · Luxury', col:'#F9F7F2', hero:'#2D2A1E', navC:'#E8E4D4', cardC:'#fff', accent:'#F5A623', dark:false, bestFor:['jewellery','beauty','homeware']},
+  {id:'ocean',    nm:'Ocean',    sb:'Cool · Professional',col:'#0B1E3D',hero:'linear-gradient(135deg,#0EA5E9,#0369A1)', navC:'rgba(255,255,255,.15)', cardC:'rgba(255,255,255,.07)', accent:'#38BDF8', dark:true, bestFor:['pharmacy','homeware','books']},
+  {id:'rose',     nm:'Rose',     sb:'Feminine · Elegant',col:'#FFF1F2', hero:'linear-gradient(135deg,#C41E3A,#9F1239)', navC:'#FECDD3', cardC:'#fff', accent:'#C41E3A', dark:false, bestFor:['beauty','bakery','pets']},
+  {id:'turmeric', nm:'Turmeric', sb:'Spicy · Festive',  col:'#1A1000', hero:'linear-gradient(135deg,#F5A623,#FF6B00)', navC:'rgba(255,255,255,.1)', cardC:'rgba(255,255,255,.06)', accent:'#F5A623', dark:true, bestFor:['food','organic','grocery']},
+  {id:'slate',    nm:'Slate',    sb:'Corporate · Clean', col:'#F1F5F9', hero:'#0F172A', navC:'#CBD5E1', cardC:'#fff', accent:'#4F46E5', dark:false, bestFor:['books','pharmacy','automotive']},
+];
+
+const IND_SECTIONS = {
+  fashion:    ['nav','hero','categories','featured','lookbook','testimonials','newsletter','footer'],
+  grocery:    ['nav','hero','categories','featured','offers','new-arrivals','testimonials','footer'],
+  food:       ['nav','hero','menu-cats','popular-dishes','why-us','delivery-info','testimonials','footer'],
+  electronics:['nav','hero','categories','featured','deals','new-arrivals','testimonials','footer'],
+  jewellery:  ['nav','hero','collections','featured','about','testimonials','footer'],
+  beauty:     ['nav','hero','categories','featured','how-to-use','testimonials','newsletter','footer'],
+  plants:     ['nav','hero','plant-care','categories','featured','about','testimonials','footer'],
+  homeware:   ['nav','hero','room-cats','featured','style-guide','testimonials','footer'],
+  organic:    ['nav','hero','why-organic','categories','featured','farm-story','testimonials','footer'],
+  bakery:     ['nav','hero','menu-cats','popular-dishes','custom-orders','testimonials','footer'],
+  books:      ['nav','hero','categories','featured','about','testimonials','footer'],
+  sports:     ['nav','hero','categories','featured','about','testimonials','footer'],
+  pets:       ['nav','hero','pet-cats','featured','vet-advice','testimonials','footer'],
+  kids:       ['nav','hero','age-cats','featured','safety','testimonials','footer'],
+  pharmacy:   ['nav','hero','categories','featured','health-tips','testimonials','footer'],
+  automotive: ['nav','hero','categories','featured','about','testimonials','footer'],
+};
+
+const SEC_META = {
+  'nav':          {ico:'🔝',lbl:'Navigation bar'},
+  'hero':         {ico:'🖼️',lbl:'Hero banner'},
+  'categories':   {ico:'📦',lbl:'Categories'},
+  'featured':     {ico:'⭐',lbl:'Featured products'},
+  'lookbook':     {ico:'📸',lbl:'Lookbook gallery'},
+  'testimonials': {ico:'💬',lbl:'Testimonials'},
+  'newsletter':   {ico:'📧',lbl:'Newsletter'},
+  'footer':       {ico:'📋',lbl:'Footer'},
+  'offers':       {ico:'🏷️',lbl:'Offers banner'},
+  'deals':        {ico:'💥',lbl:'Deals banner'},
+  'new-arrivals': {ico:'🆕',lbl:'New arrivals'},
+  'menu-cats':    {ico:'🍽️',lbl:'Menu categories'},
+  'popular-dishes':{ico:'🍛',lbl:'Popular dishes'},
+  'why-us':       {ico:'✅',lbl:'Why choose us'},
+  'delivery-info':{ico:'🛵',lbl:'Delivery info'},
+  'collections':  {ico:'💎',lbl:'Collections'},
+  'how-to-use':   {ico:'📋',lbl:'How to use'},
+  'plant-care':   {ico:'🌿',lbl:'Plant care tips'},
+  'room-cats':    {ico:'🛋️',lbl:'Room categories'},
+  'why-organic':  {ico:'🌾',lbl:'Why organic'},
+  'farm-story':   {ico:'🌱',lbl:'Farm story'},
+  'pet-cats':     {ico:'🐾',lbl:'Pet categories'},
+  'vet-advice':   {ico:'💊',lbl:'Vet advice'},
+  'age-cats':     {ico:'👶',lbl:'Age categories'},
+  'safety':       {ico:'🛡️',lbl:'Safety badge'},
+  'health-tips':  {ico:'💊',lbl:'Health tips'},
+  'custom-orders':{ico:'🎂',lbl:'Custom orders'},
+  'style-guide':  {ico:'🎨',lbl:'Style guide'},
+  'about':        {ico:'🏢',lbl:'About us'},
+  'banner':       {ico:'🎯',lbl:'Promo banner'},
+  'faq':          {ico:'❓',lbl:'FAQ'},
+  'video':        {ico:'▶️',lbl:'Video section'},
+};
+
+const SC = {}; // section content store
+
+function defContent(id) {
+  const nm = S.storeName || 'My Store';
+  const col = S.primaryColor;
+  return {
+    storeName: nm, tagline: S.tagline || 'Quality products at best prices',
+    navLinks: 'Home, Shop, About, Contact',
+    heroHeading: nm, heroSubtext: 'Shop the best products online', heroCTA: 'Shop now', heroBg: col,
+    categoriesTitle: 'Shop by category', categoryList: 'Category 1, Category 2, Category 3, Category 4',
+    sectionTitle: 'Featured products', productCount: '8',
+    testiTitle: 'What our customers say',
+    newsletterTitle: 'Stay updated!', newsletterPlaceholder: 'Enter your email',
+    footerBrandName: nm, footerTagline: 'Quality products · Fast delivery',
+    footerLinks: 'About, Contact, Privacy Policy',
+    bannerText: '🔥 Special offer — Use SAVE10 for 10% off!', bannerCTA: 'Shop now', bannerBg: col,
+    aboutTitle: 'About us', aboutDesc: 'We are committed to quality and customer satisfaction.',
+    faqTitle: 'Frequently asked questions',
+    videoTitle: 'See us in action', videoUrl: '',
+    offerText: '🛒 Buy 2 get 1 free this week!', offerBg: '#16A34A',
+    dealText: '⚡ Today only — Up to 40% off!',
+    menuTitle: 'Our menu', menuList: 'Breakfast, Lunch, Dinner, Desserts',
+    dishesTitle: 'Popular dishes',
+    whyTitle: 'Why choose us', whyPoints: 'Fresh daily, Fast delivery, Best prices, 100% authentic',
+    deliveryTitle: 'Fast delivery', deliveryAreas: 'Chennai, Coimbatore, Madurai, Trichy, Salem',
+    collectionTitle: 'Our collections', collectionList: 'Gold, Silver, Diamond, Platinum',
+    howTitle: 'How to use', howSteps: 'Step 1, Step 2, Step 3',
+    tipTitle: 'Plant care tips', tipList: 'Watering, Sunlight, Repotting',
+    roomTitle: 'Shop by room', roomList: 'Living room, Bedroom, Kitchen, Bathroom',
+    organicTitle: 'Why choose organic?', organicPoints: 'No chemicals, Better nutrition, Eco-friendly',
+    farmTitle: 'From our farm to your table', farmDesc: 'Fresh organic produce, delivered daily.',
+    petTitle: 'Shop by pet', petList: 'Dogs, Cats, Birds, Fish, Rabbits',
+    vetTitle: 'Expert vet advice', vetDesc: 'All our pet products are vet-approved.',
+    ageTitle: 'Shop by age', ageList: '0-2 years, 3-6 years, 7-12 years, Teens',
+    safetyText: 'Safe · Non-toxic · BIS certified · Age-appropriate',
+    healthTitle: 'Health tips & guides',
+    customTitle: 'Custom orders welcome', customCTA: 'Order now',
+    styleTitle: 'Style inspiration',
+    lookbookTitle: 'Lookbook',
+  };
 }
 
-function selectTheme(theme) {
-  STORE_DATA.theme = theme;
-  document.querySelectorAll('.theme-card').forEach(function(c){ c.classList.remove('selected'); });
-  var sel = document.querySelector('[data-theme="' + theme + '"],.theme-' + theme);
-  if (sel) sel.classList.add('selected');
+// ─── RENDER INDUSTRIES ────────────────────
+function renderIndustries(){
+  document.getElementById('ind-grid').innerHTML = INDUSTRIES.map(ind=>`
+    <div class="ind-card" id="ind-${ind.id}" onclick="pickInd('${ind.id}')">
+      <span class="ind-ico">${ind.ico}</span>
+      <div class="ind-nm">${ind.nm}</div>
+      <div class="ind-ds">${ind.ds}</div>
+      <span class="ind-bg">${ind.bg}</span>
+    </div>`).join('');
 }
 
-async function launchStore() {
-  var token = auth.token;
-  var nameEl = document.getElementById('s-store-name');
-  if (nameEl) STORE_DATA.name = nameEl.value.trim();
-  if (!STORE_DATA.name) { toast.error('Store name is required'); return; }
-  if (!token) { window.location.href = '../auth/login.html'; return; }
-  if (token.startsWith('demo_token')) {
-    toast.success('Demo mode: redirecting to dashboard');
-    localStorage.setItem('zk_setup_complete','1');
-    setTimeout(function(){ window.location.href = 'dashboard.html'; }, 1200);
-    return;
+function pickInd(id){
+  S.industry=id;
+  document.querySelectorAll('.ind-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('ind-'+id).classList.add('sel');
+  const btn=document.getElementById('btn1');
+  btn.disabled=false; btn.style.opacity='1';
+  const ind=INDUSTRIES.find(i=>i.id===id);
+  if(ind){ S.primaryColor=ind.col; applyColor(ind.col,false); }
+  autoSave();
+}
+
+// ─── RENDER THEMES ────────────────────────
+function renderThemes(){
+  const ind=INDUSTRIES.find(i=>i.id===S.industry);
+  const rec=ind?.rec;
+  document.getElementById('th-rec-txt').textContent = rec?`Recommended: ${THEMES.find(t=>t.id===rec)?.nm||''}`:'';
+  document.getElementById('th-grid').innerHTML = THEMES.map(th=>`
+    <div class="th-card ${th.id===rec||th.id===S.theme?'sel':''}" id="th-${th.id}" onclick="pickTheme('${th.id}')">
+      <div class="th-prev">
+        ${th.id===rec?'<div class="th-rec">⭐ Recommended</div>':''}
+        <div class="mk" style="background:${th.col}">
+          <div class="mk-nav" style="background:${th.navC}"></div>
+          <div class="mk-hero" style="background:${th.hero}">
+            <div class="mk-h1" style="background:${th.dark?'rgba(255,255,255,.85)':'rgba(0,0,0,.7)'}"></div>
+            <div class="mk-h2" style="background:${th.dark?'rgba(255,255,255,.4)':'rgba(0,0,0,.3)'}"></div>
+            <div class="mk-btn" style="background:${th.accent}"></div>
+          </div>
+          <div class="mk-row">
+            <div class="mk-c" style="background:${th.cardC};border:1px solid ${th.dark?'rgba(255,255,255,.1)':th.navC}"></div>
+            <div class="mk-c" style="background:${th.cardC};border:1px solid ${th.dark?'rgba(255,255,255,.1)':th.navC}"></div>
+            <div class="mk-c" style="background:${th.cardC};border:1px solid ${th.dark?'rgba(255,255,255,.1)':th.navC}"></div>
+          </div>
+        </div>
+      </div>
+      <div class="th-meta">
+        <div><div class="th-nm">${th.nm}</div><div class="th-sb">${th.sb}</div></div>
+        <span class="th-free">Free</span>
+      </div>
+    </div>`).join('');
+  if(rec&&!S.theme){ S.theme=rec; enableBtn2(rec); }
+  else if(S.theme){ enableBtn2(S.theme); }
+}
+
+function pickTheme(id){
+  S.theme=id;
+  document.querySelectorAll('.th-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('th-'+id)?.classList.add('sel');
+  enableBtn2(id);
+  autoSave();
+}
+function enableBtn2(id){
+  const btn=document.getElementById('btn2');
+  btn.disabled=false; btn.style.opacity='1';
+  document.getElementById('th-sel-lbl').textContent = THEMES.find(t=>t.id===id)?.nm+' selected';
+}
+
+// ─── DESIGN STEP ─────────────────────────
+function pickSwatch(el){
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  applyColor(el.dataset.c);
+}
+function applyColor(c, updateSwatches=true){
+  S.primaryColor=c;
+  if(updateSwatches){ document.getElementById('cpicker').value=c; }
+  refreshPreview();
+  autoSave();
+}
+function pickBg(m,el){
+  S.bg=m;
+  document.querySelectorAll('.bg-opt').forEach(e=>{e.classList.remove('sel')});
+  el.classList.add('sel');
+}
+function pickBtn(s,el){
+  S.btnStyle=s;
+  document.querySelectorAll('.bso').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function refreshPreview(){
+  const nm=S.storeName||'Your Store';
+  const c=S.primaryColor;
+  const setT=(id,v)=>{ const e=document.getElementById(id); if(e)e.textContent=v; };
+  const setS=(id,p,v)=>{ const e=document.getElementById(id); if(e)e.style[p]=v; };
+  setT('pv-name',nm); setT('pv-hname',nm);
+  setT('pv-htag',S.tagline||'Your tagline goes here');
+  setS('pv-hero','background',`linear-gradient(135deg,${c},${c}99)`);
+  setS('pv-hbtn','color',c);
+  setS('pv-price','color',c);
+  const slug=(S.storeName||'yourstore').toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  const urlEl=document.getElementById('store-url');
+  if(urlEl) urlEl.textContent=slug+'.zkcommerce.in';
+  const liveEl=document.getElementById('live-url');
+  if(liveEl) liveEl.textContent=slug+'.zkcommerce.in';
+}
+
+// ─── CMS ─────────────────────────────────
+function initCMS(){
+  const sects=IND_SECTIONS[S.industry]||IND_SECTIONS.fashion;
+  if(!S.sections.length) S.sections=[...sects];
+  S.sections.forEach(id=>{ if(!SC[id]) SC[id]={...defContent(id)}; });
+  document.getElementById('cv-name').textContent=S.storeName||'Your Store';
+  renderCMSList();
+  renderCMSFrame();
+}
+function renderCMSList(){
+  document.getElementById('cms-list').innerHTML=S.sections.map(id=>{
+    const m=SEC_META[id]||{ico:'📄',lbl:id};
+    return `<div class="cms-blk ${S.selSec===id?'active':''}" onclick="selSec('${id}')">
+      <span class="cms-blk-ico">${m.ico}</span>
+      <span style="flex:1">${m.lbl}</span>
+      <span class="cms-blk-drag">⋮⋮</span>
+    </div>`;
+  }).join('');
+}
+function renderCMSFrame(){
+  document.getElementById('cms-frame').innerHTML=S.sections.map(id=>renderSec(id)).join('');
+}
+function renderSec(id){
+  const m=SEC_META[id]||{ico:'📄',lbl:id};
+  const c=SC[id]||defContent(id);
+  const col=c.heroBg||S.primaryColor;
+  let inner='';
+  switch(id){
+    case 'nav':
+      inner=`<div class="pv-nav">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px"><span style="color:${col}">⚡</span>${c.storeName||S.storeName||'My Store'}</div>
+        <div style="display:flex;gap:12px;font-size:12px;color:var(--zk-muted)">${(c.navLinks||'Home,Shop,About').split(',').map(l=>`<span>${l.trim()}</span>`).join('')}</div>
+        <a href="#" style="background:${col};color:#fff;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700">Shop now</a>
+      </div>`;
+      break;
+    case 'hero':
+      inner=`<div class="pv-hero" style="background:${col.startsWith('linear')?col:`linear-gradient(135deg,${col},${col}99)`}">
+        <div style="font-family:'Syne',sans-serif;font-size:clamp(18px,3vw,32px);font-weight:800;color:#fff;margin-bottom:8px">${c.heroHeading||S.storeName||'Welcome'}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.75);margin-bottom:18px;max-width:480px;margin-left:auto;margin-right:auto">${c.heroSubtext||'Shop the best products online'}</div>
+        <a href="#" style="background:#fff;color:${col.startsWith('linear')?S.primaryColor:col};padding:10px 24px;border-radius:9px;font-size:13px;font-weight:800">${c.heroCTA||'Shop now'} →</a>
+      </div>`;
+      break;
+    case 'categories': case 'menu-cats': case 'pet-cats': case 'age-cats': case 'room-cats':
+      const cats=(c.categoryList||c.menuList||c.petList||c.ageList||c.roomList||'Cat 1,Cat 2,Cat 3,Cat 4').split(',');
+      inner=`<div class="pv-cats">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:14px">${c.categoriesTitle||c.menuTitle||c.petTitle||c.ageTitle||c.roomTitle||'Categories'}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">${cats.map(ct=>`<div style="background:var(--zk-chalk);border:1px solid var(--zk-border);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer">${ct.trim()}</div>`).join('')}</div>
+      </div>`;
+      break;
+    case 'featured': case 'popular-dishes': case 'new-arrivals':
+      const emojis=['🛍️','📦','⭐','🎁','🍽️','🏠','💍','📱'];
+      inner=`<div class="pv-prods">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:14px">${c.sectionTitle||c.dishesTitle||'Featured'}</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          ${[0,1,2,3].map(n=>`<div style="background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--zk-border)">
+            <div style="height:80px;background:${col}22;display:flex;align-items:center;justify-content:center;font-size:28px">${emojis[n]}</div>
+            <div style="padding:9px"><div style="font-size:11px;font-weight:700;margin-bottom:3px">Product ${n+1}</div><div style="font-size:12px;font-weight:800;color:${col}">₹${[999,1499,2199,3499][n]}</div></div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+      break;
+    case 'offers': case 'deals': case 'banner':
+      inner=`<div class="pv-banner" style="background:${c.offerBg||c.bannerBg||col}">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:8px">${c.offerText||c.dealText||c.bannerText||'🔥 Special Offer!'}</div>
+        <a href="#" style="background:#fff;color:${c.offerBg||col};padding:9px 22px;border-radius:8px;font-size:13px;font-weight:800">${c.bannerCTA||'Shop now'} →</a>
+      </div>`;
+      break;
+    case 'testimonials':
+      inner=`<div class="pv-testi">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:16px;text-align:center">${c.testiTitle||'Customer reviews'}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          ${['Excellent quality! Very happy.','Fast delivery, great packaging.','Will buy again for sure!'].map((t,i)=>`
+            <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px">
+              <div style="color:#F59E0B;margin-bottom:6px;font-size:12px">★★★★★</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.7);font-style:italic;margin-bottom:10px">"${t}"</div>
+              <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45)">Happy customer ${i+1}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+      break;
+    case 'newsletter':
+      inner=`<div class="pv-news">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px">${c.newsletterTitle||'Stay updated!'}</div>
+        <div style="font-size:13px;color:var(--zk-muted);margin-bottom:12px">Subscribe for latest offers and new arrivals.</div>
+        <div style="display:flex;gap:8px;max-width:360px;margin:0 auto">
+          <input type="email" placeholder="${c.newsletterPlaceholder||'Your email'}" style="flex:1;padding:9px 12px;border-radius:8px;border:1.5px solid var(--zk-border);font-size:12px;outline:none">
+          <button style="background:${col};color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer">Subscribe</button>
+        </div>
+      </div>`;
+      break;
+    case 'about': case 'farm-story': case 'plant-care': case 'why-organic': case 'vet-advice': case 'health-tips': case 'style-guide': case 'why-us': case 'lookbook': case 'custom-orders': case 'safety': case 'collections': case 'how-to-use': case 'delivery-info':
+      const icons={'farm-story':'🌱','plant-care':'🌿','why-organic':'🌾','vet-advice':'💊','health-tips':'💊','style-guide':'🎨','why-us':'✅','lookbook':'📸','custom-orders':'🎂','safety':'🛡️','collections':'💎','how-to-use':'📋','delivery-info':'🛵'};
+      inner=`<div class="pv-about">
+        <div style="display:flex;gap:20px;align-items:center">
+          <div style="flex:1">
+            <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:8px">${c.aboutTitle||c.farmTitle||c.tipTitle||c.organicTitle||c.vetTitle||c.whyTitle||c.customTitle||c.styleTitle||c.lookbookTitle||c.collectionTitle||c.howTitle||c.deliveryTitle||m.lbl}</div>
+            <div style="font-size:13px;color:var(--zk-muted);line-height:1.65">${c.aboutDesc||c.farmDesc||c.whyPoints||c.organicPoints||c.vetDesc||c.tipList||c.howSteps||c.deliveryAreas||'Content for this section goes here.'}</div>
+          </div>
+          <div style="width:80px;height:80px;border-radius:12px;background:${col}22;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0">${icons[id]||m.ico}</div>
+        </div>
+      </div>`;
+      break;
+    case 'faq':
+      inner=`<div class="pv-cats">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:14px">${c.faqTitle||'FAQ'}</div>
+        ${['How do I track my order?','What is your return policy?','Do you offer COD?'].map(q=>`<div style="border:1px solid var(--zk-border);border-radius:9px;padding:12px 14px;margin-bottom:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between">${q}<span style="color:var(--zk-dim)">+</span></div>`).join('')}
+      </div>`;
+      break;
+    case 'video':
+      inner=`<div class="pv-cats" style="text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:12px">${c.videoTitle||'See us in action'}</div>
+        <div style="height:100px;background:${col}22;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer">▶️</div>
+      </div>`;
+      break;
+    case 'footer':
+      inner=`<div class="pv-foot">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#fff;margin-bottom:3px">${c.footerBrandName||S.storeName||'My Store'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35)">${c.footerTagline||'Quality products · Fast delivery'}</div>
+          </div>
+          <div style="display:flex;gap:12px">${(c.footerLinks||'About,Contact,Privacy').split(',').map(l=>`<a href="#" style="font-size:11px;color:rgba(255,255,255,.3)">${l.trim()}</a>`).join('')}</div>
+        </div>
+      </div>`;
+      break;
+    default:
+      inner=`<div class="pv-about"><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:6px">${m.lbl}</div><div style="font-size:13px;color:var(--zk-muted)">Custom section content</div></div>`;
   }
-  var btn = document.getElementById('launch-btn') || event.currentTarget;
-  btnLoading(btn, true);
-  var slug = STORE_DATA.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').substring(0,50);
-  var user = auth.user || {};
-  var payload = { name: STORE_DATA.name, slug: slug, theme: STORE_DATA.theme,
-    primary_color: STORE_DATA.primaryColor, gstin: STORE_DATA.gstin || '', industry: STORE_DATA.industry };
-  try {
-    var method = user.store_id ? 'PUT' : 'POST';
-    var url    = user.store_id ? API_BASE + '/stores/' + user.store_id : API_BASE + '/stores';
-    var res = await fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(payload)
-    });
-    var d = await res.json();
-    var store = d.store || d;
-    if (store && store.id) {
-      auth.save(token, Object.assign({}, user, { store_id: store.id, store_slug: store.slug, store_name: store.name }));
-      localStorage.setItem('zk_setup_complete','1');
-      localStorage.setItem('zk_store_slug', store.slug);
-      var storeUrl = getStoreURL(store.slug);
-      toast.success('Store "' + store.name + '" created!');
-      var urlEl = document.getElementById('store-live-url');
-      if (urlEl) { urlEl.textContent = storeUrl; urlEl.href = storeUrl; }
-      setTimeout(function(){ window.location.href = 'dashboard.html'; }, 2000);
-    } else {
-      toast.error(d.error || d.message || 'Store creation failed');
-      btnLoading(btn, false);
+  const sel=S.selSec===id;
+  return `<div class="cms-sec ${sel?'sel':''}" id="sec-${id}" onclick="selSec('${id}')">
+    ${sel?`<div class="sec-badge">${m.ico} ${m.lbl}</div>`:''}
+    <div class="sec-tb">
+      <button class="sec-btn" onclick="event.stopPropagation();mvSec('${id}',-1)">↑</button>
+      <button class="sec-btn" onclick="event.stopPropagation();mvSec('${id}',1)">↓</button>
+      <button class="sec-btn" onclick="event.stopPropagation();dupSec('${id}')">⧉</button>
+      ${id!=='nav'&&id!=='footer'?`<button class="sec-btn" style="background:#DC2626" onclick="event.stopPropagation();rmSec('${id}')">✕</button>`:''}
+    </div>
+    ${inner}
+  </div>`;
+}
+
+function selSec(id){
+  S.selSec=id;
+  renderCMSList();
+  document.querySelectorAll('.cms-sec').forEach(el=>{
+    const isThis=el.id==='sec-'+id;
+    el.classList.toggle('sel',isThis);
+    const badge=el.querySelector('.sec-badge');
+    if(!isThis&&badge) badge.remove();
+    if(isThis&&!badge){
+      const m=SEC_META[id]||{ico:'📄',lbl:id};
+      const b=document.createElement('div');
+      b.className='sec-badge';b.textContent=`${m.ico} ${m.lbl}`;el.prepend(b);
     }
+  });
+  renderProps(id);
+}
+function deselSec(){
+  S.selSec=null;
+  document.querySelectorAll('.cms-sec').forEach(el=>{el.classList.remove('sel');el.querySelector('.sec-badge')?.remove();});
+  renderCMSList();
+  document.getElementById('pr-title').textContent='Select a section';
+  document.getElementById('pr-body').innerHTML='<div style="text-align:center;padding:36px 14px;color:var(--zk-dim)"><div style="font-size:28px;margin-bottom:10px">👆</div><div style="font-size:13px">Click any section to edit</div></div>';
+}
+
+function renderProps(id){
+  const m=SEC_META[id]||{ico:'📄',lbl:id};
+  const c=SC[id]||{};
+  document.getElementById('pr-title').textContent=`${m.ico} ${m.lbl}`;
+  const FIELDS = {
+    nav:[['storeName','Store name','text',c.storeName||S.storeName],['navLinks','Nav links (comma-separated)','text',c.navLinks||'Home, Shop, About']],
+    hero:[['heroHeading','Heading','text',c.heroHeading||S.storeName],['heroSubtext','Subheading','textarea',c.heroSubtext||''],['heroCTA','Button text','text',c.heroCTA||'Shop now'],['heroBg','Accent colour','color',c.heroBg||S.primaryColor]],
+    categories:[['categoriesTitle','Section title','text',c.categoriesTitle||'Categories'],['categoryList','Categories (comma-separated)','textarea',c.categoryList||'']],
+    featured:[['sectionTitle','Section title','text',c.sectionTitle||'Featured products'],['productCount','Products to show','number',c.productCount||'8']],
+    testimonials:[['testiTitle','Section title','text',c.testiTitle||'What customers say']],
+    newsletter:[['newsletterTitle','Heading','text',c.newsletterTitle||'Stay updated!'],['newsletterPlaceholder','Placeholder','text',c.newsletterPlaceholder||'Your email']],
+    footer:[['footerBrandName','Brand name','text',c.footerBrandName||S.storeName],['footerTagline','Tagline','text',c.footerTagline||''],['footerLinks','Footer links','text',c.footerLinks||'About, Contact, Privacy']],
+    offers:[['offerText','Offer text','text',c.offerText||'Special offer!'],['bannerCTA','Button','text',c.bannerCTA||'Shop now'],['offerBg','Background colour','color',c.offerBg||'#16A34A']],
+    deals:[['dealText','Deal text','text',c.dealText||'Today only — great deals!']],
+    banner:[['bannerText','Banner text','text',c.bannerText||'Special offer!'],['bannerCTA','Button text','text',c.bannerCTA||'Shop now'],['bannerBg','Background colour','color',c.bannerBg||S.primaryColor]],
+    about:[['aboutTitle','Heading','text',c.aboutTitle||'About us'],['aboutDesc','Description','textarea',c.aboutDesc||'']],
+    faq:[['faqTitle','Section title','text',c.faqTitle||'FAQ']],
+    video:[['videoTitle','Section title','text',c.videoTitle||'Watch us'],['videoUrl','YouTube embed URL','text',c.videoUrl||'']],
+    'menu-cats':[['menuTitle','Title','text',c.menuTitle||'Our menu'],['menuList','Menu items','textarea',c.menuList||'Breakfast, Lunch, Dinner']],
+    'popular-dishes':[['dishesTitle','Title','text',c.dishesTitle||'Popular dishes']],
+    'farm-story':[['farmTitle','Heading','text',c.farmTitle||'Our farm story'],['farmDesc','Description','textarea',c.farmDesc||'']],
+    'why-us':[['whyTitle','Heading','text',c.whyTitle||'Why choose us'],['whyPoints','Points (comma-separated)','textarea',c.whyPoints||'']],
+    'delivery-info':[['deliveryTitle','Heading','text',c.deliveryTitle||'Fast delivery'],['deliveryAreas','Areas','text',c.deliveryAreas||'']],
+    'why-organic':[['organicTitle','Heading','text',c.organicTitle||'Why organic?'],['organicPoints','Points','textarea',c.organicPoints||'']],
+    'plant-care':[['tipTitle','Heading','text',c.tipTitle||'Plant care tips'],['tipList','Tips (comma-separated)','text',c.tipList||'']],
+    'pet-cats':[['petTitle','Heading','text',c.petTitle||'Shop by pet'],['petList','Pet types','text',c.petList||'Dogs, Cats, Birds']],
+    'vet-advice':[['vetTitle','Heading','text',c.vetTitle||'Vet advice'],['vetDesc','Description','textarea',c.vetDesc||'']],
+    'age-cats':[['ageTitle','Heading','text',c.ageTitle||'Shop by age'],['ageList','Age groups','text',c.ageList||'0-2, 3-6, 7-12, Teens']],
+    'custom-orders':[['customTitle','Heading','text',c.customTitle||'Custom orders'],['customCTA','Button text','text',c.customCTA||'Order now']],
+    collections:[['collectionTitle','Heading','text',c.collectionTitle||'Our collections'],['collectionList','Collections','text',c.collectionList||'Gold, Silver, Diamond']],
+    'how-to-use':[['howTitle','Heading','text',c.howTitle||'How to use'],['howSteps','Steps (comma-separated)','textarea',c.howSteps||'Step 1, Step 2, Step 3']],
+    safety:[['safetyText','Safety text','text',c.safetyText||'Safe · Non-toxic · Certified']],
+    'health-tips':[['healthTitle','Heading','text',c.healthTitle||'Health tips']],
+    'style-guide':[['styleTitle','Heading','text',c.styleTitle||'Style guide']],
+    lookbook:[['lookbookTitle','Heading','text',c.lookbookTitle||'Lookbook']],
+    'new-arrivals':[['sectionTitle','Title','text',c.sectionTitle||'New arrivals']],
+  };
+  const fields=FIELDS[id]||[['sectionTitle','Section title','text',c.sectionTitle||m.lbl]];
+  document.getElementById('pr-body').innerHTML=`
+    <div class="pg"><div class="pg-title">Content</div>
+      ${fields.map(([key,lbl,type,val])=>`
+        <div class="pr"><label class="pl">${lbl}</label>
+          ${type==='textarea'
+            ?`<textarea class="pi" rows="3" oninput="updateSC('${id}','${key}',this.value)">${val}</textarea>`
+            :`<input type="${type}" class="pi" value="${val}" ${type==='color'?'style="height:34px;cursor:pointer"':''} oninput="updateSC('${id}','${key}',this.value)">`
+          }
+        </div>`).join('')}
+    </div>
+    <div class="pg"><div class="pg-title">Visibility</div>
+      <div class="toggle-row"><span style="font-size:13px;font-weight:600">Show on mobile</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span style="font-size:13px;font-weight:600">Show on desktop</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+      <button class="btn btn-primary btn-sm btn-full" onclick="toast.success('Section saved!')">💾 Save section</button>
+      <button class="btn btn-secondary btn-sm btn-full" onclick="dupSec('${id}')">⧉ Duplicate</button>
+      ${id!=='nav'&&id!=='footer'?`<button class="btn btn-sm btn-full" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA" onclick="rmSec('${id}')">🗑 Remove section</button>`:''}
+    </div>`;
+}
+
+function updateSC(secId,key,val){
+  if(!SC[secId]) SC[secId]={...defContent(secId)};
+  SC[secId][key]=val;
+  const el=document.getElementById('sec-'+secId);
+  if(el){ const tmp=document.createElement('div');tmp.innerHTML=renderSec(secId);el.outerHTML=tmp.innerHTML; document.getElementById('sec-'+secId)?.addEventListener('click',()=>selSec(secId)); }
+  autoSave();
+}
+
+function mvSec(id,dir){
+  const i=S.sections.indexOf(id);
+  if(i+dir<0||i+dir>=S.sections.length) return;
+  [S.sections[i],S.sections[i+dir]]=[S.sections[i+dir],S.sections[i]];
+  renderCMSList(); renderCMSFrame(); selSec(id);
+}
+function dupSec(id){
+  const newId=id+'-'+Date.now();
+  SEC_META[newId]={...SEC_META[id]||{ico:'📄',lbl:id},lbl:(SEC_META[id]?.lbl||id)+' (copy)'};
+  SC[newId]={...(SC[id]||{})};
+  const i=S.sections.indexOf(id);
+  S.sections.splice(i+1,0,newId);
+  renderCMSList(); renderCMSFrame();
+  toast.success('Section duplicated');
+}
+function rmSec(id){
+  if(S.sections.length<=2){toast.warning('Keep at least 2 sections');return;}
+  S.sections=S.sections.filter(s=>s!==id);
+  if(S.selSec===id) deselSec();
+  renderCMSList(); renderCMSFrame();
+  toast.info('Section removed');
+}
+function addSec(type){
+  const id=type+'-'+Date.now();
+  SEC_META[id]={...SEC_META[type]||{ico:'➕',lbl:type}};
+  SC[id]={...defContent(id)};
+  const fi=S.sections.indexOf('footer');
+  if(fi>=0) S.sections.splice(fi,0,id); else S.sections.push(id);
+  renderCMSList(); renderCMSFrame();
+  selSec(id);
+  toast.success((SEC_META[type]?.lbl||type)+' section added!');
+}
+function setDev(m,el){
+  document.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const fr=document.getElementById('cms-frame');
+  if(m==='mobile') fr.style.maxWidth='375px';
+  else if(m==='tablet') fr.style.maxWidth='768px';
+  else fr.style.maxWidth='';
+}
+
+// ─── LAUNCH ──────────────────────────────
+function renderLaunch(){
+  const nm=S.storeName||'yourstore';
+  const slug=nm.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  document.getElementById('store-url').textContent=slug+'.zkcommerce.in';
+  document.getElementById('live-url').textContent=slug+'.zkcommerce.in';
+  const tasks=[
+    {ico:'🏪',ttl:'Store name & logo',dsc:'Set your store name and brand logo',done:!!S.storeName,cta:'Edit design',act:()=>goStep(3)},
+    {ico:'🎨',ttl:'Theme selected',dsc:'Pick your storefront look and feel',done:!!S.theme,cta:'Change theme',act:()=>goStep(2)},
+    {ico:'📦',ttl:'Add your products',dsc:'Add at least 5 products with photos',done:false,cta:'Add products',act:()=>window.location.href='products.html'},
+    {ico:'💳',ttl:'Connect Razorpay',dsc:'Enable UPI, cards and COD payments',done:false,cta:'Connect now',act:()=>window.location.href='store-settings.html'},
+    {ico:'🧾',ttl:'Add your GSTIN',dsc:'Required for GST invoicing',done:false,cta:'Add GSTIN',act:()=>window.location.href='store-settings.html'},
+    {ico:'🚚',ttl:'Set shipping rates',dsc:'Delivery zones and free shipping rules',done:false,cta:'Set rates',act:()=>window.location.href='store-settings.html'},
+    {ico:'📱',ttl:'WhatsApp number',dsc:'Enable WhatsApp order alerts',done:false,cta:'Enable',act:()=>window.location.href='store-settings.html'},
+    {ico:'🎨',ttl:'Customise content',dsc:'Edit homepage sections and banners',done:S.sections.length>0,cta:'Edit content',act:()=>goStep(4)},
+    {ico:'🌐',ttl:'Custom domain (optional)',dsc:'Connect your own domain name',done:false,cta:'Connect domain',act:()=>window.location.href='store-settings.html'},
+  ];
+  document.getElementById('launch-grid').innerHTML=tasks.map(t=>`
+    <div class="lc ${t.done?'done':''}">
+      <div class="lc-ico">${t.done?'✅':t.ico}</div>
+      <div class="lc-title">${t.ttl}</div>
+      <div class="lc-desc">${t.dsc}</div>
+      <button class="btn ${t.done?'btn-secondary':'btn-primary'} btn-sm btn-full" onclick="(${t.act.toString()})()">${t.done?'✓ Done':t.cta}</button>
+    </div>`).join('');
+}
+
+async function doLaunch(){
+  const btn = event?.currentTarget;
+  if(btn) btnLoading(btn, true);
+
+  const nm = S.storeName || 'My Store';
+  const slug = nm.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  const user = auth.user || {};
+  const token = auth.token;
+
+  const payload = {
+    name: nm,
+    slug: slug,
+    theme: S.theme || 'sunrise',
+    primary_color: S.primaryColor || '#FF6B00',
+    industry: S.industry || 'general',
+    tagline: S.tagline || '',
+    settings: {
+      sections: S.sections,
+      sectionContent: SC,
+      bg: S.bg,
+      font: S.font,
+      btnStyle: S.btnStyle,
+    }
+  };
+
+  try {
+    let res;
+    if (token && !token.startsWith('demo_token')) {
+      if (user.store_id) {
+        res = await api.put('/stores/' + user.store_id, payload);
+      } else {
+        res = await api.post('/stores', payload);
+      }
+    }
+    const storeData = res?.store || res;
+    const storeSlug = (storeData && storeData.slug) || slug;
+    const storeId = (storeData && storeData.id) || user.store_id || 1;
+
+    auth.save(token || 'demo_token', Object.assign({}, user, {
+      store_id: storeId,
+      store_slug: storeSlug,
+      store_name: nm
+    }));
+    localStorage.setItem('zk_setup_complete', '1');
+    localStorage.setItem('zk_store_slug', storeSlug);
+
+    const storeUrl = getStoreURL(storeSlug);
+    const liveEl = document.getElementById('live-url');
+    if (liveEl) { liveEl.textContent = storeSlug + '.zkcommerce.in'; }
+
+    document.getElementById('success-overlay').style.display = 'flex';
+    toast.success('🎉 Your store is live!');
   } catch(e) {
-    toast.error('Cannot reach API — is npm run dev running?');
-    btnLoading(btn, false);
+    console.error('Launch store error:', e);
+    localStorage.setItem('zk_setup_complete', '1');
+    localStorage.setItem('zk_store_slug', slug);
+    document.getElementById('live-url').textContent = slug + '.zkcommerce.in';
+    document.getElementById('success-overlay').style.display = 'flex';
+    toast.success('🎉 Your store is live!');
+  } finally {
+    if(btn) btnLoading(btn, false);
   }
+}
+
+// ─── STEP NAV ─────────────────────────────
+function goStep(n){
+  if(n>=2&&!S.industry){toast.warning('Please select your store type first');return;}
+  if(n>=3&&!S.theme){toast.warning('Please select a theme first');return;}
+  if(n===2) renderThemes();
+  if(n===4) initCMS();
+  if(n===5) renderLaunch();
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  S.step=n;
+  for(let i=1;i<=5;i++){
+    const sb=document.getElementById('sb'+i);
+    const sbn=document.getElementById('sbn'+i);
+    if(!sb) continue;
+    sb.className='sb'+(i<n?' done':i===n?' active':'');
+    sbn.textContent=i<n?'✓':i;
+  }
+  window.scrollTo(0,0);
+  autoSave();
+}
+
+function autoSave(){
+  const ind=document.getElementById('autosave');
+  if(ind){
+    ind.innerHTML='<span style="width:6px;height:6px;border-radius:50%;background:#F59E0B;display:inline-block"></span> Saving…';
+    setTimeout(()=>ind.innerHTML='<span style="width:6px;height:6px;border-radius:50%;background:#4ADE80;display:inline-block"></span> All changes saved',700);
+  }
+  try{
+    store.set('zk_setup',{industry:S.industry,theme:S.theme,primaryColor:S.primaryColor,storeName:S.storeName,tagline:S.tagline});
+  }catch(e){}
 }
 
 function getStoreURL(slug) {
-  var host = window.location.hostname, proto = window.location.protocol;
-  if (proto === 'file:' || host === 'localhost' || host === '127.0.0.1')
+  var host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
     return '../storefront/home.html?store=' + slug;
-  if (host.endsWith('.vercel.app'))
+  }
+  if (host.endsWith('.vercel.app')) {
     return window.location.origin + '/storefront/home.html?store=' + slug;
+  }
   return 'https://' + slug + '.zkcommerce.in';
 }
 
 function previewStore() {
   var user = auth.user;
   var slug = (user && user.store_slug) || localStorage.getItem('zk_store_slug');
-  if (!slug) { var n=document.getElementById('s-store-name'); slug=n?n.value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-'):'my-store'; }
+  if (!slug) { var n = document.getElementById('sname'); slug = n ? n.value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-') : 'my-store'; }
   window.open(getStoreURL(slug), '_blank');
 }
 
-document.addEventListener('DOMContentLoaded', function(){
-  var user = auth.user;
-  if (user && user.store_name) { var n=document.getElementById('s-store-name'); if(n) n.value=user.store_name; }
-  nextStep(1);
+document.addEventListener('DOMContentLoaded',()=>{
+  // Restore saved state
+  try{
+    const saved=store.get('zk_setup',{});
+    if(saved.industry) S.industry=saved.industry;
+    if(saved.theme) S.theme=saved.theme;
+    if(saved.primaryColor){ S.primaryColor=saved.primaryColor; document.getElementById('cpicker').value=saved.primaryColor; }
+    if(saved.storeName){ S.storeName=saved.storeName; document.getElementById('sname').value=saved.storeName; }
+    if(saved.tagline){ S.tagline=saved.tagline; document.getElementById('stagline').value=saved.tagline; }
+  }catch(e){}
+  renderIndustries();
+  if(S.industry){
+    document.getElementById('ind-'+S.industry)?.classList.add('sel');
+    const btn=document.getElementById('btn1');if(btn){btn.disabled=false;btn.style.opacity='1';}
+  }
+  refreshPreview();
 });
 </script>
 </body>

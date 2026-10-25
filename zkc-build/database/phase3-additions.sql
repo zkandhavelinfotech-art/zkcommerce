@@ -278,6 +278,11 @@ CREATE POLICY IF NOT EXISTS merchant_categories ON categories
 
 -- ── USEFUL VIEWS ──────────────────────────────────────────────
 
+DROP VIEW IF EXISTS v_store_summary CASCADE;
+DROP VIEW IF EXISTS v_platform_stats CASCADE;
+DROP VIEW IF EXISTS v_low_stock CASCADE;
+DROP VIEW IF EXISTS v_loyalty_balance CASCADE;
+
 CREATE OR REPLACE VIEW v_store_summary AS
 SELECT
   s.id, s.name, s.slug, s.plan, s.is_active,

@@ -1518,6 +1518,68 @@ app.put('/api/admin/merchants/:id', verifyToken, requireRole('admin'), asyncHand
 }));
 
 // ════════════════════════════════════════════════════════════════
+// STORE CREATION & SETTINGS (STORE BUILDER & SETUP WIZARD)
+// ════════════════════════════════════════════════════════════════
+
+app.post('/api/stores', verifyToken, asyncHandler(async (req, res) => {
+  const { name, slug: reqSlug, theme = 'sunrise', primary_color = '#FF6B00', gstin, industry, settings } = req.body;
+  if (!name) return err(res, 'Store name is required');
+  const slug = (reqSlug || name).toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: [store] } = await client.query(
+      `INSERT INTO stores (user_id, name, slug, theme, primary_color, gstin, settings, plan, trial_ends_at, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'growth', NOW() + INTERVAL '30 days', NOW())
+       RETURNING *`,
+      [req.user.id, name, slug, theme, primary_color, gstin || null, JSON.stringify(settings || {})]
+    );
+    await client.query('UPDATE users SET store_id=$1 WHERE id=$2', [store.id, req.user.id]);
+    await client.query('COMMIT');
+
+    respond(res, { store, message: 'Store created successfully' }, 201);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+}));
+
+app.get('/api/stores/:id', verifyToken, asyncHandler(async (req, res) => {
+  const { rows: [store] } = await db.query(
+    'SELECT * FROM stores WHERE id=$1 AND (user_id=$2 OR $3 = ANY(ARRAY[\'admin\']))',
+    [req.params.id, req.user.id, req.user.role]
+  );
+  if (!store) return err(res, 'Store not found', 404);
+  respond(res, { store });
+}));
+
+app.put('/api/stores/:id', verifyToken, asyncHandler(async (req, res) => {
+  const { name, tagline, description, theme, primary_color, gstin, whatsapp, domain, address, settings } = req.body;
+  const { rows } = await db.query(
+    `UPDATE stores SET
+       name = COALESCE($1, name),
+       tagline = COALESCE($2, tagline),
+       description = COALESCE($3, description),
+       theme = COALESCE($4, theme),
+       primary_color = COALESCE($5, primary_color),
+       gstin = COALESCE($6, gstin),
+       whatsapp = COALESCE($7, whatsapp),
+       domain = COALESCE($8, domain),
+       address = COALESCE($9, address),
+       settings = COALESCE($10, settings),
+       updated_at = NOW()
+     WHERE id=$11 AND (user_id=$12 OR $13 = ANY(ARRAY['admin']))
+     RETURNING *`,
+    [name, tagline, description, theme, primary_color, gstin, whatsapp, domain, address, settings ? JSON.stringify(settings) : null, req.params.id, req.user.id, req.user.role]
+  );
+  if (!rows.length) return err(res, 'Store not found or access denied', 404);
+  respond(res, { store: rows[0], message: 'Store updated successfully' });
+}));
+
+// ════════════════════════════════════════════════════════════════
 // SPRINT 1 — COUPON VALIDATION
 // ════════════════════════════════════════════════════════════════
 
