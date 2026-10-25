@@ -26,9 +26,17 @@ const PORT = process.env.PORT || 3000;
 // ── Database (Dual MySQL / PostgreSQL) ───────────────────────────
 const db = require('./db');
 
-// ── Razorpay Standard Checkout ───────────────────────────────────
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TryQ4PdsrTEyBB';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'SZfOuock8WVvSdxy2f5Uvrb5';
+// ── Razorpay (Smart Mode Selection: Test vs Live) ────────────────
+const rzpMode = (process.env.RAZORPAY_MODE || (process.env.NODE_ENV === 'production' && process.env.RAZORPAY_Live_KEY_ID ? 'live' : 'test')).toLowerCase();
+const isLiveMode = rzpMode === 'live';
+
+const RAZORPAY_KEY_ID = isLiveMode
+  ? (process.env.RAZORPAY_Live_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_test_TryQ4PdsrTEyBB')
+  : (process.env.RAZORPAY_Test_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_test_TryQ4PdsrTEyBB');
+
+const RAZORPAY_KEY_SECRET = isLiveMode
+  ? (process.env.RAZORPAY_Live_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET || 'SZfOuock8WVvSdxy2f5Uvrb5')
+  : (process.env.RAZORPAY_Test_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET || 'SZfOuock8WVvSdxy2f5Uvrb5');
 
 const razorpay = new Razorpay({
   key_id:     RAZORPAY_KEY_ID,
@@ -1936,8 +1944,8 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`
   ⚡ ZKCommerce API v4.1 running on port ${PORT}
-  🗄️  Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}
-  💳 Razorpay: ${process.env.RAZORPAY_KEY_ID ? 'Configured' : 'Test mode'}
+  🗄️  Database: ${process.env.DATABASE_URL ? (db.type === 'mysql' ? 'MySQL Connected' : 'Postgres Connected') : 'Not configured'}
+  💳 Razorpay: ${isLiveMode ? 'Live Mode 🟢' : 'Test Mode 🟡'} (${RAZORPAY_KEY_ID})
   📧 Email:    ${process.env.SMTP_HOST ? 'Configured' : 'Not configured'}
   🌍 Env:      ${process.env.NODE_ENV || 'development'}
   `);
