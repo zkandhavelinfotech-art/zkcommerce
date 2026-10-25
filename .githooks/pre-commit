@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuse a commit when zkc-build/ is not an exact copy of zkc/ (run `npm run release:sync` first).
+# Enable once per clone:  git config core.hooksPath .githooks
+node scripts/release-sync.js --check || exit 1

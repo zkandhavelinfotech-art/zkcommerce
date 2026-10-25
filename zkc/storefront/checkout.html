@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — Rajan Textiles — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href='../assets/css/design-system.css">
+</head>
+<body><nav style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;font-weight:800">
+    <div style="width:30px;height:30px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px">⚡</div>Rajan Textiles
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="home.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Home</a>
+    <a href="product.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Shop</a>
+    <a href="account.html" style="font-size:13px;font-weight:600;color:var(--zk-muted)">Account</a>
+    <a href="cart.html" style="font-size:13px;font-weight:600;color:var(--zk-muted);position:relative">
+      🛒 Cart <span class="cart-count" style="position:absolute;top:-6px;right:-10px;background:var(--zk-fire);color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">0</span>
+    </a>
+  </div>
+</nav>
+<div style="max-width:960px;margin:0 auto;padding:40px 5%">
+  <h1 style="font-family:var(--font-display);font-size:28px;font-weight:800;margin-bottom:28px">Checkout</h1>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:32px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card"><h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Delivery address</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field-group"><label class="field-label">Full name</label><input type="text" class="field" placeholder="Rajan Kumar"></div>
+          <div class="field-group"><label class="field-label">Phone</label><input type="tel" class="field" placeholder="98765 43210"></div>
+          <div class="field-group" style="grid-column:1/-1"><label class="field-label">Address line 1</label><input type="text" class="field" placeholder="House/Flat, Street"></div>
+          <div class="field-group"><label class="field-label">City</label><input type="text" class="field" placeholder="Coimbatore"></div>
+          <div class="field-group"><label class="field-label">Pincode</label><input type="text" class="field" placeholder="641001"></div>
+        </div>
+      </div>
+      <div class="card"><h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Payment method</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--zk-indigo);border-radius:10px;background:var(--zk-pale);cursor:pointer"><input type="radio" name="pay" checked> <span style="font-weight:700;font-size:14px">📱 UPI (GPay, PhonePe, Paytm)</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--zk-border);border-radius:10px;cursor:pointer"><input type="radio" name="pay"> <span style="font-weight:600;font-size:14px">💳 Credit / Debit Card</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--zk-border);border-radius:10px;cursor:pointer"><input type="radio" name="pay"> <span style="font-weight:600;font-size:14px">🏦 Net banking</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--zk-border);border-radius:10px;cursor:pointer"><input type="radio" name="pay"> <span style="font-weight:600;font-size:14px">📦 Cash on delivery</span></label>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;background:#F0FDF4;border-radius:8px;font-size:12px;color:var(--zk-green);font-weight:700">⭐ Redeem 5,000 loyalty points = save ₹2,500</div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--zk-border);border-radius:16px;padding:24px;position:sticky;top:80px">
+      <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Order total</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--zk-muted)">2 items</span><span>₹16,898</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--zk-muted)">Shipping</span><span style="color:var(--zk-green)">Free</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--zk-muted)">GST (18%)</span><span>₹3,042</span></div>
+        <hr style="border:none;border-top:1px solid var(--zk-border)">
+        <div style="display:flex;justify-content:space-between"><span style="font-weight:800">Total</span><span style="font-weight:800;font-family:var(--font-display);font-size:22px;color:var(--zk-fire)">₹19,940</span></div>
+      </div>
+      <button id="place-order-btn" class="btn btn-primary btn-full" onclick="placeOrder()">Place order & Pay with Razorpay →</button>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:11px;color:var(--zk-dim)">🔒 Secured by Razorpay</div>
+    </div>
+  </div>
+</div>
+<footer style="background:var(--zk-deep);padding:40px 5% 24px;margin-top:60px">
+  <div style="max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:7px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:13px">⚡</div>
+      <span style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff">Rajan Textiles</span>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,.3)">Powered by <a href="../../index.html" style="color:rgba(255,107,0,.7);font-weight:700">ZKCommerce</a> · 🇮🇳 Made in Tamil Nadu</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Rajan Textiles. All rights reserved.</div>
+  </div>
+</footer><script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+// Load addresses on page load
+async function loadAddresses() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/addresses', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var sel = document.getElementById('address-select');
+    if (sel && d.addresses && d.addresses.length) {
+      sel.innerHTML = d.addresses.map(function(a) {
+        return '<option value="' + a.id + '"' + (a.is_default?' selected':'') + '>'
+          + a.name + ' -- ' + a.line1 + ', ' + a.city + ' ' + a.pincode + '</option>';
+      }).join('');
+    }
+  } catch(e) {}
+}
+
+async function placeOrder() {
+  var token = auth.token;
+  if (!token) { toast.error('Please login first'); return; }
+
+  var addrEl = document.getElementById('address-select');
+  var payEl  = document.querySelector('input[name="payment"]:checked') || document.getElementById('pay-upi');
+  var addressId = addrEl ? parseInt(addrEl.value) : null;
+  var payMethod = payEl ? payEl.value : 'razorpay';
+
+  if (!cart.items.length) { toast.error('Your cart is empty'); return; }
+
+  if (token.startsWith('demo_token')) {
+    toast.info('Demo mode: redirecting to success page');
+    setTimeout(function(){ window.location.href = 'payment-success.html'; }, 1000);
+    return;
+  }
+
+  if (!addressId) { toast.error('Please select a delivery address'); return; }
+
+  var btn = document.getElementById('place-order-btn');
+  btnLoading(btn, true);
+
+  try {
+    // Step 1: Create order
+    var couponData = JSON.parse(localStorage.getItem('zk_coupon') || 'null');
+    var orderRes = await fetch(API_BASE + '/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        address_id: addressId,
+        payment_method: payMethod,
+        coupon_code: couponData ? couponData.code : undefined,
+        loyalty_points_redeem: 0
+      })
+    });
+    var orderData = await orderRes.json();
+    if (!orderData.order) { toast.error(orderData.error || 'Order creation failed'); btnLoading(btn, false); return; }
+
+    var orderId = orderData.order.id;
+
+    // COD: skip payment
+    if (payMethod === 'cod') {
+      cart.clear();
+      localStorage.removeItem('zk_coupon');
+      window.location.href = 'payment-success.html?order=' + orderId;
+      return;
+    }
+
+    // Step 2: Create Razorpay order
+    var rzpRes = await fetch(API_BASE + '/payments/razorpay/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ order_id: orderId })
+    });
+    var rzpData = await rzpRes.json();
+    if (!rzpData.razorpay_order_id) { toast.error(rzpData.error || 'Payment initiation failed'); btnLoading(btn, false); return; }
+
+    // Step 3: Open Razorpay modal
+    var user = auth.user || {};
+    var rzp = new Razorpay({
+      key:         rzpData.key_id,
+      amount:      rzpData.amount,
+      currency:    'INR',
+      order_id:    rzpData.razorpay_order_id,
+      name:        'ZKCommerce',
+      description: 'Order #ZK-' + String(orderId).padStart(5,'0'),
+      prefill: { name: user.name || '', email: user.email || '', contact: user.phone || '' },
+      theme: { color: '#FF6B00' },
+      handler: async function(response) {
+        // Step 4: Verify payment
+        try {
+          var verRes = await fetch(API_BASE + '/payments/razorpay/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              razorpay_order_id:   response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature:  response.razorpay_signature,
+              order_id: orderId
+            })
+          });
+          var verData = await verRes.json();
+          if (verData.message) {
+            cart.clear();
+            localStorage.removeItem('zk_coupon');
+            window.location.href = 'payment-success.html?order=' + orderId;
+          } else {
+            toast.error('Payment verification failed');
+          }
+        } catch(e) { toast.error('Verification error'); }
+      },
+      modal: { ondismiss: function(){ toast.info('Payment cancelled'); btnLoading(btn, false); } }
+    });
+    rzp.on('payment.failed', function(resp) {
+      toast.error(resp.error ? resp.error.description : 'Payment failed');
+      btnLoading(btn, false);
+    });
+    rzp.open();
+
+  } catch(e) {
+    toast.error('Server error -- is npm run dev running?');
+    btnLoading(btn, false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadAddresses();
+  // Show cart summary
+  var items = cart.items;
+  var summEl = document.getElementById('checkout-items');
+  if (summEl && items.length) {
+    summEl.innerHTML = items.map(function(i){
+      return '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--zk-border)">'
+        + '<span>' + i.name + ' x' + i.quantity + '</span><span>' + fmt.inr(i.price * i.quantity) + '</span></div>';
+    }).join('');
+  }
+  var totalEl = document.getElementById('checkout-total');
+  if (totalEl) totalEl.textContent = fmt.inr(cart.total + (cart.total >= 999 ? 0 : 99));
+});
+</script>
+</body>
+</html>

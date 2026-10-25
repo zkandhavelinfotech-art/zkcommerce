@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEO Settings — ZKCommerce v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+</head>
+<body class="app-body">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div class="page-header">
+    <div><h1 class="page-title">SEO Settings</h1><p class="page-sub">Help customers find your store on Google.</p></div>
+    <button class="btn btn-primary" onclick="saveSEO()">Save SEO settings</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:16px">Store SEO</h3>
+        <div class="field-group"><label class="field-label">SEO Title (max 60 chars)</label>
+          <input id="seo-title" class="field" maxlength="60" placeholder="Your Store Name — Tagline"></div>
+        <div class="field-group"><label class="field-label">Meta Description (max 160 chars)</label>
+          <textarea id="seo-desc" class="field" rows="3" maxlength="160" placeholder="Describe your store for search engines..."></textarea></div>
+        <div class="field-group"><label class="field-label">Keywords (comma-separated)</label>
+          <input id="seo-keywords" class="field" placeholder="sarees, kanjivaram, silk, tamil nadu"></div>
+        <div class="field-group"><label class="field-label">OG Image URL (1200x630px)</label>
+          <input id="seo-og" class="field" type="url" placeholder="https://..."></div>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:16px">Analytics</h3>
+        <div class="field-group"><label class="field-label">Google Analytics ID (GA-XXXXXXXX)</label>
+          <input id="seo-ga" class="field" placeholder="G-XXXXXXXXXX"></div>
+        <div class="field-group"><label class="field-label">Facebook Pixel ID</label>
+          <input id="seo-pixel" class="field" placeholder="123456789012345"></div>
+      </div>
+    </div>
+    <div class="card" style="height:fit-content">
+      <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:12px">Google preview</h3>
+      <div style="border:1px solid #E5E7EB;border-radius:10px;padding:16px">
+        <div id="preview-url" style="font-size:12px;color:#006621;margin-bottom:2px">zkcommerce.in/your-store</div>
+        <div id="preview-title" style="font-size:18px;color:#1a0dab;font-weight:400;margin-bottom:4px">Your Store Name</div>
+        <div id="preview-desc" style="font-size:13px;color:#545454;line-height:1.4">Your store description will appear here. Keep it between 120–160 characters for best results.</div>
+      </div>
+      <div style="margin-top:16px;font-size:11px;color:#6B7280;line-height:1.6">
+        &#9432; SEO settings update your store sitemap automatically. Google re-indexes within 1–2 weeks.
+      </div>
+    </div>
+  </div>
+</main>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : 'http://localhost:3000/api';
+async function loadSEO() {
+  var token = auth.token; var user = auth.user;
+  if (!token || !user || !user.store_id) return;
+  try {
+    var r = await fetch(API_BASE + '/stores/' + user.store_id + '/seo', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    if (d.seo) {
+      setVal('seo-title',    d.seo.title || '');
+      setVal('seo-desc',     d.seo.description || '');
+      setVal('seo-keywords', d.seo.keywords || '');
+      setVal('seo-og',       d.seo.og_image_url || '');
+      setVal('seo-ga',       d.seo.google_analytics_id || '');
+      setVal('seo-pixel',    d.seo.facebook_pixel_id || '');
+      updatePreview();
+    }
+  } catch(e) {}
+}
+async function saveSEO() {
+  var token = auth.token; var user = auth.user;
+  if (!token || token.startsWith('demo_token')) { toast.info('Login with real account to save SEO settings'); return; }
+  var btn = event.currentTarget; btnLoading(btn, true);
+  try {
+    var r = await fetch(API_BASE + '/stores/' + user.store_id + '/seo', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        title: getVal('seo-title'), description: getVal('seo-desc'),
+        keywords: getVal('seo-keywords'), og_image_url: getVal('seo-og'),
+        google_analytics_id: getVal('seo-ga'), facebook_pixel_id: getVal('seo-pixel')
+      })
+    });
+    var d = await r.json();
+    toast.success(d.seo ? 'SEO settings saved!' : (d.error || 'Saved'));
+  } catch(e) { toast.error('Server error'); }
+  btnLoading(btn, false);
+}
+function updatePreview() {
+  var t = getVal('seo-title'); var d = getVal('seo-desc');
+  var titleEl = document.getElementById('preview-title');
+  var descEl  = document.getElementById('preview-desc');
+  if (titleEl && t) titleEl.textContent = t;
+  if (descEl  && d) descEl.textContent  = d;
+}
+function setVal(id,v){ var el=document.getElementById(id); if(el){ el.tagName==='TEXTAREA'?el.value=v:el.value=v; } }
+function getVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+['seo-title','seo-desc'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el) el.addEventListener('input', updatePreview);
+});
+document.addEventListener('DOMContentLoaded', loadSEO);
+</script>
+</body>
+</html>

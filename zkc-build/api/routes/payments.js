@@ -58,18 +58,23 @@ router.post('/razorpay/verify', async (req, res) => {
       if (existing.rows[0]?.payment_status === 'paid') return res.json({ message: 'Payment already verified', order_id: Number(order_id) });
       return res.status(404).json({ error: 'Pending order not found for this payment' });
     }
-    // Automated WhatsApp alert for paid Razorpay order
+    // WhatsApp for the paid Razorpay order: merchant templates, hand-off link for the customer's browser.
+    let whatsappHandoffUrl = null;
     try {
       const whatsapp = require('../services/whatsapp');
+      const orderMessages = require('../services/order-messages');
       const { rows: storeRows } = await pool.query('SELECT * FROM stores WHERE id=$1', [rows[0].store_id]);
       const lineItems = typeof rows[0].items === 'string' ? JSON.parse(rows[0].items || '[]') : rows[0].items;
+      const waSettings = await orderMessages.loadSettings(rows[0].store_id);
+      if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, { ...rows[0], items: lineItems }, storeRows[0] || {}).care_url;
       whatsapp.sendOrderNotification({
         order: rows[0],
         store: storeRows[0] || {},
-        items: lineItems
+        items: lineItems,
+        templates: waSettings
       }).catch(err => console.warn('[Payment Verify] WhatsApp alert warning:', err.message));
     } catch (_) {}
-    res.json({ message: 'Payment verified', order_id: Number(order_id) });
+    res.json({ message: 'Payment verified', order_id: Number(order_id), whatsapp_handoff_url: whatsappHandoffUrl });
   } catch (e) { res.status(503).json({ error: e.message }); }
 });
 

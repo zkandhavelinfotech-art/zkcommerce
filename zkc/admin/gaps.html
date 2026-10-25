@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gap Analysis — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+</head>
+<body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>
+    <span>ZKCommerce</span>
+    <span style="font-size:9px;background:rgba(255,107,0,.3);color:#FF9A4D;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800">ADMIN</span>
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Platform</div>
+    <a href="admin/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+<a href="admin/merchants.html" class="zk-sidebar-link "><span class="sl-icon">🏪</span>Merchants</a>
+<a href="admin/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>All orders</a>
+<a href="admin/revenue.html" class="zk-sidebar-link "><span class="sl-icon">💰</span>Revenue</a>
+<a href="admin/plans.html" class="zk-sidebar-link "><span class="sl-icon">📋</span>Plans & billing</a>
+<a href="admin/reviews.html" class="zk-sidebar-link "><span class="sl-icon">⭐</span>Reviews</a>
+<a href="admin/migrations.html" class="zk-sidebar-link "><span class="sl-icon">🚀</span>Migrations</a>
+<a href="admin/support.html" class="zk-sidebar-link "><span class="sl-icon">💬</span>Support tickets</a>
+<a href="admin/settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Platform settings</a>
+<a href="admin/gaps.html" class="zk-sidebar-link active"><span class="sl-icon">🔍</span>Gap analysis</a>
+
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce Admin v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a>
+  </div>
+</aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Gap Analysis</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span style="font-size:12px;color:var(--zk-muted)">🟢 All systems operational</span>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff">A</div>
+  </div>
+</div><div class="zk-page">
+<div class="zk-page-header">
+  <div><div class="zk-page-title">Gap Analysis & Roadmap</div><div class="zk-page-sub">Feature gaps vs market — track what we need to build next</div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">
+  <div class="zk-stat-card" style="border-left:4px solid #F87171"><div class="zk-stat-label">High priority gaps</div><div class="zk-stat-value" style="color:#DC2626">12</div><div style="font-size:11px;color:var(--zk-dim)">Building Q3 2026</div></div>
+  <div class="zk-stat-card" style="border-left:4px solid #FCD34D"><div class="zk-stat-label">Medium priority</div><div class="zk-stat-value" style="color:#D97706">10</div><div style="font-size:11px;color:var(--zk-dim)">Q4 2026 onwards</div></div>
+  <div class="zk-stat-card" style="border-left:4px solid #7DD3FC"><div class="zk-stat-label">Low priority</div><div class="zk-stat-value" style="color:#0369A1">3</div><div style="font-size:11px;color:var(--zk-dim)">2027 roadmap</div></div>
+  <div class="zk-stat-card" style="border-left:4px solid #22C55E"><div class="zk-stat-label">Features shipped</div><div class="zk-stat-value" style="color:#16A34A">26</div><div style="font-size:11px;color:var(--zk-dim)">Already live ✅</div></div>
+</div>
+
+<!-- Tabs -->
+<div class="zk-tabs" style="margin-bottom:24px">
+  <button class="zk-tab active" onclick="showGapTab('all',this)">All features</button>
+  <button class="zk-tab" onclick="showGapTab('sales',this)">🛒 Sales channels</button>
+  <button class="zk-tab" onclick="showGapTab('shipping',this)">📦 Shipping</button>
+  <button class="zk-tab" onclick="showGapTab('payments',this)">💳 Payments</button>
+  <button class="zk-tab" onclick="showGapTab('marketing',this)">📈 Marketing</button>
+  <button class="zk-tab" onclick="showGapTab('ops',this)">⚙️ Operations</button>
+</div>
+
+<div id="gap-table-wrap" class="zk-table-wrap">
+  <div style="padding:14px 20px;border-bottom:1px solid var(--zk-border);display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:14px;font-weight:800" id="gap-tab-title">All feature gaps</div>
+    <button class="btn btn-secondary btn-sm" onclick="toast.info('Gap report exported to CSV')">↓ Export roadmap</button>
+  </div>
+  <table class="zk-table" id="gap-table">
+    <thead>
+      <tr>
+        <th style="text-align:left;min-width:200px">Feature</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Timeline</th>
+        <th>Priority</th>
+        <th>Assign</th>
+      </tr>
+    </thead>
+    <tbody id="gap-tbody">
+    </tbody>
+  </table>
+</div>
+
+<script>
+const gaps = [
+  {cat:'sales',    name:'Facebook / Instagram shop sync',    desc:'Auto-sync catalogue to Meta shops',              status:'building', timeline:'Q3 2026', priority:'high'},
+  {cat:'sales',    name:'Google Shopping feed',              desc:'Auto Google Merchant Center feed',               status:'building', timeline:'Q3 2026', priority:'high'},
+  {cat:'sales',    name:'Amazon India marketplace sync',     desc:'List ZKCommerce products on Amazon India',       status:'planned',  timeline:'Q4 2026', priority:'high'},
+  {cat:'sales',    name:'Flipkart seller sync',              desc:'List products on Flipkart',                      status:'planned',  timeline:'Q4 2026', priority:'high'},
+  {cat:'sales',    name:'WhatsApp catalogue sharing',        desc:'WhatsApp Business catalogue link',               status:'partial',  timeline:'Q3 2026', priority:'high'},
+  {cat:'sales',    name:'Meesho / Snapdeal sync',            desc:'Meesho sync for Tier 2/3 merchants',            status:'planned',  timeline:'2027',    priority:'medium'},
+  {cat:'sales',    name:'POS (Point of Sale)',               desc:'Physical store checkout with barcode scanner',   status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'shipping', name:'Multi-courier rate comparison UI',  desc:'Delhivery, BlueDart, DTDC, XpressBees in one UI',status:'partial',  timeline:'Q3 2026', priority:'high'},
+  {cat:'shipping', name:'Returns management portal',         desc:'Customer-initiated returns and refund automation',status:'building', timeline:'Q3 2026', priority:'high'},
+  {cat:'shipping', name:'Auto AWB + live tracking push',     desc:'Auto-assign AWB, push courier status via WA',    status:'partial',  timeline:'Q3 2026', priority:'high'},
+  {cat:'shipping', name:'Hyperlocal delivery (Dunzo/Porter)',desc:'Same-day delivery via Dunzo, Porter, Shadowfax', status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'shipping', name:'Shiprocket direct integration',     desc:'Full Shiprocket UI for multi-courier management',status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'payments', name:'COD verification via OTP / IVR',   desc:'Verify COD orders before dispatch — reduces RTO', status:'building', timeline:'Q3 2026', priority:'high'},
+  {cat:'payments', name:'Full no-cost EMI widget',           desc:'Bajaj, ICICI, HDFC EMI at checkout',             status:'partial',  timeline:'Q3 2026', priority:'high'},
+  {cat:'payments', name:'Buy Now Pay Later (Simpl/LazyPay)', desc:'BNPL at checkout for 18-35 age group',           status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'payments', name:'International payments (Stripe)',   desc:'Accept international cards for global sales',     status:'partial',  timeline:'Q3 2026', priority:'medium'},
+  {cat:'marketing',name:'Abandoned cart WhatsApp recovery',  desc:'Auto-WhatsApp — 3× better recovery vs email',    status:'building', timeline:'Q3 2026', priority:'high'},
+  {cat:'marketing',name:'Built-in blog / SEO content module',desc:'Blog drives 40-60% organic traffic for D2C',     status:'building', timeline:'Q3 2026', priority:'medium'},
+  {cat:'marketing',name:'Flash sale / countdown timer',      desc:'Time-limited sale countdown on product page',    status:'building', timeline:'Q3 2026', priority:'medium'},
+  {cat:'marketing',name:'Affiliate / referral program',      desc:'Customers earn commissions for referrals',       status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'marketing',name:'Product bundles + combo offers',    desc:'Sell bundled products at a discount',            status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'marketing',name:'Multi-language storefront',         desc:'Tamil, Hindi, Telugu, Kannada — all 22 languages',status:'planned', timeline:'Q4 2026', priority:'medium'},
+  {cat:'ops',      name:'Tally / Zoho Books ERP integration',desc:'Sync orders to Tally — 80%+ Indian businesses use it',status:'planned',timeline:'Q4 2026',priority:'high'},
+  {cat:'ops',      name:'Workflow automation / triggers',    desc:'Auto-tag orders, WA on low stock, alerts',       status:'planned',  timeline:'Q4 2026', priority:'medium'},
+  {cat:'ops',      name:'B2B / wholesale pricing tiers',     desc:'Different prices for wholesale vs retail buyers', status:'planned',  timeline:'2027',    priority:'medium'},
+  {cat:'ops',      name:'Subscription / recurring orders',   desc:'Monthly subscriptions for groceries, supplements',status:'planned', timeline:'Q4 2026', priority:'medium'},
+  {cat:'ops',      name:'Digital gift cards',                desc:'Issue and redeem digital gift cards',            status:'planned',  timeline:'2027',    priority:'low'},
+  {cat:'ops',      name:'Product Q&A section',               desc:'Customer questions on product pages',            status:'planned',  timeline:'2027',    priority:'low'},
+  {cat:'ops',      name:'Dropshipping support',              desc:'Integrate dropship suppliers',                   status:'planned',  timeline:'2027',    priority:'low'},
+];
+
+const statusMap = {
+  building: '<span class="pill" style="background:#FEF3C7;color:#D97706;border:1px solid #FDE68A">🔨 Building</span>',
+  partial:  '<span class="pill" style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A">⚡ Partial</span>',
+  planned:  '<span class="pill" style="background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE">📋 Planned</span>',
+};
+const prioMap = {
+  high:   '<span style="color:#DC2626;font-weight:800;font-size:11px">🔴 High</span>',
+  medium: '<span style="color:#D97706;font-weight:800;font-size:11px">🟡 Medium</span>',
+  low:    '<span style="color:#0369A1;font-weight:800;font-size:11px">🔵 Low</span>',
+};
+const catLabel = {sales:'🛒 Sales',shipping:'📦 Shipping',payments:'💳 Payments',marketing:'📈 Marketing',ops:'⚙️ Ops'};
+
+function renderGaps(filter='all'){
+  const tbody = document.getElementById('gap-tbody');
+  const rows = filter==='all' ? gaps : gaps.filter(g=>g.cat===filter);
+  tbody.innerHTML = rows.map(g=>`
+    <tr>
+      <td><div class="col-primary">${g.name}</div><div style="font-size:11px;color:var(--zk-dim);margin-top:2px">${g.desc}</div></td>
+      <td><span style="font-size:11px;font-weight:700;color:var(--zk-muted)">${catLabel[g.cat]||g.cat}</span></td>
+      <td>${statusMap[g.status]||g.status}</td>
+      <td><span style="font-size:12px;font-weight:700;color:var(--zk-indigo)">${g.timeline}</span></td>
+      <td>${prioMap[g.priority]||g.priority}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="toast.success('Assigned to engineering sprint')">Assign</button></td>
+    </tr>`).join('');
+}
+
+function showGapTab(cat, el){
+  document.querySelectorAll('.zk-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('gap-tab-title').textContent = cat==='all'?'All feature gaps':el.textContent.trim()+' gaps';
+  renderGaps(cat);
+}
+
+renderGaps('all');
+</script>
+</div></div></div><script src="../assets/js/app.js"></script>
+</body>
+</html>

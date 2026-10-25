@@ -1,8 +1,11 @@
 const router = require('express').Router();
 const fs = require('fs');
 const path = require('path');
-const { exportStoreDeployment, exportDbMigration, DEPLOY_ROOT } = require('../services/deployment-exporter');
+const { exportStoreDeployment, exportDbMigration } = require('../services/deployment-exporter');
+// Defined here (not imported) so listing and downloading packages keeps working whatever the exporter exports.
+const DEPLOY_ROOT = path.join(__dirname, '..', '..', 'deployment');
 const mysqlMigrations = require('../services/mysql-migrations');
+const orderMessages = require('../services/order-messages');
 const deploySettings = require('../services/deployment-settings');
 const ftpDeployer = require('../services/ftp-deployer');
 const pool   = require('../db');
@@ -264,7 +267,7 @@ async function buildPackage(store, merchantId, body, data) {
   const customDomain = env === 'production' ? (store.custom_domain || saved.custom_domain) : (body.custom_domain || saved.custom_domain);
   const deployment = await exportStoreDeployment({
     store, themeConfig: store.theme_config || {}, ...(data || await loadPackageData(store.id)),
-    options: { env, technology, version, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved) }
+    options: { env, technology, version, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved), whatsapp: await orderMessages.loadSettings(store.id) }
   });
   settings.versions[`${env}:${technology}`] = version;
   const envSettings = settings.environments[env] || {};
@@ -290,6 +293,13 @@ router.get('/:id/deployment-settings', auth, async (req, res) => {
     for (const env of deploySettings.ENVIRONMENTS) for (const t of deploySettings.TECHNOLOGIES)
       view.next_versions[`${env}:${t}`] = deploySettings.nextVersion(loaded.settings, env, t);
     view.schema = { latest: mysqlMigrations.latestId(), migrations: mysqlMigrations.MIGRATIONS.map(m => ({ id: m.id, description: m.description })) };
+    // Which ZIPs can still be downloaded (deleted or moved files show as unavailable in the dashboard).
+    const onDisk = name => !!name && ['', 'published', 'db-migrations'].some(dir => fs.existsSync(path.join(DEPLOY_ROOT, dir, path.basename(name))));
+    for (const e of Object.values(view.environments)) {
+      if (e.last_package) e.last_package.zip_exists = onDisk(e.last_package.zip_name);
+      if (e.last_migration) e.last_migration.zip_exists = onDisk(e.last_migration.zip_name);
+      for (const b of e.builds || []) b.zip_exists = onDisk(b.zip_name);
+    }
     res.json(view);
   } catch (e) { sendError(res, e); }
 });
@@ -465,7 +475,7 @@ router.post('/:id/db-migration', auth, async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
     const migration = await exportDbMigration({
       store: rows[0], ...(await loadPackageData(req.params.id)),
-      env, fromVersion, fromSchema, toVersion, includeSeed: req.body.include_seed !== false
+      env, fromVersion, fromSchema, toVersion, includeSeed: req.body.include_seed !== false, whatsapp: await orderMessages.loadSettings(req.params.id)
     });
     if (!migration.zip_path) return res.status(500).json({ error: 'Could not create the migration ZIP: ' + migration.zip_error });
     envSettings.last_migration = { from_version: migration.from_version, to_version: toVersion, zip_name: migration.zip_name, zip_path: migration.zip_path, built_at: migration.built_at };

@@ -1,0 +1,38 @@
+# ZKCommerce v4.1 -- Docker Compose Override (Production)
+version: '3.8'
+
+services:
+  api:
+    build:
+      dockerfile: deployment/docker/Dockerfile.production
+    restart: always
+    environment:
+      NODE_ENV: production
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:alpine
+    container_name: zkc-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/sites/:/etc/nginx/sites-enabled/:ro
+      - ../certificates:/etc/ssl/zkcommerce:ro
+      - ./../../:/var/www/zkcommerce:ro
+    depends_on:
+      - api

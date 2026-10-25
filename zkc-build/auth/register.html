@@ -1,127 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Start free trial — ZKCommerce</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="manifest" href="../manifest.json">
-<meta name="theme-color" content="#1565C0">
+<meta name="theme-color" content="#FF6B00">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0D0D1A;color:#fff;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Create account — ZKCommerce</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href='../assets/css/design-system.css">
+/* logo */
+.logo-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:32px}
+.logo-brand{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700}
+.logo-brand .zk{color:#FF6B00}.logo-brand .co{color:#fff;font-weight:300}
+
+/* card */
+.card{background:#fff;color:#111827;border-radius:20px;padding:40px 36px;
+  width:100%;max-width:440px;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+
+.card-title{font-family:'Poppins',sans-serif;font-size:26px;font-weight:700;
+  text-align:center;color:#111827;margin-bottom:6px}
+.card-sub{font-size:14px;color:#6B7280;text-align:center;margin-bottom:28px}
+.card-sub b{color:#FF6B00}
+
+/* form */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
+.field input{width:100%;padding:12px 16px;border:1.5px solid #E5E7EB;border-radius:10px;
+  font-size:14px;font-family:'Inter',sans-serif;color:#111827;outline:none;transition:border .2s}
+.field input:focus{border-color:#FF6B00;box-shadow:0 0 0 3px rgba(255,107,0,.1)}
+.field input::placeholder{color:#9CA3AF}
+
+.name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* primary btn */
+.btn-primary{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:700;
+  color:#fff;border:none;cursor:pointer;margin-top:8px;font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#FF6B00,#FF9A3C);
+  box-shadow:0 4px 16px rgba(255,107,0,.35);transition:opacity .18s}
+.btn-primary:hover{opacity:.9}
+
+/* divider */
+.or{display:flex;align-items:center;gap:12px;margin:20px 0;color:#9CA3AF;font-size:13px}
+.or::before,.or::after{content:'';flex:1;height:1px;background:#E5E7EB}
+
+/* social buttons */
+.social-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.btn-social{display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:12px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;
+  font-size:13px;font-weight:600;color:#374151;cursor:pointer;font-family:'Inter',sans-serif;
+  transition:border-color .18s,box-shadow .18s;text-decoration:none}
+.btn-social:hover{border-color:#D1D5DB;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.btn-wa{background:#25D366;border-color:#25D366;color:#fff}
+.btn-wa:hover{background:#1ebe5d;border-color:#1ebe5d}
+
+/* WA phone step */
+.wa-step{display:none;margin-top:12px}
+.wa-step.show{display:block}
+.phone-row{display:flex;gap:8px}
+.country-sel{padding:12px 10px;border:1.5px solid #E5E7EB;border-radius:10px;
+  font-size:14px;font-family:'Inter',sans-serif;color:#374151;background:#fff;
+  outline:none;width:100px;flex-shrink:0}
+.country-sel:focus{border-color:#25D366}
+.phone-input{flex:1;padding:12px 16px;border:1.5px solid #E5E7EB;border-radius:10px;
+  font-size:14px;font-family:'Inter',sans-serif;color:#111827;outline:none}
+.phone-input:focus{border-color:#25D366;box-shadow:0 0 0 3px rgba(37,211,102,.1)}
+.btn-wa-send{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:700;
+  color:#fff;border:none;cursor:pointer;margin-top:10px;font-family:'Poppins',sans-serif;
+  background:#25D366;box-shadow:0 4px 16px rgba(37,211,102,.35)}
+.wa-disclaimer{font-size:11px;color:#9CA3AF;margin-top:8px;line-height:1.5}
+.wa-disclaimer a{color:#25D366}
+.btn-wa-back{background:none;border:none;color:#6B7280;font-size:12px;cursor:pointer;
+  text-decoration:underline;margin-top:6px;display:block;text-align:center}
+
+/* footer links */
+.card-footer{text-align:center;margin-top:20px;font-size:13px;color:#6B7280}
+.card-footer a{color:#FF6B00;font-weight:600;text-decoration:none}
+
+.legal{font-size:11px;color:#9CA3AF;text-align:center;margin-top:16px;line-height:1.6;max-width:400px}
+.legal a{color:#6B7280}
+
+/* page footer */
+.page-footer{margin-top:28px;font-size:11px;color:rgba(255,255,255,.25);text-align:center}
+</style>
 </head>
 <body>
-<style>
-body{min-height:100vh;background:var(--g-hero);display:flex;align-items:center;justify-content:center;padding:24px}
-.auth-card{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,.2)}
-.auth-gem{width:40px;height:40px;border-radius:10px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:20px}
-</style>
-<div class="auth-card">
-  <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:28px;justify-content:center">
-    <div class="auth-gem">⚡</div>ZKCommerce
+
+<!-- Logo -->
+<div class="logo-wrap">
+  <svg width="52" height="48" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="rzk" x1="0%" y1="100%" x2="70%" y2="0%">
+        <stop offset="0%" stop-color="#FF6B00"/><stop offset="55%" stop-color="#FF9A3C"/><stop offset="100%" stop-color="#FFB347"/>
+      </linearGradient>
+      <linearGradient id="rar" x1="0%" y1="100%" x2="60%" y2="0%">
+        <stop offset="0%" stop-color="#1688E8"/><stop offset="100%" stop-color="#36A7FF"/>
+      </linearGradient>
+    </defs>
+    <line x1="4" y1="8" x2="55" y2="8" stroke="url(#rzk)" stroke-width="10" stroke-linecap="round"/>
+    <line x1="55" y1="8" x2="4" y2="65" stroke="url(#rzk)" stroke-width="10" stroke-linecap="round"/>
+    <line x1="4" y1="65" x2="55" y2="65" stroke="url(#rzk)" stroke-width="10" stroke-linecap="round"/>
+    <line x1="65" y1="8" x2="65" y2="65" stroke="url(#rzk)" stroke-width="9" stroke-linecap="round"/>
+    <line x1="65" y1="36" x2="95" y2="8" stroke="url(#rzk)" stroke-width="9" stroke-linecap="round"/>
+    <line x1="65" y1="36" x2="95" y2="65" stroke="url(#rzk)" stroke-width="9" stroke-linecap="round"/>
+    <line x1="76" y1="59" x2="102" y2="5" stroke="url(#rar)" stroke-width="7" stroke-linecap="round"/>
+    <polygon points="102,5 93,13 105,17" fill="#36A7FF"/>
+    <path d="M2 78 Q36 92 70 84 Q86 81 104 72" fill="none" stroke="#FF6B00" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+    <path d="M72 81 L78 81 L84 96 L102 96 L108 81" fill="none" stroke="#FF9A3C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="78" y1="81" x2="75" y2="73" stroke="#FF9A3C" stroke-width="3" stroke-linecap="round"/>
+    <line x1="75" y1="73" x2="68" y2="73" stroke="#FF9A3C" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="86" cy="102" r="4" fill="#FF9A3C" opacity="0.9"/>
+    <circle cx="102" cy="102" r="4" fill="#FF9A3C" opacity="0.9"/>
+  </svg>
+  <div class="logo-brand"><span class="zk">ZK</span><span class="co">Commerce</span></div>
+</div>
+
+<!-- Main card -->
+<div class="card" id="main-card">
+  <div class="card-title">Start your free trial</div>
+  <div class="card-sub">30 days free · then from <b>₹1,299/month</b></div>
+
+  <!-- Email form -->
+  <div id="email-form">
+    <div class="name-row">
+      <div class="field"><label>First name</label><input type="text" id="fname" placeholder="Rajan" autocomplete="given-name"></div>
+      <div class="field"><label>Last name</label><input type="text" id="lname" placeholder="Kumar" autocomplete="family-name"></div>
+    </div>
+    <div class="field"><label>Email address</label><input type="email" id="email" placeholder="rajan@shop.com" autocomplete="email"></div>
+    <div class="field"><label>Password</label><input type="password" id="password" placeholder="Min 8 characters" autocomplete="new-password"></div>
+    <div class="field"><label>Store name</label><input type="text" id="store" placeholder="Rajan Textiles"></div>
+    <button class="btn-primary" onclick="registerEmail()">Continue with email →</button>
   </div>
-  <h2 style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:4px;text-align:center">Start selling free</h2>
-  <p style="font-size:13px;color:var(--zk-muted);text-align:center;margin-bottom:24px">30-day free trial · No credit card · 0% transaction fees</p>
-  <div id="alert-box"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-    <div class="field-group"><label class="field-label">First name</label><input type="text" class="field" id="fname" placeholder="Rajan"></div>
-    <div class="field-group"><label class="field-label">Last name</label><input type="text" class="field" id="lname" placeholder="Kumar"></div>
+
+  <div class="or">or</div>
+
+  <!-- Social buttons: WhatsApp + Google only -->
+  <div class="social-btns">
+    <button class="btn-social btn-wa" onclick="showWA()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.17 1.6 5.98L0 24l6.18-1.62A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.22-3.48-8.52zm-8.52 18.45a9.9 9.9 0 0 1-5.05-1.38l-.36-.22-3.73.98 1-3.64-.23-.37A9.9 9.9 0 0 1 2.1 12C2.1 6.53 6.53 2.1 12 2.1c2.64 0 5.12 1.03 6.98 2.9A9.83 9.83 0 0 1 21.9 12c0 5.47-4.43 9.93-9.9 9.93zm5.45-7.43c-.3-.15-1.77-.87-2.04-.97s-.47-.15-.67.15-.77.97-.94 1.17-.35.22-.65.07a8.12 8.12 0 0 1-2.39-1.47 8.9 8.9 0 0 1-1.65-2.06c-.17-.3 0-.46.13-.6.12-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52s-.67-1.6-.91-2.2c-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37s-1.04 1.02-1.04 2.48 1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z" fill="white"/></svg>
+      Sign up with WhatsApp
+    </button>
+    <a href="#" class="btn-social" onclick="googleSignup(event)">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Sign up with Google
+    </a>
   </div>
-  <div class="field-group" style="margin-bottom:12px"><label class="field-label">Email address *</label><input type="email" class="field" id="email" placeholder="rajan@mystore.in"></div>
-  <div class="field-group" style="margin-bottom:12px"><label class="field-label">WhatsApp number *</label><input type="tel" class="field" id="phone" placeholder="98765 43210"></div>
-  <div class="field-group" style="margin-bottom:12px"><label class="field-label">Store name *</label><input type="text" class="field" id="store" placeholder="Rajan Textiles"></div>
-  <div class="field-group" style="margin-bottom:12px"><label class="field-label">Password *</label><input type="password" class="field" id="password" placeholder="Min 8 characters"></div>
-  <div style="padding:12px;background:var(--zk-pale);border-radius:10px;font-size:12px;color:var(--zk-muted);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px">
-    <span>🔒</span><span>By creating an account you agree to our <a href="#" style="color:var(--zk-fire);font-weight:700">Terms of Service</a> and <a href="#" style="color:var(--zk-fire);font-weight:700">Privacy Policy</a>.</span>
+
+  <!-- WhatsApp phone step (hidden initially) -->
+  <div class="wa-step" id="wa-step">
+    <div style="font-size:14px;font-weight:600;color:#111827;margin-bottom:12px;text-align:center">
+      📱 Sign up with WhatsApp
+    </div>
+    <p style="font-size:13px;color:#6B7280;text-align:center;margin-bottom:14px">
+      We'll send a verification code to your WhatsApp number
+    </p>
+    <div class="phone-row">
+      <select class="country-sel" id="country-code">
+        <option value="+91">🇮🇳 +91</option>
+        <option value="+1">🇺🇸 +1</option>
+        <option value="+44">🇬🇧 +44</option>
+        <option value="+971">🇦🇪 +971</option>
+        <option value="+65">🇸🇬 +65</option>
+      </select>
+      <input type="tel" class="phone-input" id="wa-phone" placeholder="98765 43210" maxlength="12">
+    </div>
+    <button class="btn-wa-send" onclick="sendWACode()">📲 Send code on WhatsApp</button>
+    <p class="wa-disclaimer">By providing your number, you agree to receive account and admin messages from ZKCommerce via WhatsApp. <a href="#">Reply STOP to unsubscribe.</a></p>
+    <button class="btn-wa-back" onclick="hideWA()">← Back to other options</button>
   </div>
-  <button class="btn btn-primary btn-full" onclick="doRegister()">Create free account →</button>
-  <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--zk-muted)">
-    Already have an account? <a href="login.html" style="font-weight:700;color:var(--zk-fire)">Sign in</a>
+
+  <div class="card-footer">
+    Already have an account? <a href="login.html">Log in</a>
   </div>
 </div>
-<script>
-async function doRegister(){
-  const btn=event.currentTarget;
-  const ab=document.getElementById('alert-box');
-  const data={
-    firstName:document.getElementById('fname').value.trim(),
-    lastName:document.getElementById('lname').value.trim(),
-    email:document.getElementById('email').value.trim(),
-    phone:document.getElementById('phone').value.trim(),
-    storeName:document.getElementById('store').value.trim(),
-    password:document.getElementById('password').value,
-  };
-  if(!data.email||!data.password||!data.storeName){
-    ab.innerHTML='<div class="alert alert-error" style="margin-bottom:14px">Please fill in all required fields.</div>';return;
-  }
-  if(data.password.length<8){
-    ab.innerHTML='<div class="alert alert-error" style="margin-bottom:14px">Password must be at least 8 characters.</div>';return;
-  }
-  btnLoading(btn,true);
-  try{
-    const res=await api.post('/auth/register',data);
-    if(res.token){auth.save(res.token,res.user);window.location.href='../merchant/setup.html';}
-    else{ab.innerHTML='<div class="alert alert-error" style="margin-bottom:14px">'+(res.message||'Registration failed')+'</div>';btnLoading(btn,false);}
-  }catch(e){
-    // Demo mode
-    auth.save('demo_'+Date.now(),{id:Date.now(),name:data.firstName+' '+data.lastName,email:data.email,role:'merchant',storeName:data.storeName});
-    window.location.href='../merchant/setup.html';
-  }
-}
-</script>
-<script src="../assets/js/app.js"></script>
-<script>
-var API_BASE = window.location.protocol === 'file:'
-  ? 'http://localhost:3000/api'
-  : (window.ZK ? ZK.api : '/api');
 
-async function doRegister() {
-  var btn = event.currentTarget;
-  var ab  = document.getElementById('alert-box');
-  var data = {
-    firstName: document.getElementById('fname').value.trim(),
-    lastName:  document.getElementById('lname').value.trim(),
-    email:     document.getElementById('email').value.trim(),
-    phone:     document.getElementById('phone').value.trim(),
-    storeName: document.getElementById('store').value.trim(),
-    password:  document.getElementById('password').value,
-  };
-  if (!data.email || !data.password || !data.storeName || !data.phone) {
-    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Please fill all required fields.</div>';
-    return;
-  }
-  if (data.password.length < 8) {
-    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Password must be at least 8 characters.</div>';
-    return;
-  }
-  var phoneRe = /^[6-9][0-9]{9}$/;
-  if (!phoneRe.test(data.phone)) {
-    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Enter a valid 10-digit Indian mobile number.</div>';
-    return;
-  }
-  btnLoading(btn, true);
-  try {
-    var res  = await fetch(API_BASE + '/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    var json = await res.json();
-    if (json.token) {
-      auth.save(json.token, json.user);
-      localStorage.setItem('zk_setup_complete', '');
-      window.location.href = '../merchant/setup.html';
-      return;
-    }
-    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">' +
-      (json.error || json.message || 'Registration failed. Try again.') + '</div>';
-  } catch(e) {
-    ab.innerHTML = '<div class="alert alert-error" style="margin-bottom:14px">Cannot reach server. Make sure <strong>npm run dev</strong> is running at http://localhost:3000</div>';
-  }
-  btnLoading(btn, false);
+<p class="legal">
+  By continuing, you agree to ZKCommerce's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>,
+  and to receive marketing emails. Unsubscribe anytime.
+</p>
+
+<div class="page-footer">
+  © 2026 ZKandavel Infotech Pvt Ltd · Smart Commerce. Limitless Growth.
+</div>
+
+<script>
+var localHost = ['localhost','127.0.0.1'].includes(location.hostname);
+var localPage = localHost || location.protocol === 'file:';
+var separateFrontendPort = ['5173','5500','5501','8080'].includes(location.port);
+var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : (localPage ? (location.port && !separateFrontendPort ? location.origin+'/api' : 'http://localhost:3000/api') : '/api');
+
+function showWA(){
+  document.getElementById('email-form').style.display='none';
+  document.getElementById('wa-step').classList.add('show');
+  document.querySelector('.or').style.display='none';
+  document.querySelector('.social-btns').style.display='none';
+  setTimeout(function(){document.getElementById('wa-phone').focus();},100);
 }
+function hideWA(){
+  document.getElementById('email-form').style.display='';
+  document.getElementById('wa-step').classList.remove('show');
+  document.querySelector('.or').style.display='';
+  document.querySelector('.social-btns').style.display='';
+}
+
+function sendWACode(){
+  var phone = document.getElementById('wa-phone').value.trim().replace(/\D/g,'');
+  var cc    = document.getElementById('country-code').value;
+  if(phone.length < 10){alert('Please enter a valid phone number');return;}
+  var btn = document.querySelector('.btn-wa-send');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  fetch(API_BASE+'/auth/wa-signup',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({phone: cc+phone})
+  }).then(function(r){return r.json();})
+    .then(function(d){
+      if(d.message){alert('✅ Code sent! Check your WhatsApp.');}
+      else{alert('Error: '+(d.error||'Try again'));}
+    }).catch(function(){
+      alert('API not reachable. Please use email signup for now.');
+    }).finally(function(){
+      btn.textContent='📲 Send code on WhatsApp'; btn.disabled=false;
+    });
+}
+
+function googleSignup(e){
+  e.preventDefault();
+  fetch(API_BASE+'/auth/google',{method:'POST'})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.redirect) window.location.href=d.redirect;
+      else alert('Google OAuth: '+( d.error||'Configure GOOGLE_CLIENT_ID in Railway vars'));
+    }).catch(function(){
+      alert('Google Sign-in: Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to Railway env vars.');
+    });
+}
+
+async function registerEmail(){
+  var fn=document.getElementById('fname').value.trim();
+  var ln=document.getElementById('lname').value.trim();
+  var em=document.getElementById('email').value.trim();
+  var pw=document.getElementById('password').value;
+  var st=document.getElementById('store').value.trim();
+  if(!fn||!em||!pw||!st){alert('Please fill all fields');return;}
+  if(pw.length<8){alert('Password must be at least 8 characters');return;}
+  var btn=document.querySelector('.btn-primary');
+  btn.textContent='Creating account...'; btn.disabled=true;
+  try{
+    var r=await fetch(API_BASE+'/auth/register',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:fn+' '+ln,email:em,password:pw,store_name:st})
+    });
+    var d=await r.json();
+    if(d.token){
+      localStorage.setItem('zk_token',d.token);
+      localStorage.setItem('zk_user',JSON.stringify(d.user||{}));
+      localStorage.setItem('zk_pending_store_name',st);
+      window.location.href='../store-builder/setup.html';
+    } else {
+      alert(d.error||d.message||'Registration failed. Please try again.');
+    }
+  }catch(e){
+    alert('Could not connect to server. Check LOCAL-SETUP.md to start the API.');
+  }finally{
+    btn.textContent='Continue with email →'; btn.disabled=false;
+  }
+}
+document.addEventListener('keydown',function(e){if(e.key==='Enter')registerEmail();});
 </script>
 </body>
 </html>

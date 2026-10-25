@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventory — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href='../assets/css/design-system.css">
+</head>
+<body>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="products.html" class="zk-sidebar-link"><span class="sl-icon">🛍️</span>Products</a>
+    <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+    <a href="inventory.html" class="zk-sidebar-link active"><span class="sl-icon">🏭</span>Inventory</a>
+
+    <div class="zk-sidebar-section-label">Online Store</div>
+    <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+    <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
+
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View storefront</a>
+    <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+<div class="zk-main" style="margin-left:240px">
+<div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Inventory</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+  </div>
+</div>
+<div class="zk-page">
+
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Inventory</div><div class="zk-page-sub">Stock levels across all warehouses</div></div>
+  <button class="btn btn-primary btn-sm" onclick="toast.success('Stock updated!')">Update stock</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+  <div class="zk-stat-card"><div class="zk-stat-label">Total SKUs</div><div class="zk-stat-value">1,248</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Low stock items</div><div class="zk-stat-value" style="color:#D97706">18</div><div class="zk-stat-change" style="color:#D97706">Below 10 units</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Out of stock</div><div class="zk-stat-value" style="color:#DC2626">4</div><div class="zk-stat-change" style="color:#DC2626">Needs restocking</div></div>
+</div>
+<div class="zk-table-wrap">
+  <div style="padding:16px 20px;border-bottom:1px solid var(--zk-border);display:flex;align-items:center;gap:12px">
+    <div style="font-size:14px;font-weight:800;flex:1">Stock levels</div>
+    <input type="search" class="field btn-sm" placeholder="Search SKU…" style="max-width:200px">
+  </div>
+  <table class="zk-table">
+    <thead><tr><th>Product</th><th>SKU</th><th>Warehouse</th><th>In stock</th><th>Reserved</th><th>Available</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td class="col-primary">Kanjivaram Silk — Red</td><td>KSR-001</td><td>Chennai Main</td><td>3</td><td>1</td><td><span class="badge badge-red">2</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.success('Restock requested')">Restock</button></td></tr>
+      <tr><td class="col-primary">Cotton Kurta — Blue XL</td><td>CKB-XL</td><td>Chennai Main</td><td>5</td><td>0</td><td><span class="badge badge-amber">5</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.success('Restock requested')">Restock</button></td></tr>
+      <tr><td class="col-primary">Kanjivaram Silk — Blue</td><td>KSB-002</td><td>Chennai Main</td><td>48</td><td>4</td><td><span class="badge badge-green">44</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Adjust stock')">Adjust</button></td></tr>
+      <tr><td class="col-primary">Handloom Dupatta</td><td>HLD-002</td><td>Madurai WH</td><td>120</td><td>8</td><td><span class="badge badge-green">112</span></td><td><button class="btn btn-secondary btn-sm" onclick="toast.info('Adjust stock')">Adjust</button></td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+</div>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadInventory() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/products?limit=100', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    var tbody = document.getElementById('inventory-tbody');
+    if (!tbody || !data.products) return;
+
+    var products = data.products;
+    tbody.innerHTML = products.map(function(p) {
+      var currentStock = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock || 0);
+      var stockColor = currentStock === 0 ? '#DC2626' : (currentStock <= p.low_stock_alert ? '#D97706' : '#16A34A');
+      var badge = currentStock === 0 ? 'Out of stock' : (currentStock <= p.low_stock_alert ? 'Low stock' : 'In stock');
+      var badgeClass = currentStock === 0 ? 'badge-red' : (currentStock <= p.low_stock_alert ? 'badge-amber' : 'badge-green');
+      return '<tr>'
+        + '<td class="col-primary">' + p.name + '</td>'
+        + '<td>' + (p.sku || '—') + '</td>'
+        + '<td><span style="font-size:18px;font-weight:800;font-family:var(--font-display);color:' + stockColor + '">' + currentStock + ' units</span></td>'
+        + '<td>' + p.low_stock_alert + '</td>'
+        + '<td><span class="badge ' + badgeClass + '">' + badge + '</span></td>'
+        + '<td><div style="display:flex;gap:6px;align-items:center">'
+        + '<input type="number" id="stock-' + p.id + '" value="' + currentStock + '" style="width:75px;padding:5px 8px;border:1px solid var(--zk-border);border-radius:6px;font-size:13px;font-weight:700" min="0">'
+        + '<button class="btn btn-secondary btn-sm" onclick="updateStock(' + p.id + ')">Update</button>'
+        + '</div></td>'
+        + '</tr>';
+    }).join('');
+
+    var lowCount = products.filter(function(p){ 
+      var s = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock || 0);
+      return s <= p.low_stock_alert && p.status==='published'; 
+    }).length;
+    var lsEl = document.getElementById('low-stock-count');
+    if (lsEl) lsEl.textContent = lowCount;
+  } catch(e) { console.warn('Inventory load error:', e); }
+}
+
+async function updateStock(productId) {
+  var token = auth.token;
+  var newStock = parseInt(document.getElementById('stock-' + productId).value);
+  if (isNaN(newStock) || newStock < 0) { toast.error('Invalid stock value'); return; }
+  try {
+    var r = await fetch(API_BASE + '/products/' + productId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ stock: newStock, quantity: newStock })
+    });
+    var data = await r.json();
+    if (data.product) { toast.success('Stock quantity updated to ' + newStock + ' units'); }
+    else toast.error(data.error || 'Update failed');
+  } catch(e) { toast.error('Server error'); }
+}
+
+document.addEventListener('DOMContentLoaded', loadInventory);
+</script>
+</body>
+</html>

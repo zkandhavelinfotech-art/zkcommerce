@@ -21,6 +21,7 @@
 .db-type-card.active{border-color:#008060;background:#f0fdf4}
 .db-type-card small{display:block;font-size:10.5px;color:#64748b;margin-top:2px}
 .dns-table-wrap{border:1px solid #cbd5e1;border-radius:8px;overflow:hidden}
+.env-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.env-tabs button{height:38px;border:1.5px solid #e2e8f0;border-radius:8px;background:#fafafa;font-weight:700;font-size:12.5px;cursor:pointer;color:#334155}.env-tabs button.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;box-shadow:0 0 0 2px rgba(37,99,235,.18)}.env-tabs button[data-env="production"].active{border-color:#059669;background:#f0fdf4;color:#047857;box-shadow:0 0 0 2px rgba(16,185,129,.2)}@media(max-width:560px){.env-tabs{grid-template-columns:repeat(2,1fr)}}
 .env-code-box{background:#0f172a;color:#38bdf8;font-family:monospace;font-size:11.5px;line-height:1.5;padding:12px 14px;border-radius:8px;max-height:150px;overflow:auto;margin:0;white-space:pre-wrap;word-break:break-all}
 .pub-badge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 9px;border-radius:99px;background:#10b981;color:#ffffff}
 
@@ -34,7 +35,7 @@
   <select id="storeSelect" class="store-select" aria-label="Select store"><option>Loading stores…</option></select>
   <nav class="workspace-nav"><button class="workspace-tab active" data-workspace="theme">Theme</button><button class="workspace-tab" data-workspace="products">Products</button><button class="workspace-tab" data-workspace="pages">Pages</button><button class="workspace-tab" data-workspace="settings">Settings</button></nav>
   <div class="template-control"><label for="templateSelect">Preview</label><select id="templateSelect" class="template-select" aria-label="Choose page template"><option value="home">Home page</option><option value="product">Product template</option><option value="collection">Collection template</option><option value="page">Content page</option></select><select id="resourceSelect" class="product-select" aria-label="Choose page or product" hidden></select></div>
-  <div class="top-actions"><span class="save-state" id="saveState">All changes saved</span><button class="btn" id="previewBtn">Preview</button><button class="btn" id="saveBtn">Save</button><button class="btn btn-primary" id="publishBtn">Publish</button><a class="btn btn-text" href="../merchant/index.html">Merchant Admin</a></div>
+  <div class="top-actions"><span class="save-state" id="saveState">All changes saved</span><a class="btn" id="packagingLink" href="../merchant/packaging.html" target="_blank" rel="noopener" title="Delivery addresses &amp; packaging labels">📦 Packaging</a><button class="btn" id="previewBtn">Preview</button><button class="btn" id="saveBtn">Save</button><button class="btn btn-primary" id="publishBtn">Publish</button><a class="btn btn-text" href="../merchant/index.html">Merchant Admin</a></div>
 </header>
 <main class="main" id="main">
   <aside class="left" id="leftPane"><div class="left-tabs"><button class="active" data-left="sections">Sections</button><button data-left="theme">Theme settings</button></div><div id="sectionTree" class="left-section"></div><div id="themeStyles" class="left-section" hidden></div></aside>
@@ -65,6 +66,20 @@
   </div>
 
   <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+    <!-- Environment -->
+    <div class="portal-section">
+      <div class="portal-section-title">
+        <span>Environment</span>
+        <span style="font-size:11px;font-weight:normal;color:#64748b">Each environment keeps its own database, FTP, domain &amp; package versions</span>
+      </div>
+      <div class="env-tabs" id="envTabs">
+        <button type="button" data-env="development">🧪 Dev</button>
+        <button type="button" data-env="stage">🧱 Stage</button>
+        <button type="button" data-env="preview">👁 Preview</button>
+        <button type="button" data-env="production" class="active">🚀 Production</button>
+      </div>
+    </div>
+
     <!-- 1. Hosting Provider Selection -->
     <div class="portal-section">
       <div class="portal-section-title">
@@ -147,9 +162,38 @@
           <input id="pub_db_pass" type="password" placeholder="••••••••" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
         </label>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-        <span style="font-size:11px;color:#64748b">Outputs to: <code>deployment/published/:slug/database/seed-mysql.sql</code></span>
-        <button type="button" class="btn" id="copySqlSeedBtn" style="font-size:11px;height:28px">📋 Copy MySQL SQL Seed</button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+        <label style="font-size:11px;font-weight:600;color:#475569">Razorpay Key ID (PHP package)
+          <input id="pub_rzp_key" placeholder="rzp_live_xxxxxxxx" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+        </label>
+        <label style="font-size:11px;font-weight:600;color:#475569">Razorpay Key Secret
+          <input id="pub_rzp_secret" type="password" placeholder="••••••••" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+        </label>
+        <div id="rzpKeyHint" style="grid-column:1/-1;font-size:11px;color:#64748b"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <span id="dbSaveMsg" style="font-size:11.5px;font-weight:600;color:#64748b">Not saved for this environment</span>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn" id="copySqlSeedBtn" style="font-size:11px;height:28px">📋 Copy MySQL SQL Seed</button>
+          <button type="button" class="btn btn-primary" id="saveDbBtn" style="font-size:11px;height:28px;font-weight:600">💾 Save Database Settings</button>
+        </div>
+      </div>
+
+      <!-- Upgrade an existing database -->
+      <div style="margin-top:12px;border-top:1px dashed #cbd5e1;padding-top:12px">
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:4px">Upgrade an existing database (DB migration only)</div>
+        <div id="schemaInfo" style="font-size:11px;color:#64748b;margin-bottom:8px"></div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <label style="font-size:11px;font-weight:600;color:#475569">Database is currently at
+            <select id="mig_from" style="display:block;min-width:250px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px"></select>
+          </label>
+          <label style="font-size:11px;font-weight:600;color:#475569;display:flex;align-items:center;gap:6px;padding-bottom:8px">
+            <input id="mig_seed" type="checkbox" checked> Include catalog data (products, categories, pages)
+          </label>
+          <button type="button" class="btn" id="downloadMigrationBtn" style="font-size:11px;height:30px;font-weight:600">⬇ Download DB Migration</button>
+        </div>
+        <div id="migStatusMsg" style="font-size:11.5px;font-weight:600;margin-top:6px;color:#64748b"></div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px">Safe to re-run — every change is recorded in the <code>schema_migrations</code> table and runs once. Orders are never touched. Import the .sql in phpMyAdmin, or open <code>/migrate.php</code> on the site after uploading a PHP package. Back up first.</div>
       </div>
     </div>
 
@@ -230,12 +274,17 @@
           <label style="font-size:11px;font-weight:600;color:#475569">Remote Directory
             <input id="ftp_path" value="/public_html" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
           </label>
+          <label style="font-size:11px;font-weight:600;color:#475569;display:flex;align-items:center;gap:6px;margin-top:18px">
+            <input id="ftp_secure" type="checkbox"> Use FTPS (TLS)
+          </label>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button type="button" class="btn" id="testFtpBtn" style="font-weight:600">⚡ Test FTP Connection</button>
-          <button type="button" class="btn btn-primary" id="deployFtpBtn" style="background:#0284c7;border-color:#0284c7">🚀 Upload to GoDaddy /public_html via FTP</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn" id="saveFtpBtn" style="font-weight:600">💾 1. Save FTP</button>
+          <button type="button" class="btn" id="testFtpBtn" style="font-weight:600">⚡ 2. Test Connection</button>
+          <button type="button" class="btn btn-primary" id="deployFtpBtn" disabled style="background:#0284c7;border-color:#0284c7">🚀 3. Build &amp; Upload to GoDaddy</button>
           <span id="ftpStatusMsg" style="font-size:12px;font-weight:600;margin-left:6px"></span>
         </div>
+        <div style="font-size:11px;color:#64748b;margin-top:6px">Upload builds a new version of the package selected in step 6 and sends it to the remote directory. SQL files and README stay local.</div>
       </div>
 
       <!-- GitHub Panel -->
@@ -257,6 +306,47 @@
           <span id="ghStatusMsg" style="font-size:12px;font-weight:600;margin-left:6px"></span>
         </div>
       </div>
+    </div>
+
+    <!-- 6. Deployment Package -->
+    <div class="portal-section">
+      <div class="portal-section-title">
+        <span>6. Deployment Package (ZIP)</span>
+        <span style="font-size:11px;font-weight:normal;color:#64748b">Choose the technology for this environment</span>
+      </div>
+      <div class="provider-grid" id="techGrid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+        <div class="provider-card active" data-tech="php">
+          <div class="provider-card-icon">🐘</div>
+          <div class="provider-card-info"><strong>PHP + MySQL</strong><span>GoDaddy shared hosting · api.php, admin-orders.php, phpMyAdmin SQL</span></div>
+        </div>
+        <div class="provider-card" data-tech="nodejs">
+          <div class="provider-card-icon">🟢</div>
+          <div class="provider-card-info"><strong>Node.js</strong><span>Express frontend + backend · Railway, VPS, cPanel Node app</span></div>
+        </div>
+        <div class="provider-card" data-tech="static">
+          <div class="provider-card-icon">📄</div>
+          <div class="provider-card-info"><strong>Static HTML</strong><span>No server · orders go to WhatsApp · Vercel, GitHub Pages</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px">
+        <label style="font-size:11px;font-weight:600;color:#475569">Version
+          <input id="pub_version" placeholder="1.0.1" style="width:110px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px;display:block">
+        </label>
+        <div style="flex:1;min-width:220px;font-size:11.5px;color:#475569;padding-bottom:7px">ZIP: <code id="pkgNamePreview"></code></div>
+        <button type="button" class="btn btn-primary" id="buildPackageBtn" style="font-weight:600">📦 Build &amp; Download ZIP</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px">
+        <label style="font-size:11px;font-weight:600;color:#475569">Save ZIP to (all downloads)
+          <select id="dl_target" style="display:block;min-width:300px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+            <option value="browser">This device's Downloads folder (browser)</option>
+            <option value="project">PC project folder</option>
+            <option value="both">Both</option>
+          </select>
+        </label>
+        <button type="button" class="btn" id="openDlFolderBtn" style="font-size:11px;height:30px">📂 Open folder</button>
+        <div id="dlTargetHint" style="flex-basis:100%;font-size:11px;color:#64748b"></div>
+      </div>
+      <div id="pkgStatusMsg" style="font-size:12px;font-weight:600;margin-top:6px;color:#64748b"></div>
     </div>
 
     <!-- 6. Deployment Output Results Card -->
@@ -290,7 +380,7 @@
 
 <div class="status" id="toast" role="status"></div>
 <script>
-const API='/api',token=localStorage.getItem('zk_token');let stores=[],store=null,products=[],categories=[],pages=[],themeConfig={},selectedSection='hero',selectedTemplate='home',selectedResource='',dirty=false,saveTimer=null,previewObjectUrl='',leftMode='sections',editingProduct=null,editingPage=null;
+const API='/api',token=localStorage.getItem('zk_token');let paymentsInfo={},stores=[],store=null,products=[],categories=[],pages=[],themeConfig={},selectedSection='hero',selectedTemplate='home',selectedResource='',dirty=false,saveTimer=null,previewObjectUrl='',leftMode='sections',editingProduct=null,editingPage=null;
 const sectionMeta={announcement:['◉','Announcement bar','Shared header'],nav:['▤','Header','Shared header'],hero:['▧','Image banner','Home page'],trust:['✦','Trust band','Home page'],why:['♡','Why us','Home page'],ingredients:['❋','Ingredients','Home page'],howtouse:['①','How to use','Home page'],slider:['▧','Image slider','Home page'],offers:['％','Offers','Home page'],products:['▦','Featured products','Home page'],gallery:['▧','Gallery','Home page'],reviews:['☆','Reviews','Home page'],contact:['✉','Contact form','Home page'],product:['▦','Product information','Product template'],collection:['▦','Collection products','Collection template'],page_content:['▤','Page content','Content page'],footer_above:['✦','Footer feature','Shared footer'],footer:['▤','Footer','Shared footer']};
 const defaultOrder=['hero','trust','why','ingredients','howtouse','slider','offers','products','gallery','reviews','contact'];
 const presets=[{id:'smeram',design:'smeram',template_id:'smeram-natural',name:'Smeram Naturals',family:'Natural care · full design',description:'Floral garland header and footer bars, logo, category boxes, product label pages and rose-pink with olive accents.',colors:['#ED6375','#FFFFFF','#A3B545'],primary_colour:'#ED6375',bg_colour:'#FFFFFF',accent_colour:'#A3B545',font:'Inter',order:['trust','hero','products','why','ingredients','howtouse','reviews','contact']},{id:'miliro',design:'miliro',template_id:'miliro-natural',name:'Miliro',family:'Home care · full design',description:'Deep forest-green hero and why-us band, lemon accents, category boxes and detailed product pages.',colors:['#1A4D2E','#FFFFFF','#AEEA00'],primary_colour:'#1A4D2E',bg_colour:'#FFFFFF',accent_colour:'#AEEA00',font:'Inter',order:['hero','trust','products','why','howtouse','reviews','contact']},{id:'dark-navy',name:'Dark Navy',family:'ZKCommerce · default',description:'Deep navy brand storefront with clear product cards and bright blue actions.',colors:['#06152B','#EAF1FA','#1688E8'],primary_colour:'#1688E8',bg_colour:'#06152B',accent_colour:'#A6D900',font:'Inter',order:['hero','trust','products','offers','why','reviews','contact']},{id:'studio',name:'Studio',family:'Minimal · general store',description:'Bright, minimal storefront with a clean catalog and generous spacing.',colors:['#FFFFFF','#17202B','#2868D7'],primary_colour:'#2868D7',bg_colour:'#FFFFFF',accent_colour:'#E8F0FF',font:'Inter',order:['announcement','nav','hero','products','trust','reviews','contact']},{id:'botanical',name:'Botanical',family:'Organic · beauty & wellness',description:'Warm natural colors and editorial typography for beauty, food, and handmade goods.',colors:['#F7F5EF','#233B2B','#9B7B42'],primary_colour:'#355B42',bg_colour:'#F7F5EF',accent_colour:'#E5D7B5',font:'Playfair Display',order:['announcement','nav','hero','ingredients','why','products','reviews','contact']},{id:'midnight',name:'Midnight',family:'Dark · premium',description:'Dark surfaces and bright actions for premium and specialty products.',colors:['#101820','#F8FAFC','#49A6E9'],primary_colour:'#49A6E9',bg_colour:'#101820',accent_colour:'#9EDB70',font:'Inter',order:['announcement','nav','hero','products','gallery','reviews','contact']},{id:'atelier',name:'Atelier',family:'Fashion · editorial',description:'Quiet editorial layout with serif headlines for clothing, accessories, and design.',colors:['#F4F0EA','#282421','#A34D36'],primary_colour:'#A34D36',bg_colour:'#F4F0EA',accent_colour:'#E6D8C8',font:'Playfair Display',order:['nav','hero','gallery','products','trust','reviews','footer_above','contact']},{id:'market',name:'Market',family:'Retail · catalog first',description:'Product-first storefront with compact navigation for larger everyday catalogs.',colors:['#F5F7F8','#152B3C','#087F8C'],primary_colour:'#087F8C',bg_colour:'#F5F7F8',accent_colour:'#DDF3EF',font:'Inter',order:['announcement','nav','products','offers','trust','reviews','contact']},{id:'playful',name:'Playful',family:'Color · gifts & kids',description:'Friendly rounded cards and lively colors for gifts, toys, and creative brands.',colors:['#FFF8EF','#3C2E58','#F0784B'],primary_colour:'#7146A6',bg_colour:'#FFF8EF',accent_colour:'#FFE0A8',font:'Poppins',order:['announcement','nav','hero','offers','products','gallery','reviews','contact']},{id:'tech',name:'Tech',family:'Modern · electronics',description:'Cool neutral surfaces and sharp blue highlights for gadgets and electronics.',colors:['#F1F5F9','#10243A','#2563EB'],primary_colour:'#2563EB',bg_colour:'#F1F5F9',accent_colour:'#DBEAFE',font:'Inter',order:['announcement','nav','hero','products','trust','why','reviews','contact']}];
@@ -416,8 +506,8 @@ function setSectionProp(key,prop,value){
 }
 function orderFor(){const c=selectedConfig();if(selectedTemplate==='home'){if(!c.section_order)c.section_order=[...defaultOrder];return c.section_order}return []}function pageContext(){return selectedTemplate==='page'?pages.find(p=>String(p.id)===String(selectedResource)):null}
 function templateSections(){if(selectedTemplate==='home')return orderFor().filter(x=>sectionMeta[x]);if(selectedTemplate==='product')return ['product'];if(selectedTemplate==='collection')return ['collection'];if(selectedTemplate==='page')return ['page_content'];return []}
-async function init(){if(!token){location.href='../auth/login.html';return}try{const data=await api('/stores');stores=data.stores||[];const s=document.getElementById('storeSelect');s.replaceChildren(...stores.map(x=>new Option(x.store_name+' · '+x.slug,x.id)));if(!stores.length){location.href='./setup.html';return}await selectStore(s.value)}catch(e){toast(e.message,true)}}
-async function selectStore(id){clearTimeout(saveTimer);store=(stores||[]).find(x=>String(x.id)===String(id));if(!store)return;selectedTemplate='home';selectedResource='';selectedSection='hero';document.getElementById('templateSelect').value='home';document.getElementById('resourceSelect').hidden=true;document.getElementById('saveState').textContent='Loading…';try{const d=await api('/stores/'+store.id+'/builder');store=d.store;products=d.products||[];categories=d.categories||[];pages=d.pages||[];themeConfig=store.theme_config||{};if(!themeConfig.fields)themeConfig.fields={};if(!themeConfig.style_preset&&store.theme_name==='dark-navy')themeConfig.style_preset='dark-navy';dirty=false;document.getElementById('saveState').textContent='All changes saved';document.getElementById('previewDomain').textContent=store.custom_domain||store.slug+'.zkcommerce.in';renderTree();renderThemeStyles();renderProperties(selectedSection);renderProducts();renderCategories();renderPages();renderStoreSettings();await refreshPreview()}catch(e){toast(e.message,true)}}
+async function init(){if(!token){location.href='../auth/login.html';return}try{const data=await api('/stores');stores=data.stores||[];const s=document.getElementById('storeSelect');s.replaceChildren(...stores.map(x=>new Option(x.store_name+' · '+x.slug,x.id)));if(!stores.length){location.href='./setup.html';return}const wantStore=new URLSearchParams(location.search).get('store_id');if(wantStore&&stores.some(x=>String(x.id)===wantStore))s.value=wantStore;await selectStore(s.value);if(location.hash==='#publish')openPublishPortal()}catch(e){toast(e.message,true)}}
+async function selectStore(id){clearTimeout(saveTimer);store=(stores||[]).find(x=>String(x.id)===String(id));if(!store)return;selectedTemplate='home';selectedResource='';selectedSection='hero';document.getElementById('templateSelect').value='home';document.getElementById('resourceSelect').hidden=true;document.getElementById('saveState').textContent='Loading…';try{const d=await api('/stores/'+store.id+'/builder');store=d.store;products=d.products||[];categories=d.categories||[];pages=d.pages||[];paymentsInfo=d.payments||{};document.getElementById('packagingLink').href='../merchant/packaging.html?store_id='+encodeURIComponent(store.id);themeConfig=store.theme_config||{};if(!themeConfig.fields)themeConfig.fields={};if(!themeConfig.style_preset&&store.theme_name==='dark-navy')themeConfig.style_preset='dark-navy';dirty=false;document.getElementById('saveState').textContent='All changes saved';document.getElementById('previewDomain').textContent=store.custom_domain||store.slug+'.zkcommerce.in';renderTree();renderThemeStyles();renderProperties(selectedSection);renderProducts();renderCategories();renderPages();renderStoreSettings();await refreshPreview()}catch(e){toast(e.message,true)}}
 function setWorkspace(name){for(const id of ['centerPane','leftPane','rightPane','productsWorkspace','pagesWorkspace','settingsWorkspace'])document.getElementById(id).hidden=false;document.getElementById('leftPane').style.display=name==='theme'?'flex':'none';document.getElementById('rightPane').style.display=name==='theme'?'flex':'none';document.getElementById('centerPane').style.display=name==='theme'?'flex':'none';document.getElementById('productsWorkspace').hidden=name!=='products';document.getElementById('pagesWorkspace').hidden=name!=='pages';document.getElementById('settingsWorkspace').hidden=name!=='settings'}
 function updateResourcePicker(){const t=document.getElementById('templateSelect'),r=document.getElementById('resourceSelect');selectedTemplate=t.value;r.hidden=!['product','collection','page'].includes(selectedTemplate);r.replaceChildren();if(selectedTemplate==='product'){products.forEach(p=>r.add(new Option(p.name,p.id)));if(selectedResource&&products.some(p=>String(p.id)===String(selectedResource)))r.value=String(selectedResource);else selectedResource=r.value||products[0]?.id||''}else if(selectedTemplate==='collection'){categories.forEach(c=>r.add(new Option(c.name,c.name)));if(selectedResource&&categories.some(c=>c.name===selectedResource||c.slug===selectedResource)){const mc=categories.find(c=>c.name===selectedResource||c.slug===selectedResource);r.value=mc?mc.name:selectedResource;selectedResource=r.value}else selectedResource=r.value||categories[0]?.name||''}else if(selectedTemplate==='page'){pages.forEach(p=>r.add(new Option(p.title,p.id)));if(selectedResource&&pages.some(p=>String(p.id)===String(selectedResource)))r.value=String(selectedResource);else selectedResource=r.value||pages[0]?.id||''}renderTree();renderProperties(selectedSection==='theme'?'theme':selectedSection);refreshPreview()}
 let previewSequence=0;
@@ -534,7 +624,7 @@ function bindSectionProperties(key){document.querySelectorAll('#propertyBody [da
   });
 }
 async function uploadFile(input,key){const files=Array.from(input.files||[]);if(!files.length)return;try{const urls=[];for(const file of files){const form=new FormData();form.append('file',file);form.append('scope',input.dataset.upload);const result=await api('/upload/'+store.id,{method:'POST',body:form});urls.push(result.url)}const prop=input.dataset.upload;if(input.dataset.scope==='fields'){themeConfig.fields=themeConfig.fields||{};themeConfig.fields[prop]=urls[0]}else{const sections=getSectionsConfig();sections[key]=sections[key]||{};if(prop==='images')sections[key][prop]=[...(Array.isArray(sections[key][prop])?sections[key][prop]:[]),...urls];else sections[key][prop]=urls[0]}setDirty();renderProperties(key);refreshPreview();toast(urls.length>1?'Images uploaded':'Image uploaded')}catch(e){toast(e.message,true)}input.value=''}
-function renderStoreSettings(){const host=document.getElementById('storeSettingsForm');const domainHelp=store?.custom_domain?'<div style="grid-column:1/-1;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;font-size:12px;color:#166534;line-height:1.6"><strong>🌐 Connected Domain: '+esc(store.custom_domain)+'</strong><br>• <strong>A Record (@):</strong> Point to your SaaS Server Public IP (TTL: 600s)<br>• <strong>CNAME (www):</strong> Point to <code>stores.zkcommerce.in</code><br>• <strong>Live URL:</strong> <a href="https://'+esc(store.custom_domain)+'" target="_blank" style="color:#15803d;font-weight:700">https://'+esc(store.custom_domain)+'</a></div>':'';host.innerHTML='<div class="product-form">'+field('Store name','store_name',store?.store_name||'')+field('Tagline','tagline',store?.tagline||'')+field('Store URL slug','slug',store?.slug||'')+field('Custom domain (e.g. smeram-naturals.in)','custom_domain',store?.custom_domain||'')+domainHelp+field('Hero headline','hero_headline',store?.hero_headline||'')+field('Hero subtext','hero_subtext',store?.hero_subtext||'')+field('Hero button','hero_cta_text',store?.hero_cta_text||'')+field('WhatsApp number','whatsapp_number',store?.whatsapp_number||'')+field('Instagram handle','instagram_handle',store?.instagram_handle||'')+field('City','city',store?.city||'')+field('State','state',store?.state||'')+field('Address','address',store?.address||'','textarea','class="span2"')+'</div><p class="notice" style="margin:14px 0">Domain changes are saved with the theme draft. Point your GoDaddy DNS A/CNAME to your SaaS server.</p><button class="btn btn-primary" id="saveStoreSettings">Save settings</button>';document.getElementById('saveStoreSettings').onclick=async()=>{const fields={};host.querySelectorAll('[data-path]').forEach(el=>fields[el.dataset.path]=el.value);try{await api('/stores/'+store.id+'/draft',{method:'PUT',body:JSON.stringify({theme_config:themeConfig,store_fields:fields})});Object.assign(store,fields);dirty=false;document.getElementById('saveState').textContent='All changes saved';renderStoreSettings();refreshPreview();toast('Store settings saved')}catch(e){toast(e.message,true)}}}
+function renderStoreSettings(){const host=document.getElementById('storeSettingsForm');const domainHelp=store?.custom_domain?'<div style="grid-column:1/-1;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;font-size:12px;color:#166534;line-height:1.6"><strong>🌐 Connected Domain: '+esc(store.custom_domain)+'</strong><br>• <strong>A Record (@):</strong> Point to your SaaS Server Public IP (TTL: 600s)<br>• <strong>CNAME (www):</strong> Point to <code>stores.zkcommerce.in</code><br>• <strong>Live URL:</strong> <a href="https://'+esc(store.custom_domain)+'" target="_blank" style="color:#15803d;font-weight:700">https://'+esc(store.custom_domain)+'</a></div>':'';host.innerHTML='<div class="product-form">'+field('Store name','store_name',store?.store_name||'')+field('Tagline','tagline',store?.tagline||'')+field('Store URL slug','slug',store?.slug||'')+field('Custom domain (e.g. smeram-naturals.in)','custom_domain',store?.custom_domain||'')+domainHelp+field('Hero headline','hero_headline',store?.hero_headline||'')+field('Hero subtext','hero_subtext',store?.hero_subtext||'')+field('Hero button','hero_cta_text',store?.hero_cta_text||'')+field('WhatsApp number','whatsapp_number',store?.whatsapp_number||'')+field('Instagram handle','instagram_handle',store?.instagram_handle||'')+field('City','city',store?.city||'')+field('State','state',store?.state||'')+field('Address','address',store?.address||'','textarea','class="span2"')+'</div><p class="notice" style="margin:14px 0">Domain changes are saved with the theme draft. Point your GoDaddy DNS A/CNAME to your SaaS server.</p><button class="btn btn-primary" id="saveStoreSettings">Save settings</button>';document.getElementById('saveStoreSettings').onclick=async()=>{const fields={};host.querySelectorAll('[data-path]').forEach(el=>fields[el.dataset.path]=el.value);try{await api('/stores/'+store.id+'/draft',{method:'PUT',body:JSON.stringify({theme_config:themeConfig,store_fields:fields})});Object.assign(store,fields);dirty=false;document.getElementById('saveState').textContent='All changes saved';renderStoreSettings();refreshPreview();toast('Store settings saved')}catch(e){toast(e.message,true)}};renderCheckoutSettings(host);renderWhatsAppSettings(host)}
 async function saveDraft(){if(!store||!dirty)return;try{const data=await api('/stores/'+store.id+'/draft',{method:'PUT',body:JSON.stringify({theme_config:themeConfig})});store=data.store;dirty=false;document.getElementById('saveState').textContent='Saved';renderTree();refreshPreview()}catch(e){document.getElementById('saveState').textContent='Save failed';toast(e.message,true)}}
 async function saveNow(){clearTimeout(saveTimer);if(!dirty){toast('Everything is saved');return}await saveDraft();if(!dirty)toast('Draft saved')}
 async function publish(){try{if(dirty)await saveDraft();if(dirty)throw Error('The draft could not be saved. Fix the save error before publishing.');const r=await api('/stores/'+store.id+'/publish',{method:'POST',body:JSON.stringify({})});store={...store,...r.store};document.getElementById('saveState').textContent='Published';const liveUrl=store.custom_domain?'https://'+store.custom_domain:store.slug+'.zkcommerce.in';toast('Published snapshot is live: '+liveUrl)}catch(e){toast(e.message,true)}}
@@ -624,13 +714,337 @@ document.querySelectorAll('[data-workspace]').forEach(b=>b.addEventListener('cli
 const renderPropertiesBase=renderProperties;renderProperties=function(key){renderPropertiesBase(key);if(key==='collection'){const s=getSectionsConfig().collection||{},body=document.getElementById('propertyBody');body.innerHTML='<div class="group"><div class="group-title">Collection template</div>'+sectionField('Heading','heading',s.heading||themeConfig.fields.collection_heading||'Shop all')+colorSection('Background','background',s.background||'#ffffff')+'<div class="notice">This template previews products from the selected product category.</div></div>';bindSectionProperties(key)}};const renderTreeBase=renderTree;renderTree=function(){renderTreeBase();if(selectedTemplate!=='home'){const b=document.querySelector('#sectionTree .add-section');if(b){b.disabled=true;b.textContent='Template sections fixed';b.title='Section editing is available for the home template; product and content template layouts are fixed.'}}};
 const frameWrapEl=document.getElementById('frameWrap');if(frameWrapEl){frameWrapEl.addEventListener('wheel',e=>{const f=frameWrapEl.querySelector('iframe');if(f&&f.contentWindow){f.contentWindow.scrollBy({top:e.deltaY,behavior:'auto'})}},{passive:true})}
 
+// Shopping cart & checkout settings (theme_config.checkout) — preview updates at once, live store after Publish.
+function checkoutConfig() {
+  const c = themeConfig.checkout || {};
+  return { show_coupon: c.show_coupon !== false, cod: c.cod !== false || c.razorpay === false, razorpay: c.razorpay !== false };
+}
+
+function renderCheckoutSettings(host) {
+  const c = checkoutConfig();
+  const rzpReady = !!paymentsInfo.razorpay_configured;
+  const row = (id, checked, title, help) => `<label style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;background:#fff"><input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="margin-top:3px"><span><strong style="font-size:13px">${title}</strong><br><span style="font-size:12px;color:#64748b">${help}</span></span></label>`;
+  host.insertAdjacentHTML('beforeend', `<div id="checkoutSettingsCard" style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:18px">
+    <h3 style="font-size:15px;margin-bottom:4px">Shopping cart &amp; checkout</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:12px">Choose what shoppers see in the cart. The preview updates immediately; the live store changes after you Publish.</p>
+    <div style="display:grid;gap:8px;max-width:620px">
+      ${row('chk_show_coupon', c.show_coupon, 'Show discount code box', 'Shoppers can enter a coupon in the cart. Turn off if you do not run coupon offers.')}
+      <div style="font-size:12px;font-weight:700;color:#475569;margin-top:6px">Payment methods offered</div>
+      ${row('chk_pay_razorpay', c.razorpay, 'Pay online via Razorpay', 'UPI, cards, netbanking, wallets. ' + (rzpReady ? `Razorpay is configured (${esc(paymentsInfo.razorpay_mode || 'test')} keys).` : '<b style="color:#b91c1c">Razorpay keys are not configured on the server.</b>'))}
+      ${row('chk_pay_cod', c.cod, 'Cash on delivery', 'Order is confirmed immediately and paid on delivery.')}
+    </div>
+    <div id="checkoutSettingsMsg" style="font-size:12px;font-weight:600;margin:10px 0;min-height:16px"></div>
+    <button class="btn btn-primary" id="saveCheckoutSettings">Save checkout settings</button>
+  </div>`);
+  const msg = document.getElementById('checkoutSettingsMsg');
+  const validate = () => {
+    const rzp = document.getElementById('chk_pay_razorpay').checked, cod = document.getElementById('chk_pay_cod').checked;
+    if (!rzp && !cod) { msg.style.color = '#b91c1c'; msg.textContent = 'Keep at least one payment method on.'; return false; }
+    if (!cod && !rzpReady) { msg.style.color = '#b91c1c'; msg.textContent = 'Razorpay is not configured, so turning off Cash on delivery would block all orders.'; return false; }
+    msg.style.color = '#64748b';
+    msg.textContent = !cod ? 'Shoppers will only see “Pay online via Razorpay”.' : !rzp ? 'Shoppers will only see “Cash on delivery”.' : 'Shoppers can choose Cash on delivery or Razorpay.';
+    return true;
+  };
+  ['chk_pay_razorpay', 'chk_pay_cod', 'chk_show_coupon'].forEach(id => document.getElementById(id).onchange = validate);
+  validate();
+  document.getElementById('saveCheckoutSettings').onclick = async () => {
+    if (!validate()) return;
+    themeConfig.checkout = {
+      show_coupon: document.getElementById('chk_show_coupon').checked,
+      razorpay: document.getElementById('chk_pay_razorpay').checked,
+      cod: document.getElementById('chk_pay_cod').checked
+    };
+    dirty = true;
+    await saveDraft();
+    if (!dirty) toast('Checkout settings saved — Publish to apply them to the live store');
+  };
+}
+
+// WhatsApp order messages (no Business API): templates with {fields}, sent through click-to-chat links.
+// Saved immediately (not part of the theme draft); PHP packages pick them up on the next build.
+async function renderWhatsAppSettings(host) {
+  host.insertAdjacentHTML('beforeend', '<div id="waSettingsCard" style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:18px"><h3 style="font-size:15px;margin-bottom:4px">WhatsApp order messages</h3><p style="font-size:12px;color:#64748b">Loading…</p></div>');
+  const card = document.getElementById('waSettingsCard');
+  let d;
+  try { d = await api('/orders/whatsapp-settings?store_id=' + encodeURIComponent(store.id)); }
+  catch (e) { card.querySelector('p').textContent = 'Could not load WhatsApp settings: ' + e.message; return; }
+  const s = d.settings;
+  const chips = d.placeholders.map(p => `<button type="button" class="btn" data-ph="${esc(p.key)}" title="${esc(p.label)}" style="height:26px;font-size:11px;padding:0 8px">{${esc(p.key)}}</button>`).join(' ');
+  const ta = (id, value) => `<textarea id="${id}" rows="9" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace;padding:8px;border:1px solid #cbd5e1;border-radius:8px">${esc(value)}</textarea>`;
+  card.innerHTML = `<h3 style="font-size:15px;margin-bottom:4px">WhatsApp order messages</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:12px;max-width:760px">Works without the WhatsApp Business API: after checkout the shopper's WhatsApp opens with the order typed out to your customer-care number (they tap Send), and the 📦 Packaging page has one-click buttons to message customers. If an official provider is connected, the same messages are sent automatically.</p>
+    <div style="display:grid;gap:10px;max-width:760px">
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="wa_enabled" ${s.enabled ? 'checked' : ''}> <b>Use WhatsApp order messages</b></label>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="wa_handoff" ${s.customer_handoff ? 'checked' : ''}> After an order is placed / paid, open the shopper's WhatsApp to send the order to customer care</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <label style="font-size:11px;font-weight:700;color:#475569">Customer-care WhatsApp number<input id="wa_number" value="${esc(s.care_number ? '+' + s.care_number : '')}" placeholder="+91 75399 72026" style="width:100%;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px"></label>
+        <label style="font-size:11px;font-weight:700;color:#475569">Shown as<input id="wa_label" value="${esc(s.care_label)}" placeholder="Smeram Customer Care" style="width:100%;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px"></label>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:#475569">Fields — click to insert into the message you are editing</div>
+      <div id="wa_chips" style="display:flex;flex-wrap:wrap;gap:4px">${chips}</div>
+      <label style="font-size:11px;font-weight:700;color:#475569">Message to customer care (new order)${ta('wa_care_tpl', s.care_template)}</label>
+      <label style="font-size:11px;font-weight:700;color:#475569">Message to the customer (from the Packaging page)${ta('wa_customer_tpl', s.customer_template)}</label>
+      <div style="font-size:11px;font-weight:700;color:#475569">Preview with a sample order</div>
+      <pre id="wa_preview" style="white-space:pre-wrap;background:#ecfdf5;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;font:12.5px/1.45 system-ui,sans-serif;margin:0"></pre>
+    </div>
+    <div id="waMsg" style="font-size:12px;font-weight:600;margin:10px 0;min-height:16px"></div>
+    <button class="btn btn-primary" id="saveWaSettings">Save WhatsApp messages</button> <button class="btn" id="resetWaTemplates">Reset templates to default</button>`;
+  let lastFocus = document.getElementById('wa_care_tpl');
+  ['wa_care_tpl', 'wa_customer_tpl'].forEach(id => { const el = document.getElementById(id); el.onfocus = () => lastFocus = el; el.oninput = preview; });
+  card.querySelectorAll('[data-ph]').forEach(b => b.onclick = () => {
+    const el = lastFocus, tok = '{' + b.dataset.ph + '}', at = el.selectionStart ?? el.value.length;
+    el.value = el.value.slice(0, at) + tok + el.value.slice(el.selectionEnd ?? at);
+    el.focus(); el.selectionStart = el.selectionEnd = at + tok.length; preview();
+  });
+  // Sample values for the preview (the server fills real values for each order).
+  const sample = { order_id: 'ZK1792938487215', customer_name: 'Priya Nair', customer_phone: '+91 98765 43210', customer_email: 'priya@example.com', products: '1. Smeram Naturals Hair Oil (100 ml) × 2 — ₹598', product_names: 'Smeram Naturals Hair Oil', item_count: '2', total: '₹598', payment_method: 'Paid online (Razorpay)', payment_status: 'paid', address: '12 Lake View Road, Chennai, Tamil Nadu, 600041', city: 'Chennai', pincode: '600041', order_date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), order_time: '10:42 am', tracking_number: '', store_name: store.store_name };
+  function preview() {
+    const which = lastFocus && lastFocus.id === 'wa_customer_tpl' ? 'wa_customer_tpl' : 'wa_care_tpl';
+    document.getElementById('wa_preview').textContent = document.getElementById(which).value.replace(/\{([a-z_]+)\}/g, (m, k) => sample[k] !== undefined ? sample[k] : m);
+  }
+  preview();
+  document.getElementById('resetWaTemplates').onclick = () => {
+    document.getElementById('wa_care_tpl').value = d.defaults.care_template;
+    document.getElementById('wa_customer_tpl').value = d.defaults.customer_template;
+    preview();
+  };
+  document.getElementById('saveWaSettings').onclick = async () => {
+    const msg = document.getElementById('waMsg');
+    try {
+      const r = await api('/orders/whatsapp-settings?store_id=' + encodeURIComponent(store.id), { method: 'PUT', body: JSON.stringify({
+        enabled: document.getElementById('wa_enabled').checked,
+        customer_handoff: document.getElementById('wa_handoff').checked,
+        care_number: document.getElementById('wa_number').value.trim(),
+        care_label: document.getElementById('wa_label').value.trim(),
+        care_template: document.getElementById('wa_care_tpl').value,
+        customer_template: document.getElementById('wa_customer_tpl').value
+      }) });
+      document.getElementById('wa_number').value = r.settings.care_number ? '+' + r.settings.care_number : '';
+      msg.style.color = '#15803d';
+      msg.textContent = '✅ Saved. Live on the Node store now; rebuild the PHP package to update GoDaddy.';
+      toast('WhatsApp messages saved');
+    } catch (e) { msg.style.color = '#b91c1c'; msg.textContent = '❌ ' + e.message; toast(e.message, true); }
+  };
+}
+
 let selectedProvider = 'godaddy';
 let selectedDbType = 'mysql';
+let selectedEnv = 'production';
+let selectedTech = 'php';
+let deploySettings = null;
+const ENV_SUFFIX = { development: '-dev', stage: '-stage', preview: '-preview', production: '' };
+const PROVIDER_TECH = { godaddy: 'php', railway: 'nodejs', vercel: 'static', github: 'static' };
+
+function envSettings() {
+  return (deploySettings && deploySettings.environments[selectedEnv]) || {};
+}
+
+async function loadDeploySettings() {
+  try { deploySettings = await api('/stores/' + store.id + '/deployment-settings'); }
+  catch (e) { deploySettings = null; toast('Could not load saved deployment settings: ' + e.message, true); }
+  if (deploySettings && deploySettings.active_env) selectedEnv = deploySettings.active_env;
+  applyEnvToForm();
+}
+
+function setPasswordPlaceholder(id, hasSaved) {
+  const el = document.getElementById(id);
+  el.value = '';
+  el.placeholder = hasSaved ? 'Saved — leave blank to keep' : '••••••••';
+}
+
+function selectTech(tech) {
+  selectedTech = tech;
+  document.querySelectorAll('#techGrid .provider-card').forEach(c => c.classList.toggle('active', c.dataset.tech === tech));
+  updatePackagePreview();
+}
+
+function nextVersionFor() {
+  return (deploySettings && deploySettings.next_versions && deploySettings.next_versions[selectedEnv + ':' + selectedTech]) || '1.0.1';
+}
+
+function updatePackagePreview() {
+  if (!store) return;
+  const slug = String(store.slug || 'store').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  const sfx = ENV_SUFFIX[selectedEnv];
+  const v = document.getElementById('pub_version').value.trim() || nextVersionFor();
+  document.getElementById('pub_version').placeholder = nextVersionFor();
+  const name = selectedTech === 'php' ? `deployment/${slug}-godaddy-deploy${sfx}-v${v}.zip`
+    : selectedTech === 'nodejs' ? `deployment/published/${slug}${sfx}-nodejs-v${v}.zip`
+    : `deployment/published/${slug}-static${sfx}-v${v}.zip`;
+  document.getElementById('pkgNamePreview').textContent = name;
+  const last = envSettings().last_package;
+  document.getElementById('pkgStatusMsg').textContent = last ? `Last build: ${last.zip_name} · ${new Date(last.built_at).toLocaleString()}` : '';
+}
+
+function setFtpStatus(text, color) {
+  const el = document.getElementById('ftpStatusMsg');
+  el.textContent = text;
+  el.style.color = color || '#64748b';
+}
+
+// Fill DB / FTP / domain / technology fields from the saved settings of the selected environment.
+function applyEnvToForm() {
+  document.querySelectorAll('#envTabs button').forEach(b => b.classList.toggle('active', b.dataset.env === selectedEnv));
+  const e = envSettings();
+  const db = e.db || {};
+  const type = db.type || (selectedProvider === 'railway' || selectedProvider === 'vercel' ? 'postgres' : 'mysql');
+  selectedDbType = type;
+  document.querySelector('input[name="portal_db_type"][value="' + type + '"]').checked = true;
+  document.getElementById('dbTypeMysqlCard').classList.toggle('active', type === 'mysql');
+  document.getElementById('dbTypePostgresCard').classList.toggle('active', type === 'postgres');
+  document.getElementById('pub_db_host').value = db.host || 'localhost';
+  document.getElementById('pub_db_port').value = db.port || (type === 'mysql' ? '3306' : '5432');
+  document.getElementById('pub_db_name').value = db.name || (store.slug || 'store').replace(/[^a-zA-Z0-9_]/g, '_') + '_db';
+  document.getElementById('pub_db_user').value = db.user || 'root';
+  setPasswordPlaceholder('pub_db_pass', db.has_password);
+  const pay = e.payments || {};
+  document.getElementById('pub_rzp_key').value = pay.key_id || '';
+  setPasswordPlaceholder('pub_rzp_secret', pay.has_secret);
+  document.getElementById('rzpKeyHint').textContent = pay.key_id
+    ? `Packages for ${selectedEnv} use these ${/^rzp_live_/.test(pay.key_id) ? 'LIVE' : 'TEST'} keys for online payment.`
+    : `Leave blank to use this server's ${paymentsInfo.razorpay_configured ? (paymentsInfo.razorpay_mode || 'test').toUpperCase() + ' keys' : 'keys (none configured)'}. Use live keys for Production.`;
+  document.getElementById('dbSaveMsg').textContent = e.db ? '✅ Saved for ' + selectedEnv : 'Not saved for ' + selectedEnv;
+  document.getElementById('dbSaveMsg').style.color = e.db ? '#15803d' : '#64748b';
+
+  const ftp = e.ftp || {};
+  document.getElementById('ftp_host').value = ftp.host || '';
+  document.getElementById('ftp_port').value = ftp.port || 21;
+  document.getElementById('ftp_user').value = ftp.user || '';
+  document.getElementById('ftp_path').value = ftp.path || '/public_html';
+  document.getElementById('ftp_secure').checked = !!ftp.secure;
+  setPasswordPlaceholder('ftp_pass', ftp.has_password);
+  document.getElementById('deployFtpBtn').disabled = !(e.ftp && e.ftp_tested_at);
+  if (!e.ftp) setFtpStatus('Not saved for ' + selectedEnv);
+  else if (e.ftp_tested_at) setFtpStatus('✅ Saved & tested ' + new Date(e.ftp_tested_at).toLocaleString(), '#15803d');
+  else setFtpStatus('Saved — run Test Connection to enable upload', '#b45309');
+
+  document.getElementById('pub_custom_domain').value = selectedEnv === 'production' ? (store.custom_domain || e.custom_domain || '') : (e.custom_domain || '');
+  document.getElementById('pub_version').value = '';
+  selectTech(e.technology || PROVIDER_TECH[selectedProvider] || 'php');
+  renderMigrationPicker();
+  renderDownloadTarget();
+  renderEnvPreview();
+}
+
+// "Database is currently at" options: this environment's builds, newest first, with the schema each shipped.
+function renderMigrationPicker() {
+  const sel = document.getElementById('mig_from');
+  const schema = (deploySettings && deploySettings.schema) || { latest: '', migrations: [] };
+  const ids = schema.migrations.map(m => m.id);
+  const builds = envSettings().builds || [];
+  const pendingAfter = s => { const i = ids.indexOf(s); return i < 0 ? ids.length : ids.length - 1 - i; };
+  sel.replaceChildren(
+    new Option(`Fresh / unknown database — all ${ids.length} migrations`, ''),
+    ...builds.map(b => {
+      const n = pendingAfter(b.schema);
+      return new Option(`v${b.version} (${b.technology}, ${new Date(b.built_at).toLocaleDateString()}) — ${n ? n + ' schema change' + (n > 1 ? 's' : '') : 'schema up to date'}`, b.version);
+    })
+  );
+  // The usual case: the previous build is what is live, the newest is what you are about to deploy.
+  sel.value = builds.length > 1 ? builds[1].version : builds.length ? builds[0].version : '';
+  document.getElementById('schemaInfo').textContent = ids.length
+    ? `Latest schema: ${schema.latest} (${ids.length} migrations). Pick the version your ${selectedEnv} database was last deployed with.`
+    : '';
+  const last = envSettings().last_migration;
+  document.getElementById('migStatusMsg').textContent = last ? `Last migration: ${last.zip_name}` : '';
+  document.getElementById('migStatusMsg').style.color = '#64748b';
+}
+
+function ftpFormValues() {
+  return {
+    host: document.getElementById('ftp_host').value.trim(),
+    port: Number(document.getElementById('ftp_port').value.trim()) || 21,
+    user: document.getElementById('ftp_user').value.trim(),
+    password: document.getElementById('ftp_pass').value,
+    path: document.getElementById('ftp_path').value.trim() || '/public_html',
+    secure: document.getElementById('ftp_secure').checked
+  };
+}
+
+async function saveEnvSection(body) {
+  const res = await api('/stores/' + store.id + '/deployment-settings/' + selectedEnv, { method: 'PUT', body: JSON.stringify(body) });
+  deploySettings = { ...deploySettings, ...res.settings, next_versions: deploySettings && deploySettings.next_versions, schema: deploySettings && deploySettings.schema };
+  return res;
+}
+
+// Where downloads go: the browser's Downloads folder on this device, the project folder on the
+// server PC (deployment\<client>\downloads), or both. Remembered per browser.
+function downloadTarget() {
+  try { return localStorage.getItem('zk_dl_target') || 'browser'; } catch (_) { return 'browser'; }
+}
+function projectDownloadsFolder() {
+  return 'deployment\\' + String(store?.slug || 'store').toLowerCase().replace(/[^a-z0-9_-]/g, '-') + '\\downloads';
+}
+function renderDownloadTarget() {
+  const sel = document.getElementById('dl_target');
+  sel.value = downloadTarget();
+  sel.options[1].textContent = 'PC project folder: ' + projectDownloadsFolder();
+  const onServerPc = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  document.getElementById('dlTargetHint').textContent = sel.value === 'browser'
+    ? (onServerPc ? 'Saved by the browser to this PC\'s Downloads folder.' : '⚠ You are not on the server PC: the browser saves to THIS device (e.g. your phone). Choose "PC project folder" to keep it on the PC.')
+    : `Saved on the server PC in ${projectDownloadsFolder()}` + (sel.value === 'both' ? ', and also by the browser to this device\'s Downloads folder.' : '.');
+}
+
+function browserDownload(zipName) {
+  const a = document.createElement('a');
+  a.href = API + '/stores/' + store.id + '/deployment-zip?file=' + encodeURIComponent(zipName) + '&token=' + encodeURIComponent(token);
+  a.download = zipName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// Deliver a built ZIP to the chosen place(s). Browser downloads stream through the download
+// manager (packages are ~30 MB); the token is in the URL because a link cannot send headers.
+async function downloadPackage(zipName) {
+  const target = downloadTarget();
+  const done = [];
+  if (target === 'project' || target === 'both') {
+    const r = await api('/stores/' + store.id + '/deployment-zip/save', { method: 'POST', body: JSON.stringify({ file: zipName }) });
+    done.push('saved to ' + r.saved_path);
+  }
+  if (target === 'browser' || target === 'both') {
+    const head = await fetch(API + '/stores/' + store.id + '/deployment-zip?file=' + encodeURIComponent(zipName) + '&token=' + encodeURIComponent(token), { method: 'HEAD' });
+    if (!head.ok) throw Error(head.status === 404 ? zipName + ' was not found. Build it again.' : 'Download failed (HTTP ' + head.status + ')');
+    browserDownload(zipName);
+    done.push('sent to this device\'s Downloads folder');
+  }
+  const text = zipName + ' ' + done.join(' and ');
+  toast(text);
+  return text;
+}
+
+// "Failed to fetch" = the connection dropped (usually the dev server restarting mid-request).
+// The build may still have finished, so look for a newer build before reporting failure.
+async function recoverDroppedBuild(previousBuiltAt) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    await new Promise(r => setTimeout(r, 1500));
+    try {
+      deploySettings = await api('/stores/' + store.id + '/deployment-settings');
+      const last = envSettings().last_package;
+      if (last && last.built_at !== previousBuiltAt) return last;
+      return null;
+    } catch (_) { /* server still restarting */ }
+  }
+  return null;
+}
+const isNetworkError = e => e instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(String(e && e.message));
+
+async function refreshVersions() {
+  try {
+    const fresh = await api('/stores/' + store.id + '/deployment-settings');
+    deploySettings = fresh;
+  } catch (_) {}
+  document.getElementById('pub_version').value = '';
+  updatePackagePreview();
+  renderMigrationPicker();
+}
 
 function openLivePreview() {
   if (!store) return;
   // Live HTTP preview endpoint ensures all images, fonts, styles, and APIs resolve 100% reliably
-  let url = '/api/stores/' + store.id + '/preview?format=html';
+  // A new tab cannot send the Authorization header, so the token travels in the query string.
+  let url = '/api/stores/' + store.id + '/preview?format=html&token=' + encodeURIComponent(token);
   if (selectedTemplate && selectedTemplate !== 'home') {
     url += '&template=' + encodeURIComponent(selectedTemplate);
     if (selectedResource) {
@@ -651,24 +1065,18 @@ function openPublishPortal() {
   document.getElementById('pubModalBadge').textContent = isPub ? 'Published · Live' : 'Draft Ready';
   document.getElementById('pubModalBadge').style.background = isPub ? '#10b981' : '#f59e0b';
   
-  document.getElementById('pub_custom_domain').value = store.custom_domain || '';
-  document.getElementById('pub_db_name').value = (store.slug || 'store').replace(/[^a-zA-Z0-9_]/g, '_') + '_db';
   document.getElementById('pubGlobalStatus').textContent = 'Ready to publish';
-  
+
   if (isPub) {
     const liveUrl = store.custom_domain ? 'https://' + store.custom_domain : '/store/' + store.slug;
     const openLive = document.getElementById('openLiveStoreBtn');
     openLive.href = liveUrl;
     openLive.style.display = 'inline-flex';
-    const dlBtn = document.getElementById('downloadZipBtn');
-    dlBtn.style.display = 'inline-flex';
-    dlBtn.onclick = () => {
-      window.location.href = API + '/stores/' + store.id + '/deployment-zip?token=' + encodeURIComponent(token);
-    };
   }
-  
-  renderEnvPreview();
+
+  applyEnvToForm();
   document.getElementById('publishModal').classList.add('open');
+  loadDeploySettings();
 }
 
 function renderEnvPreview() {
@@ -678,16 +1086,17 @@ function renderEnvPreview() {
   const dbPort = document.getElementById('pub_db_port')?.value.trim() || (selectedDbType === 'mysql' ? '3306' : '5432');
   const dbName = document.getElementById('pub_db_name')?.value.trim() || (store.slug.replace(/[^a-zA-Z0-9_]/g, '_') + '_db');
   const dbUser = document.getElementById('pub_db_user')?.value.trim() || 'root';
-  const dbPass = document.getElementById('pub_db_pass')?.value.trim() || 'your_db_password';
-  
+  const dbPass = document.getElementById('pub_db_pass')?.value.trim() || (envSettings().db?.has_password ? '<saved password>' : 'your_db_password');
+
   const env = `# ============================================================
-# Production Environment Configuration (.env)
+# ${selectedEnv.toUpperCase()} Environment Configuration (.env)
 # Store: ${store.store_name} (${store.slug})
-# Target Provider: ${selectedProvider.toUpperCase()}
+# Target Provider: ${selectedProvider.toUpperCase()} · Package: ${selectedTech.toUpperCase()}
 # Generated: ${new Date().toISOString()}
 # ============================================================
 PORT=3000
-NODE_ENV=production
+NODE_ENV=${selectedEnv === 'development' ? 'development' : 'production'}
+APP_ENV=${selectedEnv}
 STORE_SLUG=${store.slug}
 CUSTOM_DOMAIN=${domain}
 
@@ -722,6 +1131,9 @@ async function executePublish() {
     document.getElementById('executePublishBtn').disabled = true;
     
     const payload = {
+      env: selectedEnv,
+      technology: selectedTech,
+      version: document.getElementById('pub_version').value.trim() || undefined,
       provider: selectedProvider,
       db_type: selectedDbType,
       custom_domain: document.getElementById('pub_custom_domain').value.trim() || null,
@@ -747,7 +1159,7 @@ async function executePublish() {
     resCard.style.display = 'block';
     document.getElementById('pubTimeBadge').textContent = new Date().toLocaleTimeString();
     document.getElementById('pubExportDir').textContent = res.deployment.export_dir;
-    document.getElementById('pubZipPath').textContent = res.deployment.zip_path;
+    document.getElementById('pubZipPath').textContent = res.deployment.zip_path || ('ZIP failed: ' + res.deployment.zip_error);
     const liveLink = document.getElementById('pubLiveLink');
     liveLink.href = res.live_url;
     liveLink.textContent = res.live_url;
@@ -758,11 +1170,10 @@ async function executePublish() {
     
     const dlBtn = document.getElementById('downloadZipBtn');
     dlBtn.style.display = 'inline-flex';
-    dlBtn.onclick = () => {
-      window.location.href = API + '/stores/' + store.id + '/deployment-zip?token=' + encodeURIComponent(token);
-    };
-    
-    toast('Published & exported to ' + res.deployment.export_dir);
+    dlBtn.onclick = () => downloadPackage(res.deployment.zip_name).catch(e => toast(e.message, true));
+    await refreshVersions();
+
+    toast('Published ' + selectedEnv + ' v' + res.deployment.version + ' → ' + res.deployment.zip_name);
   } catch (err) {
     document.getElementById('pubGlobalStatus').textContent = '❌ Error: ' + err.message;
     toast(err.message, true);
@@ -803,9 +1214,107 @@ function bindPublishPortal() {
         selectedDbType = 'mysql';
         document.getElementById('pub_db_port').value = '3306';
       }
+      selectTech(PROVIDER_TECH[selectedProvider] || 'php');
       renderEnvPreview();
     };
   });
+
+  // Download destination
+  document.getElementById('dl_target').onchange = e => {
+    try { localStorage.setItem('zk_dl_target', e.target.value); } catch (_) {}
+    renderDownloadTarget();
+  };
+  document.getElementById('openDlFolderBtn').onclick = async () => {
+    try {
+      const last = envSettings().last_package;
+      const r = await api('/stores/' + store.id + '/deployment-zip/open-folder', { method: 'POST', body: JSON.stringify({ file: last && last.zip_name }) });
+      toast('Opened ' + r.folder + ' on the PC');
+    } catch (e) { toast(e.message, true); }
+  };
+
+  // Environment tabs
+  document.querySelectorAll('#envTabs button').forEach(btn => {
+    btn.onclick = () => { selectedEnv = btn.dataset.env; applyEnvToForm(); };
+  });
+
+  // Package technology
+  document.querySelectorAll('#techGrid .provider-card').forEach(card => {
+    card.onclick = () => { selectTech(card.dataset.tech); renderEnvPreview(); };
+  });
+  document.getElementById('pub_version').oninput = updatePackagePreview;
+
+  // Save database settings
+  document.getElementById('saveDbBtn').onclick = async () => {
+    const msg = document.getElementById('dbSaveMsg');
+    try {
+      await saveEnvSection({
+        db: {
+          type: selectedDbType,
+          host: document.getElementById('pub_db_host').value.trim(),
+          port: document.getElementById('pub_db_port').value.trim(),
+          name: document.getElementById('pub_db_name').value.trim(),
+          user: document.getElementById('pub_db_user').value.trim(),
+          password: document.getElementById('pub_db_pass').value
+        },
+        payments: { key_id: document.getElementById('pub_rzp_key').value.trim(), key_secret: document.getElementById('pub_rzp_secret').value },
+        custom_domain: selectedEnv === 'production' ? undefined : document.getElementById('pub_custom_domain').value.trim(),
+        technology: selectedTech,
+        provider: selectedProvider
+      });
+      applyEnvToForm();
+      msg.textContent = '✅ Saved for ' + selectedEnv;
+      msg.style.color = '#15803d';
+      toast('Database settings saved for ' + selectedEnv);
+    } catch (e) {
+      msg.textContent = '❌ ' + e.message;
+      msg.style.color = '#b91c1c';
+      toast(e.message, true);
+    }
+  };
+
+  // Download only the DB changes since the selected deployed version
+  document.getElementById('downloadMigrationBtn').onclick = async () => {
+    const btn = document.getElementById('downloadMigrationBtn');
+    const msg = document.getElementById('migStatusMsg');
+    btn.disabled = true;
+    msg.style.color = '#0284c7';
+    msg.textContent = '⏳ Building migration…';
+    try {
+      const res = await api('/stores/' + store.id + '/db-migration', {
+        method: 'POST',
+        body: JSON.stringify({ env: selectedEnv, from_version: document.getElementById('mig_from').value, include_seed: document.getElementById('mig_seed').checked })
+      });
+      const m = res.migration;
+      const where = await downloadPackage(m.zip_name);
+      if (deploySettings && deploySettings.environments[selectedEnv]) deploySettings.environments[selectedEnv].last_migration = { zip_name: m.zip_name };
+      msg.style.color = '#15803d';
+      msg.textContent = `✅ ${m.zip_name} — ` + (m.pending.length ? 'schema changes: ' + m.pending.map(p => p.id).join(', ') : 'no schema changes') + (m.include_seed ? ' + catalog data' : '') + ' · ZIP ' + where.replace(m.zip_name + ' ', '');
+      toast('DB migration ready');
+    } catch (e) {
+      msg.style.color = '#b91c1c';
+      msg.textContent = '❌ ' + e.message;
+      toast(e.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  // Save FTP settings
+  document.getElementById('saveFtpBtn').onclick = async () => {
+    const v = ftpFormValues();
+    if (!v.host || !v.user || (!v.password && !envSettings().ftp?.has_password)) {
+      toast('Please enter FTP Host, Username, and Password', true);
+      return;
+    }
+    try {
+      await saveEnvSection({ ftp: v, technology: selectedTech, provider: selectedProvider });
+      applyEnvToForm();
+      toast('FTP settings saved for ' + selectedEnv);
+    } catch (e) {
+      setFtpStatus('❌ ' + e.message, '#b91c1c');
+      toast(e.message, true);
+    }
+  };
 
   // DB Type Selection
   document.querySelectorAll('input[name="portal_db_type"]').forEach(radio => {
@@ -853,36 +1362,102 @@ function bindPublishPortal() {
 
   // Test FTP
   document.getElementById('testFtpBtn').onclick = async () => {
-    const host = document.getElementById('ftp_host').value.trim();
-    const port = Number(document.getElementById('ftp_port').value.trim()) || 21;
-    const user = document.getElementById('ftp_user').value.trim();
-    const password = document.getElementById('ftp_pass').value.trim();
-    const remotePath = document.getElementById('ftp_path').value.trim() || '/public_html';
-    const statusMsg = document.getElementById('ftpStatusMsg');
-    if (!host || !user || !password) {
+    const v = ftpFormValues();
+    if (!v.host || !v.user || (!v.password && !envSettings().ftp?.has_password)) {
       toast('Please enter FTP Host, Username, and Password', true);
       return;
     }
-    statusMsg.textContent = 'Connecting to FTP...';
-    statusMsg.style.color = '#0284c7';
+    const btn = document.getElementById('testFtpBtn');
+    btn.disabled = true;
+    setFtpStatus('Connecting to FTP...', '#0284c7');
     try {
-      const res = await api('/stores/' + store.id + '/deploy-ftp', {
-        method: 'POST',
-        body: JSON.stringify({ host, port, user, password, path: remotePath })
-      });
-      statusMsg.textContent = '✅ ' + res.message;
-      statusMsg.style.color = '#15803d';
-      toast('FTP Connected successfully!');
+      const res = await api('/stores/' + store.id + '/deploy-ftp/test', { method: 'POST', body: JSON.stringify({ ...v, env: selectedEnv }) });
+      if (res.saved) {
+        if (deploySettings && deploySettings.environments[selectedEnv]) deploySettings.environments[selectedEnv].ftp_tested_at = new Date().toISOString();
+        document.getElementById('deployFtpBtn').disabled = false;
+        setFtpStatus('✅ ' + res.message, '#15803d');
+      } else {
+        document.getElementById('deployFtpBtn').disabled = true;
+        setFtpStatus('✅ ' + res.message + ' Click Save FTP, then test again to enable upload.', '#b45309');
+      }
+      toast('FTP connected successfully!');
     } catch (e) {
-      statusMsg.textContent = '❌ ' + e.message;
-      statusMsg.style.color = '#b91c1c';
+      setFtpStatus('❌ ' + e.message, '#b91c1c');
       toast(e.message, true);
+    } finally {
+      btn.disabled = false;
     }
   };
 
-  // Deploy FTP
-  document.getElementById('deployFtpBtn').onclick = () => {
-    document.getElementById('testFtpBtn').click();
+  // Build a new version and upload it over FTP
+  document.getElementById('deployFtpBtn').onclick = async () => {
+    const btn = document.getElementById('deployFtpBtn');
+    const version = document.getElementById('pub_version').value.trim() || nextVersionFor();
+    if (!confirm(`Upload ${selectedTech.toUpperCase()} package v${version} (${selectedEnv}) to ${envSettings().ftp?.host}${envSettings().ftp?.path}?\nExisting files with the same names will be overwritten.`)) return;
+    btn.disabled = true;
+    setFtpStatus(`⏳ Building v${version} and uploading… this can take a few minutes`, '#0284c7');
+    try {
+      if (dirty) await saveDraft();
+      const res = await api('/stores/' + store.id + '/deploy-ftp/upload', {
+        method: 'POST',
+        body: JSON.stringify({ env: selectedEnv, technology: selectedTech, version, provider: selectedProvider })
+      });
+      setFtpStatus('✅ ' + res.message, '#15803d');
+      toast(res.message);
+      await refreshVersions();
+    } catch (e) {
+      setFtpStatus('❌ ' + e.message, '#b91c1c');
+      toast(e.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  // Build & download the versioned ZIP for the selected technology
+  document.getElementById('buildPackageBtn').onclick = async () => {
+    const btn = document.getElementById('buildPackageBtn');
+    const msg = document.getElementById('pkgStatusMsg');
+    btn.disabled = true;
+    msg.style.color = '#0284c7';
+    msg.textContent = '⏳ Building package…';
+    const previousBuiltAt = (envSettings().last_package || {}).built_at;
+    try {
+      if (dirty) await saveDraft();
+      const res = await api('/stores/' + store.id + '/deployment-package', {
+        method: 'POST',
+        body: JSON.stringify({ env: selectedEnv, technology: selectedTech, version: document.getElementById('pub_version').value.trim() || undefined, provider: selectedProvider })
+      });
+      const d = res.deployment;
+      const where = await downloadPackage(d.zip_name);
+      await refreshVersions();
+      msg.style.color = '#15803d';
+      msg.textContent = `✅ ${d.zip_name} — ${d.pages_rendered} pages, ${d.assets_copied} assets → ${d.export_dir}` + (d.assets_missing.length ? ` (⚠ ${d.assets_missing.length} missing assets, see README)` : '') + ' · ZIP ' + where.replace(d.zip_name + ' ', '');
+      if (d.checkout && d.checkout.razorpay && d.razorpay_mode === 'not configured') msg.textContent += ' ⚠ Razorpay keys missing — online payment will not work in this package.';
+      else if (d.razorpay_mode === 'test' && selectedEnv === 'production' && d.checkout?.razorpay) msg.textContent += ' ⚠ Production package uses Razorpay TEST keys.';
+      toast('Package v' + d.version + ' ready');
+    } catch (e) {
+      if (isNetworkError(e)) {
+        msg.style.color = '#b45309';
+        msg.textContent = '⚠ Lost connection to the server (it may have restarted). Checking whether the build finished…';
+        const built = await recoverDroppedBuild(previousBuiltAt);
+        if (built) {
+          updatePackagePreview();
+          msg.style.color = '#15803d';
+          msg.textContent = `✅ ${built.zip_name} was built. (The server restarted during the request: restart "npm run dev" so nodemon ignores the deployment folder.)`;
+          downloadPackage(built.zip_name).then(w => { msg.textContent += ' ZIP ' + w.replace(built.zip_name + ' ', ''); }).catch(err => { msg.style.color = '#b91c1c'; msg.textContent = '❌ ' + err.message; });
+          return;
+        }
+        msg.style.color = '#b91c1c';
+        msg.textContent = '❌ Could not reach the server, and no new build was found. Check that the API server is running, then try again.';
+        toast('Server connection lost', true);
+        return;
+      }
+      msg.style.color = '#b91c1c';
+      msg.textContent = '❌ ' + e.message;
+      toast(e.message, true);
+    } finally {
+      btn.disabled = false;
+    }
   };
 
   // Test GitHub

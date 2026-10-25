@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZKCommerce — Gap Analysis v4 vs v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:#F5F6FA}
+.hdr{background:linear-gradient(135deg,#08061A,#1a0530);padding:40px 5%;color:#fff}
+.hdr h1{font-family:var(--font-display);font-size:clamp(22px,3vw,36px);font-weight:800;margin-bottom:6px}
+.nav{background:#fff;border-bottom:1px solid #E5E7EB;padding:0 5%;display:flex;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nt{padding:14px 18px;font-size:12px;font-weight:700;color:#9CA3AF;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s}
+.nt.on{color:#FF6B00;border-bottom-color:#FF6B00}
+.body{max-width:1100px;margin:0 auto;padding:28px 5%}
+.panel{display:none}.panel.on{display:block}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.sc{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;text-align:center}
+.sn{font-family:var(--font-display);font-size:38px;font-weight:800;line-height:1;margin-bottom:4px}
+.sl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF}
+.sb{height:5px;background:#F3F4F6;border-radius:3px;margin-top:10px;overflow:hidden}
+.sf{height:100%;border-radius:3px}
+.gt{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #E5E7EB;margin-bottom:20px;font-size:12px}
+.gt th{padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;background:#F9FAFB;border-bottom:1px solid #E5E7EB;text-align:left}
+.gt td{padding:11px 14px;border-bottom:1px solid #F9FAFB;vertical-align:top;line-height:1.5}
+.gt tr:last-child td{border-bottom:none}
+.gt tr:hover td{background:#FAFAFA}
+.fn{font-weight:700;color:#111827}
+.fd{font-size:11px;color:#6B7280;margin-top:2px}
+.bd{display:inline-flex;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.bp{display:inline-flex;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.bm{display:inline-flex;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.bf{display:inline-flex;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE}
+.b6{display:inline-flex;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;margin-bottom:16px}
+.card h3{font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px}
+.eg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.ec{background:#fff;border-radius:14px;padding:20px;text-align:center;border:2px solid}
+.ec.g{border-color:#22C55E}.ec.a{border-color:#F59E0B}.ec.r{border-color:#EF4444}
+.ep{font-family:var(--font-display);font-size:38px;font-weight:800;line-height:1;margin:8px 0 4px}
+.ev{display:inline-block;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;margin-top:6px}
+.ev.g{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.ev.a{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.ev.r{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.vv-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.vv-badge{padding:6px 18px;border-radius:99px;font-size:12px;font-weight:800;color:#fff}
+.v4b{background:linear-gradient(135deg,#FF6B00,#FF9A4D)}
+.v5b{background:linear-gradient(135deg,#4F46E5,#7C3AED)}
+.v6b{background:#374151;color:#9CA3AF}
+@media(max-width:700px){.sg,.eg,.two{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.sg,.eg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,0,.18);border:1px solid rgba(255,107,0,.35);border-radius:99px;padding:4px 14px;font-size:10px;font-weight:800;color:#FF9A4D;margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em">Gap Analysis — August 2026</div>
+  <h1>ZKCommerce: v4 vs v5 Complete Gap Analysis</h1>
+  <p style="color:rgba(255,255,255,.5);font-size:13px;margin-top:6px">What is done, what is missing in v4.1, what is planned for v5.0 (Q4 2026) and v6.0 (2027)</p>
+  <div style="display:flex;gap:20px;margin-top:14px;flex-wrap:wrap;font-size:12px;color:rgba(255,255,255,.4)">
+    <span>Pages wired: <b style="color:rgba(255,255,255,.8)">41 / 48</b></span>
+    <span>API routes: <b style="color:rgba(255,255,255,.8)">83</b></span>
+    <span>DB tables: <b style="color:rgba(255,255,255,.8)">36</b></span>
+    <span>v4.1 done: <b style="color:rgba(255,255,255,.8)">78%</b></span>
+    <span>Next: <b style="color:rgba(255,255,255,.8)">v5.0 Q4 2026</b></span>
+  </div>
+</div>
+<div class="nav">
+  <div class="nt on" onclick="show('overview',this)">Overview</div>
+  <div class="nt" onclick="show('v4done',this)">v4 Done</div>
+  <div class="nt" onclick="show('missing',this)">v4 Missing</div>
+  <div class="nt" onclick="show('v5',this)">v5.0 Scope</div>
+  <div class="nt" onclick="show('v6',this)">v6.0 Scope</div>
+  <div class="nt" onclick="show('crud',this)">CRUD status</div>
+  <div class="nt" onclick="show('deploy',this)">Deploy</div>
+</div>
+<div class="body">
+
+<!-- OVERVIEW -->
+<div class="panel on" id="panel-overview">
+  <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:20px">Platform health snapshot — August 2026</div>
+  <div class="sg">
+    <div class="sc"><div class="sn" style="color:#16A34A">92%</div><div class="sl">UI built</div><div style="font-size:11px;color:#9CA3AF;margin-top:4px">48 pages, design system</div><div class="sb"><div class="sf" style="width:92%;background:#22C55E"></div></div></div>
+    <div class="sc"><div class="sn" style="color:#FF6B00">88%</div><div class="sl">API coded</div><div style="font-size:11px;color:#9CA3AF;margin-top:4px">83 routes, real DB queries</div><div class="sb"><div class="sf" style="width:88%;background:#FF6B00"></div></div></div>
+    <div class="sc"><div class="sn" style="color:#4F46E5">78%</div><div class="sl">Pages wired</div><div style="font-size:11px;color:#9CA3AF;margin-top:4px">37 of 48 pages call API</div><div class="sb"><div class="sf" style="width:78%;background:#4F46E5"></div></div></div>
+    <div class="sc"><div class="sn" style="color:#16A34A">95%</div><div class="sl">Database</div><div style="font-size:11px;color:#9CA3AF;margin-top:4px">36 tables, Neon ready</div><div class="sb"><div class="sf" style="width:95%;background:#22C55E"></div></div></div>
+  </div>
+  <div class="eg">
+    <div class="ec g"><div style="font-size:24px">&#128187;</div><div style="font-family:var(--font-display);font-weight:800;font-size:15px">Development</div><div class="ep" style="color:#16A34A">87%</div><div class="ev g">GO — Run now</div><div style="font-size:11px;color:#6B7280;margin-top:8px">npm run dev + Neon DB. All major flows work.</div></div>
+    <div class="ec a"><div style="font-size:24px">&#9888;</div><div style="font-family:var(--font-display);font-weight:800;font-size:15px">Staging</div><div class="ep" style="color:#D97706">54%</div><div class="ev a">Conditional GO</div><div style="font-size:11px;color:#6B7280;margin-top:8px">Fix Dockerfile + Railway env vars + checkout Razorpay.</div></div>
+    <div class="ec r"><div style="font-size:24px">&#128683;</div><div style="font-family:var(--font-display);font-weight:800;font-size:15px">Production</div><div class="ep" style="color:#DC2626">42%</div><div class="ev r">HOLD 4–6 weeks</div><div style="font-size:11px;color:#6B7280;margin-top:8px">Razorpay live KYC + security audit + pilot merchants.</div></div>
+  </div>
+</div>
+
+<!-- V4 DONE -->
+<div class="panel" id="panel-v4done">
+  <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:6px">v4.1 — What is done and working</div>
+  <div style="font-size:13px;color:#6B7280;margin-bottom:20px">All items below work end-to-end in local development right now</div>
+  <table class="gt"><thead><tr><th>Module</th><th>What works</th><th>API endpoint</th><th>Status</th></tr></thead><tbody id="v4done-tbody"></tbody></table>
+</div>
+
+<!-- V4 MISSING -->
+<div class="panel" id="panel-missing">
+  <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:6px">v4.1 — Still missing (next sprint)</div>
+  <div style="font-size:13px;color:#6B7280;margin-bottom:20px">These items are within the approved v4.1 scope but not yet complete</div>
+  <table class="gt"><thead><tr><th>Item</th><th>Effort</th><th>Blocker type</th><th>Fix required</th><th>Priority</th></tr></thead><tbody id="missing-tbody"></tbody></table>
+</div>
+
+<!-- V5 SCOPE -->
+<div class="panel" id="panel-v5">
+  <div class="vv-head"><span class="vv-badge v5b">v5.0 — Q4 2026</span><span style="font-size:13px;color:#6B7280">Growth features for staging environment — starts after v4.1 is live with paying merchants</span></div>
+  <div class="two">
+    <div class="card" style="border-top:3px solid #4F46E5">
+      <h3>Pre-built foundations in v4 codebase</h3>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="color:#15803D">&#10003; <b>abandoned_carts</b> table — in DB schema</div>
+        <div style="color:#15803D">&#10003; <b>flash_sales</b> table — in DB schema</div>
+        <div style="color:#15803D">&#10003; <b>blog_posts</b> table — in DB schema</div>
+        <div style="color:#15803D">&#10003; <b>store_seo</b> table — in DB schema</div>
+        <div style="color:#15803D">&#10003; <b>WA.abandonedCart()</b> — in whatsapp.js</div>
+        <div style="color:#15803D">&#10003; <b>WA.lowStock()</b> — in whatsapp.js</div>
+        <div style="color:#15803D">&#10003; <b>sitemap route</b> — GET /api/sitemap/:slug live</div>
+        <div style="color:#15803D">&#10003; <b>store_seo</b> fields in stores table</div>
+        <div style="color:#15803D">&#10003; <b>campaigns table</b> — full schema in DB</div>
+        <div style="color:#15803D">&#10003; <b>whatsapp_templates</b> table in DB</div>
+      </div>
+    </div>
+    <div class="card" style="border-top:3px solid #4F46E5">
+      <h3>New development needed in v5</h3>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#374151">
+        <div>&#8901; Instagram/Facebook Meta Shops API</div>
+        <div>&#8901; Abandoned cart cron job (1hr idle)</div>
+        <div>&#8901; Blog UI pages (merchant/blog.html)</div>
+        <div>&#8901; Flash sale UI + countdown timer</div>
+        <div>&#8901; Tally ERP XML sync API</div>
+        <div>&#8901; BNPL: Simpl + LazyPay + Bajaj checkout</div>
+        <div>&#8901; Multi-courier rate comparison UI</div>
+        <div>&#8901; GST invoice PDF (Puppeteer)</div>
+        <div>&#8901; Next.js migration (SSR storefront)</div>
+        <div>&#8901; Real Delhivery AWB API (not stub)</div>
+      </div>
+    </div>
+  </div>
+  <table class="gt"><thead><tr><th>v5.0 Feature</th><th>Category</th><th>Foundation in v4?</th><th>Effort</th><th>Why</th></tr></thead><tbody id="v5-tbody"></tbody></table>
+</div>
+
+<!-- V6 SCOPE -->
+<div class="panel" id="panel-v6">
+  <div class="vv-head"><span class="vv-badge v6b">v6.0 — 2027</span><span style="font-size:13px;color:#6B7280">Scale features — requires v5 live with 1000+ merchants first</span></div>
+  <table class="gt"><thead><tr><th>v6.0 Feature</th><th>Category</th><th>Revenue impact</th><th>Why 2027</th></tr></thead><tbody id="v6-tbody"></tbody></table>
+</div>
+
+<!-- CRUD STATUS -->
+<div class="panel" id="panel-crud">
+  <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:6px">CRUD status — every merchant action</div>
+  <table class="gt"><thead><tr><th>Feature</th><th>Create</th><th>Read</th><th>Update</th><th>Delete</th><th>UI wired?</th><th>Notes</th></tr></thead><tbody id="crud-tbody"></tbody></table>
+</div>
+
+<!-- DEPLOY -->
+<div class="panel" id="panel-deploy">
+  <div style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:6px">Deployment — exact order and commands</div>
+  <div style="background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden">
+    <div id="deploy-steps"></div>
+  </div>
+</div>
+
+</div>
+<script src="../assets/js/app.js"></script>
+<script>
+function show(id, el) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.nt').forEach(function(t){ t.classList.remove('on'); });
+  document.getElementById('panel-'+id).classList.add('on');
+  el.classList.add('on'); window.scrollTo(0,0);
+}
+
+var D='<span class="bd">Done</span>', P='<span class="bp">Partial</span>',
+    M='<span class="bm">Missing</span>', F='<span class="bf">v5 plan</span>',
+    S='<span class="b6">v6 plan</span>', NA='<span style="color:#D1D5DB;font-size:11px">N/A</span>';
+
+// V4 DONE
+var V4D=[
+  {m:'Login / Register',            w:'JWT auth, role redirect, demo fallback',     api:'/api/auth/login, /register'},
+  {m:'Store creation (setup wizard)',w:'POST /api/stores — slug auto-generated',     api:'/api/stores POST'},
+  {m:'Store settings edit',         w:'Load + save name, GSTIN, branding',           api:'/api/stores/:id GET/PUT'},
+  {m:'Product add',                 w:'POST with GST calculator + category load',    api:'/api/products POST'},
+  {m:'Product edit',                w:'Prefill form via ?id= URL param',             api:'/api/products/:id GET/PUT'},
+  {m:'Product list + delete',       w:'Paginated list, archive action',              api:'/api/products GET/DELETE'},
+  {m:'Product variants',            w:'GET/POST/PUT/DELETE variants',                api:'/api/products/:id/variants'},
+  {m:'Inventory stock update',      w:'Inline stock field per product',              api:'/api/products/:id PUT'},
+  {m:'Orders list',                 w:'Paginated, filter by status',                 api:'/api/orders GET'},
+  {m:'Order detail + AWB',          w:'Full detail, status update, AWB gen',         api:'/api/orders/:id, /shipping/awb'},
+  {m:'Order status update',         w:'Processing, shipped, delivered',              api:'/api/orders/:id/status PUT'},
+  {m:'Returns approve/reject',      w:'Approve with refund, reject with reason',     api:'/api/returns GET/PUT'},
+  {m:'Razorpay payments',           w:'Order create + verify + webhook + refund',    api:'/api/payments/razorpay/*'},
+  {m:'Checkout flow (Razorpay SDK)',w:'Full modal flow, COD option',                 api:'/api/payments/razorpay/order + verify'},
+  {m:'GST report',                  w:'Monthly report + GSTR-1 CSV export',          api:'/api/gst/report, /gstr1-export'},
+  {m:'Loyalty points',              w:'Earn on order, redeem at checkout, tiers',    api:'/api/loyalty/balance, /redeem'},
+  {m:'Coupons',                     w:'Create %, fixed, free shipping — toggle',     api:'/api/coupons GET/POST/PUT'},
+  {m:'Campaigns',                   w:'Create email/WA/SMS, send to all customers',  api:'/api/campaigns POST/send'},
+  {m:'Staff invite + remove',       w:'Invite by email, roles, remove',              api:'/api/staff/invite, DELETE'},
+  {m:'Reviews moderate',            w:'Approve / reject / flag',                     api:'/api/reviews/:id/status PUT'},
+  {m:'Payouts history',             w:'Settlement list with UTR numbers',            api:'/api/payouts GET'},
+  {m:'Analytics dashboard',        w:'Revenue, orders, customers from live data',    api:'/api/analytics/revenue'},
+  {m:'Storefront home',             w:'Dynamic store, products, categories by slug', api:'/api/storefront/:slug'},
+  {m:'Product detail page',         w:'Live product data, add to cart',              api:'/api/storefront/:slug/products'},
+  {m:'Category browse',             w:'Filter by category, price sort',              api:'/api/storefront/:slug/products'},
+  {m:'Search',                      w:'Full-text search across products',            api:'/api/search'},
+  {m:'Cart',                        w:'localStorage + coupon validation',            api:'/api/coupons/validate'},
+  {m:'Wishlist',                    w:'Add/remove/list',                             api:'/api/wishlist GET/POST/DELETE'},
+  {m:'Customer account',            w:'Order history + loyalty balance',             api:'/api/orders, /loyalty/balance'},
+  {m:'Order tracking',              w:'Status + AWB + courier link',                api:'/api/orders/:id'},
+  {m:'Payment success',             w:'Confirms order, shows details',              api:'/api/orders/:id'},
+  {m:'Admin platform stats',        w:'Merchants, GMV, orders, trials',             api:'/api/admin/stats'},
+  {m:'Admin merchants list',        w:'List with GMV, plan, status',                api:'/api/admin/merchants'},
+  {m:'Admin orders list',           w:'Platform-wide order view',                   api:'/api/admin/orders'},
+  {m:'Forgot + reset password',     w:'Token-based email reset flow',               api:'/api/auth/forgot-password, reset'},
+];
+document.getElementById('v4done-tbody').innerHTML = V4D.map(function(r) {
+  return '<tr><td class="fn">'+r.m+'</td><td class="fd">'+r.w+'</td>'
+    +'<td><code style="font-size:10px;background:#F3F4F6;padding:2px 5px;border-radius:3px">'+r.api+'</code></td>'
+    +'<td>'+D+'</td></tr>';
+}).join('');
+
+// V4 MISSING
+var MISS=[
+  {i:'Checkout: Razorpay real keys test',   e:'30 min',  t:'External',  f:'Get Razorpay test keys from razorpay.com (free). Add rzp_test_xxx to .env and Railway vars.',  p:'Critical'},
+  {i:'Image upload: Cloudflare R2 bucket',  e:'30 min',  t:'Config',    f:'Create R2 bucket in Cloudflare dashboard. Add R2_ACCESS_KEY, R2_SECRET_KEY, R2_BUCKET to Railway env vars.', p:'High'},
+  {i:'WhatsApp: Gupshup API key',           e:'1-2 days',t:'External',  f:'Register at gupshup.io. Get API key. Add GUPSHUP_API_KEY to Railway. Submit 3 WA templates for Meta approval.', p:'High'},
+  {i:'Email: Resend API key',               e:'30 min',  t:'Config',    f:'Register at resend.com. Create API key. Add SMTP_PASS=re_xxxxx to Railway env vars. Verify domain.', p:'High'},
+  {i:'Delhivery real AWB',                  e:'1 day',   t:'External',  f:'Apply for Delhivery Business account. Get API token. Replace stub in api/server.js shipping routes.', p:'Medium'},
+  {i:'GST invoice PDF',                     e:'2 days',  t:'Code',      f:'npm install puppeteer. Add PDF generation route in server.js. Invoice data is already structured.', p:'Medium'},
+  {i:'Admin merchant-detail wired',         e:'2 hrs',   t:'Frontend',  f:'Wire admin/merchant-detail.html to GET /api/admin/merchants/:id with full store stats.', p:'Medium'},
+  {i:'Admin revenue charts',                e:'3 hrs',   t:'Frontend',  f:'Wire admin/revenue.html to GET /api/analytics/revenue with Chart.js visualisation.', p:'Medium'},
+  {i:'Admin plans management',              e:'3 hrs',   t:'Frontend',  f:'Wire admin/plans.html to change merchant plan + extend trial via /api/admin/merchants/:id.', p:'Medium'},
+  {i:'Category UI create',                  e:'2 hrs',   t:'Frontend',  f:'Add "New Category" form to merchant dashboard calling POST /api/categories.', p:'Low'},
+  {i:'Security audit (OWASP)',              e:'3 days',  t:'Process',   f:'Run OWASP ZAP scan on all API endpoints. Fix any High/Critical findings.', p:'Critical (prod)'},
+  {i:'Load test 100 concurrent checkouts',  e:'1 day',   t:'Process',   f:'Run k6 or Artillery load test. Verify no degradation at 100 concurrent users.', p:'Critical (prod)'},
+  {i:'Sentry error monitoring',             e:'30 min',  t:'Config',    f:'Create Sentry project. Add SENTRY_DSN to Railway env vars.', p:'Medium'},
+  {i:'Razorpay live KYC approval',          e:'2-3 days',t:'External',  f:'Submit KYC documents at razorpay.com. Takes 2-3 business days. Swap keys when approved.', p:'Critical (prod)'},
+];
+var pC={'Critical':'color:#DC2626;font-weight:800','High':'color:#D97706;font-weight:700','Medium':'color:#4F46E5;font-weight:600','Low':'color:#6B7280','Critical (prod)':'color:#DC2626;font-weight:800'};
+document.getElementById('missing-tbody').innerHTML = MISS.map(function(r) {
+  return '<tr><td class="fn">'+r.i+'</td><td style="font-weight:700;color:#4F46E5">'+r.e+'</td>'
+    +'<td><span class="bp">'+r.t+'</span></td><td class="fd" style="max-width:300px">'+r.f+'</td>'
+    +'<td style="'+pC[r.p]+'">'+r.p+'</td></tr>';
+}).join('');
+
+// V5 SCOPE
+var V5=[
+  {f:'Instagram/Facebook shop sync',     c:'Sales channels', pre:'No',  e:'2 weeks',  w:'Sync product catalogue to Meta Shops. Single inventory. Orders flow back to ZK dashboard.'},
+  {f:'Abandoned cart WhatsApp recovery', c:'Marketing',      pre:'Yes', e:'1 week',   w:'WA.abandonedCart() coded. abandoned_carts table ready. Just needs cron job + Gupshup key.'},
+  {f:'Blog + SEO module',                c:'Content',        pre:'Yes', e:'2 weeks',  w:'blog_posts table ready. sitemap route live. Needs merchant blog UI + rich text editor.'},
+  {f:'Flash sale countdown timer',       c:'Marketing',      pre:'Yes', e:'3 days',   w:'flash_sales table ready. Needs discount overlay + countdown UI on storefront.'},
+  {f:'Tally ERP integration',            c:'Finance',        pre:'No',  e:'2 weeks',  w:'Tally XML push API. Most-requested India feature. Auto-sync orders and inventory.'},
+  {f:'BNPL / no-cost EMI',               c:'Payments',       pre:'No',  e:'1 week',   w:'Simpl, LazyPay, Bajaj Finserv at checkout. API integration + payment widget.'},
+  {f:'Multi-courier comparison',         c:'Shipping',       pre:'Yes', e:'1 week',   w:'Delhivery vs BlueDart vs XpressBees rate cards at dispatch. Replace single-courier stub.'},
+  {f:'GST invoice PDF',                  c:'Finance',        pre:'Yes', e:'2 days',   w:'Puppeteer/PDFKit. Invoice data already structured. Needs PDF generation route.'},
+  {f:'Next.js SSR storefront',           c:'Tech',           pre:'No',  e:'4 weeks',  w:'Static HTML to Next.js 14. SSR for SEO. Dynamic routing /[slug]/products/[id].'},
+  {f:'Real Delhivery AWB',               c:'Shipping',       pre:'Yes', e:'1 day',    w:'Remove stub, add real Delhivery API calls. Ship tracking via their webhook.'},
+  {f:'Admin revenue charts',             c:'Admin',          pre:'Yes', e:'3 hrs',    w:'Wire admin/revenue.html to /api/analytics/revenue with Chart.js graphs.'},
+  {f:'Product image upload (R2)',         c:'Products',       pre:'Yes', e:'30 min',   w:'Multer + R2 already wired. Just needs R2 bucket created + credentials set.'},
+  {f:'Category create UI',               c:'Products',       pre:'Yes', e:'2 hrs',    w:'Merchant creates product categories. POST /api/categories. Tree structure.'},
+  {f:'Merchant on-boarding flow',        c:'Growth',         pre:'No',  e:'1 week',   w:'Email invite flow, welcome sequence, first 5 products guide, 30-day trial.'},
+  {f:'WhatsApp template approval flow',  c:'WA',             pre:'Yes', e:'2 days',   w:'Submit 6 WA templates to Meta for approval. All templates coded in whatsapp.js.'},
+];
+document.getElementById('v5-tbody').innerHTML = V5.map(function(r) {
+  return '<tr><td class="fn">'+r.f+'</td>'
+    +'<td><span class="bp">'+r.c+'</span></td>'
+    +'<td>'+(r.pre==='Yes'?D:M)+'</td>'
+    +'<td style="font-weight:700;color:#4F46E5">'+r.e+'</td>'
+    +'<td class="fd">'+r.w+'</td></tr>';
+}).join('');
+
+// V6 SCOPE
+var V6=[
+  {f:'Multi-language storefront',      c:'Localisation', i:'Opens TN, KA, AP, MH markets',   w:'Requires i18n framework, translation management, RTL support for Arabic.'},
+  {f:'Amazon/Flipkart sync',           c:'Marketplace',  i:'2x order volume for merchants',   w:'Marketplace API access, product mapping, fulfilment sync, return reconciliation.'},
+  {f:'POS physical store app',         c:'Offline',      i:'Reaches 1.2Cr offline retailers', w:'iOS/Android POS app, barcode scanner, cash drawer, daily reconciliation to dashboard.'},
+  {f:'Stripe international payments',  c:'Global',       i:'USD/EUR export merchants',        w:'Stripe Connect, currency conversion, international tax compliance.'},
+  {f:'Subscription / recurring orders',c:'Retention',    i:'Higher LTV, predictable revenue', w:'Monthly auto-charge, subscription management, pause/skip/cancel flows.'},
+  {f:'AI product descriptions',        c:'Content',      i:'Reduces merchant time by 80%',    w:'Claude API integration for auto-generating SEO product descriptions from images.'},
+  {f:'Influencer affiliate system',    c:'Marketing',    i:'Viral growth for merchants',      w:'Unique referral links, commission tracking, payout integration with Razorpay.'},
+  {f:'AWS App Runner migration',       c:'Infra',        i:'Required at 5000+ merchants',     w:'Mumbai VPC, autoscale, WAF, Redis cluster, RDS Multi-AZ. Migrate from Railway.'},
+];
+document.getElementById('v6-tbody').innerHTML = V6.map(function(r) {
+  return '<tr><td class="fn">'+r.f+'</td><td><span class="b6">'+r.c+'</span></td>'
+    +'<td class="fd">'+r.i+'</td><td class="fd">'+r.w+'</td></tr>';
+}).join('');
+
+// CRUD STATUS
+var CRUD=[
+  {f:'Store',               c:D,  r:D,  u:D,  d:NA, w:D,  n:'Setup wizard + settings — both wired'},
+  {f:'Products',            c:D,  r:D,  u:D,  d:D,  w:D,  n:'Full CRUD + edit mode via ?id= param'},
+  {f:'Product variants',    c:D,  r:D,  u:D,  d:D,  w:D,  n:'API complete, UI in products-add.html'},
+  {f:'Product images',      c:P,  r:D,  u:P,  d:NA, w:P,  n:'Multer ready, R2 bucket needed'},
+  {f:'Categories',          c:P,  r:D,  u:NA, d:NA, w:P,  n:'DB seeded. Create UI in v5.'},
+  {f:'Inventory',           c:NA, r:D,  u:D,  d:NA, w:D,  n:'Stock update inline — wired'},
+  {f:'Orders',              c:NA, r:D,  u:D,  d:NA, w:D,  n:'List + detail + status — wired'},
+  {f:'Order cancellation',  c:NA, r:D,  u:D,  d:NA, w:D,  n:'POST /api/orders/:id/cancel wired'},
+  {f:'Returns',             c:NA, r:D,  u:D,  d:NA, w:D,  n:'Approve/reject + reason — wired'},
+  {f:'Refunds',             c:D,  r:D,  u:NA, d:NA, w:D,  n:'Razorpay refund API — needs live keys'},
+  {f:'Coupons',             c:D,  r:D,  u:D,  d:NA, w:D,  n:'Create + toggle + validate — wired'},
+  {f:'Campaigns',           c:D,  r:D,  u:NA, d:NA, w:D,  n:'Create + send — wired'},
+  {f:'Staff',               c:D,  r:D,  u:NA, d:D,  w:D,  n:'Invite + remove — wired'},
+  {f:'Reviews',             c:NA, r:D,  u:D,  d:NA, w:D,  n:'Approve/reject — wired'},
+  {f:'Loyalty points',      c:NA, r:D,  u:NA, d:NA, w:D,  n:'Balance + earn + redeem — wired'},
+  {f:'Payouts',             c:NA, r:D,  u:NA, d:NA, w:D,  n:'Settlement history — wired'},
+  {f:'Wishlist',            c:D,  r:D,  u:NA, d:D,  w:D,  n:'Add/remove/list — wired'},
+  {f:'Cart',                c:D,  r:D,  u:D,  d:D,  w:D,  n:'localStorage + coupon validation — wired'},
+  {f:'Addresses',           c:D,  r:D,  u:NA, d:NA, w:P,  n:'API complete — checkout UI uses'},
+  {f:'Shipping AWB',        c:D,  r:D,  u:NA, d:NA, w:P,  n:'Stub AWB — real Delhivery in v5'},
+  {f:'Email alerts',        c:NA, r:NA, u:NA, d:NA, w:M,  n:'Nodemailer coded — Resend key missing'},
+  {f:'WhatsApp alerts',     c:NA, r:NA, u:NA, d:NA, w:P,  n:'Code complete — Gupshup key missing'},
+  {f:'GST report',          c:NA, r:D,  u:NA, d:NA, w:D,  n:'Report + GSTR-1 CSV — wired'},
+  {f:'GST invoice PDF',     c:NA, r:P,  u:NA, d:NA, w:P,  n:'JSON ready — Puppeteer in v5'},
+  {f:'Analytics',           c:NA, r:D,  u:NA, d:NA, w:D,  n:'Revenue + events — wired'},
+];
+document.getElementById('crud-tbody').innerHTML = CRUD.map(function(r) {
+  return '<tr><td class="fn">'+r.f+'</td><td>'+r.c+'</td><td>'+r.r+'</td><td>'+r.u+'</td><td>'+r.d+'</td><td>'+r.w+'</td><td class="fd">'+r.n+'</td></tr>';
+}).join('');
+
+// DEPLOY STEPS
+var STEPS=[
+  {n:1,t:'Neon database migration',color:'#22C55E',
+   cmd:'node deployment/scripts/neon-migrate.js "postgresql://neondb_owner:YOUR_PASS@ep-proud-rice-axslvoko.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require"',
+   note:'Run from project folder. Pass URL value only — no KEY= prefix. Verify at neon.tech → Tables → 36 tables.'},
+  {n:2,t:'Push code to GitHub',color:'#374151',
+   cmd:'git init\ngit add .\ngit commit -m "ZKCommerce v4.1"\ngit remote add origin https://github.com/YOUR_USERNAME/zkcommerce.git\ngit push -u origin main',
+   note:'Create the GitHub repo at github.com first. Then push.'},
+  {n:3,t:'Railway API deploy (dashboard)',color:'#7C3AED',
+   cmd:'# In browser: railway.app → New Project → Deploy from GitHub → select repo\n# Then: Variables tab → Raw Editor → paste:\nDATABASE_URL=postgresql://neondb_owner:YOUR_PASS@ep-proud-rice...neon.tech/neondb?sslmode=require\nJWT_SECRET=YOUR_JWT_SECRET\nPORT=3000\nNODE_ENV=production\nRAZORPAY_KEY_ID=rzp_live_xxx\nRAZORPAY_KEY_SECRET=xxx\n# Settings → Generate Domain → copy URL',
+   note:'Do NOT use Railway CLI on Windows — use the browser dashboard. Build uses Dockerfile (fixed — no .env.example copy).'},
+  {n:4,t:'Test Railway API',color:'#22C55E',
+   cmd:'# Open in browser:\nhttps://YOUR-RAILWAY-URL.up.railway.app/health\n# Expected: {"status":"ok","db":"connected"}',
+   note:'If you see {"status":"ok"} the API is live and connected to Neon.'},
+  {n:5,t:'Vercel frontend deploy (dashboard)',color:'#000',
+   cmd:'# In browser: vercel.com → Add New Project → Import GitHub repo\n# Framework: Other\n# Root Directory: zkc-build (or . if files are at root)\n# Build Command: (empty)\n# Output Directory: (empty)\n# → Deploy\n# After deploy: Settings → Env Vars → add:\nRAILWAY_API_URL=https://YOUR-RAILWAY-URL.up.railway.app/api\n# → Redeploy',
+   note:'The vercel.json root route "/" redirects to auth/login.html. 404 is fixed.'},
+  {n:6,t:'Test end-to-end',color:'#FF6B00',
+   cmd:'# 1. Open Vercel URL → login page\n# 2. Login: merchant@zkcommerce.in / demo1234\n# 3. Dashboard → add a product\n# 4. View store → storefront loads products\n# 5. Add to cart → checkout (needs Razorpay test keys)',
+   note:'All flows work with demo data. Real payments need Razorpay test keys in Railway vars.'},
+];
+
+document.getElementById('deploy-steps').innerHTML = STEPS.map(function(s) {
+  return '<div style="padding:20px 24px;border-bottom:1px solid #E5E7EB">'
+    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
+    +'<div style="width:32px;height:32px;border-radius:50%;background:'+s.color+';color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+s.n+'</div>'
+    +'<div style="font-family:var(--font-display);font-size:15px;font-weight:800">'+s.t+'</div>'
+    +'</div>'
+    +'<pre style="background:#1E1E2E;color:#E2E8F0;border-radius:10px;padding:14px 16px;font-size:11px;font-family:\'Fira Code\',monospace;white-space:pre-wrap;overflow-x:auto;margin:0 0 8px">'+s.cmd+'</pre>'
+    +'<div style="font-size:12px;color:#6B7280">&#9432; '+s.note+'</div>'
+    +'</div>';
+}).join('');
+</script>
+</body>
+</html>

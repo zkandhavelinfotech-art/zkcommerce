@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="32" height="32">
+  <defs>
+    <linearGradient id="ibg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06152B"/>
+      <stop offset="100%" stop-color="#0B2342"/>
+    </linearGradient>
+    <linearGradient id="izk" x1="0%" y1="100%" x2="70%" y2="0%">
+      <stop offset="0%" stop-color="#1565C0"/>
+      <stop offset="55%" stop-color="#1688E8"/>
+      <stop offset="100%" stop-color="#36A7FF"/>
+    </linearGradient>
+    <linearGradient id="iar" x1="0%" y1="100%" x2="60%" y2="0%">
+      <stop offset="0%" stop-color="#59BB3D"/>
+      <stop offset="100%" stop-color="#A6D900"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="90" fill="url(#ibg)"/>
+  <!-- Z -->
+  <line x1="50"  y1="70"  x2="220" y2="70"  stroke="url(#izk)" stroke-width="46" stroke-linecap="round"/>
+  <line x1="220" y1="70"  x2="50"  y2="290" stroke="url(#izk)" stroke-width="46" stroke-linecap="round"/>
+  <line x1="50"  y1="290" x2="220" y2="290" stroke="url(#izk)" stroke-width="46" stroke-linecap="round"/>
+  <!-- K vertical -->
+  <line x1="258" y1="70"  x2="258" y2="290" stroke="url(#izk)" stroke-width="42" stroke-linecap="round"/>
+  <!-- K upper -->
+  <line x1="258" y1="180" x2="430" y2="70"  stroke="url(#izk)" stroke-width="42" stroke-linecap="round"/>
+  <!-- K lower -->
+  <line x1="258" y1="180" x2="430" y2="290" stroke="url(#izk)" stroke-width="42" stroke-linecap="round"/>
+  <!-- Arrow -->
+  <line x1="300" y1="264" x2="448" y2="44"  stroke="url(#iar)" stroke-width="34" stroke-linecap="round"/>
+  <polygon points="448,44 410,72 452,86" fill="#A6D900"/>
+  <!-- Swoosh -->
+  <path d="M38 340 Q190 404 370 346" fill="none" stroke="#1688E8" stroke-width="20" stroke-linecap="round" opacity="0.8"/>
+  <!-- Cart -->
+  <path d="M288 358 L318 358 L345 428 L434 428 L462 358" fill="none" stroke="#36A7FF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="318" y1="358" x2="304" y2="320" stroke="#36A7FF" stroke-width="16" stroke-linecap="round"/>
+  <line x1="304" y1="320" x2="270" y2="320" stroke="#36A7FF" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="350" cy="455" r="20" fill="#36A7FF" opacity="0.9"/>
+  <circle cx="430" cy="455" r="20" fill="#36A7FF" opacity="0.9"/>
+</svg>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Merchant inbox · ZKCommerce</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f6fa;color:#172033;font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+    header{background:#101a2c;color:white;padding:18px max(24px,calc((100% - 1120px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px}
+    header a{color:#b9d9ff;text-decoration:none}main{max-width:1120px;margin:32px auto;padding:0 20px}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    select,button{font:inherit;border:1px solid #d4dbe7;border-radius:8px;padding:9px 12px;background:white;color:inherit}button{cursor:pointer}
+    #storeSelect{min-width:240px}.tabs{display:flex;gap:8px;margin:18px 0}.tabs button.active{background:#1769d2;color:white;border-color:#1769d2}
+    .list{display:grid;gap:12px}.item{background:white;border:1px solid #e1e6ef;border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:12px;box-shadow:0 3px 12px #10203a08}
+    .item h3{margin:0 0 6px}.muted{color:#6b7280;font-size:13px}.message{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}.status{display:flex;align-items:center;gap:8px}.empty,#error{padding:24px;background:white;border-radius:10px;color:#596579}#error{color:#b42318;display:none}
+    @media(max-width:600px){.item{grid-template-columns:1fr}.status{justify-content:flex-start}}
+  </style>
+</head>
+<body>
+  <header><strong>ZKCommerce · Merchant Inbox</strong><a href="../store-builder/">Back to Store Builder</a></header>
+  <main>
+    <div class="toolbar"><label for="storeSelect">Store</label><select id="storeSelect"></select><button id="refreshBtn" type="button">Refresh</button></div>
+    <div id="error" role="alert"></div>
+    <div class="tabs"><button class="active" data-kind="contact">Contact messages</button><button data-kind="notify">Back-in-stock requests</button></div>
+    <section class="list" id="items" aria-live="polite"></section>
+  </main>
+  <script>
+    const api='/api',token=localStorage.getItem('zk_token');let storeId=null,kind='contact',records=[];
+    const headers=()=>({Authorization:'Bearer '+token,'Content-Type':'application/json'});
+    async function request(path,options={}){const response=await fetch(api+path,{...options,headers:{...headers(),...(options.headers||{})}});const body=await response.json().catch(()=>({}));if(!response.ok)throw Error(body.error||'Request failed');return body}
+    function showError(message){const node=document.getElementById('error');node.textContent=message||'';node.style.display=message?'block':'none'}
+    async function init(){if(!token){location.href='../auth/login.html';return}try{const data=await request('/stores');const select=document.getElementById('storeSelect');select.replaceChildren(...(data.stores||[]).map(store=>new Option(store.store_name+' ('+store.slug+')',store.id)));if(!select.options.length){showError('Create a store before viewing its inbox.');return}storeId=select.value;await load()}catch(error){showError(error.message)}}
+    async function load(){if(!storeId)return;showError('');document.getElementById('items').innerHTML='<div class="empty">Loading inbox…</div>';try{const data=await request('/notify/'+storeId+'/messages');records=kind==='contact'?data.contact_messages||[]:data.notify_requests||[];render()}catch(error){showError(error.message);document.getElementById('items').replaceChildren()}}
+    function render(){const host=document.getElementById('items');host.replaceChildren();if(!records.length){host.innerHTML='<div class="empty">No '+(kind==='contact'?'contact messages':'back-in-stock requests')+' yet.</div>';return}records.forEach(item=>{const card=document.createElement('article');card.className='item';const body=document.createElement('div');const title=document.createElement('h3');title.textContent=kind==='contact'?(item.name||'Customer message'):(item.email||'Restock request');const meta=document.createElement('div');meta.className='muted';meta.textContent=[item.email,item.phone,item.product_label,new Date(item.created_at).toLocaleString()].filter(Boolean).join(' · ');body.append(title,meta);if(kind==='contact'){const text=document.createElement('p');text.className='message';text.textContent=item.message||'';body.append(text)}const controls=document.createElement('div');controls.className='status';const label=document.createElement('label');label.textContent='Status';const select=document.createElement('select');['unread','read','resolved'].forEach(value=>select.add(new Option(value[0].toUpperCase()+value.slice(1),value)));select.value=item.inbox_status||'unread';select.addEventListener('change',()=>updateStatus(item.id,select.value));controls.append(label,select);card.append(body,controls);host.append(card)})}
+    async function updateStatus(id,status){try{await request('/notify/'+storeId+'/messages/'+kind+'/'+id,{method:'PATCH',body:JSON.stringify({status})})}catch(error){showError(error.message);load()}}
+    document.getElementById('storeSelect').addEventListener('change',event=>{storeId=event.target.value;load()});document.getElementById('refreshBtn').addEventListener('click',load);document.querySelectorAll('.tabs button').forEach(button=>button.addEventListener('click',()=>{kind=button.dataset.kind;document.querySelectorAll('.tabs button').forEach(tab=>tab.classList.toggle('active',tab===button));load()}));init();
+  </script>
+</body>
+</html>

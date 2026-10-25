@@ -94,22 +94,21 @@ router.post('/:slug/checkout',async(req,res)=>{
     if(coupon)await client.query('UPDATE coupons SET used_count=used_count+1 WHERE id=$1',[coupon.id]);
     await client.query('COMMIT');
 
-    // Dispatch automated WhatsApp notification for confirmed COD order
-    let waResults = null;
+    // WhatsApp: merchant templates. COD is confirmed now; Razorpay orders get the hand-off link after payment (payments.js).
+    let waResults = null, whatsappHandoffUrl = null;
     if (payment_method === 'cod') {
       try {
         const whatsapp = require('../services/whatsapp');
+        const orderMessages = require('../services/order-messages');
         const storeInfo = (sr[0] && sr[0].published_snapshot && sr[0].published_snapshot.store) || sr[0];
+        const fullOrder = { ...order, customer_name: customer.name, customer_phone: customer.phone, customer_email: customer.email, shipping_address: address, payment_method: 'cod', payment_status: 'cod', items: lineItems, created_at: new Date() };
+        const waSettings = await orderMessages.loadSettings(storeId);
+        if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, fullOrder, storeInfo).care_url;
         waResults = await whatsapp.sendOrderNotification({
-          order: {
-            ...order,
-            customer_name: customer.name,
-            customer_phone: customer.phone,
-            shipping_address: address,
-            payment_method: 'cod'
-          },
+          order: fullOrder,
           store: storeInfo,
-          items: lineItems
+          items: lineItems,
+          templates: waSettings
         });
       } catch (waErr) {
         console.warn('[Storefront Checkout] WhatsApp alert warning:', waErr.message);
@@ -127,7 +126,8 @@ router.post('/:slug/checkout',async(req,res)=>{
       total_amount:order.total_amount,
       coupon_code:coupon?.code||null,
       next:payment_method==='razorpay'?'razorpay_checkout':'confirmed',
-      whatsapp: waResults
+      whatsapp: waResults,
+      whatsapp_handoff_url: whatsappHandoffUrl
     });
   }catch(e){await client.query('ROLLBACK');res.status(500).json({error:e.message});}
   finally{client.release();}

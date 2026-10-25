@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href='../assets/css/design-system.css">
+</head>
+<body>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="../merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="../merchant/analytics.html" class="zk-sidebar-link active"><span class="sl-icon">📈</span>Analytics</a>
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="../merchant/products.html" class="zk-sidebar-link "><span class="sl-icon">🛍️</span>Products</a>
+    <a href="../merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a>
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="../merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="../merchant/shipping-label.html" class="zk-sidebar-link "><span class="sl-icon">🚚</span>Shipping labels</a>
+    <div class="zk-sidebar-section-label">Finance</div>
+    <a href="../merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a>
+    <div class="zk-sidebar-section-label">Marketing</div>
+    <a href="../merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a>
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="../merchant/store-settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+<div class="zk-main" style="margin-left:240px">
+<div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Analytics</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+  </div>
+</div>
+<div class="zk-page">
+
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Analytics</div><div class="zk-page-sub">Revenue, traffic and conversion insights</div></div>
+  <div style="display:flex;gap:8px">
+    <select class="field btn-sm" style="width:auto"><option>Last 30 days</option><option>Last 7 days</option><option>This month</option><option>Last 3 months</option></select>
+    <button class="btn btn-secondary btn-sm" onclick="toast.info('Report exported')">↓ Export</button>
+  </div>
+</div>
+<div class="zk-stat-grid" style="margin-bottom:20px">
+  <div class="zk-stat-card"><div class="zk-stat-label">Total revenue</div><div class="zk-stat-value fire-text">₹14.8L</div><div class="zk-stat-change up">↑ 22% vs last period</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Avg order value</div><div class="zk-stat-value">₹1,698</div><div class="zk-stat-change up">↑ ₹142 vs last period</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Conversion rate</div><div class="zk-stat-value">3.8%</div><div class="zk-stat-change up">↑ 0.4% vs last period</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Repeat customers</div><div class="zk-stat-value">38%</div><div class="zk-stat-change up">↑ Loyalty driving returns</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+  <div class="zk-chart-wrap">
+    <div class="zk-chart-header"><div class="zk-chart-title">Revenue by day</div></div>
+    <div style="height:180px;display:flex;align-items:flex-end;gap:3px;padding:8px 0">
+      <div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:55%"></div><div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:70%"></div><div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:45%"></div><div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:85%"></div><div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:60%"></div><div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:75%"></div><div style="flex:1;background:var(--g-fire);border-radius:3px 3px 0 0;height:50%"></div><div style="flex:1;background:rgba(255,107,0,.3);border-radius:3px 3px 0 0;height:40%"></div>
+    </div>
+  </div>
+  <div class="zk-chart-wrap">
+    <div class="zk-chart-header"><div class="zk-chart-title">Traffic sources</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px">Direct</span><div style="display:flex;align-items:center;gap:8px"><div style="width:100px;height:6px;background:#F1F5F9;border-radius:3px"><div style="width:42%;height:100%;background:var(--zk-fire);border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:var(--zk-muted)">42%</span></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px">WhatsApp</span><div style="display:flex;align-items:center;gap:8px"><div style="width:100px;height:6px;background:#F1F5F9;border-radius:3px"><div style="width:28%;height:100%;background:#22C55E;border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:var(--zk-muted)">28%</span></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px">Google</span><div style="display:flex;align-items:center;gap:8px"><div style="width:100px;height:6px;background:#F1F5F9;border-radius:3px"><div style="width:18%;height:100%;background:#4F46E5;border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:var(--zk-muted)">18%</span></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px">Instagram</span><div style="display:flex;align-items:center;gap:8px"><div style="width:100px;height:6px;background:#F1F5F9;border-radius:3px"><div style="width:12%;height:100%;background:#C41E3A;border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:var(--zk-muted)">12%</span></div></div>
+    </div>
+  </div>
+</div>
+<div class="zk-table-wrap">
+  <div style="padding:16px 20px;border-bottom:1px solid var(--zk-border)"><div style="font-size:14px;font-weight:800">Top products this month</div></div>
+  <table class="zk-table">
+    <thead><tr><th>Product</th><th>Units sold</th><th>Revenue</th><th>Avg rating</th><th>Conversion</th></tr></thead>
+    <tbody>
+      <tr><td class="col-primary">Kanjivaram Silk Saree</td><td>142</td><td>₹17,75,000</td><td>⭐ 4.8</td><td>5.2%</td></tr>
+      <tr><td class="col-primary">Cotton Kurta Set</td><td>310</td><td>₹6,81,690</td><td>⭐ 4.6</td><td>4.1%</td></tr>
+      <tr><td class="col-primary">Embroidered Blouse</td><td>88</td><td>₹1,27,600</td><td>⭐ 4.7</td><td>3.8%</td></tr>
+      <tr><td class="col-primary">Handloom Dupatta</td><td>220</td><td>₹1,95,800</td><td>⭐ 4.5</td><td>3.2%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+</div>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadAnalytics() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/analytics/revenue?period=30days', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    if (data.totals) {
+      setEl('total-revenue', fmt.inr(data.totals.total_revenue));
+      setEl('total-orders',  data.totals.total_orders);
+      setEl('avg-order',     fmt.inr(data.totals.avg_order_value, 2));
+      setEl('unique-customers', data.totals.unique_customers);
+    }
+  } catch(e) { console.warn('Analytics load error:', e); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadAnalytics);
+</script>
+</body>
+</html>

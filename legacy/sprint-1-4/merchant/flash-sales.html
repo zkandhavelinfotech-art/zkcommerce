@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flash Sales — ZKCommerce v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+</head>
+<body class="app-body">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Flash Sales</h1>
+      <p class="page-sub">Run time-limited discounts with countdown timers on your store.</p>
+    </div>
+    <button class="btn btn-primary" onclick="createFlashSale()">+ New Flash Sale</button>
+  </div>
+  <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border-color:#C7D2FE">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:28px">&#9889;</div>
+      <div><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#4F46E5">v5.0 Feature — Q4 2026</div>
+      <div style="font-size:12px;color:#6B7280">Flash sales table is ready in the database. API routes are in v5-routes.js. UI countdown timer coming in v5.0.</div></div>
+    </div>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+    <div class="stat-card"><div id="fs-active" class="stat-number" style="color:var(--zk-fire)">0</div><div class="stat-label">Active now</div></div>
+    <div class="stat-card"><div id="fs-total" class="stat-number">0</div><div class="stat-label">Total created</div></div>
+    <div class="stat-card"><div id="fs-revenue" class="stat-number">&#8377;0</div><div class="stat-label">Revenue from sales</div></div>
+    <div class="stat-card"><div id="fs-avg" class="stat-number">0%</div><div class="stat-label">Avg discount</div></div>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr><th>Sale Name</th><th>Discount</th><th>Starts</th><th>Ends</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="flash-tbody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--zk-muted)">No flash sales yet. Create your first time-limited sale!</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : 'http://localhost:3000/api';
+async function loadFlashSales() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/flash-sales', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('flash-tbody');
+    if (!tbody || !d.flash_sales || !d.flash_sales.length) return;
+    var now = new Date();
+    var active = 0;
+    tbody.innerHTML = d.flash_sales.map(function(fs) {
+      var isActive = fs.is_active && new Date(fs.starts_at) <= now && new Date(fs.ends_at) >= now;
+      if (isActive) active++;
+      return '<tr><td class="col-primary">' + fs.name + '</td>'
+        + '<td style="font-weight:800;color:var(--zk-fire)">' + fs.discount_pct + '% off</td>'
+        + '<td>' + fmt.datetime(fs.starts_at) + '</td>'
+        + '<td>' + fmt.datetime(fs.ends_at) + '</td>'
+        + '<td>' + (fs.product_ids ? fs.product_ids.length : 'All') + '</td>'
+        + '<td><span class="status status-' + (isActive?'delivered':'processing') + '">' + (isActive?'Live':'Scheduled') + '</span></td>'
+        + '<td><button class="btn btn-secondary btn-sm" onclick="toggleFlash(' + fs.id + ',' + fs.is_active + ')">' + (fs.is_active?'Pause':'Activate') + '</button></td>'
+        + '</tr>';
+    }).join('');
+    setEl('fs-active', active);
+    setEl('fs-total', d.flash_sales.length);
+    var avg = d.flash_sales.reduce(function(s,f){ return s+f.discount_pct; },0) / d.flash_sales.length;
+    setEl('fs-avg', Math.round(avg) + '%');
+  } catch(e) { toast.info('Flash sales API available in v5.0'); }
+}
+async function createFlashSale() {
+  var name     = prompt('Sale name (e.g. Diwali Flash Sale):');
+  if (!name) return;
+  var discount = parseInt(prompt('Discount % (e.g. 30):') || '30');
+  var starts   = prompt('Start datetime (YYYY-MM-DD HH:MM):', new Date().toISOString().slice(0,16).replace('T',' '));
+  var ends     = prompt('End datetime (YYYY-MM-DD HH:MM):', new Date(Date.now()+86400000).toISOString().slice(0,16).replace('T',' '));
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) { toast.info('Login with real account'); return; }
+  try {
+    var r = await fetch(API_BASE + '/flash-sales', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ name:name, discount_pct:discount, starts_at:starts, ends_at:ends })
+    });
+    var d = await r.json();
+    if (d.flash_sale) { toast.success('Flash sale created!'); loadFlashSales(); }
+    else toast.error(d.error || 'Failed');
+  } catch(e) { toast.info('Flash sales API available in v5.0'); }
+}
+async function toggleFlash(id, active) {
+  var token = auth.token;
+  var r = await fetch(API_BASE + '/flash-sales/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ is_active: !active })
+  });
+  var d = await r.json();
+  if (d.flash_sale) { toast.success(active?'Sale paused':'Sale activated!'); loadFlashSales(); }
+}
+function setEl(id,val){ var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadFlashSales);
+</script>
+</body>
+</html>

@@ -1,33 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 130" width="520" height="130">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 120" width="900" height="120">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#1565C0"/>
-      <stop offset="40%"  stop-color="#0EA5E9"/>
-      <stop offset="75%"  stop-color="#26C6A6"/>
-      <stop offset="100%" stop-color="#43D68C"/>
+    <linearGradient id="bbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06152B"/>
+      <stop offset="60%" stop-color="#0B2342"/>
+      <stop offset="100%" stop-color="#0E3060"/>
     </linearGradient>
-    <linearGradient id="arr" x1="0%" y1="100%" x2="60%" y2="0%">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.75)"/>
-      <stop offset="100%" stop-color="white"/>
+    <linearGradient id="bzk" x1="0%" y1="100%" x2="70%" y2="0%">
+      <stop offset="0%" stop-color="#1565C0"/>
+      <stop offset="55%" stop-color="#1688E8"/>
+      <stop offset="100%" stop-color="#36A7FF"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0%" y1="100%" x2="60%" y2="0%">
+      <stop offset="0%" stop-color="#59BB3D"/>
+      <stop offset="100%" stop-color="#A6D900"/>
     </linearGradient>
   </defs>
-  <rect width="520" height="130" fill="url(#bg)"/>
-  <line x1="24"  y1="22" x2="62"  y2="22"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
-  <line x1="62"  y1="22" x2="24"  y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
-  <line x1="24"  y1="78" x2="62"  y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
-  <line x1="72"  y1="22" x2="72"  y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
-  <line x1="72"  y1="50" x2="102" y2="22"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
-  <line x1="72"  y1="50" x2="102" y2="78"  stroke="white" stroke-width="8"   stroke-linecap="round"/>
-  <line x1="82"  y1="72" x2="106" y2="16"  stroke="url(#arr)" stroke-width="5.5" stroke-linecap="round"/>
-  <polygon points="106,16 99,23 109,26" fill="white"/>
-  <path d="M20 91 Q44 104 74 98 Q90 95 108 88" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="4" stroke-linecap="round"/>
-  <path d="M92 96 L97 96 L102 109 L118 109 L123 96" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="97"  y1="96"  x2="95" y2="89" stroke="rgba(255,255,255,0.75)" stroke-width="2.8" stroke-linecap="round"/>
-  <line x1="95"  y1="89"  x2="89" y2="89" stroke="rgba(255,255,255,0.75)" stroke-width="2.8" stroke-linecap="round"/>
-  <circle cx="104" cy="114" r="3.5" fill="rgba(255,255,255,0.75)"/>
-  <circle cx="118" cy="114" r="3.5" fill="rgba(255,255,255,0.75)"/>
-  <text x="144" y="62"  font-family="Arial Black,Arial,sans-serif" font-size="34" font-weight="900" fill="white">ZK</text>
-  <text x="197" y="62"  font-family="Arial,sans-serif" font-size="34" font-weight="300" fill="white">Commerce</text>
-  <text x="144" y="82"  font-family="Arial,sans-serif" font-size="9.5" font-weight="600" fill="rgba(255,255,255,0.7)" letter-spacing="0.13em">SMART COMMERCE. LIMITLESS GROWTH.</text>
-  <text x="144" y="112" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="rgba(255,255,255,0.5)" letter-spacing="0.18em">GRADIENT — BRAND COLOURS</text>
+  <rect width="900" height="120" fill="url(#bbg)"/>
+  <!-- Subtle grid lines -->
+  <line x1="0" y1="30" x2="900" y2="30" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <line x1="0" y1="60" x2="900" y2="60" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <line x1="0" y1="90" x2="900" y2="90" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <!-- ZK MARK -->
+  <line x1="14" y1="14" x2="56" y2="14" stroke="url(#bzk)" stroke-width="9" stroke-linecap="round"/>
+  <line x1="56" y1="14" x2="14" y2="66" stroke="url(#bzk)" stroke-width="9" stroke-linecap="round"/>
+  <line x1="14" y1="66" x2="56" y2="66" stroke="url(#bzk)" stroke-width="9" stroke-linecap="round"/>
+  <line x1="64" y1="14" x2="64" y2="66" stroke="url(#bzk)" stroke-width="8" stroke-linecap="round"/>
+  <line x1="64" y1="40" x2="92" y2="14" stroke="url(#bzk)" stroke-width="8" stroke-linecap="round"/>
+  <line x1="64" y1="40" x2="92" y2="66" stroke="url(#bzk)" stroke-width="8" stroke-linecap="round"/>
+  <line x1="74" y1="60" x2="98" y2="8"  stroke="url(#bar)" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="98,8 90,15 101,18" fill="#A6D900"/>
+  <path d="M12 78 Q44 92 76 85 Q90 82 104 75" fill="none" stroke="#1688E8" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
+  <path d="M76 82 L81 82 L86 95 L102 95 L107 82" fill="none" stroke="#36A7FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="81" y1="82" x2="79" y2="75" stroke="#36A7FF" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="79" y1="75" x2="73" y2="75" stroke="#36A7FF" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="88" cy="100" r="3.5" fill="#36A7FF"/>
+  <circle cx="102" cy="100" r="3.5" fill="#36A7FF"/>
+  <!-- Wordmark -->
+  <text x="118" y="52" font-family="Poppins,system-ui,sans-serif" font-size="32" font-weight="700" fill="#1688E8">ZK</text>
+  <text x="164" y="52" font-family="Poppins,system-ui,sans-serif" font-size="32" font-weight="300" fill="white">Commerce</text>
+  <!-- Tagline -->
+  <line x1="118" y1="62" x2="440" y2="62" stroke="#36A7FF" stroke-width="0.8" opacity="0.4"/>
+  <text x="118" y="76" font-family="Poppins,system-ui,sans-serif" font-size="9" font-weight="500" fill="#36A7FF" letter-spacing="0.18em">SMART COMMERCE.</text>
+  <text x="270" y="76" font-family="Poppins,system-ui,sans-serif" font-size="9" font-weight="700" fill="#A6D900" letter-spacing="0.18em">LIMITLESS GROWTH.</text>
+  <!-- Divider -->
+  <line x1="460" y1="20" x2="460" y2="100" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+  <!-- BUILD. SELL. GROW. -->
+  <text x="490" y="42" font-family="Poppins,system-ui,sans-serif" font-size="22" font-weight="700" fill="white">BUILD.</text>
+  <text x="490" y="68" font-family="Poppins,system-ui,sans-serif" font-size="22" font-weight="700" fill="white">SELL.</text>
+  <text x="490" y="94" font-family="Poppins,system-ui,sans-serif" font-size="22" font-weight="800" fill="#A6D900">GROW.</text>
+  <!-- Growth chart + cart illustration area -->
+  <path d="M700 100 L740 60 L780 40 L820 20 L860 5" fill="none" stroke="#A6D900" stroke-width="3" stroke-linecap="round"/>
+  <path d="M700 100 L740 60 L780 40 L820 20 L860 5 L860 110 L700 110 Z" fill="url(#bar)" opacity="0.08"/>
+  <line x1="700" y1="100" x2="860" y2="100" stroke="rgba(166,217,0,0.3)" stroke-width="1"/>
+  <!-- Mini bar chart -->
+  <rect x="720" y="70" width="12" height="30" rx="2" fill="#1688E8" opacity="0.6"/>
+  <rect x="738" y="55" width="12" height="45" rx="2" fill="#1688E8" opacity="0.7"/>
+  <rect x="756" y="40" width="12" height="60" rx="2" fill="#1688E8" opacity="0.8"/>
+  <rect x="774" y="25" width="12" height="75" rx="2" fill="#36A7FF" opacity="0.9"/>
+  <!-- Cart icon -->
+  <path d="M830 55 L837 55 L842 75 L860 75 L865 55" fill="none" stroke="#36A7FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="843" cy="80" r="3" fill="#A6D900"/>
+  <circle cx="859" cy="80" r="3" fill="#A6D900"/>
+  <!-- Arrow on chart -->
+  <polygon points="858,5 850,12 862,15" fill="#A6D900"/>
 </svg>

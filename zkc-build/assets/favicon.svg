@@ -1,32 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="32" height="32">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#0D1B3E"/>
-      <stop offset="100%" stop-color="#1a2d5a"/>
+    <linearGradient id="ibg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06152B"/>
+      <stop offset="100%" stop-color="#0B2342"/>
     </linearGradient>
-    <linearGradient id="zk" x1="0%" y1="100%" x2="80%" y2="0%">
-      <stop offset="0%"   stop-color="#1565C0"/>
-      <stop offset="50%"  stop-color="#0EA5E9"/>
-      <stop offset="100%" stop-color="#43C6AC"/>
+    <linearGradient id="izk" x1="0%" y1="100%" x2="70%" y2="0%">
+      <stop offset="0%" stop-color="#1565C0"/>
+      <stop offset="55%" stop-color="#1688E8"/>
+      <stop offset="100%" stop-color="#36A7FF"/>
     </linearGradient>
-    <linearGradient id="ar" x1="0%" y1="100%" x2="50%" y2="0%">
-      <stop offset="0%"  stop-color="#26C6A6"/>
-      <stop offset="100%" stop-color="#76C442"/>
+    <linearGradient id="iar" x1="0%" y1="100%" x2="60%" y2="0%">
+      <stop offset="0%" stop-color="#59BB3D"/>
+      <stop offset="100%" stop-color="#A6D900"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <line x1="56"  y1="76"  x2="224" y2="76"  stroke="url(#zk)" stroke-width="46" stroke-linecap="round"/>
-  <line x1="224" y1="76"  x2="56"  y2="306" stroke="url(#zk)" stroke-width="46" stroke-linecap="round"/>
-  <line x1="56"  y1="306" x2="224" y2="306" stroke="url(#zk)" stroke-width="46" stroke-linecap="round"/>
-  <line x1="262" y1="76"  x2="262" y2="306" stroke="url(#zk)" stroke-width="46" stroke-linecap="round"/>
-  <line x1="262" y1="191" x2="432" y2="76"  stroke="url(#zk)" stroke-width="46" stroke-linecap="round"/>
-  <line x1="262" y1="191" x2="432" y2="306" stroke="url(#zk)" stroke-width="46" stroke-linecap="round"/>
-  <line x1="306" y1="280" x2="444" y2="56"  stroke="url(#ar)" stroke-width="34" stroke-linecap="round"/>
-  <polygon points="444,56 410,82 450,96" fill="#76C442"/>
-  <path d="M40 362 Q200 418 380 364" fill="none" stroke="#0EA5E9" stroke-width="23" stroke-linecap="round" opacity="0.8"/>
-  <path d="M290 375 L320 375 L348 440 L436 440 L464 375" fill="none" stroke="#0EA5E9" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="320" y1="375" x2="306" y2="338" stroke="#0EA5E9" stroke-width="18" stroke-linecap="round"/>
-  <line x1="306" y1="338" x2="272" y2="338" stroke="#0EA5E9" stroke-width="18" stroke-linecap="round"/>
-  <circle cx="354" cy="462" r="20" fill="#0EA5E9" opacity="0.9"/>
-  <circle cx="432" cy="462" r="20" fill="#0EA5E9" opacity="0.9"/>
+  <rect width="512" height="512" rx="90" fill="url(#ibg)"/>
+  <!-- Z -->
+  <line x1="50"  y1="70"  x2="220" y2="70"  stroke="url(#izk)" stroke-width="46" stroke-linecap="round"/>
+  <line x1="220" y1="70"  x2="50"  y2="290" stroke="url(#izk)" stroke-width="46" stroke-linecap="round"/>
+  <line x1="50"  y1="290" x2="220" y2="290" stroke="url(#izk)" stroke-width="46" stroke-linecap="round"/>
+  <!-- K vertical -->
+  <line x1="258" y1="70"  x2="258" y2="290" stroke="url(#izk)" stroke-width="42" stroke-linecap="round"/>
+  <!-- K upper -->
+  <line x1="258" y1="180" x2="430" y2="70"  stroke="url(#izk)" stroke-width="42" stroke-linecap="round"/>
+  <!-- K lower -->
+  <line x1="258" y1="180" x2="430" y2="290" stroke="url(#izk)" stroke-width="42" stroke-linecap="round"/>
+  <!-- Arrow -->
+  <line x1="300" y1="264" x2="448" y2="44"  stroke="url(#iar)" stroke-width="34" stroke-linecap="round"/>
+  <polygon points="448,44 410,72 452,86" fill="#A6D900"/>
+  <!-- Swoosh -->
+  <path d="M38 340 Q190 404 370 346" fill="none" stroke="#1688E8" stroke-width="20" stroke-linecap="round" opacity="0.8"/>
+  <!-- Cart -->
+  <path d="M288 358 L318 358 L345 428 L434 428 L462 358" fill="none" stroke="#36A7FF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="318" y1="358" x2="304" y2="320" stroke="#36A7FF" stroke-width="16" stroke-linecap="round"/>
+  <line x1="304" y1="320" x2="270" y2="320" stroke="#36A7FF" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="350" cy="455" r="20" fill="#36A7FF" opacity="0.9"/>
+  <circle cx="430" cy="455" r="20" fill="#36A7FF" opacity="0.9"/>
 </svg>

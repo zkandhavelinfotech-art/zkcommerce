@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Products — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href='../assets/css/design-system.css'>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+
+/* Redesigned Edit Product Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 6, 26, 0.7);
+  backdrop-filter: blur(5px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open {
+  display: flex;
+}
+.modal-card {
+  background: #fff;
+  border-radius: 20px;
+  max-width: 860px;
+  width: 95vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  border: 1px solid var(--zk-border);
+  animation: modalIn .2s ease-out;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--zk-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+.modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--zk-chalk);
+}
+.modal-footer {
+  padding: 16px 28px;
+  border-top: 1px solid var(--zk-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+.modal-section {
+  background: #fff;
+  border: 1.5px solid var(--zk-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+.modal-sec-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.desc-textarea {
+  width: 100%;
+  min-height: 160px;
+  height: 160px;
+  resize: vertical;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  border: 1.5px solid var(--zk-border);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color .15s;
+}
+.desc-textarea:focus {
+  border-color: var(--zk-indigo);
+}
+.param-box {
+  border: 1.5px solid var(--zk-border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #FAFAFC;
+  transition: all .2s;
+}
+.param-box:hover {
+  border-color: #CBD5E1;
+}
+.param-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.param-textarea {
+  width: 100%;
+  min-height: 95px;
+  resize: vertical;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  border: 1.5px solid var(--zk-border);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  outline: none;
+}
+.param-textarea:focus {
+  border-color: var(--zk-indigo);
+}
+.trust-badge-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F0FDF4;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 99px;
+  margin-top: 6px;
+}
+</style>
+</head>
+<body>
+
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="products.html" class="zk-sidebar-link active"><span class="sl-icon">🛍️</span>Products</a>
+    <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+    <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+
+    <div class="zk-sidebar-section-label">Online Store</div>
+    <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+    <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
+
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View storefront</a>
+    <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+
+<div class="zk-main" style="margin-left:240px">
+  <div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Products</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+    </div>
+  </div>
+
+  <div class="zk-page">
+    <div class="zk-page-header flex-between">
+      <div>
+        <div class="zk-page-title">Products</div>
+        <div class="zk-page-sub">Manage and edit your product catalogue, herbal ingredients, and customer instructions</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary btn-sm" onclick="toast.info('CSV export started')">↓ Export CSV</button>
+        <a href="products-add.html" class="btn btn-primary btn-sm">+ Add product</a>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <input type="search" class="field" placeholder="🔍 Search products…" style="max-width:280px" oninput="filterProducts(this.value)">
+      <select class="field" style="width:auto" onchange="filterCategory(this.value)">
+        <option value="">All categories</option>
+        <option value="Hair Care">Hair Care</option>
+        <option value="Natural & Herbal">Natural & Herbal</option>
+        <option value="Sarees">Sarees</option>
+        <option value="Kurtas">Kurtas</option>
+        <option value="Accessories">Accessories</option>
+      </select>
+      <select class="field" style="width:auto">
+        <option>All stock</option>
+        <option>In stock</option>
+        <option>Low stock</option>
+        <option>Out of stock</option>
+      </select>
+    </div>
+
+    <div class="zk-table-wrap">
+      <table class="zk-table" id="products-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="products-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+      <div style="font-size:13px;color:var(--zk-muted)" id="products-total-label">Showing 4 products</div>
+      <div class="zk-pagination">
+        <button class="zk-page-btn">←</button>
+        <button class="zk-page-btn active">1</button>
+        <button class="zk-page-btn">2</button>
+        <button class="zk-page-btn">→</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- REDESIGNED EDIT PRODUCT & PRODUCT DETAILS POPUP MODAL          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="editProductModal" onclick="handleBackdropClick(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">✏️</span>
+          <h2 style="font-family:var(--font-display);font-size:18px;font-weight:800;margin:0">Edit Product and Product details</h2>
+          <span class="badge badge-green" id="modal-status-badge">Active</span>
+        </div>
+        <div style="font-size:12px;color:var(--zk-muted);margin-top:4px">Update product specifications, description, and optional customer highlights</div>
+      </div>
+      <button onclick="closeEditModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--zk-muted);padding:4px 8px;border-radius:6px">✕</button>
+    </div>
+
+    <!-- Modal Form Body -->
+    <div class="modal-body">
+      <input type="hidden" id="edit-prod-id">
+
+      <!-- Section 1: Basic Information -->
+      <div class="modal-section">
+        <div class="modal-sec-title">
+          <span>📦 Basic Information</span>
+          <span style="font-size:11px;font-weight:600;color:var(--zk-dim)">* Required fields</span>
+        </div>
+        <div class="field-group" style="margin-bottom:14px">
+          <label class="field-label">Product Name *</label>
+          <input type="text" class="field" id="modal-pname" placeholder="e.g. Smeram 100% Natural Herbal Hair Oil (200ml)" style="font-weight:600;font-size:14px">
+        </div>
+
+        <!-- Description: Increased Height & Width -->
+        <div class="field-group" style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <label class="field-label" style="margin-bottom:0">Product Description *</label>
+            <span style="font-size:11px;color:var(--zk-muted)">Expanded writing area for ingredients, origin & formulation</span>
+          </div>
+          <textarea class="desc-textarea" id="modal-pdesc" placeholder="Comprehensive product description, active ayurvedic herbs, cold-pressed extraction method, texture, aroma, and results..."></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field-group">
+            <label class="field-label">Category</label>
+            <select class="field" id="modal-pcat">
+              <option value="Hair Care">Hair Care</option>
+              <option value="Natural & Herbal">Natural & Herbal</option>
+              <option value="Skin Care">Skin Care</option>
+              <option value="Sarees">Sarees</option>
+              <option value="Kurtas">Kurtas</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Brand</label>
+            <input type="text" class="field" id="modal-pbrand" placeholder="e.g. Smeram Naturals">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Pricing & Inventory -->
+      <div class="modal-section">
+        <div class="modal-sec-title">💰 Pricing & Inventory</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="field-group">
+            <label class="field-label">Selling Price (₹) *</label>
+            <input type="number" class="field" id="modal-pprice" placeholder="499" style="font-weight:700">
+          </div>
+          <div class="field-group">
+            <label class="field-label">MRP / Compare Price (₹)</label>
+            <input type="number" class="field" id="modal-pmrp" placeholder="699">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Stock Quantity *</label>
+            <input type="number" class="field" id="modal-pstock" placeholder="150" style="font-weight:700">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field-group">
+            <label class="field-label">Status</label>
+            <select class="field" id="modal-pstatus">
+              <option value="published">Published (Active on Store)</option>
+              <option value="draft">Draft (Hidden)</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">GST Rate</label>
+            <select class="field" id="modal-pgrate">
+              <option value="0">0%</option>
+              <option value="5">5% — Ayurvedic & Essentials</option>
+              <option value="12" selected>12% — Personal Care / Fashion</option>
+              <option value="18">18% — Cosmetics</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Additional Parameters (Optional Check Fields) -->
+      <div class="modal-section">
+        <div class="modal-sec-title">
+          <span>✨ Additional Parameters (Optional Check Fields)</span>
+          <span class="badge badge-green" style="font-size:11px">Storefront Highlights</span>
+        </div>
+
+        <!-- 1. Additional Note (Inclusive of GST and free shipping) -->
+        <div class="param-box">
+          <label class="param-label">
+            <input type="checkbox" id="modal-chk-note" checked onchange="toggleModalParam('note')">
+            <span>🏷️ Additional Note (e.g. Inclusive of GST and free shipping)</span>
+          </label>
+          <div id="modal-box-note">
+            <input type="text" class="field" id="modal-pnote" value="Inclusive of GST and free shipping." placeholder="e.g. Inclusive of GST and free shipping.">
+            <div class="trust-badge-preview" id="modal-note-preview">
+              <span>🚚</span>
+              <span id="modal-note-preview-text">Inclusive of GST and free shipping.</span>
+            </div>
+            <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Renders as a trust badge right below the price on your storefront.</div>
+          </div>
+        </div>
+
+        <!-- 2. User Instructions -->
+        <div class="param-box">
+          <label class="param-label">
+            <input type="checkbox" id="modal-chk-instructions" onchange="toggleModalParam('instructions')">
+            <span>📋 User Instructions (How to use / Application)</span>
+          </label>
+          <div id="modal-box-instructions" style="display:none">
+            <textarea class="param-textarea" id="modal-pinstructions" placeholder="e.g. Take 5-10 ml of Smeram Herbal Hair Oil. Warm gently between palms. Massage into scalp with circular fingertip motions for 10 minutes. Leave on for at least 1-2 hours or overnight. Wash off with mild herbal shampoo. Recommended 3 times weekly."></textarea>
+            <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Appears under the dedicated 'How to Use / Instructions' tab on your product details page.</div>
+          </div>
+        </div>
+
+        <!-- 3. Benefits -->
+        <div class="param-box">
+          <label class="param-label">
+            <input type="checkbox" id="modal-chk-benefits" onchange="toggleModalParam('benefits')">
+            <span>⭐ Key Benefits / Bullet Highlights</span>
+          </label>
+          <div id="modal-box-benefits" style="display:none">
+            <textarea class="param-textarea" id="modal-pbenefits" placeholder="e.g. • Clinically proven to reduce hair fall and strengthen root follicles&#10;• Deeply conditions scalp, eliminating dandruff and flaking&#10;• 100% cold-pressed pure herbal formulation with 18 vital herbs&#10;• Free from mineral oil, silicones, artificial fragrance & parabens"></textarea>
+            <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Appears as featured bullet points in the 'Key Benefits' tab on the storefront.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-secondary btn-sm" onclick="closeEditModal()">Cancel</button>
+        <a id="modal-full-edit-link" href="#" class="btn btn-ghost btn-sm" style="color:var(--zk-indigo)">Open full-page editor ↗</a>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary btn-sm" id="modal-save-btn" onclick="saveProductFromModal()" style="font-size:13px;padding:9px 22px">💾 Save Changes</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : (window.ZK ? ZK.api : '/api');
+
+// Comprehensive Products Catalog (Including Smeram Naturals Hair Oil)
+var PRODUCTS_LIST = [
+  {
+    id: 1,
+    name: "Smeram 100% Natural Herbal Hair Oil (200ml)",
+    sku: "SM-HO-200",
+    price: 499,
+    mrp: 699,
+    stock: 85,
+    category_name: "Hair Care",
+    brand: "Smeram Naturals",
+    status: "published",
+    created_at: new Date().toISOString(),
+    description: "Smeram 100% Natural Herbal Hair Oil is deeply infused with 18 vital ayurvedic herbs including Bhringraj, Amla, Brahmi, Hibiscus, Fenugreek, and cold-pressed Virgin Coconut Oil. Prepared using traditional slow-heat extraction to retain potent phytochemicals that nourish hair follicles, reduce hair thinning, and restore natural shine and density.",
+    user_instructions: "Take 5-10 ml of Smeram Herbal Hair Oil. Warm gently between palms and apply directly to scalp. Massage with circular fingertip motions for 10 minutes to stimulate blood circulation. Leave on for at least 1-2 hours or overnight for deep root nourishment. Wash off thoroughly with a mild herbal shampoo. Recommended 3 times weekly.",
+    benefits: "• Clinically proven to reduce hair fall and strengthen root follicles\n• Deeply conditions scalp, preventing dry flaking and stubborn dandruff\n• 100% pure cold-pressed natural herbal formulation\n• Free from mineral oil, silicones, artificial fragrance, and parabens",
+    additional_note: "Inclusive of GST and free shipping."
+  },
+  {
+    id: 2,
+    name: "Smeram Organic Aloe & Neem Hair Cleanser (250ml)",
+    sku: "SM-HC-250",
+    price: 399,
+    mrp: 549,
+    stock: 42,
+    category_name: "Hair Care",
+    brand: "Smeram Naturals",
+    status: "published",
+    created_at: new Date(Date.now() - 86400000*2).toISOString(),
+    description: "Gentle sulphate-free hair cleanser with fresh Aloe Vera extract and organic Neem. Cleanses without stripping natural oils.",
+    user_instructions: "Apply to wet hair, lather gently into scalp, rinse thoroughly with cool water.",
+    benefits: "• Sulphate and paraben free\n• Soothes itchy scalp\n• Leaves hair soft and shiny",
+    additional_note: "Inclusive of GST and free shipping."
+  },
+  {
+    id: 3,
+    name: "Kanjivaram Silk Saree — Royal Crimson",
+    sku: "KSS-001",
+    price: 12500,
+    mrp: 15000,
+    stock: 48,
+    category_name: "Sarees",
+    brand: "Rajan Weavers",
+    status: "published",
+    created_at: new Date(Date.now() - 86400000*5).toISOString(),
+    description: "Authentic handwoven Kanjivaram pure silk saree featuring intricate zari work and contrasting pallu.",
+    user_instructions: "Dry clean only. Store wrapped in pure cotton or muslin cloth.",
+    benefits: "• 100% Pure Mulberry Silk\n• Certified Silk Mark\n• Handwoven by master weavers in Tamil Nadu",
+    additional_note: "Inclusive of GST and free shipping."
+  },
+  {
+    id: 4,
+    name: "Cotton Kurta Set — Off White",
+    sku: "CKS-002",
+    price: 2199,
+    mrp: 2800,
+    stock: 5,
+    category_name: "Kurtas",
+    brand: "Rajan Weavers",
+    status: "published",
+    created_at: new Date(Date.now() - 86400000*8).toISOString(),
+    description: "Comfortable breathable pure cotton kurta set with matching pants and dupatta.",
+    user_instructions: "Machine wash cold with gentle detergent. Line dry in shade.",
+    benefits: "• Breathable 100% combed cotton\n• Pre-shrunk fabric\n• Elegant minimal ethnic embroidery",
+    additional_note: "Inclusive of GST and free shipping."
+  }
+];
+
+// Render Products Table
+function renderProductsTable(products) {
+  var tbody = document.getElementById('products-body');
+  if (!tbody) return;
+
+  if (!products || !products.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--zk-muted)">No products found. <a href="products-add.html" style="color:var(--zk-fire);font-weight:700">+ Add your first product</a></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = products.map(function(p) {
+    var hasInstructions = !!(p.user_instructions && p.user_instructions.trim());
+    var hasBenefits     = !!(p.benefits && p.benefits.trim());
+    var hasNote         = !!(p.additional_note && p.additional_note.trim());
+
+    return '<tr id="row-prod-' + p.id + '">'
+      + '<td>'
+      +   '<div style="display:flex;align-items:center;gap:12px">'
+      +     '<div style="width:42px;height:42px;border-radius:9px;background:' + (p.category_name === 'Hair Care' ? '#DCFCE7' : 'var(--zk-chalk)') + ';display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">'
+      +       (p.category_name === 'Hair Care' ? '🌿' : (p.category_name === 'Sarees' ? '🥻' : '🛍️'))
+      +     '</div>'
+      +     '<div>'
+      +       '<div style="font-weight:700;font-size:13.5px;color:var(--zk-text)">' + p.name + '</div>'
+      +       '<div style="font-size:11px;color:var(--zk-dim);display:flex;gap:6px;align-items:center;margin-top:2px">'
+      +         '<span>' + (p.brand || 'Store Brand') + '</span>'
+      +         (hasInstructions ? '<span style="color:#2563EB" title="User Instructions Configured">📋 Instructions</span>' : '')
+      +         (hasBenefits ? '<span style="color:#059669" title="Key Benefits Configured">⭐ Benefits</span>' : '')
+      +         (hasNote ? '<span style="color:#D97706" title="Additional Note Configured">🏷️ Free shipping note</span>' : '')
+      +       '</div>'
+      +     '</div>'
+      +   '</div>'
+      + '</td>'
+      + '<td style="font-size:12px;font-family:monospace;font-weight:600">' + (p.sku || ('ZK-' + p.id)) + '</td>'
+      + '<td><span style="font-weight:800;color:var(--zk-text)">' + fmt.inr(p.price) + '</span>' + (p.mrp ? '<span style="font-size:11px;color:var(--zk-dim);text-decoration:line-through;margin-left:5px">' + fmt.inr(p.mrp) + '</span>' : '') + '</td>'
+      + '<td><span class="badge ' + (p.stock <= 5 ? 'badge-amber' : 'badge-green') + '" style="font-weight:800">' + p.stock + '</span></td>'
+      + '<td><span style="font-size:12px;font-weight:600">' + (p.category_name || 'General') + '</span></td>'
+      + '<td><span class="status status-' + (p.status === 'published' ? 'delivered' : 'processing') + '">' + (p.status === 'published' ? 'Active' : 'Draft') + '</span></td>'
+      + '<td>'
+      +   '<div style="display:flex;gap:6px">'
+      +     '<button class="btn btn-secondary btn-sm" onclick="openEditModal(' + p.id + ')" style="font-weight:700">✏️ Edit</button>'
+      +     '<a href="products-add.html?id=' + p.id + '" class="btn btn-ghost btn-sm" title="Full page editor" style="color:var(--zk-muted)">↗</a>'
+      +   '</div>'
+      + '</td>'
+      + '</tr>';
+  }).join('');
+
+  var totEl = document.getElementById('products-total-label');
+  if (totEl) totEl.textContent = 'Showing ' + products.length + ' products';
+}
+
+// ─── MODAL OPEN / POPULATE / CLOSE ───────────────────────────────
+function openEditModal(prodId) {
+  var p = PRODUCTS_LIST.find(function(item){ return item.id === prodId; });
+  if (!p) {
+    toast.error('Product not found');
+    return;
+  }
+
+  document.getElementById('edit-prod-id').value = p.id;
+  document.getElementById('modal-pname').value   = p.name || '';
+  document.getElementById('modal-pdesc').value   = p.description || '';
+  document.getElementById('modal-pprice').value  = p.price || '';
+  document.getElementById('modal-pmrp').value    = p.mrp || '';
+  document.getElementById('modal-pstock').value  = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100);
+  document.getElementById('modal-pcat').value    = p.category_name || 'Hair Care';
+  document.getElementById('modal-pbrand').value  = p.brand || '';
+  document.getElementById('modal-pstatus').value = p.status || 'published';
+  document.getElementById('modal-status-badge').textContent = (p.status === 'published' ? 'Active' : 'Draft');
+
+  // Full page edit link
+  document.getElementById('modal-full-edit-link').href = 'products-add.html?id=' + p.id;
+
+  // Additional Parameters: Note
+  var chkNote = document.getElementById('modal-chk-note');
+  var noteVal = (p.additional_note !== undefined && p.additional_note !== null) ? p.additional_note : 'Inclusive of GST and free shipping.';
+  document.getElementById('modal-pnote').value = noteVal;
+  document.getElementById('modal-note-preview-text').textContent = noteVal || 'Inclusive of GST and free shipping.';
+  chkNote.checked = (p.additional_note !== null && p.additional_note !== '');
+  toggleModalParam('note');
+
+  // Additional Parameters: Instructions
+  var chkInst = document.getElementById('modal-chk-instructions');
+  document.getElementById('modal-pinstructions').value = p.user_instructions || '';
+  chkInst.checked = !!(p.user_instructions && p.user_instructions.trim());
+  toggleModalParam('instructions');
+
+  // Additional Parameters: Benefits
+  var chkBen = document.getElementById('modal-chk-benefits');
+  document.getElementById('modal-pbenefits').value = p.benefits || '';
+  chkBen.checked = !!(p.benefits && p.benefits.trim());
+  toggleModalParam('benefits');
+
+  // Open modal
+  var modal = document.getElementById('editProductModal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+  var modal = document.getElementById('editProductModal');
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleBackdropClick(e) {
+  if (e.target && e.target.id === 'editProductModal') {
+    closeEditModal();
+  }
+}
+
+function toggleModalParam(type) {
+  if (type === 'note') {
+    var c = document.getElementById('modal-chk-note');
+    var b = document.getElementById('modal-box-note');
+    if (b) b.style.display = c.checked ? 'block' : 'none';
+  } else if (type === 'instructions') {
+    var c = document.getElementById('modal-chk-instructions');
+    var b = document.getElementById('modal-box-instructions');
+    if (b) b.style.display = c.checked ? 'block' : 'none';
+  } else if (type === 'benefits') {
+    var c = document.getElementById('modal-chk-benefits');
+    var b = document.getElementById('modal-box-benefits');
+    if (b) b.style.display = c.checked ? 'block' : 'none';
+  }
+}
+
+// Live update note preview
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'modal-pnote') {
+    var prev = document.getElementById('modal-note-preview-text');
+    if (prev) prev.textContent = e.target.value.trim() || 'Inclusive of GST and free shipping.';
+  }
+});
+
+// Save from modal
+async function saveProductFromModal() {
+  var id = parseInt(document.getElementById('edit-prod-id').value);
+  var p  = PRODUCTS_LIST.find(function(item){ return item.id === id; });
+  if (!p) { toast.error('Product not found'); return; }
+
+  var name  = document.getElementById('modal-pname').value.trim();
+  var desc  = document.getElementById('modal-pdesc').value.trim();
+  var price = parseFloat(document.getElementById('modal-pprice').value);
+  var mrp   = parseFloat(document.getElementById('modal-pmrp').value) || null;
+  var stock = parseInt(document.getElementById('modal-pstock').value) || 0;
+  var cat   = document.getElementById('modal-pcat').value;
+  var brand = document.getElementById('modal-pbrand').value.trim();
+  var status= document.getElementById('modal-pstatus').value;
+
+  if (!name)      { toast.error('Product name is required'); return; }
+  if (isNaN(price)||price <= 0) { toast.error('Valid price is required'); return; }
+
+  var chkNote = document.getElementById('modal-chk-note').checked;
+  var chkInst = document.getElementById('modal-chk-instructions').checked;
+  var chkBen  = document.getElementById('modal-chk-benefits').checked;
+
+  var noteVal = chkNote ? (document.getElementById('modal-pnote').value.trim() || 'Inclusive of GST and free shipping.') : null;
+  var instVal = chkInst ? document.getElementById('modal-pinstructions').value.trim() : null;
+  var benVal  = chkBen  ? document.getElementById('modal-pbenefits').value.trim() : null;
+
+  var btn = document.getElementById('modal-save-btn');
+  btnLoading(btn, true);
+
+  var payload = {
+    name: name,
+    description: desc,
+    price: price,
+    mrp: mrp,
+    stock: stock,
+    quantity: stock,
+    category_name: cat,
+    brand: brand,
+    status: status,
+    additional_note: noteVal,
+    user_instructions: instVal,
+    benefits: benVal
+  };
+
+  // Try API update if live token available
+  var token = auth.token;
+  if (token && !token.startsWith('demo_token')) {
+    try {
+      var r = await fetch(API_BASE + '/products/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(payload)
+      });
+      var data = await r.json();
+      if (data.product) {
+        Object.assign(p, data.product);
+      }
+    } catch(e) { console.warn('API update failed, updating locally:', e); }
+  }
+
+  // Update in-memory product object
+  Object.assign(p, payload);
+
+  btnLoading(btn, false);
+  closeEditModal();
+  renderProductsTable(PRODUCTS_LIST);
+  toast.success('Product "' + name + '" updated successfully!');
+}
+
+// Search and Category Filter
+function filterProducts(query) {
+  var q = (query || '').toLowerCase().trim();
+  var filtered = PRODUCTS_LIST.filter(function(p){
+    return p.name.toLowerCase().includes(q)
+      || (p.sku && p.sku.toLowerCase().includes(q))
+      || (p.category_name && p.category_name.toLowerCase().includes(q))
+      || (p.description && p.description.toLowerCase().includes(q));
+  });
+  renderProductsTable(filtered);
+}
+
+function filterCategory(cat) {
+  if (!cat) { renderProductsTable(PRODUCTS_LIST); return; }
+  var filtered = PRODUCTS_LIST.filter(function(p){
+    return (p.category_name || '').toLowerCase() === cat.toLowerCase();
+  });
+  renderProductsTable(filtered);
+}
+
+// Escape key closes modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeEditModal();
+});
+
+// Load from API if logged in, merge with defaults
+async function loadProductsFromAPI() {
+  renderProductsTable(PRODUCTS_LIST);
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+
+  try {
+    var r = await fetch(API_BASE + '/products?page=1&limit=50', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.products && d.products.length) {
+      PRODUCTS_LIST = d.products;
+      renderProductsTable(PRODUCTS_LIST);
+    }
+  } catch(e) {
+    console.warn('API products load error:', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadProductsFromAPI);
+</script>
+</body>
+</html>

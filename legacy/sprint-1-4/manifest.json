@@ -1,0 +1,29 @@
+{
+  "name": "ZKCommerce",
+  "short_name": "ZKCommerce",
+  "description": "Smart Commerce. Limitless Growth. \u2014 ZKandavel Infotech Pvt Ltd",
+  "start_url": "/auth/login.html",
+  "display": "standalone",
+  "background_color": "#0D1B3E",
+  "theme_color": "#1565C0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": [
+    "business",
+    "shopping",
+    "productivity"
+  ],
+  "lang": "en-IN"
+}

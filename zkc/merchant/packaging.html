@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Packaging &amp; Delivery Addresses — ZKCommerce</title>
+<style>
+:root{--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--soft:#f8fafc;--brand:#059669;--brand-soft:#ecfdf5;--warn:#b45309;--err:#b91c1c;--wa:#25D366}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#f1f5f9}
+header{background:#0f172a;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0}header a{color:#cbd5e1;font-size:13px;text-decoration:none}
+main{max-width:1280px;margin:0 auto;padding:18px 16px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+label.f{font-size:11px;font-weight:700;color:#475569;display:flex;flex-direction:column;gap:4px}
+input,select,button{font:inherit}input[type=date],select{padding:7px 9px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;min-height:36px}
+.btn{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer;min-height:36px;color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--soft)}.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.btn.primary:hover{background:#047857}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}.btn.sm{padding:4px 9px;min-height:28px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}.chips{display:flex;gap:6px;flex-wrap:wrap}
+.summary{font-size:13px;color:var(--muted)}.summary b{color:var(--ink)}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+th,td{padding:9px 8px;border-bottom:1px solid #f1f5f9;text-align:left;vertical-align:top}th{font-size:11px;text-transform:uppercase;color:#475569;background:var(--soft);position:sticky;top:0}
+tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(--muted);font-size:12px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#eef2ff;color:#3730a3}.pill.cod{background:#fff7ed;color:#c2410c}.pill.paid{background:#ecfdf5;color:#047857}
+.status{font-size:12.5px;font-weight:600;min-height:18px}.empty{text-align:center;padding:40px;color:var(--muted)}
+#printArea{display:none}
+/* ── Labels ── */
+.sheet{display:grid;gap:0;page-break-after:always;break-after:page}
+.label{border:1.5px dashed #94a3b8;padding:10px 12px;font-size:12px;line-height:1.35;overflow:hidden;display:flex;flex-direction:column;gap:6px;color:#000;background:#fff}
+.label .to{font-size:10px;font-weight:800;letter-spacing:.08em;color:#334155}.label .name{font-size:15px;font-weight:800}.label .big{font-size:13.5px}
+.label .meta{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #cbd5e1;padding-top:5px;font-size:11px}
+.label .cod{font-size:14px;font-weight:900;border:2px solid #000;padding:2px 6px;display:inline-block}
+.label .items{font-size:10.5px;border-top:1px solid #e2e8f0;padding-top:4px}.label .from{font-size:10.5px;border-top:1px solid #cbd5e1;padding-top:5px;margin-top:auto}
+.preview{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#e2e8f0;padding:12px;overflow:auto;max-height:520px}
+.preview .sheet{background:#fff;margin:0 auto 12px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+@media print{
+  body{background:#fff}header,main{display:none!important}#printArea{display:block!important}
+  .label{border-color:#000}
+}
+@media(max-width:640px){header h1{font-size:15px}main{padding:12px 10px 50px}}
+</style>
+<style id="pageSize"></style>
+</head>
+<body>
+<header>
+  <div><h1>📦 Packaging &amp; Delivery Addresses</h1><div style="font-size:12px;color:#94a3b8" id="storeName">Loading…</div></div>
+  <div class="row" style="gap:14px"><a href="../store-builder/">← Store Builder</a></div>
+</header>
+<main>
+  <div class="card">
+    <div class="row">
+      <label class="f">From date<input type="date" id="fromDate"></label>
+      <label class="f">To date<input type="date" id="toDate"></label>
+      <label class="f">Orders
+        <select id="stage">
+          <option value="ready">Ready to pack (paid / COD confirmed)</option>
+          <option value="packed">Packed, not shipped</option>
+          <option value="shipped">Shipped</option>
+          <option value="all">All (except unpaid / cancelled)</option>
+        </select>
+      </label>
+      <button class="btn primary" id="loadBtn">Show addresses</button>
+      <div class="chips">
+        <button class="btn sm" data-range="0">Today</button>
+        <button class="btn sm" data-range="1">Yesterday</button>
+        <button class="btn sm" data-range="7">Last 7 days</button>
+        <button class="btn sm" data-range="30">Last 30 days</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div class="summary" id="summary">—</div>
+      <div class="row">
+        <button class="btn sm" id="selAll">Select all</button>
+        <button class="btn sm" id="selNone">Clear</button>
+        <button class="btn sm" id="csvBtn">⬇ CSV (Ekart bulk upload)</button>
+        <button class="btn sm" id="packedBtn">✔ Mark selected as packed</button>
+      </div>
+    </div>
+    <div class="status" id="status" style="margin-top:8px"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:30px"><input type="checkbox" id="headCheck" aria-label="Select all"></th><th>Order</th><th>Customer</th><th>Delivery address</th><th>Items</th><th>Payment</th><th>Invoice</th><th>WhatsApp</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="8" class="empty">Choose dates and click “Show addresses”.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;margin-bottom:8px">🖨 Print address labels</div>
+    <div class="row">
+      <label class="f">Layout
+        <select id="layout">
+          <option value="a4-1">A4 — 1 per page</option>
+          <option value="a4-2">A4 — 2 per page</option>
+          <option value="a4-4" selected>A4 — 4 per page</option>
+          <option value="a4-6">A4 — 6 per page</option>
+          <option value="a4-8">A4 — 8 per page</option>
+          <option value="thermal">Thermal 4 × 6 in (100 × 150 mm)</option>
+        </select>
+      </label>
+      <label class="f">Copies per label
+        <select id="copies"><option>1</option><option>2</option><option>3</option></select>
+      </label>
+      <label class="f" style="flex-direction:row;align-items:center;gap:6px;padding-bottom:8px"><input type="checkbox" id="optItems" checked> Product list</label>
+      <label class="f" style="flex-direction:row;align-items:center;gap:6px;padding-bottom:8px"><input type="checkbox" id="optFrom" checked> “From” (return) address</label>
+      <button class="btn primary" id="printBtn">🖨 Print selected labels</button>
+    </div>
+    <div class="preview" id="preview"><div class="empty">Select orders to see the label preview.</div></div>
+  </div>
+</main>
+<div id="printArea"></div>
+
+<script>
+// Two hosts share this page: the Node dashboard (login token) and the PHP package's packaging.php (admin session, api.php).
+const PHP_MODE = !!window.ZKC_PACKAGING_PHP;
+const API = '/api', token = PHP_MODE ? '' : localStorage.getItem('zk_token');
+const PHP_ROUTES = { '/orders/packaging': 'admin/packaging', '/orders/packaging/mark-packed': 'admin/mark-packed' };
+const storeId = new URLSearchParams(location.search).get('store_id');
+let data = { orders: [], store: {} }, selected = new Set();
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+const istDate = (offsetDays = 0) => new Date(Date.now() + 5.5 * 3600e3 - offsetDays * 864e5).toISOString().slice(0, 10);
+const parse = v => { if (v == null) return null; if (typeof v !== 'string') return v; try { return JSON.parse(v); } catch (_) { return v; } };
+const addr = o => { const a = parse(o.shipping_address) || {}; return typeof a === 'string' ? { line1: a } : a; };
+const items = o => { const i = parse(o.items); return Array.isArray(i) ? i : []; };
+const isCod = o => o.payment_method === 'cod';
+const status = (t, color) => { const el = document.getElementById('status'); el.textContent = t; el.style.color = color || '#64748b'; };
+const withStore = p => p + (storeId ? (p.includes('?') ? '&' : '?') + 'store_id=' + encodeURIComponent(storeId) : '');
+
+async function api(path, opts = {}) {
+  let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  if (PHP_MODE) {
+    const [p, q] = path.split('?');
+    url = 'api.php?route=' + encodeURIComponent(PHP_ROUTES[p] || p.replace(/^\//, '')) + (q ? '&' + q : '');
+    headers = { 'Content-Type': 'application/json' };
+  }
+  const r = await fetch(url, { ...opts, credentials: 'same-origin', headers });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw Error(d.error || 'Request failed (' + r.status + ')');
+  return d;
+}
+
+async function load() {
+  const from = document.getElementById('fromDate').value, to = document.getElementById('toDate').value, stage = document.getElementById('stage').value;
+  status('Loading…');
+  try {
+    data = await api('/orders/packaging?from=' + from + '&to=' + to + '&stage=' + stage);
+    document.getElementById('storeName').textContent = data.store.store_name || '';
+    selected = new Set(data.orders.map(o => o.id)); // everything selected by default; untick what you do not need
+    renderRows();
+    status(data.orders.length ? '' : 'No orders in this range.', '#64748b');
+  } catch (e) { status('❌ ' + e.message, 'var(--err)'); }
+}
+
+function renderRows() {
+  const tbody = document.getElementById('rows');
+  if (!data.orders.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No orders for these dates.</td></tr>'; renderSummary(); renderPreview(); return; }
+  tbody.innerHTML = data.orders.map(o => {
+    const a = addr(o), it = items(o);
+    return `<tr class="${selected.has(o.id) ? 'sel' : ''}">
+      <td><input type="checkbox" data-id="${o.id}" ${selected.has(o.id) ? 'checked' : ''} aria-label="Select ${esc(o.order_number)}"></td>
+      <td><b>${esc(o.order_number || '#' + o.id)}</b><div class="muted">${esc(new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }))}</div><div class="muted">${esc(o.status)}</div></td>
+      <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div></td>
+      <td class="addr">${esc([a.line1 || a.address, a.city, a.state].filter(Boolean).join(', '))}${a.pincode ? ' — <b>' + esc(a.pincode) + '</b>' : ''}</td>
+      <td>${it.map(x => esc(x.name) + ' × ' + (Number(x.quantity) || 1)).join('<br>')}</td>
+      <td>${isCod(o) ? '<span class="pill cod">COD ' + money(o.total_amount) + '</span>' : '<span class="pill paid">Prepaid</span>'}<div class="muted">${money(o.total_amount)}</div></td>
+      <td>${esc(o.invoice_number || '—')}</td>
+      <td style="white-space:nowrap">${o.whatsapp && o.whatsapp.customer_url ? `<a class="btn sm wa" target="_blank" rel="noopener" href="${esc(o.whatsapp.customer_url)}" title="Message the customer">💬 Customer</a>` : ''}
+        ${o.whatsapp && o.whatsapp.care_url ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(o.whatsapp.care_url)}" title="Forward order details to ${esc(data.care_label || 'customer care')}">↪ Care</a>` : ''}</td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('input[data-id]').forEach(cb => cb.onchange = () => { const id = Number(cb.dataset.id); cb.checked ? selected.add(id) : selected.delete(id); cb.closest('tr').classList.toggle('sel', cb.checked); renderSummary(); renderPreview(); });
+  renderSummary(); renderPreview();
+}
+
+function renderSummary() {
+  const sel = data.orders.filter(o => selected.has(o.id));
+  const cod = sel.filter(isCod);
+  document.getElementById('summary').innerHTML = `<b>${data.orders.length}</b> orders · <b>${sel.length}</b> selected · ${cod.length} COD (${money(cod.reduce((n, o) => n + Number(o.total_amount || 0), 0))} to collect) · ${sel.length - cod.length} prepaid`;
+  const head = document.getElementById('headCheck');
+  head.checked = !!data.orders.length && sel.length === data.orders.length;
+  head.indeterminate = sel.length > 0 && sel.length < data.orders.length;
+  document.getElementById('printBtn').disabled = document.getElementById('csvBtn').disabled = document.getElementById('packedBtn').disabled = !sel.length;
+}
+
+// ── Labels ──
+const LAYOUTS = {
+  'a4-1': { cols: 1, rows: 1, page: '210mm 297mm' }, 'a4-2': { cols: 1, rows: 2, page: '210mm 297mm' },
+  'a4-4': { cols: 2, rows: 2, page: '210mm 297mm' }, 'a4-6': { cols: 2, rows: 3, page: '210mm 297mm' },
+  'a4-8': { cols: 2, rows: 4, page: '210mm 297mm' }, thermal: { cols: 1, rows: 1, page: '100mm 150mm' }
+};
+
+function labelHtml(o) {
+  const a = addr(o), it = items(o), s = data.store || {};
+  const showItems = document.getElementById('optItems').checked, showFrom = document.getElementById('optFrom').checked;
+  return `<div class="label">
+    <div class="to">DELIVER TO</div>
+    <div class="name">${esc(o.customer_name)}</div>
+    <div class="big">${esc(a.line1 || a.address || '')}</div>
+    <div class="big">${esc([a.city, a.state].filter(Boolean).join(', '))}${a.pincode ? ' — <b>' + esc(a.pincode) + '</b>' : ''}</div>
+    <div class="big">📞 <b>${esc(o.customer_phone)}</b></div>
+    <div class="meta"><span>Order <b>${esc(o.order_number || '#' + o.id)}</b><br>${esc(new Date(o.created_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }))}${o.invoice_number ? '<br>Inv ' + esc(o.invoice_number) : ''}</span>
+      <span style="text-align:right">${isCod(o) ? '<span class="cod">COD ' + money(o.total_amount) + '</span>' : '<b>PREPAID</b>'}</span></div>
+    ${showItems && it.length ? `<div class="items">${it.map(x => esc(x.name) + (x.size || x.product_size ? ' (' + esc(x.size || x.product_size) + ')' : '') + ' × ' + (Number(x.quantity) || 1)).join('<br>')}</div>` : ''}
+    ${showFrom ? `<div class="from"><b>From:</b> ${esc(s.store_name)}${s.address || s.city ? ', ' + esc([s.address, s.city, s.state].filter(Boolean).join(', ')) : ''}${s.whatsapp_number ? ' · 📞 ' + esc(s.whatsapp_number) : ''}</div>` : ''}
+  </div>`;
+}
+
+function sheetsHtml(forPrint) {
+  const L = LAYOUTS[document.getElementById('layout').value], copies = Number(document.getElementById('copies').value) || 1;
+  const labels = data.orders.filter(o => selected.has(o.id)).flatMap(o => Array(copies).fill(o));
+  if (!labels.length) return '';
+  const perPage = L.cols * L.rows, [w, h] = L.page.split(' ');
+  const pad = L.page.startsWith('210') ? 8 : 3; // mm page margin
+  const scale = forPrint ? '' : 'zoom:.55;';
+  let html = '';
+  for (let i = 0; i < labels.length; i += perPage) {
+    html += `<div class="sheet" style="${scale}width:${w};height:${h};padding:${pad}mm;grid-template-columns:repeat(${L.cols},1fr);grid-template-rows:repeat(${L.rows},1fr)">${labels.slice(i, i + perPage).map(labelHtml).join('')}</div>`;
+  }
+  return html;
+}
+
+function renderPreview() {
+  const html = sheetsHtml(false);
+  document.getElementById('preview').innerHTML = html || '<div class="empty">Select orders to see the label preview.</div>';
+}
+
+// Not named print(): a global print() would replace window.print and call itself.
+function printLabels() {
+  const L = LAYOUTS[document.getElementById('layout').value];
+  document.getElementById('pageSize').textContent = `@page{size:${L.page};margin:0}`;
+  document.getElementById('printArea').innerHTML = sheetsHtml(true);
+  window.print();
+}
+
+function downloadCsv() {
+  const cols = ['Order ID', 'Order Date', 'Invoice No', 'Customer Name', 'Phone', 'Email', 'Address', 'City', 'State', 'Pincode', 'Payment Mode', 'COD Amount', 'Order Value', 'Products', 'Total Quantity'];
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const lines = data.orders.filter(o => selected.has(o.id)).map(o => {
+    const a = addr(o), it = items(o);
+    return [o.order_number || o.id, new Date(o.created_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }), o.invoice_number || '', o.customer_name, o.customer_phone, o.customer_email || '',
+      a.line1 || a.address || '', a.city || '', a.state || '', a.pincode || '', isCod(o) ? 'COD' : 'Prepaid', isCod(o) ? Number(o.total_amount || 0) : 0, Number(o.total_amount || 0),
+      it.map(x => x.name + ' x ' + (x.quantity || 1)).join('; '), it.reduce((n, x) => n + (Number(x.quantity) || 1), 0)].map(q).join(',');
+  });
+  const blob = new Blob(['﻿' + [cols.map(q).join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `delivery-addresses-${data.from}${data.to !== data.from ? '-to-' + data.to : ''}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+async function markPacked() {
+  const ids = [...selected];
+  if (!confirm(`Mark ${ids.length} order(s) as packed?`)) return;
+  try { const r = await api('/orders/packaging/mark-packed', { method: 'POST', body: JSON.stringify({ order_ids: ids }) }); await load(); status(`✅ ${r.updated} order(s) marked as packed — see “Packed, not shipped”.`, 'var(--brand)'); }
+  catch (e) { status('❌ ' + e.message, 'var(--err)'); }
+}
+
+// Inside the merchant dashboard (iframe) the dashboard already has the store name and navigation.
+if (new URLSearchParams(location.search).get('embed')) document.querySelector('header').style.display = 'none';
+if (PHP_MODE) { const back = document.querySelector('header a'); back.href = 'admin-orders.php'; back.textContent = '← Orders'; }
+else if (!token) location.href = '../auth/login.html';
+document.getElementById('fromDate').value = document.getElementById('toDate').value = istDate(0);
+document.getElementById('loadBtn').onclick = load;
+document.getElementById('stage').onchange = load;
+document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => {
+  const n = Number(b.dataset.range);
+  document.getElementById('fromDate').value = istDate(n === 1 ? 1 : n ? n - 1 : 0);
+  document.getElementById('toDate').value = istDate(n === 1 ? 1 : 0);
+  load();
+});
+document.getElementById('selAll').onclick = () => { selected = new Set(data.orders.map(o => o.id)); renderRows(); };
+document.getElementById('selNone').onclick = () => { selected.clear(); renderRows(); };
+document.getElementById('headCheck').onchange = e => { selected = e.target.checked ? new Set(data.orders.map(o => o.id)) : new Set(); renderRows(); };
+['layout', 'copies', 'optItems', 'optFrom'].forEach(id => document.getElementById(id).onchange = renderPreview);
+document.getElementById('printBtn').onclick = printLabels;
+document.getElementById('csvBtn').onclick = downloadCsv;
+document.getElementById('packedBtn').onclick = markPacked;
+load();
+</script>
+</body>
+</html>

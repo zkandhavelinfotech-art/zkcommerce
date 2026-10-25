@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="en"><head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Add Product — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar"><div class="zk-sidebar-logo"><div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce</div><nav class="zk-sidebar-nav"><div class="zk-sidebar-section-label">Main</div><a href="merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a><a href="merchant/analytics.html" class="zk-sidebar-link "><span class="sl-icon">📈</span>Analytics</a><div class="zk-sidebar-section-label">Catalogue</div><a href="merchant/products.html" class="zk-sidebar-link active"><span class="sl-icon">🛍️</span>Products</a><a href="merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a><div class="zk-sidebar-section-label">Orders</div><a href="merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a><a href="merchant/shipping-label.html" class="zk-sidebar-link "><span class="sl-icon">🚚</span>Shipping</a><div class="zk-sidebar-section-label">Finance</div><a href="merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a><div class="zk-sidebar-section-label">Marketing</div><a href="merchant/loyalty.html" class="zk-sidebar-link "><span class="sl-icon">⭐</span>Loyalty</a><a href="merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a><a href="merchant/reviews.html" class="zk-sidebar-link "><span class="sl-icon">💬</span>Reviews</a><a href="merchant/coupons.html" class="zk-sidebar-link "><span class="sl-icon">🎟</span>Coupons</a><a href="merchant/returns.html" class="zk-sidebar-link "><span class="sl-icon">↩️</span>Returns<span class="sl-badge">3</span></a><a href="merchant/payouts.html" class="zk-sidebar-link "><span class="sl-icon">💰</span>Payouts</a><div class="zk-sidebar-section-label">Team</div><a href="merchant/staff.html" class="zk-sidebar-link "><span class="sl-icon">👥</span>Staff</a><div class="zk-sidebar-section-label">Settings</div><a href="merchant/store-settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Settings</a></nav><div class="zk-sidebar-footer"><a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View store</a><a href="setup.html" style="font-size:12px;color:rgba(255,107,0,.6);font-weight:700;margin-bottom:8px;display:block">🧙 Setup wizard</a><a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a></div></aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100"><div style="font-family:var(--font-display);font-size:16px;font-weight:800">Add Product</div><div style="display:flex;align-items:center;gap:14px"><a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire)">🌐 View store</a><div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">R</div></div></div><div class="zk-page">
+<div class="zk-page-header flex-between"><div><a href="products.html" style="font-size:12px;color:var(--zk-fire);font-weight:700">← Products</a><div class="zk-page-title">Add new product</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="toast.success('Draft saved')">Save draft</button><button class="btn btn-primary btn-sm" onclick="doPublish()">Publish →</button></div></div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+<div style="display:flex;flex-direction:column;gap:16px">
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Basic information</h3>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Product name *</label><input type="text" class="field" id="pname" placeholder="e.g. Kanjivaram Silk Saree — Red"></div>
+    <div class="field-group" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <label class="field-label" style="margin-bottom:0">Product Description *</label>
+        <span style="font-size:11px;color:var(--zk-muted)">Expanded area for detailed ingredients, formulation & specs</span>
+      </div>
+      <textarea class="field" id="pdesc" rows="8" style="min-height:180px;width:100%;font-size:14px;line-height:1.6;resize:vertical;" placeholder="Detailed product description, natural ingredients (e.g. Bhringraj, Amla, Hibiscus, Virgin Coconut Oil), extraction method, benefits, and quality certifications..."></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group">
+        <label class="field-label">Category *</label>
+        <select class="field" id="pcat">
+          <option value="">Select category...</option>
+          <option value="Hair Care">Hair Care</option>
+          <option value="Natural & Herbal">Natural & Herbal</option>
+          <option value="Skin Care">Skin Care</option>
+          <option value="Sarees">Sarees</option>
+          <option value="Kurtas">Kurtas</option>
+          <option value="Blouses">Blouses</option>
+          <option value="Accessories">Accessories</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Brand</label><input type="text" class="field" id="pbrand" placeholder="e.g. Smeram Naturals"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800">✨ Additional Parameters (Optional)</h3>
+      <span class="badge badge-green" style="font-size:11px">Optional Details</span>
+    </div>
+    
+    <!-- Additional Note Field (Inclusive of GST and free shipping) -->
+    <div style="border:1px solid var(--zk-border);border-radius:10px;padding:14px;margin-bottom:14px;background:#FAFAFB">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="chk_note" checked onchange="toggleField('chk_note','box_note')">
+        <span>🏷️ Additional Note (e.g. GST & Free Shipping)</span>
+      </label>
+      <div id="box_note">
+        <input type="text" class="field" id="pnote" value="Inclusive of GST and free shipping." placeholder="e.g. Inclusive of GST and free shipping.">
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Appears as an attractive trust badge below the price on storefront.</div>
+      </div>
+    </div>
+
+    <!-- User Instructions Field -->
+    <div style="border:1px solid var(--zk-border);border-radius:10px;padding:14px;margin-bottom:14px;background:#FAFAFB">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="chk_instructions" onchange="toggleField('chk_instructions','box_instructions')">
+        <span>📋 User Instructions (How to use / Care)</span>
+      </label>
+      <div id="box_instructions" style="display:none">
+        <textarea class="field" id="pinstructions" rows="4" style="min-height:100px;width:100%;font-size:13px;line-height:1.6;resize:vertical;" placeholder="e.g. Take 5-10 ml of hair oil. Warm slightly between palms. Gently massage into scalp for 10 minutes. Leave on for 1 hour or overnight before washing with mild herbal shampoo..."></textarea>
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Displayed on product details page under 'Instructions / How to Use'.</div>
+      </div>
+    </div>
+
+    <!-- Benefits Field -->
+    <div style="border:1px solid var(--zk-border);border-radius:10px;padding:14px;background:#FAFAFB">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="chk_benefits" onchange="toggleField('chk_benefits','box_benefits')">
+        <span>⭐ Key Benefits / Highlights</span>
+      </label>
+      <div id="box_benefits" style="display:none">
+        <textarea class="field" id="pbenefits" rows="4" style="min-height:100px;width:100%;font-size:13px;line-height:1.6;resize:vertical;" placeholder="e.g. • Clinically proven to reduce hair fall and strengthen root follicles&#10;• Deeply conditions scalp, preventing dry flaking and stubborn dandruff&#10;• 100% pure cold-pressed natural herbal formulation&#10;• Free from mineral oil, silicones, artificial fragrance & parabens"></textarea>
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Displayed as bullet points or highlights on product page.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">📸 Product images</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+      <div onclick="toast.info('Upload: connect to R2/S3 API')" style="aspect-ratio:1;border:2px dashed var(--zk-border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--zk-chalk);font-size:28px">📸<div style="font-size:10px;font-weight:700;color:var(--zk-muted);margin-top:4px">Main</div></div>
+      <div onclick="toast.info('Click to add image')" style="aspect-ratio:1;border:2px dashed var(--zk-border);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--zk-chalk);font-size:22px;color:var(--zk-muted)">➕</div>
+      <div onclick="toast.info('Click to add image')" style="aspect-ratio:1;border:2px dashed var(--zk-border);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--zk-chalk);font-size:22px;color:var(--zk-muted)">➕</div>
+      <div onclick="toast.info('Click to add image')" style="aspect-ratio:1;border:2px dashed var(--zk-border);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--zk-chalk);font-size:22px;color:var(--zk-muted)">➕</div>
+    </div>
+    <div style="font-size:11px;color:var(--zk-dim)">Up to 8 images · PNG, JPG · Max 2MB each</div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3 style="font-family:var(--font-display);font-size:16px;font-weight:800">Variants</h3><button class="btn btn-secondary btn-sm" onclick="addVariant()">+ Add variant</button></div>
+    <div id="vlist"><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;padding:12px;background:var(--zk-chalk);border-radius:10px">
+      <div class="field-group"><label class="field-label">Colour / Size</label><input type="text" class="field" placeholder="Red"></div>
+      <div class="field-group"><label class="field-label">SKU</label><input type="text" class="field" placeholder="KSS-RED-001"></div>
+      <div class="field-group"><label class="field-label">Price (₹)</label><input type="number" class="field" placeholder="12500"></div>
+      <div class="field-group"><label class="field-label">Stock</label><input type="number" class="field" placeholder="10"></div>
+      <div style="height:40px;width:36px;display:flex;align-items:center;justify-content:center;color:var(--zk-dim);font-size:18px">⋮</div>
+    </div></div>
+  </div>
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">🔍 SEO</h3>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">SEO title (60 chars)</label><input type="text" class="field" placeholder="Kanjivaram Silk Saree | Rajan Textiles" maxlength="60"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Meta description (160 chars)</label><textarea class="field" rows="2" placeholder="Buy authentic Kanjivaram silk sarees online." maxlength="160"></textarea></div>
+    <div class="field-group"><label class="field-label">URL slug</label><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--zk-muted)">rajanTextiles.zkcommerce.in/p/</span><input type="text" class="field" placeholder="kanjivaram-silk-saree-red" style="flex:1"></div></div>
+  </div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">💰 Pricing</h3>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Selling price (₹) *</label><input type="number" class="field" id="sprice" placeholder="12500" oninput="calcG()"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">MRP / Compare price (₹)</label><input type="number" class="field" id="pmrp" placeholder="15000"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Cost price (₹)</label><input type="number" class="field" id="pcost" placeholder="8000"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">GST rate</label><select class="field" id="grate" onchange="calcG()"><option value="0">0%</option><option value="5">5% — Textiles</option><option value="12" selected>12% — Fashion</option><option value="18">18% — Electronics</option><option value="28">28% — Luxury</option></select></div>
+    <div id="gbox" style="display:none;background:var(--zk-pale);border-radius:9px;padding:12px;font-size:12px"><div style="font-weight:700;color:var(--zk-indigo);margin-bottom:7px">GST breakdown</div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Taxable</span><span id="gtx" style="font-weight:700">—</span></div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>CGST</span><span id="gcg" style="font-weight:700">—</span></div><div style="display:flex;justify-content:space-between"><span>SGST</span><span id="gsg" style="font-weight:700">—</span></div></div>
+  </div>
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">📦 Inventory &amp; Stock</h3>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Stock Quantity (Units) *</label><input type="number" class="field" id="pstock" placeholder="100" min="0" value="100" style="font-weight:700"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Low stock alert at</label><input type="number" class="field" id="plowstock" placeholder="5" value="5"></div>
+    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Warehouse</label><select class="field"><option>Chennai Main</option><option>Madurai WH</option></select></div>
+    <div class="field-group"><label class="field-label">Weight (kg)</label><input type="number" class="field" placeholder="0.8" step="0.1"></div>
+  </div>
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:14px">⚙️ Status</h3>
+    <div class="field-group"><label class="field-label">Visibility</label><select class="field" id="pstatus"><option value="published">Published</option><option value="draft">Draft</option><option value="archived">Archived</option></select></div>
+  </div>
+  <button class="btn btn-primary btn-full" id="publish-btn" onclick="doPublish('published')">🚀 Publish product</button>
+  <button class="btn btn-secondary btn-full" onclick="doPublish('draft')">Save draft</button>
+  <a href="products.html" style="text-align:center;font-size:13px;color:var(--zk-muted);display:block">← Cancel</a>
+</div>
+</div>
+<script>
+let vc=1;
+function addVariant(){const d=document.createElement('div');d.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;align-items:end;padding:12px;background:var(--zk-chalk);border-radius:10px;margin-top:8px';d.innerHTML='<div class="field-group"><label class="field-label">Colour / Size</label><input type="text" class="field" placeholder="Blue"></div><div class="field-group"><label class="field-label">SKU</label><input type="text" class="field"></div><div class="field-group"><label class="field-label">Price (₹)</label><input type="number" class="field"></div><div class="field-group"><label class="field-label">Stock</label><input type="number" class="field"></div><button style="height:40px;width:36px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;cursor:pointer;font-size:16px" onclick="this.closest('div').remove()">✕</button>';document.getElementById('vlist').appendChild(d);}
+function calcG(){const p=parseFloat(document.getElementById('sprice').value)||0;const r=parseFloat(document.getElementById('grate').value)/100;if(p>0){const b=p/(1+r);const t=(p-b)/2;document.getElementById('gtx').textContent=fmt.inr(b,2);document.getElementById('gcg').textContent=fmt.inr(t,2);document.getElementById('gsg').textContent=fmt.inr(t,2);document.getElementById('gbox').style.display='block';}}
+function doPublish(){if(!document.getElementById('pname').value){toast.error('Product name required');return;}toast.success('Product published!');setTimeout(()=>window.location.href='products.html',1200);}
+</script>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var EDIT_ID  = new URLSearchParams(window.location.search).get('id');
+
+// Load categories from API
+async function loadCategories() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/categories', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    var sel = document.getElementById('pcat');
+    if (sel && d.categories && d.categories.length) {
+      sel.innerHTML = '<option value="">Select category...</option>'
+        + d.categories.map(function(c){
+            return '<option value="' + c.id + '">' + c.name + '</option>';
+          }).join('');
+    }
+  } catch(e) {}
+}
+
+function toggleField(chkId, boxId) {
+  var chk = document.getElementById(chkId);
+  var box = document.getElementById(boxId);
+  if (chk && box) box.style.display = chk.checked ? 'block' : 'none';
+}
+
+// Load existing product for editing
+async function loadProductForEdit(id) {
+  var token = auth.token;
+  if (!token) return;
+  try {
+    var r = await fetch(API_BASE + '/products/' + id, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.product) {
+      var p = d.product;
+      setVal('pname',  p.name);
+      setVal('pdesc',  p.description || '');
+      setVal('sprice', p.price);
+      setVal('pmrp',   p.mrp || '');
+      setVal('pcost',  p.cost_price || '');
+      setVal('pstock', (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100));
+      setVal('grate',  p.gst_rate || '12');
+      setVal('pcat',   p.category_id || '');
+
+      // Load additional parameters
+      if (p.additional_note) {
+        setVal('pnote', p.additional_note);
+        var c = document.getElementById('chk_note'); if (c) c.checked = true;
+        toggleField('chk_note', 'box_note');
+      } else if (p.additional_note === null) {
+        var c = document.getElementById('chk_note'); if (c) c.checked = false;
+        toggleField('chk_note', 'box_note');
+      }
+
+      if (p.user_instructions) {
+        setVal('pinstructions', p.user_instructions);
+        var c = document.getElementById('chk_instructions'); if (c) c.checked = true;
+        toggleField('chk_instructions', 'box_instructions');
+      }
+
+      if (p.benefits) {
+        setVal('pbenefits', p.benefits);
+        var c = document.getElementById('chk_benefits'); if (c) c.checked = true;
+        toggleField('chk_benefits', 'box_benefits');
+      }
+
+      // Update page title
+      var h1 = document.querySelector('h1, .page-title, .zk-page-title');
+      if (h1) h1.textContent = 'Edit Product — ' + p.name;
+      // Update button text
+      var btn = document.getElementById('publish-btn');
+      if (btn) btn.textContent = 'Save Changes';
+    }
+  } catch(e) { console.warn('Load product error:', e.message); }
+}
+
+function calcGST() {
+  var price = parseFloat(document.getElementById('sprice').value) || 0;
+  var rate  = parseFloat(document.getElementById('grate').value) / 100;
+  var box   = document.getElementById('gbox');
+  if (price > 0 && box) {
+    var g = gst.split(price, rate*100);
+    setEl('gtx', fmt.inr(g.base, 2));
+    setEl('gcg', fmt.inr(g.cgst, 2));
+    setEl('gsg', fmt.inr(g.sgst, 2));
+    box.style.display = 'block';
+  }
+}
+
+async function doPublish(status) {
+  var name  = getVal('pname');
+  var price = parseFloat(document.getElementById('sprice').value) || 0;
+  if (!name)        { toast.error('Product name is required'); return; }
+  if (price <= 0)   { toast.error('Valid price is required'); return; }
+
+  var token = auth.token;
+  if (!token) { toast.error('Please login first'); return; }
+  if (token.startsWith('demo_token')) {
+    toast.info('Demo mode — login with real account to save products');
+    return;
+  }
+
+  var btn = event.currentTarget;
+  btnLoading(btn, true);
+
+  var chkNote = document.getElementById('chk_note');
+  var chkInst = document.getElementById('chk_instructions');
+  var chkBen  = document.getElementById('chk_benefits');
+
+  var payload = {
+    name:        name,
+    description: getVal('pdesc'),
+    price:       price,
+    mrp:         parseFloat(document.getElementById('pmrp') ? document.getElementById('pmrp').value : 0) || null,
+    cost_price:  parseFloat(document.getElementById('pcost') ? document.getElementById('pcost').value : 0) || null,
+    gst_rate:    getVal('grate') || '12',
+    category_id: document.getElementById('pcat').value ? parseInt(document.getElementById('pcat').value) : null,
+    stock:       parseInt(document.getElementById('pstock') ? document.getElementById('pstock').value : 0) || 0,
+    quantity:    parseInt(document.getElementById('pstock') ? document.getElementById('pstock').value : 0) || 0,
+    status:      status || 'published',
+    is_cod:      true,
+    low_stock_alert: 5,
+    additional_note:   (chkNote && chkNote.checked) ? (getVal('pnote') || 'Inclusive of GST and free shipping.') : null,
+    user_instructions: (chkInst && chkInst.checked) ? getVal('pinstructions') : null,
+    benefits:          (chkBen && chkBen.checked) ? getVal('pbenefits') : null,
+  };
+
+  try {
+    var url    = EDIT_ID ? API_BASE + '/products/' + EDIT_ID : API_BASE + '/products';
+    var method = EDIT_ID ? 'PUT' : 'POST';
+    var r  = await fetch(url, {
+      method:  method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.product) {
+      toast.success(EDIT_ID ? 'Product updated!' : (status === 'draft' ? 'Draft saved!' : 'Product published!'));
+      setTimeout(function(){ window.location.href = 'products.html'; }, 1200);
+    } else {
+      toast.error(d.error || d.message || 'Failed to save product');
+    }
+  } catch(e) {
+    toast.error('Server error — is npm run dev running?');
+  }
+  btnLoading(btn, false);
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el) {
+    if (el.tagName === 'SELECT') el.value = val;
+    else if (el.tagName === 'TEXTAREA') el.value = val;
+    else el.value = val;
+  }
+}
+function getVal(id) { var el=document.getElementById(id); return el?el.value.trim():''; }
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategories();
+  if (EDIT_ID) loadProductForEdit(EDIT_ID);
+});
+</script>
+</body></html>

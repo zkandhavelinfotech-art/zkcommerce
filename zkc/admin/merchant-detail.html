@@ -1,0 +1,129 @@
+<!DOCTYPE html><html lang="en"><head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Merchant Detail — Admin — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar"><div class="zk-sidebar-logo"><div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>Admin<span style="font-size:9px;background:rgba(255,107,0,.3);color:#FF9A4D;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800">ADMIN</span></div>
+<nav class="zk-sidebar-nav"><div class="zk-sidebar-section-label">Platform</div>
+<a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+<a href="merchants.html" class="zk-sidebar-link active"><span class="sl-icon">🏪</span>Merchants</a>
+<a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>All orders</a>
+<a href="revenue.html" class="zk-sidebar-link"><span class="sl-icon">💰</span>Revenue</a>
+<a href="plans.html" class="zk-sidebar-link"><span class="sl-icon">📋</span>Plans</a>
+<a href="gap-analysis-full.html" class="zk-sidebar-link"><span class="sl-icon">🔍</span>Gap analysis</a>
+</nav><div class="zk-sidebar-footer"><div style="font-size:12px;color:rgba(255,255,255,.3)">v4.0 Admin</div></div></aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100"><div style="display:flex;align-items:center;gap:12px"><a href="merchants.html" style="font-size:12px;font-weight:700;color:var(--zk-fire)">← Merchants</a><div style="font-family:var(--font-display);font-size:16px;font-weight:800">Rajan Textiles</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="toast.info('Login as merchant')">Login as</button><button class="btn btn-primary btn-sm" onclick="toast.success('Message sent')">📱 Message</button></div></div><div class="zk-page">
+<div style="display:grid;grid-template-columns:260px 1fr;gap:20px">
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="card" style="text-align:center"><div style="width:68px;height:68px;border-radius:14px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin:0 auto 12px">R</div><div style="font-family:var(--font-display);font-size:17px;font-weight:800;margin-bottom:4px">Rajan Textiles</div><div style="font-size:12px;color:var(--zk-muted);margin-bottom:10px">rajan@rajanTextiles.in</div><span class="badge badge-fire" style="display:inline-flex;margin-bottom:10px">Growth Plan</span><div style="font-size:12px;color:var(--zk-muted);line-height:1.8">📍 Coimbatore, Tamil Nadu<br>📱 +91 98765 43210<br>🧾 33AABCU9603R1ZX<br>📅 Since Mar 2026</div></div>
+    <div class="card"><h4 style="font-family:var(--font-display);font-size:14px;font-weight:800;margin-bottom:12px">Store health</h4>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Profile complete</span><span style="font-weight:700;color:#16A34A">92%</span></div><div style="height:5px;background:var(--zk-chalk);border-radius:3px"><div style="width:92%;height:100%;background:#22C55E;border-radius:3px"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Products listed</span><span style="font-weight:700;color:var(--zk-fire)">1,248</span></div><div style="height:5px;background:var(--zk-chalk);border-radius:3px"><div style="width:78%;height:100%;background:var(--zk-fire);border-radius:3px"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Avg rating</span><span style="font-weight:700;color:#F59E0B">⭐ 4.6</span></div><div style="height:5px;background:var(--zk-chalk);border-radius:3px"><div style="width:92%;height:100%;background:#F59E0B;border-radius:3px"></div></div></div>
+      </div>
+    </div>
+    <div class="card"><h4 style="font-family:var(--font-display);font-size:14px;font-weight:800;margin-bottom:12px">Actions</h4>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-secondary btn-sm btn-full" onclick="toast.success('30 days gifted')">🎁 Gift 30 trial days</button>
+        <button class="btn btn-secondary btn-sm btn-full" onclick="toast.info('Upgrade offer sent')">📈 Send upgrade offer</button>
+        <button class="btn btn-secondary btn-sm btn-full" onclick="toast.info('Reset email sent')">🔑 Reset password</button>
+        <button class="btn btn-sm btn-full" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA" onclick="if(confirm('Suspend account?'))toast.warning('Account suspended')">🚫 Suspend account</button>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div class="zk-stat-card"><div class="zk-stat-label">Total GMV</div><div class="zk-stat-value fire-text">₹48.2L</div><div class="zk-stat-change up">↑ 34% MoM</div></div>
+      <div class="zk-stat-card"><div class="zk-stat-label">Total orders</div><div class="zk-stat-value">2,418</div></div>
+      <div class="zk-stat-card"><div class="zk-stat-label">Return rate</div><div class="zk-stat-value" style="color:#16A34A">4.2%</div></div>
+      <div class="zk-stat-card"><div class="zk-stat-label">Support tickets</div><div class="zk-stat-value" style="color:#D97706">2</div></div>
+    </div>
+    <div class="zk-table-wrap"><div style="padding:13px 20px;border-bottom:1px solid var(--zk-border);font-size:14px;font-weight:800">Recent orders</div>
+      <table class="zk-table"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>
+        <tr><td class="col-primary">#ZK-2026-00284</td><td>Priya Nair</td><td>₹19,940</td><td><span class="status status-processing">Processing</span></td><td>17 Jul</td></tr>
+        <tr><td class="col-primary">#ZK-2026-00283</td><td>Arun M.</td><td>₹6,750</td><td><span class="status status-shipped">Shipped</span></td><td>16 Jul</td></tr>
+        <tr><td class="col-primary">#ZK-2026-00282</td><td>Kavitha S.</td><td>₹2,199</td><td><span class="status status-delivered">Delivered</span></td><td>16 Jul</td></tr>
+      </tbody></table>
+    </div>
+    <div class="zk-table-wrap"><div style="padding:13px 20px;border-bottom:1px solid var(--zk-border);font-size:14px;font-weight:800">Subscription history</div>
+      <table class="zk-table"><thead><tr><th>Plan</th><th>Amount</th><th>Date</th><th>Type</th></tr></thead><tbody>
+        <tr><td>Growth</td><td>₹799</td><td>17 Jul 2026</td><td><span class="badge badge-brand">Renewal</span></td></tr>
+        <tr><td>Growth</td><td>₹799</td><td>17 Jun 2026</td><td><span class="badge badge-brand">Renewal</span></td></tr>
+        <tr><td>Growth (trial)</td><td>₹0</td><td>17 Mar 2026</td><td><span class="badge badge-green">Trial start</span></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+var MID=new URLSearchParams(window.location.search).get('id');
+
+async function loadMerchantDetail(){
+  if(!MID) return;
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants/'+MID,{headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+    var m=d.merchant||d;
+    if(!m||!m.name) return;
+    setEl('merchant-name',   m.name);
+    setEl('merchant-email',  m.owner_email||'-');
+    setEl('merchant-plan',   m.plan||'-');
+    setEl('merchant-status', m.is_active?'Active':'Suspended');
+    setEl('merchant-gmv',    fmt.inrCompact(m.total_gmv||0));
+    setEl('merchant-orders', m.order_count||0);
+    setEl('merchant-products',m.product_count||0);
+    setEl('merchant-since',  fmt.date(m.created_at));
+    setEl('merchant-slug',   m.slug||'-');
+
+    // Load store orders
+    var or=await fetch(API_BASE+'/admin/orders?store_id='+MID+'&limit=10',
+      {headers:{'Authorization':'Bearer '+token}});
+    var od=await or.json();
+    var tbody=document.getElementById('merchant-orders-tbody');
+    if(tbody&&od.orders&&od.orders.length){
+      tbody.innerHTML=od.orders.map(function(o){
+        return '<tr><td class="col-primary">'+fmt.orderId(o.id)+'</td>'
+          +'<td>'+fmt.inr(o.total)+'</td>'
+          +'<td><span class="status status-'+o.status+'">'+o.status+'</span></td>'
+          +'<td>'+fmt.date(o.created_at)+'</td></tr>';
+      }).join('');
+    }
+  }catch(e){console.warn('Merchant detail:',e.message);}
+}
+
+async function changePlan(plan){
+  var token=auth.token;
+  if(!MID||!token||token.startsWith('demo_token')){toast.info('Demo mode');return;}
+  try{
+    var r=await fetch(API_BASE+'/admin/merchants/'+MID,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({plan:plan})
+    });
+    var d=await r.json();
+    if(d.merchant||d.id){toast.success('Plan changed to '+plan);loadMerchantDetail();}
+    else toast.error(d.error||'Failed to update plan');
+  }catch(e){toast.error('Server error');}
+}
+
+async function suspendMerchant(){
+  if(!confirm('Suspend this merchant? Their store will go offline.')) return;
+  var token=auth.token;
+  try{
+    await fetch(API_BASE+'/admin/merchants/'+MID,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({is_active:false})
+    });
+    toast.success('Merchant suspended');
+    setEl('merchant-status','Suspended');
+  }catch(e){toast.error('Server error');}
+}
+
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',loadMerchantDetail);
+</script>
+</body></html>

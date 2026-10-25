@@ -1,0 +1,18 @@
+# zkc/ is the only edited source; zkc-build/ (what Railway/Vercel run) must be an exact copy.
+# Fails the push / PR if someone edited zkc-build/ by hand or forgot `npm run release:sync`.
+name: Release sync check
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+
+jobs:
+  zkc-build-matches-zkc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/release-sync.js --check

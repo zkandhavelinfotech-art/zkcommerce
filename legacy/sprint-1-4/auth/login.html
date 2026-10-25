@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{min-height:100vh;background:var(--g-hero);display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-card{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.auth-gem{width:40px;height:40px;border-radius:10px;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+.demo-bar{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:12px;color:#166534;margin-bottom:16px}
+.demo-bar strong{display:block;font-weight:800;margin-bottom:4px;color:#15803D}
+.demo-cred{display:flex;justify-content:space-between;align-items:center;padding:3px 0;cursor:pointer}
+.demo-cred:hover{color:#15803D;font-weight:700}
+</style>
+</head>
+<body>
+<div class="auth-card">
+  <div style="display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:28px;justify-content:center">
+    <div class="auth-gem">&#9889;</div>ZKCommerce
+  </div>
+
+  <h2 style="font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:4px;text-align:center">Welcome back</h2>
+  <p style="font-size:13px;color:var(--zk-muted);text-align:center;margin-bottom:24px">Sign in to your ZKCommerce account</p>
+
+  <!-- Quick-fill demo credentials -->
+  <div class="demo-bar">
+    <strong>Demo accounts (click to fill)</strong>
+    <div class="demo-cred" onclick="fillDemo('merchant@zkcommerce.in','demo1234')">
+      Merchant: merchant@zkcommerce.in / demo1234
+    </div>
+    <div class="demo-cred" onclick="fillDemo('admin@zkcommerce.in','demo1234')">
+      Admin: admin@zkcommerce.in / demo1234
+    </div>
+  </div>
+
+  <div id="alert-box"></div>
+
+  <div class="field-group" style="margin-bottom:14px">
+    <label class="field-label">Email address</label>
+    <input type="email" id="email" class="field" placeholder="you@store.in"
+           onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <div class="field-group" style="margin-bottom:6px">
+    <label class="field-label">Password</label>
+    <input type="password" id="password" class="field" placeholder="Your password"
+           onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <div style="text-align:right;margin-bottom:20px">
+    <a href="forgot-password.html" style="font-size:12px;color:var(--zk-fire);font-weight:700">Forgot password?</a>
+  </div>
+
+  <button id="login-btn" class="btn btn-primary btn-full" onclick="doLogin()">
+    Sign in &rarr;
+  </button>
+
+  <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--zk-muted)">
+    No account? <a href="register.html" style="color:var(--zk-fire);font-weight:700">Start free trial</a>
+  </div>
+
+  <div id="api-status" style="margin-top:16px;padding:8px 12px;border-radius:8px;font-size:11px;text-align:center;display:none"></div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+/* Detect whether API is reachable */
+const API_BASE = window.location.protocol === 'file:'
+  ? 'http://localhost:3000/api'
+  : (window.ZK ? ZK.api : '/api');
+
+async function checkAPI() {
+  const statusEl = document.getElementById('api-status');
+  try {
+    const r = await fetch('http://localhost:3000/health');
+    const j = await r.json();
+    if (j.status === 'ok') {
+      statusEl.style.display = 'block';
+      statusEl.style.background = '#F0FDF4';
+      statusEl.style.color = '#15803D';
+      statusEl.textContent = 'API connected: ' + API_BASE;
+    }
+  } catch(e) {
+    statusEl.style.display = 'block';
+    statusEl.style.background = '#FEF9C3';
+    statusEl.style.color = '#854D0E';
+    statusEl.innerHTML = 'API offline. Start server: <strong>npm run dev</strong><br>Demo mode active.';
+  }
+}
+checkAPI();
+
+function fillDemo(email, pass) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = pass;
+  document.getElementById('email').focus();
+}
+
+function getRedirect(role) {
+  const setup = localStorage.getItem('zk_setup_complete');
+  if (role === 'merchant') return setup ? '../merchant/dashboard.html' : '../merchant/setup.html';
+  if (role === 'admin')    return '../admin/dashboard.html';
+  return '../storefront/home.html';
+}
+
+function showError(msg) {
+  document.getElementById('alert-box').innerHTML =
+    '<div class="alert alert-error" style="margin-bottom:14px">' + msg + '</div>';
+}
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+  const btn   = document.getElementById('login-btn');
+  if (!email || !pass) { showError('Please enter email and password.'); return; }
+
+  btnLoading(btn, true);
+
+  /* ── Try real API first ── */
+  try {
+    const res = await fetch(API_BASE + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await res.json();
+
+    if (data.token) {
+      auth.save(data.token, data.user);
+      localStorage.setItem('zk_setup_complete', data.user.store_id ? '1' : '');
+      window.location.href = getRedirect(data.user.role);
+      return;
+    }
+    /* API responded but wrong credentials */
+    showError(data.error || data.message || 'Invalid email or password.');
+    btnLoading(btn, false);
+    return;
+  } catch(e) {
+    /* API not running — fall through to demo mode */
+  }
+
+  /* ── Demo mode (API offline) ── */
+  const DEMOS = {
+    'merchant@zkcommerce.in': { pass: 'demo1234', role: 'merchant', id: 2, name: 'Rajan Kumar', store_id: 1 },
+    'admin@zkcommerce.in':    { pass: 'demo1234', role: 'admin',    id: 1, name: 'ZK Admin',   store_id: null },
+    'customer@zkcommerce.in': { pass: 'demo1234', role: 'customer', id: 3, name: 'Priya Nair', store_id: null },
+  };
+  const demo = DEMOS[email.toLowerCase()];
+  if (demo && demo.pass === pass) {
+    auth.save('demo_token_' + Date.now(), { id: demo.id, name: demo.name, email, role: demo.role, store_id: demo.store_id });
+    if (demo.role === 'merchant') localStorage.setItem('zk_setup_complete', '1');
+    window.location.href = getRedirect(demo.role);
+    return;
+  }
+
+  showError('Invalid email or password. <br><small>If API is offline, use demo accounts shown above.</small>');
+  btnLoading(btn, false);
+}
+</script>
+</body>
+</html>

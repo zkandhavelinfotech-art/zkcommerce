@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://zkuser:zkpass@postgres:5432/zkcommerce
+      - JWT_SECRET=dev_secret_change_in_production
+      - RAZORPAY_KEY_ID=rzp_test_placeholder
+      - RAZORPAY_KEY_SECRET=placeholder
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./api:/app/api
+    command: ["node", "api/server.js"]
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: zkuser
+      POSTGRES_PASSWORD: zkpass
+      POSTGRES_DB: zkcommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/phase1-additions.sql:/docker-entrypoint-initdb.d/02_phase1.sql
+      - ./database/phase2-additions.sql:/docker-entrypoint-initdb.d/03_phase2.sql
+      - ./database/phase3-additions.sql:/docker-entrypoint-initdb.d/04_phase3.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zkuser -d zkcommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

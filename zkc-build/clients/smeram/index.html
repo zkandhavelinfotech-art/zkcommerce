@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smeram Naturals — Authentic Siddha &amp; Ayurvedic Formulations</title>
+<meta name="description" content="Smeram Naturals — Double Boiled, Double Infused Classical Siddha Hair Oils, Joint Pain Orthocare, Ayurgold Face Care, and Vedic Health Foods. Made in Chennai, India.">
+<meta name="theme-color" content="#ED6375">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ── RESET & DESIGN TOKENS ── */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --pink:#ED6375;
+  --pink-dark:#C93D51;
+  --pink-light:#FDF0F2;
+  --pink-border:#F7B6BF;
+  --gold:#D4A017;
+  --gold-light:#FFF8E7;
+  --orange:#E85D04;
+  --green:#388E3C;
+  --green-dark:#2E7D32;
+  --green-light:#E8F5E9;
+  --accent:#A3B545;
+  --accent-dark:#697725;
+  --accent-light:#F5F8E7;
+  --cream:#FFF8F0;
+  --white:#FFFFFF;
+  --dark:#241812;
+  --text:#2E221B;
+  --muted:#6B5547;
+  --border:#EADBCE;
+  --border-light:#F4EBE3;
+  --soft:#FAF7F2;
+  --shadow-sm:0 4px 14px rgba(36,24,18,0.06);
+  --shadow-md:0 12px 30px rgba(237,99,117,0.14);
+}
+body{font-family:'Inter',sans-serif;color:var(--text);background:var(--white);overflow-x:hidden;line-height:1.55}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;height:auto}
+button,input,select,textarea{font-family:inherit}
+
+/* ── FLORAL BANNERS (Big High-Impact Floral Design) ── */
+.floral-banner-top{width:100%;height:115px;background:#fff url('../../assets/themes/smeram/floral-top-banner.png') repeat-x top center;background-size:auto 115px;border-bottom:1.5px solid var(--border-light)}
+.floral-banner-bottom{width:100%;height:125px;background:#fff url('../../assets/themes/smeram/floral-bottom-banner.png') repeat-x bottom center;background-size:auto 125px;border-top:1.5px solid var(--border-light);margin-top:40px}
+
+/* ── ANNOUNCEMENT BAR ── */
+.ann-bar{background:linear-gradient(90deg,var(--orange),#F57C00,var(--orange));color:#fff;text-align:center;padding:9px 20px;font-size:12px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.ann-bar span{display:inline-flex;align-items:center;gap:6px}
+.ann-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.6)}
+.ann-wa-link{color:#fff;background:rgba(0,0,0,0.18);padding:3px 12px;border-radius:99px;font-size:11px;font-weight:800;transition:all .2s}
+.ann-wa-link:hover{background:rgba(0,0,0,0.35)}
+
+/* ── STICKY NAV (Strict Single Line Layout & 4x Logo Size) ── */
+nav{background:rgba(255,255,255,0.98);backdrop-filter:blur(10px);border-bottom:2px solid var(--border-light);position:sticky;top:0;z-index:300;box-shadow:0 2px 14px rgba(237,99,117,0.06)}
+.nav-inner{max-width:1440px;margin:0 auto;padding:0 20px;height:86px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.logo-wrap{display:flex;align-items:center;gap:12px;line-height:1;text-decoration:none;flex-shrink:0}
+.logo-img{height:56px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(237,99,117,0.18))}
+.logo-text{display:flex;flex-direction:column}
+.logo-smeram{font-family:'Dancing Script',cursive;font-size:44px;font-weight:700;color:var(--pink);letter-spacing:-0.5px;line-height:0.95;text-shadow:0 1px 2px rgba(201,61,81,0.12)}
+.logo-naturals{font-family:'Dancing Script',cursive;font-size:24px;font-weight:700;color:var(--gold);margin-top:-2px;display:flex;align-items:center;gap:6px}
+.logo-naturals::before{content:'';display:inline-block;width:24px;height:12px;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 40 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 15 Q10 2 20 10 Q30 18 38 5' fill='none' stroke='%23D4A017' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/contain}
+
+.nav-links{display:flex;align-items:center;gap:12px;list-style:none;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links li a{font-size:12px;font-weight:600;color:var(--muted);padding:6px 3px;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.nav-links li a:hover,.nav-links li a.active{color:var(--pink);border-bottom-color:var(--pink)}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.wa-nav-btn{background:#E8F8EE;color:#1E8E3E;border:1.5px solid #25D366;padding:7px 12px;border-radius:99px;font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(37,211,102,0.15);transition:all .2s;white-space:nowrap}
+.wa-nav-btn:hover{background:#25D366;color:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,211,102,0.3)}
+.cart-nav-btn{background:var(--pink);color:#fff;padding:8px 14px;border-radius:99px;font-size:12px;font-weight:700;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(237,99,117,0.3);transition:all .2s;white-space:nowrap}
+.cart-nav-btn:hover{background:var(--pink-dark);transform:translateY(-1px)}
+.cart-badge{background:var(--gold);color:var(--dark);padding:2px 7px;border-radius:99px;font-size:11px;font-weight:800}
+
+/* Mobile Nav Toggle */
+.menu-toggle{display:none;background:none;border:none;font-size:24px;cursor:pointer;color:var(--dark)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(150deg,#FFF8F0 0%,#FFF0F5 50%,#FFF8E1 100%);padding:44px 24px 50px;border-bottom:1.5px solid var(--border-light);position:relative}
+.hero-inner{max-width:1300px;margin:0 auto}
+.hero-header{text-align:center;max-width:860px;margin:0 auto 36px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--pink-light);border:1px solid var(--pink-border);border-radius:99px;padding:6px 18px;font-size:11.5px;font-weight:800;color:var(--pink);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(34px,4.8vw,56px);font-weight:900;color:var(--dark);line-height:1.12;margin-bottom:12px}
+.hero-title .brand{color:var(--pink)}
+.hero-title .naturals{color:var(--gold)}
+.hero-sub{font-size:15.5px;color:var(--muted);line-height:1.75;max-width:680px;margin:0 auto 20px}
+.hero-method-tag{display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:#fff;padding:6px 18px;border-radius:6px;font-size:13px;font-weight:800;letter-spacing:.03em;box-shadow:0 4px 12px rgba(232,93,4,0.25)}
+
+/* Category Grid in Hero */
+.hero-categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-top:32px}
+.cat-card{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:20px;cursor:pointer;transition:all .28s cubic-bezier(.16,1,.3,1);box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.cat-card:hover{transform:translateY(-6px);border-color:var(--pink);box-shadow:0 16px 36px rgba(237,99,117,0.18)}
+.cat-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cat-card-pill{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px;border-radius:99px;background:var(--pink-light);color:var(--pink);border:1px solid var(--pink-border)}
+.cat-card-count{font-size:11.5px;color:var(--muted);font-weight:600}
+.cat-img-wrap{width:100%;height:160px;border-radius:14px;overflow:hidden;margin-bottom:14px;background:var(--soft);border:1px solid var(--border-light);display:flex;align-items:center;justify-content:center}
+.cat-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .45s}
+.cat-card:hover .cat-img-wrap img{transform:scale(1.06)}
+.cat-card-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dark);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.cat-card-star{font-family:'Inter',sans-serif;font-size:12px;color:var(--gold);font-weight:700}
+.cat-card-action{display:flex;justify-content:space-between;border-top:1px solid var(--border-light);padding-top:12px;margin-top:auto;font-size:12.5px;font-weight:700;color:var(--pink)}
+.cat-card .arrow{transition:transform .2s}
+.cat-card:hover .arrow{transform:translateX(5px)}
+
+/* ── TRUST BAND ── */
+.trust-band{background:linear-gradient(90deg,var(--green),#2E7D32,var(--green));color:#fff;padding:12px 24px}
+.trust-inner{max-width:1260px;margin:0 auto;display:flex;justify-content:center;gap:36px;flex-wrap:wrap}
+.ti-item{font-size:12.5px;font-weight:800;letter-spacing:.05em;display:flex;align-items:center;gap:8px}
+.ti-item::before{content:'✓';color:var(--gold);font-weight:900;font-size:14px}
+
+/* ── SECTION COMMON ── */
+.sec{padding:64px 24px}
+.sec-soft{background:#FDFBF8}
+.si{max-width:1300px;margin:0 auto}
+.sec-head{text-align:center;max-width:760px;margin:0 auto 36px}
+.sec-eyebrow{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--pink);margin-bottom:8px;display:inline-block}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(28px,3.8vw,42px);font-weight:700;color:var(--dark);line-height:1.2;margin-bottom:10px}
+.sec-sub{font-size:14.5px;color:var(--muted);line-height:1.7}
+
+/* ── CATEGORY FILTER TABS ── */
+.cat-tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;border-bottom:1.5px solid var(--border-light);padding-bottom:18px}
+.cat-tab-btn{background:#fff;border:1.5px solid var(--border);color:var(--text);padding:8px 20px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
+.cat-tab-btn:hover{border-color:var(--pink);color:var(--pink)}
+.cat-tab-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);box-shadow:0 4px 14px rgba(237,99,117,0.25)}
+.cat-tab-btn .badge{font-size:10px;background:rgba(0,0,0,0.08);padding:2px 7px;border-radius:99px}
+.cat-tab-btn.active .badge{background:#fff;color:var(--pink);font-weight:800}
+
+/* ── PRODUCT CARDS GRID (Enlarged Height, Width, Size, GST & Free Shipping) ── */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(315px,1fr));gap:28px}
+.p-card{background:#fff;border:1.5px solid var(--border);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;transition:all .28s;position:relative;box-shadow:var(--shadow-sm)}
+.p-card:hover{transform:translateY(-5px);border-color:var(--pink);box-shadow:0 16px 36px rgba(237,99,117,0.18)}
+.p-badge{position:absolute;top:14px;left:14px;z-index:2;background:var(--pink);color:#fff;font-size:10.5px;font-weight:800;padding:4px 12px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
+.p-discount{position:absolute;top:14px;right:14px;z-index:2;background:var(--green);color:#fff;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:99px}
+.p-media{background:#FFFDF9;height:280px;overflow:hidden;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.p-media img{width:100%;height:100%;object-fit:cover;border-radius:14px;transition:transform .4s}
+.p-card:hover .p-media img{transform:scale(1.05)}
+.p-body{padding:22px;display:flex;flex-direction:column;flex-grow:1}
+.p-meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.p-cat{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-dark)}
+.p-size-tag{font-size:11px;font-weight:800;color:var(--muted);background:var(--soft);border:1px solid var(--border);padding:2px 8px;border-radius:99px}
+.p-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:6px;line-height:1.25}
+.p-offer-tag{font-size:11px;font-weight:800;color:var(--orange);background:rgba(232,93,4,0.08);border:1px solid rgba(232,93,4,0.22);padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:4px}
+.p-sub{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;min-height:38px}
+.p-stars{color:var(--gold);font-size:13px;letter-spacing:1px;margin-bottom:12px}
+.p-footer{display:flex;flex-direction:column;gap:12px;margin-top:auto;border-top:1.5px solid var(--border-light);padding-top:14px}
+.p-pricing-block{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.p-price-row{display:flex;align-items:baseline;gap:8px}
+.p-price{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--orange);line-height:1}
+.p-mrp{font-size:13px;color:#9C7D6A;text-decoration:line-through}
+.p-savings-pill{font-size:10.5px;font-weight:800;color:var(--green);background:var(--green-light);border:1px solid #C8E6C9;padding:2px 8px;border-radius:99px}
+.p-tax-ship-badge{font-size:11px;color:var(--green-dark);font-weight:700;display:flex;align-items:center;gap:6px}
+.p-tax-ship-badge .dot{color:var(--border);font-weight:900}
+.p-actions{display:flex;gap:8px}
+.btn-view{background:var(--pink-light);color:var(--pink);border:1px solid var(--pink-border);padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;flex:1;text-align:center}
+.btn-view:hover{background:var(--pink);color:#fff}
+.btn-add{background:var(--pink);color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;flex:1.1}
+.btn-add:hover{background:var(--pink-dark)}
+.btn-buy{background:var(--dark);color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;flex:1.1}
+.btn-buy:hover{background:var(--pink)}
+
+/* ── MODAL PRODUCT BOX (Expanded Dimensions & Rich Content) ── */
+.modal-product-box{max-width:980px!important;width:100%;max-height:92vh!important;padding:36px 32px!important;border-radius:24px!important}
+.pd-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:32px;align-items:start}
+.pd-img-box{background:#FFFDF9;border:1.5px solid var(--border);border-radius:18px;padding:16px;text-align:center}
+.pd-img-box img{width:100%;max-height:420px;object-fit:contain;border-radius:12px;transition:transform .3s}
+.pd-badges-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+.pd-badge-item{font-size:11px;font-weight:800;color:var(--muted);background:var(--soft);border:1px solid var(--border-light);padding:4px 10px;border-radius:99px}
+.pd-header{margin-bottom:12px}
+.pd-cat-line{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.pd-cat-badge{font-size:11px;font-weight:800;color:var(--accent-dark);text-transform:uppercase;letter-spacing:.08em;background:var(--accent-light);padding:3px 10px;border-radius:99px}
+.pd-method-pill{font-size:11px;font-weight:800;background:var(--orange);color:#fff;padding:3px 10px;border-radius:6px}
+.pd-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--dark);line-height:1.2;margin-bottom:8px}
+.pd-rating{color:var(--gold);font-size:13px;font-weight:700;margin-bottom:14px}
+.pd-size-picker{margin-bottom:14px;background:var(--soft);border:1px solid var(--border-light);border-radius:12px;padding:12px 14px}
+.pd-size-label{font-size:11.5px;font-weight:800;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.pd-size-btns{display:flex;gap:8px;flex-wrap:wrap}
+.pd-size-btn{border:1.5px solid var(--border);background:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text)}
+.pd-size-btn.active{border-color:var(--pink);background:var(--pink-light);color:var(--pink);box-shadow:0 2px 8px rgba(237,99,117,0.2)}
+.pd-price-box{background:#FFFDF9;border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.pd-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.pd-main-price{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--orange)}
+.pd-mrp{font-size:16px;color:var(--muted);text-decoration:line-through}
+.pd-savings{background:var(--green);color:#fff;font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:99px}
+.pd-tax-note{font-size:12px;color:var(--green-dark);font-weight:700;display:flex;align-items:center;gap:6px}
+.pd-offer-banner{background:linear-gradient(90deg,#FFF3E0,#FFE0B2);border:1px solid #FFCC80;color:#E65100;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:800;margin-top:8px;display:flex;align-items:center;gap:6px}
+.pd-cta-row{display:flex;gap:10px;margin-top:14px}
+.pd-section-block{margin-top:22px;border-top:1.5px solid var(--border-light);padding-top:18px}
+.pd-sec-heading{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.pd-desc-text{font-size:14px;line-height:1.75;color:var(--text);margin-bottom:12px}
+.pd-benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.pd-benefit-item{background:var(--soft);border:1px solid var(--border-light);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:start}
+.pd-benefit-icon{color:var(--green);font-size:16px;font-weight:900;flex-shrink:0}
+.pd-benefit-text{font-size:12.5px;line-height:1.55;color:var(--text)}
+.pd-instructions-box{background:#FFFDF7;border:1.5px solid #F5E6CC;border-radius:14px;padding:16px;margin-bottom:18px}
+.pd-step-row{display:flex;gap:12px;margin-bottom:10px;align-items:start}
+.pd-step-row:last-child{margin-bottom:0}
+.pd-step-num{background:var(--orange);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.pd-step-content{font-size:13px;line-height:1.6;color:var(--dark)}
+.pd-specs-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+.pd-specs-table td{padding:8px 10px;border-bottom:1px solid var(--border-light)}
+.pd-specs-table td:first-child{font-weight:700;color:var(--muted);width:35%}
+.pd-specs-table td:last-child{color:var(--dark);font-weight:600}
+
+/* ── WHY SECTION ── */
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:24px}
+.why-card{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:26px;box-shadow:var(--shadow-sm);transition:all .25s}
+.why-card:hover{transform:translateY(-4px);border-color:var(--pink);box-shadow:0 12px 30px rgba(237,99,117,0.1)}
+.why-icon{font-size:32px;margin-bottom:12px;display:block}
+.why-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dark);margin-bottom:8px}
+.why-desc{font-size:13.5px;color:var(--muted);line-height:1.65}
+.why-tag{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;color:var(--orange);background:rgba(232,93,4,0.08);border:1px solid rgba(232,93,4,0.25);border-radius:99px;padding:3px 12px}
+
+/* ── INGREDIENTS SECTION ── */
+.herb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.herb-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;transition:all .2s}
+.herb-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 20px rgba(163,181,69,0.15)}
+.herb-card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.herb-num{width:26px;height:26px;border-radius:50%;background:var(--accent-light);color:var(--accent-dark);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.herb-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--dark)}
+.herb-benefit{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+/* ── REVIEWS SECTION ── */
+.review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.review-card{background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:24px;box-shadow:var(--shadow-sm)}
+.review-stars{color:var(--gold);letter-spacing:2px;margin-bottom:10px;font-size:14px}
+.review-quote{font-size:13.5px;line-height:1.75;color:var(--text);margin-bottom:16px;font-style:italic}
+.review-author{display:flex;align-items:center;gap:12px}
+.review-av{width:38px;height:38px;border-radius:50%;background:var(--pink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.review-name{font-size:13.5px;font-weight:700;color:var(--dark)}
+.review-loc{font-size:11.5px;color:var(--muted)}
+
+/* ── CONTACT US ── */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.contact-box{display:flex;flex-direction:column;gap:16px}
+.c-item{display:flex;gap:16px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+.c-icon{width:42px;height:42px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.c-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.c-val{font-size:14.5px;font-weight:600;color:var(--dark)}
+.contact-form{background:#fff;border-radius:20px;padding:32px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm)}
+.cf-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:18px}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.cf-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.cf-field label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cf-field input,.cf-field textarea{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:#FFFDF9;outline:none;transition:border-color .2s}
+.cf-field input:focus,.cf-field textarea:focus{border-color:var(--pink);background:#fff}
+.cf-field textarea{height:90px;resize:vertical}
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(237,99,117,0.3);transition:all .2s}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(237,99,117,0.4)}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
+.footer-inner{max-width:1260px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:40px;margin-bottom:40px}
+.footer-brand .logo-smeram{color:#fff;font-size:32px}
+.footer-brand .logo-naturals{color:var(--gold);font-size:18px}
+.footer-about{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.75;margin-top:12px;max-width:320px}
+.footer-col h4{font-size:11.5px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:9px;transition:color .2s;cursor:pointer}
+.footer-col a:hover{color:var(--pink)}
+.footer-col span{display:block;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:8px}
+.footer-col .fc-strong{color:#fff;font-weight:700}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.1);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:rgba(255,255,255,0.5)}
+
+/* ── CART & CHECKOUT SLIDE-OVER ── */
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;justify-content:flex-end}
+.drawer-backdrop.open{display:flex}
+.drawer-panel{position:relative;background:#fff;color:var(--text);width:min(460px,100%);height:100%;overflow-y:auto;padding:28px 24px;box-shadow:-8px 0 36px rgba(0,0,0,0.25);display:flex;flex-direction:column}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border-light);padding-bottom:16px;margin-bottom:18px}
+.drawer-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--pink)}
+.drawer-close{border:none;background:none;font-size:30px;color:var(--muted);cursor:pointer;line-height:1}
+.free-shipping-bar{background:var(--pink-light);border:1px solid var(--pink-border);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:12px;font-weight:700;color:var(--pink);text-align:center}
+.cart-items-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:20px;flex-grow:1}
+.c-item-row{display:flex;gap:12px;padding:12px;border:1px solid var(--border-light);border-radius:12px;background:#FFFDF9;align-items:center}
+.c-item-img{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid var(--border-light);background:#fff}
+.c-item-info{flex:1}
+.c-item-name{font-size:13.5px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.c-item-price{font-size:14px;font-weight:800;color:var(--orange)}
+.c-qty-wrap{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;background:#fff;margin-top:6px}
+.c-qty-btn{border:none;background:none;padding:2px 8px;font-weight:800;cursor:pointer;font-size:14px;color:var(--dark)}
+.c-qty-val{padding:0 6px;font-size:12px;font-weight:700}
+.c-item-del{background:none;border:none;color:#999;font-size:18px;cursor:pointer;padding:4px}
+.c-item-del:hover{color:#C93D51}
+.coupon-box{display:flex;gap:8px;margin-bottom:16px}
+.coupon-box input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;text-transform:uppercase}
+.coupon-box button{background:var(--pink-light);border:1.5px solid var(--pink-border);color:var(--pink);font-weight:700;padding:0 16px;border-radius:8px;cursor:pointer}
+.coupon-msg{font-size:12px;font-weight:700;color:var(--green);margin-top:-10px;margin-bottom:12px;min-height:16px}
+.cart-totals{background:var(--soft);border:1px solid var(--border-light);border-radius:12px;padding:16px;margin-bottom:18px}
+.ct-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--muted)}
+.ct-row.total{border-top:1.5px solid var(--border);padding-top:10px;margin-top:8px;font-size:17px;font-weight:800;color:var(--dark)}
+.checkout-form{display:grid;gap:10px;margin-bottom:18px}
+.ch-title{font-size:13.5px;font-weight:800;color:var(--dark);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-light);padding-bottom:6px;margin-bottom:4px}
+.checkout-form input,.checkout-form select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+.checkout-form input:focus,.checkout-form select:focus{border-color:var(--pink)}
+.btn-place-order{width:100%;padding:15px;background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(237,99,117,0.35);transition:all .2s}
+.btn-place-order:hover{transform:translateY(-1px)}
+
+/* ── MODALS (Policy & Details) ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;max-width:760px;width:100%;max-height:88vh;overflow-y:auto;padding:34px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.modal-close{position:absolute;top:20px;right:20px;background:var(--soft);border:none;border-radius:50%;width:34px;height:34px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.modal-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--pink);margin-bottom:16px;border-bottom:2px solid var(--border-light);padding-bottom:10px}
+.modal-body{font-size:14px;line-height:1.8;color:var(--text)}
+.modal-body p{margin-bottom:12px}
+.modal-body h4{font-size:15px;color:var(--dark);margin:16px 0 6px}
+
+/* Toast */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--dark);color:#fff;padding:14px 22px;border-radius:12px;font-size:13.5px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,0.3);transform:translateY(100px);opacity:0;transition:all .3s;z-index:3000;display:flex;align-items:center;gap:10px}
+.toast.show{transform:none;opacity:1}
+
+/* Responsive */
+@media(max-width:960px){
+  .nav-links{display:none}
+  .menu-toggle{display:block}
+  .contact-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .nav-inner{padding:0 14px}
+  .hero{padding:30px 16px 40px}
+  .hero-categories-grid{grid-template-columns:1fr}
+  .prod-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .cf-row{grid-template-columns:1fr}
+  .ann-bar{gap:8px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- FLORAL TOP BANNER -->
+<div class="floral-banner-top" aria-hidden="true"></div>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="ann-bar">
+  <span>🌿 100% SIDDHA FORMULATION</span>
+  <div class="ann-dot"></div>
+  <span>🐰 CRUELTY FREE &amp; VEGAN</span>
+  <div class="ann-dot"></div>
+  <span>🇮🇳 MADE IN CHENNAI</span>
+  <div class="ann-dot"></div>
+  <span>🚚 FREE SHIPPING ON ORDERS ABOVE ₹399</span>
+  <a href="https://wa.me/917539972026?text=Hello%20Smeram%20Naturals%2C%20I%20have%20an%20enquiry" target="_blank" rel="noopener" class="ann-wa-link">💬 WhatsApp Orders: +91 75399 72026</a>
+</div>
+
+<!-- STICKY NAVBAR -->
+<nav>
+  <div class="nav-inner">
+    <a href="#hero" class="logo-wrap" onclick="goToHome(event)" title="Smeram Naturals">
+      <img src="../../assets/themes/smeram/smeram-logo.png" data-file="smeram-logo.png" alt="Smeram Naturals" class="logo-img" onerror="this.style.display='none'">
+      <div class="logo-text">
+        <div class="logo-smeram">Smeram</div>
+        <div class="logo-naturals">Naturals</div>
+      </div>
+    </a>
+
+    <!-- Primary Menu Links (Strict Single Line Layout, Home Active by Default) -->
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#hero" class="active" id="nav-home" onclick="goToHome(event)">Home</a></li>
+      <li><a href="#products" id="nav-all" onclick="showCategory('all', event)">All Products</a></li>
+      <li><a href="#products" id="nav-hair" onclick="showCategory('Hair Care Oil', event)">Hair Care Oil</a></li>
+      <li><a href="#products" id="nav-joint" onclick="showCategory('Joint Pain & Orthocare', event)">Joint Pain &amp; Orthocare</a></li>
+      <li><a href="#products" id="nav-face" onclick="showCategory('Ayurgold Face Care', event)">Ayurgold Face Care</a></li>
+      <li><a href="#products" id="nav-health" onclick="showCategory('Health Foods', event)">Health Foods</a></li>
+      <li><a href="#why" id="nav-why" onclick="scrollToSection('why', event)">Why Smeram</a></li>
+      <li><a href="#about" id="nav-about" onclick="openPolicyModal('about', event)">About Us</a></li>
+      <li><a href="#contact" id="nav-contact" onclick="scrollToSection('contact', event)">Contact Us</a></li>
+      <li><a href="#privacy" id="nav-privacy" onclick="openPolicyModal('privacy', event)">Privacy Policy</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <a href="https://wa.me/917539972026?text=Hello%20Smeram%20Naturals%2C%20I%20want%20to%20order" target="_blank" rel="noopener" class="wa-nav-btn" title="Direct WhatsApp Orders">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.2.662.589 1.22.771 1.394.858.173.086.274.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.825z"/></svg>
+        <span>WhatsApp Order</span>
+      </a>
+      <button class="cart-nav-btn" type="button" onclick="openCart()">
+        🛒 Cart <span class="cart-badge" id="cartBadgeCount">0</span>
+      </button>
+      <button class="menu-toggle" type="button" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO SECTION -->
+<section class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-header">
+      <div class="hero-badge">🌸 Authentic Siddha &amp; Ayurvedic Formulations</div>
+      <h1 class="hero-title"><span class="brand">Smeram</span> <span class="naturals">Naturals</span><br>Shop by Ayurvedic Category</h1>
+      <div class="hero-method-tag">Sneha - Kalka - Drava Classical Method</div>
+      <p class="hero-sub">
+        Handcrafted in Chennai, Tamil Nadu using classical time-tested procedures. Choose from our pure Siddha hair care oils, joint mobility remedies, Ayurgold face care, and Vedic health foods.
+      </p>
+    </div>
+
+    <!-- Category Boxes in Hero (Clicking activates filter and scrolls down) -->
+    <div class="hero-categories-grid">
+      <!-- 1. Hair Care Oil -->
+      <div class="cat-card" onclick="showCategory('Hair Care Oil', event)">
+        <div class="cat-card-top">
+          <span class="cat-card-pill">Hair Care</span>
+          <span class="cat-card-count">1 Product</span>
+        </div>
+        <div class="cat-img-wrap">
+          <img src="../../assets/themes/smeram/smeram-box-bottle.jpg" data-file="smeram-box-bottle.jpg" alt="Hair Care Oil" onerror="fallbackImg(this)">
+        </div>
+        <div class="cat-card-title">
+          <span>Hair Care Oil</span>
+          <span class="cat-card-star">★ 4.9</span>
+        </div>
+        <div class="cat-card-action">
+          <span>Explore Hair Oils</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+
+      <!-- 2. Joint Pain & Orthocare -->
+      <div class="cat-card" onclick="showCategory('Joint Pain & Orthocare', event)">
+        <div class="cat-card-top">
+          <span class="cat-card-pill">Orthocare</span>
+          <span class="cat-card-count">1 Product</span>
+        </div>
+        <div class="cat-img-wrap">
+          <img src="../../assets/themes/smeram/ortho-pain.jpg" data-file="ortho-pain.jpg" alt="Joint Pain Oil" onerror="fallbackImg(this)">
+        </div>
+        <div class="cat-card-title">
+          <span>Joint Pain &amp; Ortho</span>
+          <span class="cat-card-star">★ 4.9</span>
+        </div>
+        <div class="cat-card-action">
+          <span>Explore Orthocare</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+
+      <!-- 3. Ayurgold Face Care -->
+      <div class="cat-card" onclick="showCategory('Ayurgold Face Care', event)">
+        <div class="cat-card-top">
+          <span class="cat-card-pill">Face Radiance</span>
+          <span class="cat-card-count">1 Product</span>
+        </div>
+        <div class="cat-img-wrap">
+          <img src="../../assets/themes/smeram/face-care.jpg" data-file="face-care.jpg" alt="Ayurgold Face Care" onerror="fallbackImg(this)">
+        </div>
+        <div class="cat-card-title">
+          <span>Ayurgold Face Care</span>
+          <span class="cat-card-star">★ 5.0</span>
+        </div>
+        <div class="cat-card-action">
+          <span>Explore Kumkumadi</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+
+      <!-- 4. Health Foods -->
+      <div class="cat-card" onclick="showCategory('Health Foods', event)">
+        <div class="cat-card-top">
+          <span class="cat-card-pill">Vedic Food</span>
+          <span class="cat-card-count">1 Product</span>
+        </div>
+        <div class="cat-img-wrap">
+          <img src="../../assets/themes/smeram/health-foods.jpg" data-file="health-foods.jpg" alt="Health Foods" onerror="fallbackImg(this)">
+        </div>
+        <div class="cat-card-title">
+          <span>Health Foods</span>
+          <span class="cat-card-star">★ 4.9</span>
+        </div>
+        <div class="cat-card-action">
+          <span>Explore A2 Ghee</span>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAND -->
+<div class="trust-band">
+  <div class="trust-inner">
+    <div class="ti-item">SNEHA-KALKA-DRAVA METHOD</div>
+    <div class="ti-item">100% NATURAL HERBS</div>
+    <div class="ti-item">NO MINERAL OIL OR SILICONES</div>
+    <div class="ti-item">FREE DELIVERY ABOVE ₹399</div>
+  </div>
+</div>
+
+<!-- PRODUCTS CATALOG SECTION -->
+<section class="sec" id="products">
+  <div class="si">
+    <div class="sec-head">
+      <span class="sec-eyebrow">Pure Botanical Formulations</span>
+      <h2 class="sec-title" id="catalogTitle">All Products</h2>
+      <p class="sec-sub">Select any category tab below to filter authentic Siddha oils and herbal formulations.</p>
+    </div>
+
+    <!-- Category Filter Pill Buttons -->
+    <div class="cat-tabs" id="catTabs">
+      <button class="cat-tab-btn active" data-cat="all" onclick="showCategory('all', event)">All Products <span class="badge">4</span></button>
+      <button class="cat-tab-btn" data-cat="Hair Care Oil" onclick="showCategory('Hair Care Oil', event)">Hair Care Oil <span class="badge">1</span></button>
+      <button class="cat-tab-btn" data-cat="Joint Pain & Orthocare" onclick="showCategory('Joint Pain & Orthocare', event)">Joint Pain &amp; Orthocare <span class="badge">1</span></button>
+      <button class="cat-tab-btn" data-cat="Ayurgold Face Care" onclick="showCategory('Ayurgold Face Care', event)">Ayurgold Face Care <span class="badge">1</span></button>
+      <button class="cat-tab-btn" data-cat="Health Foods" onclick="showCategory('Health Foods', event)">Health Foods <span class="badge">1</span></button>
+    </div>
+
+    <!-- Product Cards Grid (Enlarged Height, Width, Size, GST & Free Shipping) -->
+    <div class="prod-grid" id="productGrid">
+      <!-- Product 1: Smeram Naturals Hair Oil -->
+      <article class="p-card" data-category="Hair Care Oil">
+        <div class="p-badge">Sneha-Kalka-Drava</div>
+        <div class="p-discount">14% OFF</div>
+        <div class="p-media" onclick="openProductDetail(1)">
+          <img src="../../assets/themes/smeram/smeram-box-bottle.jpg" data-file="smeram-box-bottle.jpg" alt="Smeram Naturals Hair Oil" onerror="fallbackImg(this)">
+        </div>
+        <div class="p-body">
+          <div class="p-meta-row">
+            <span class="p-cat">Hair Care Oil</span>
+            <span class="p-size-tag">🧴 100 ml (Also in 200 ml)</span>
+          </div>
+          <h3 class="p-title">Smeram Naturals Hair Oil</h3>
+          <div class="p-offer-tag">🎁 Launch Offer: Save ₹50 · 14% OFF</div>
+          <div class="p-sub">Double Boiled · Double Infused with 11 herbs · 100% Dandruff Control &amp; Hair Growth Promoter.</div>
+          <div class="p-stars">★★★★★ <span style="color:#7A5C4A;font-size:12px;font-weight:600">(4.9/5 · 428 Reviews)</span></div>
+          <div class="p-footer">
+            <div class="p-pricing-block">
+              <div class="p-price-row">
+                <span class="p-price">₹299</span>
+                <span class="p-mrp">MRP ₹349</span>
+                <span class="p-savings-pill">Save ₹50</span>
+              </div>
+              <div class="p-tax-ship-badge">
+                <span>✓ Inclusive of all statutory GST</span>
+                <span class="dot">•</span>
+                <span>🚚 Free Shipping</span>
+              </div>
+            </div>
+            <div class="p-actions">
+              <button class="btn-view" type="button" onclick="openProductDetail(1)">View Details</button>
+              <button class="btn-add" type="button" onclick="addToCart(1)">🛒 Add</button>
+              <button class="btn-buy" type="button" onclick="buyNow(1)">⚡ Buy Now</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 2: Mahanarayan Ortho Pain Oil -->
+      <article class="p-card" data-category="Joint Pain & Orthocare">
+        <div class="p-badge">Fast Relief</div>
+        <div class="p-discount">22% OFF</div>
+        <div class="p-media" onclick="openProductDetail(2)">
+          <img src="../../assets/themes/smeram/ortho-pain.jpg" data-file="ortho-pain.jpg" alt="Mahanarayan Ortho Pain Oil" onerror="fallbackImg(this)">
+        </div>
+        <div class="p-body">
+          <div class="p-meta-row">
+            <span class="p-cat">Joint Pain &amp; Orthocare</span>
+            <span class="p-size-tag">🧴 100 ml Bottle</span>
+          </div>
+          <h3 class="p-title">Mahanarayan Ortho Pain Oil</h3>
+          <div class="p-offer-tag">🎁 Relief Special: Save ₹101 · 22% OFF</div>
+          <div class="p-sub">Deep penetrating warmth · Relieves knee stiffness &amp; joint mobility · Pure Gandhapura &amp; Shallaki.</div>
+          <div class="p-stars">★★★★★ <span style="color:#7A5C4A;font-size:12px;font-weight:600">(4.9/5 · 210 Reviews)</span></div>
+          <div class="p-footer">
+            <div class="p-pricing-block">
+              <div class="p-price-row">
+                <span class="p-price">₹349</span>
+                <span class="p-mrp">MRP ₹450</span>
+                <span class="p-savings-pill">Save ₹101</span>
+              </div>
+              <div class="p-tax-ship-badge">
+                <span>✓ Inclusive of all statutory GST</span>
+                <span class="dot">•</span>
+                <span>🚚 Free Shipping</span>
+              </div>
+            </div>
+            <div class="p-actions">
+              <button class="btn-view" type="button" onclick="openProductDetail(2)">View Details</button>
+              <button class="btn-add" type="button" onclick="addToCart(2)">🛒 Add</button>
+              <button class="btn-buy" type="button" onclick="buyNow(2)">⚡ Buy Now</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 3: Ayurgold Kumkumadi Face Oil -->
+      <article class="p-card" data-category="Ayurgold Face Care">
+        <div class="p-badge">Ayurgold Radiance</div>
+        <div class="p-discount">29% OFF</div>
+        <div class="p-media" onclick="openProductDetail(3)">
+          <img src="../../assets/themes/smeram/face-care.jpg" data-file="face-care.jpg" alt="Ayurgold Kumkumadi Face Oil" onerror="fallbackImg(this)">
+        </div>
+        <div class="p-body">
+          <div class="p-meta-row">
+            <span class="p-cat">Ayurgold Face Care</span>
+            <span class="p-size-tag">✨ 30 ml Dropper Pack</span>
+          </div>
+          <h3 class="p-title">Ayurgold Kumkumadi Face Oil</h3>
+          <div class="p-offer-tag">🎁 Festive Glow: Save ₹200 · 29% OFF</div>
+          <div class="p-sub">Pure Kashmiri Saffron &amp; Red Sandalwood · Fades dark spots · Restores natural golden glow.</div>
+          <div class="p-stars">★★★★★ <span style="color:#7A5C4A;font-size:12px;font-weight:600">(5.0/5 · 340 Reviews)</span></div>
+          <div class="p-footer">
+            <div class="p-pricing-block">
+              <div class="p-price-row">
+                <span class="p-price">₹499</span>
+                <span class="p-mrp">MRP ₹699</span>
+                <span class="p-savings-pill">Save ₹200</span>
+              </div>
+              <div class="p-tax-ship-badge">
+                <span>✓ Inclusive of all statutory GST</span>
+                <span class="dot">•</span>
+                <span>🚚 Free Shipping</span>
+              </div>
+            </div>
+            <div class="p-actions">
+              <button class="btn-view" type="button" onclick="openProductDetail(3)">View Details</button>
+              <button class="btn-add" type="button" onclick="addToCart(3)">🛒 Add</button>
+              <button class="btn-buy" type="button" onclick="buyNow(3)">⚡ Buy Now</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 4: Vedic A2 Desi Gir Cow Bilona Ghee -->
+      <article class="p-card" data-category="Health Foods">
+        <div class="p-badge">100% Pure</div>
+        <div class="p-discount">20% OFF</div>
+        <div class="p-media" onclick="openProductDetail(4)">
+          <img src="../../assets/themes/smeram/health-foods.jpg" data-file="health-foods.jpg" alt="Vedic A2 Gir Cow Ghee" onerror="fallbackImg(this)">
+        </div>
+        <div class="p-body">
+          <div class="p-meta-row">
+            <span class="p-cat">Health Foods</span>
+            <span class="p-size-tag">🏺 500 ml (Also in 1000 ml)</span>
+          </div>
+          <h3 class="p-title">Vedic A2 Desi Gir Cow Ghee</h3>
+          <div class="p-offer-tag">🎁 Pure Vedic: Save ₹200 · 20% OFF</div>
+          <div class="p-sub">Traditional curd-churned Bilona method · Granular golden texture · Rich Vedic aroma &amp; gut vitality.</div>
+          <div class="p-stars">★★★★★ <span style="color:#7A5C4A;font-size:12px;font-weight:600">(4.9/5 · 185 Reviews)</span></div>
+          <div class="p-footer">
+            <div class="p-pricing-block">
+              <div class="p-price-row">
+                <span class="p-price">₹799</span>
+                <span class="p-mrp">MRP ₹999</span>
+                <span class="p-savings-pill">Save ₹200</span>
+              </div>
+              <div class="p-tax-ship-badge">
+                <span>✓ Inclusive of all statutory GST</span>
+                <span class="dot">•</span>
+                <span>🚚 Free Shipping</span>
+              </div>
+            </div>
+            <div class="p-actions">
+              <button class="btn-view" type="button" onclick="openProductDetail(4)">View Details</button>
+              <button class="btn-add" type="button" onclick="addToCart(4)">🛒 Add</button>
+              <button class="btn-buy" type="button" onclick="buyNow(4)">⚡ Buy Now</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SMERAM NATURALS SECTION -->
+<section class="sec sec-soft" id="why">
+  <div class="si">
+    <div class="sec-head">
+      <span class="sec-eyebrow">Siddha Formulation Excellence</span>
+      <h2 class="sec-title">Why Smeram Naturals?</h2>
+      <p class="sec-sub">Centuries of documented Siddha and Ayurvedic manuscripts blended with modern clinical hygiene.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <span class="why-icon">🏺</span>
+        <h3 class="why-title">Sneha-Kalka-Drava Method</h3>
+        <p class="why-desc">The authentic classical Siddha procedure where herbal paste (Kalka) is decocted into virgin cold-pressed oil (Sneha) with pure botanical juice (Drava).</p>
+        <span class="why-tag">Classical Siddha</span>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🔥</span>
+        <h3 class="why-title">Double Boiled &amp; Double Infused</h3>
+        <p class="why-desc">Two-stage low-heat simmering ensures maximum bio-active phytonutrient extraction without scorching or denaturing fragile botanical enzymes.</p>
+        <span class="why-tag">Zero Thermal Degradation</span>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🌿</span>
+        <h3 class="why-title">13 Classical Medicinal Herbs</h3>
+        <p class="why-desc">Ratanjot, Jadamanshi, Vettiver, Lemongrass, Jal Brahmi, Jalapippali, Amla, Henna, Curry Leaves, Hibiscus, Gudrisag, and Bhringraj in pure virgin coconut oil.</p>
+        <span class="why-tag">Whole Herbs Only</span>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">✨</span>
+        <h3 class="why-title">100% Dandruff Control</h3>
+        <p class="why-desc">Natural antifungals soothe flaking, eliminate itchy microbial buildup, and detoxify scalp follicles to promote thick new hair growth.</p>
+        <span class="why-tag">Clinical Efficacy</span>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🚫</span>
+        <h3 class="why-title">Zero Harmful Chemicals</h3>
+        <p class="why-desc">0% mineral oil, zero light liquid paraffin (LLP), no artificial scents, no parabens, silicones, or chemical preservatives.</p>
+        <span class="why-tag">100% Clean Label</span>
+      </div>
+      <div class="why-card">
+        <span class="why-icon">🏭</span>
+        <h3 class="why-title">Choolaimedu, Chennai Origin</h3>
+        <p class="why-desc">Crafted in small, controlled batches by Smeram Industries in Chennai with complete batch traceability and purity tests.</p>
+        <span class="why-tag">Made in India</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INGREDIENTS BREAKDOWN SECTION -->
+<section class="sec" id="herbs">
+  <div class="si">
+    <div class="sec-head">
+      <span class="sec-eyebrow">Pharmacopoeia Excellence</span>
+      <h2 class="sec-title">The 13 Classical Medicinal Herbs</h2>
+      <p class="sec-sub">Every herb plays a targeted pharmacological role in preserving scalp health and follicle vitality.</p>
+    </div>
+    <div class="herb-grid">
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">1</span><h4 class="herb-name">Virgin Coconut Oil</h4></div><p class="herb-benefit">Pure cold-pressed medium-chain fatty acids that penetrate deep into the hair shaft.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">2</span><h4 class="herb-name">Ratanjot Roots</h4></div><p class="herb-benefit">Traditional cooling root that prevents premature greying and imparts rich natural reddish hue.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">3</span><h4 class="herb-name">Jadamanshi</h4></div><p class="herb-benefit">Calms nervous tension, relieves stress-induced hair thinning, and encourages sound sleep.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">4</span><h4 class="herb-name">Vettiver (Khus)</h4></div><p class="herb-benefit">Intense natural body cooler that pacifies excess pitta heat and soothes scalp inflammation.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">5</span><h4 class="herb-name">Lemongrass</h4></div><p class="herb-benefit">Potent antimicrobial agent that clears stubborn dandruff and balances sebum production.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">6</span><h4 class="herb-name">Jal Brahmi</h4></div><p class="herb-benefit">Micro-capillary circulatory stimulant that nourishes roots and increases hair density.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">7</span><h4 class="herb-name">Jalapippali</h4></div><p class="herb-benefit">Antiseptic botanical that cleanses dormant hair follicles and prevents microbial infection.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">8</span><h4 class="herb-name">Amla (Gooseberry)</h4></div><p class="herb-benefit">Rich in bio-active Vitamin C and antioxidants; fortifies hair roots and adds bounce.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">9</span><h4 class="herb-name">Henna Leaves</h4></div><p class="herb-benefit">Natural cuticle sealant that smoothens roughness and normalizes scalp pH levels.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">10</span><h4 class="herb-name">Curry Leaves</h4></div><p class="herb-benefit">Loaded with beta-carotene and essential proteins; arrests hair fall and adds glossy lustre.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">11</span><h4 class="herb-name">Hibiscus Flowers</h4></div><p class="herb-benefit">Ultra-conditioning mucilage that treats split ends, leaving hair silky and voluminous.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">12</span><h4 class="herb-name">Gudrisag Greens</h4></div><p class="herb-benefit">Cooling botanical greens that hydrate dry scalp and rebuild damaged cuticle texture.</p></div>
+      <div class="herb-card"><div class="herb-card-top"><span class="herb-num">13</span><h4 class="herb-name">Bhringraj</h4></div><p class="herb-benefit">The 'King of Hair' in Ayurveda — stimulates dormant follicular papillae for thick regrowth.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CUSTOMER REVIEWS -->
+<section class="sec sec-soft" id="reviews">
+  <div class="si">
+    <div class="sec-head">
+      <span class="sec-eyebrow">Real Results</span>
+      <h2 class="sec-title">Loved by Thousands Across India</h2>
+      <p class="sec-sub">Verified customer feedback from regular users of Smeram Naturals.</p>
+    </div>
+    <div class="review-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">“My persistent dandruff of 3 years cleared completely in just 3 weeks of using Smeram Hair Oil. My hair feels so light, soft, and no sticky residue at all!”</p>
+        <div class="review-author">
+          <div class="review-av">P</div>
+          <div><div class="review-name">Priya Sundaram</div><div class="review-loc">Chennai, Tamil Nadu · Verified Buyer</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">“The Ortho Pain oil gave my mother relief from severe knee stiffness within 20 minutes of application. Genuine Ayurvedic formulation without chemical smell.”</p>
+        <div class="review-author">
+          <div class="review-av">R</div>
+          <div><div class="review-name">Rajesh Kannan</div><div class="review-loc">Coimbatore, Tamil Nadu · Verified Buyer</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">“Kumkumadi Face oil is amazing! My dark acne spots faded within a month and it gives an effortless natural glow every morning.”</p>
+        <div class="review-author">
+          <div class="review-av">M</div>
+          <div><div class="review-name">Meera Nambiar</div><div class="review-loc">Bengaluru, Karnataka · Verified Buyer</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT US SECTION -->
+<section class="sec" id="contact">
+  <div class="si">
+    <div class="sec-head">
+      <span class="sec-eyebrow">Direct Merchant Support</span>
+      <h2 class="sec-title">Contact Us</h2>
+      <p class="sec-sub">Have questions about our formulations, orders, or distribution? We are here to help.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-box">
+        <div class="c-item">
+          <div class="c-icon">📞</div>
+          <div><div class="c-label">Customer Support</div><div class="c-val">+91 75399 72026</div></div>
+        </div>
+        <div class="c-item">
+          <div class="c-icon">💬</div>
+          <div><div class="c-label">WhatsApp Quick Orders</div><div class="c-val"><a href="https://wa.me/917539972026?text=Hello%20Smeram%20Naturals" target="_blank" rel="noopener" style="color:var(--pink)">Chat on WhatsApp (+91 75399 72026)</a></div></div>
+        </div>
+        <div class="c-item">
+          <div class="c-icon">✉️</div>
+          <div><div class="c-label">Email Support</div><div class="c-val"><a href="mailto:smeramindustries@gmail.com" style="color:var(--pink)">smeramindustries@gmail.com</a></div></div>
+        </div>
+        <div class="c-item">
+          <div class="c-icon">📍</div>
+          <div><div class="c-label">Manufacturing &amp; Office Address</div><div class="c-val">Smeram Industries<br>22/13 Rajaveedhi Street, Choolaimedu, Chennai, Tamil Nadu - 600094</div></div>
+        </div>
+      </div>
+
+      <form class="contact-form" onsubmit="handleContactSubmit(event)">
+        <div class="cf-title">Send Us a Direct Message</div>
+        <div class="cf-row">
+          <div class="cf-field">
+            <label>Your Name *</label>
+            <input type="text" name="name" required placeholder="e.g. Ramesh">
+          </div>
+          <div class="cf-field">
+            <label>WhatsApp Number *</label>
+            <input type="tel" name="phone" required placeholder="e.g. 9876543210">
+          </div>
+        </div>
+        <div class="cf-field">
+          <label>Email Address</label>
+          <input type="email" name="email" placeholder="e.g. ramesh@gmail.com">
+        </div>
+        <div class="cf-field">
+          <label>Your Message / Product Enquiry *</label>
+          <textarea name="message" required placeholder="Tell us how we can help you today..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Send Message →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FLORAL BOTTOM BANNER -->
+<div class="floral-banner-bottom" aria-hidden="true"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo-wrap">
+          <div class="logo-smeram">Smeram</div>
+          <div class="logo-naturals">Naturals</div>
+        </div>
+        <p class="footer-about">
+          Smeram Industries — Traditional Siddha Formulation Hair Oils &amp; Authentic Ayurvedic Wellness crafted with double boiled infusion in Chennai.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Categories</h4>
+        <a onclick="showCategory('all', event)">All Products</a>
+        <a onclick="showCategory('Hair Care Oil', event)">Hair Care Oil</a>
+        <a onclick="showCategory('Joint Pain & Orthocare', event)">Joint Pain &amp; Orthocare</a>
+        <a onclick="showCategory('Ayurgold Face Care', event)">Ayurgold Face Care</a>
+        <a onclick="showCategory('Health Foods', event)">Health Foods</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>About &amp; Policies</h4>
+        <a onclick="openPolicyModal('about', event)">About Us</a>
+        <a onclick="scrollToSection('why', event)">Why Smeram</a>
+        <a onclick="openPolicyModal('privacy', event)">Privacy Policy</a>
+        <a onclick="openPolicyModal('terms', event)">Terms of Service</a>
+        <a onclick="openPolicyModal('refund', event)">Refund &amp; Cancellation</a>
+        <a onclick="openPolicyModal('shipping', event)">Shipping &amp; Delivery</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Customer Care</h4>
+        <span class="fc-strong">Smeram Industries</span>
+        <span>📍 Choolaimedu, Chennai - 600094</span>
+        <span>📞 +91 75399 72026</span>
+        <span>✉️ smeramindustries@gmail.com</span>
+        <span>Mon–Sat: 9:00 AM – 6:00 PM</span>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© 2026 Smeram Industries · All rights reserved · GSTIN Registered</div>
+      <div>Store built and powered by <b>ZKCommerce™</b></div>
+    </div>
+  </div>
+</footer>
+
+<!-- SLIDE-OVER CART & CHECKOUT DRAWER -->
+<div class="drawer-backdrop" id="cartDrawer" onclick="if(event.target===this)closeCart()">
+  <div class="drawer-panel">
+    <div class="drawer-head">
+      <div class="drawer-title">Your Shopping Cart</div>
+      <button class="drawer-close" type="button" onclick="closeCart()" aria-label="Close cart">×</button>
+    </div>
+
+    <div class="free-shipping-bar" id="freeShippingBanner">
+      🚚 Free delivery on orders above ₹399 across India!
+    </div>
+
+    <!-- Cart items list -->
+    <div class="cart-items-wrap" id="cartItemsList">
+      <!-- Items dynamically populated by JS -->
+    </div>
+
+    <!-- Coupon code row -->
+    <div class="coupon-box">
+      <input type="text" id="couponInput" placeholder="Promo code (e.g. SMERAM10)">
+      <button type="button" onclick="applyCoupon()">Apply</button>
+    </div>
+    <div class="coupon-msg" id="couponMsg"></div>
+
+    <!-- Totals summary -->
+    <div class="cart-totals">
+      <div class="ct-row"><span>Cart Subtotal</span><span id="subtotalVal">₹0</span></div>
+      <div class="ct-row" id="discountRow" style="display:none;color:var(--green)"><span>Coupon Discount</span><span id="discountVal">−₹0</span></div>
+      <div class="ct-row"><span>Shipping Charges</span><span id="shippingVal">FREE</span></div>
+      <div class="ct-row total"><span>Total Amount</span><span id="grandTotalVal">₹0</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Inclusive of all statutory GST &amp; Taxes</div>
+    </div>
+
+    <!-- Checkout Form -->
+    <form class="checkout-form" id="checkoutForm" onsubmit="handlePlaceOrder(event)">
+      <div class="ch-title">Delivery &amp; Customer Details</div>
+      <input type="text" name="name" required placeholder="Full Name *">
+      <input type="tel" name="phone" required placeholder="WhatsApp Mobile Number *">
+      <input type="email" name="email" placeholder="Email Address (for invoice PDF)">
+      <input type="text" name="address" required placeholder="Delivery House/Street Address *">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input type="text" name="city" required placeholder="City *">
+        <input type="text" name="pincode" required placeholder="Pincode (PIN) *">
+      </div>
+      <select name="state" required>
+        <option value="Tamil Nadu" selected>Tamil Nadu</option>
+        <option value="Karnataka">Karnataka</option>
+        <option value="Kerala">Kerala</option>
+        <option value="Andhra Pradesh">Andhra Pradesh</option>
+        <option value="Telangana">Telangana</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Delhi">Delhi</option>
+        <option value="Other">Other State</option>
+      </select>
+
+      <div class="ch-title" style="margin-top:10px">Payment Method</div>
+      <select name="payment_method" id="payMethodSelect" required>
+        <option value="cod" selected>Cash on Delivery (COD)</option>
+        <option value="razorpay">Pay Online via UPI / Cards / NetBanking (Razorpay)</option>
+      </select>
+
+      <button type="submit" class="btn-place-order" id="placeOrderBtn">Confirm &amp; Place Order</button>
+    </form>
+  </div>
+</div>
+
+<!-- POLICY MODALS -->
+<div class="modal-backdrop" id="policyModal" onclick="if(event.target===this)closePolicyModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePolicyModal()">×</button>
+    <h3 class="modal-title" id="policyTitle">Policy Information</h3>
+    <div class="modal-body" id="policyBody">
+      <!-- Body populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAILS QUICK-VIEW MODAL (Increased Width & Height) -->
+<div class="modal-backdrop" id="detailModal" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal-box modal-product-box">
+    <button class="modal-close" onclick="closeDetailModal()">×</button>
+    <div id="detailContent">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastBox">🛒 Item added to cart!</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+// Catalog Database for Smeram Naturals with Full Specifications
+const catalog = [
+  {
+    id: 1,
+    name: "Smeram Naturals Hair Oil",
+    category: "Hair Care Oil",
+    size: "100 ml",
+    sizes: ["100 ml (Standard Bottle)", "200 ml (Value Pack · Save 15%)"],
+    price: 299,
+    mrp: 349,
+    discount: "14% OFF",
+    offer: "Special Introductory Offer: Flat 14% OFF + Save ₹50",
+    badge: "Sneha - Kalka - Drava Method",
+    img: "../../assets/themes/smeram/smeram-box-bottle.jpg",
+    file: "smeram-box-bottle.jpg",
+    rating: "★★★★★ (4.9/5 · 428 Verified Reviews)",
+    desc: "A classical Siddha formulation crafted through a meticulous two-stage low-heat simmering protocol. Cold-pressed virgin coconut oil is decocted with 11 bio-active medicinal herbs without thermal degradation, penetrating deep into follicular papillae to eliminate chronic dandruff and stimulate vibrant new hair growth.",
+    longDesc: "Formulated following classical Sneha-Kalka-Drava Siddha manuscripts. Fresh botanical juices (Drava) and hand-ground herbal paste (Kalka) are infused into virgin unrefined coconut oil (Sneha) over a controlled low flame. Contains 0% mineral oil, zero light liquid paraffin (LLP), no synthetic fragrances, and zero harsh parabens. Clinically proven to pacify scalp Pitta heat, eradicate Malassezia dandruff fungi, and fortify fragile hair shafts.",
+    benefits: [
+      "Authentic Sneha-Kalka-Drava Siddha Infusion — Maximum bio-active phytonutrient retention without heat scorch.",
+      "100% Scalp Antifungal & Dandruff Control — Neutralizes itchy fungal spores and dry flaking.",
+      "Follicle Rejuvenation — Re-activates dormant dermal roots to accelerate dense hair regrowth.",
+      "Cooling & Stress-Relieving — Herbal roots (Khus & Jadamanshi) alleviate nervous tension and promote deep sleep."
+    ],
+    ingredients: "Cold-pressed Virgin Coconut Oil, Ratanjot Roots (Alkanna Tinctoria), Jadamanshi Roots (Nardostachys Jatamansi), Vettiver (Vetiveria Zizanioides), Lemongrass, Jal Brahmi (Bacopa Monnieri), Jalapippali, Amla (Phyllanthus Emblica), Fresh Henna Leaves, Curry Leaves (Murraya Koenigii), Hibiscus Flowers & Leaves, Gudrisag, Bhringraj (Eclipta Alba).",
+    instructions: [
+      "Step 1: Pour 5–10 ml of Smeram Hair Oil into your palm or a small bowl.",
+      "Step 2: Section your hair evenly and apply oil directly onto the scalp roots with fingertips.",
+      "Step 3: Massage gently in circular motions for 5 to 7 minutes to stimulate scalp micro-circulation.",
+      "Step 4: Leave on for minimum 1 to 2 hours, or leave overnight for deep dermal nourishment. Wash with a mild chemical-free shampoo. Repeat 3 to 4 times weekly."
+    ],
+    additional: {
+      "Pack Net Volume": "100 ml (Standard Glass Dispenser)",
+      "Formulation Lineage": "Classical Siddha Pharmacopoeia (Sneha-Kalka-Drava)",
+      "Primary Indications": "Stubborn Dandruff, Follicular Thinning, Premature Greying, Scalp Dryness",
+      "Hair Type Suitability": "All Hair Types (Straight, Wavy, Curly, Chemically Treated & Coloured)",
+      "Gender Suitability": "Unisex (Men, Women & Children above 5 years)",
+      "Shelf Life": "24 Months from Manufacturing Date",
+      "Storage": "Store at room temperature away from direct sunlight. Tightly seal cap after use.",
+      "Manufacturing Facility": "Smeram Industries, 22/13 Rajaveedhi Street, Choolaimedu, Chennai, Tamil Nadu - 600094",
+      "Statutory GST": "18% Statutory GST Included (Input Tax Credit eligible invoice provided)"
+    }
+  },
+  {
+    id: 2,
+    name: "Mahanarayan Ortho Pain Oil",
+    category: "Joint Pain & Orthocare",
+    size: "100 ml",
+    sizes: ["100 ml (Standard Bottle)"],
+    price: 349,
+    mrp: 450,
+    discount: "22% OFF",
+    offer: "Mobility Relief Offer: Save ₹101 · 22% OFF",
+    badge: "Fast Penetrating Relief",
+    img: "../../assets/themes/smeram/ortho-pain.jpg",
+    file: "ortho-pain.jpg",
+    rating: "★★★★★ (4.9/5 · 210 Verified Reviews)",
+    desc: "An intensive classical Ayurvedic pain management oil enriched with authentic Mahanarayan Taila, Boswellia Shallaki, Gandhapura, Eucalyptus, and Nirgundi. Imparts comforting thermal warmth to soothe stiff joints and restore effortless mobility.",
+    longDesc: "Crafted for acute and chronic musculoskeletal discomforts. Combines the classical 52-herb Mahanarayan Taila decoction with potent botanical analgesics. Deep penetrating herbal actives absorb within minutes without leaving a sticky or greasy residue on clothing, delivering lasting joint flexibility and muscular relaxation.",
+    benefits: [
+      "Deep Penetrating Thermal Action — Stimulates local vascular flow to soothe joint inflammation.",
+      "Fast Muscular & Joint Relief — Relieves knee stiffness, lower back ache, shoulder and neck tension.",
+      "Cartilage & Synovial Support — Nourishes connective tissues and enhances joint lubrication.",
+      "Non-Greasy & Clean Herbal Aroma — Leaves skin smooth without unpleasant pungent residue."
+    ],
+    ingredients: "Mahanarayan Taila (Classical Ayurvedic Taila Paka with 52 herbs), Gandhapura Oil (Wintergreen), Eucalyptus Globulus (Nilgiri), Boswellia Serrata (Shallaki), Vitex Negundo (Nirgundi), Camphor, Pure Virgin Sesame Oil base.",
+    instructions: [
+      "Step 1: Clean and gently pat dry the affected joint or muscular area.",
+      "Step 2: Take 5–8 ml of Mahanarayan Ortho Oil in your hands.",
+      "Step 3: Apply with firm, soothing strokes along the muscle fibers and joint contours for 8–10 minutes until absorbed.",
+      "Step 4: For enhanced penetration, apply a warm dry towel compress over the area after massage. Apply 2 times daily (morning and at bedtime)."
+    ],
+    additional: {
+      "Pack Net Volume": "100 ml",
+      "Formulation Lineage": "Classical Ayurvedic Taila Paka (Bhaishajya Ratnavali)",
+      "Primary Indications": "Knee Osteo-Stiffness, Cervical Spondylosis, Lumbar Back Pain, Muscular Sprains",
+      "Suitable For": "Adults, Seniors, Athletes & Active Individuals",
+      "Shelf Life": "24 Months from Manufacturing Date",
+      "Storage": "Store below 30°C in a dry place. Keep bottle tightly closed.",
+      "Manufacturing Facility": "Smeram Industries, 22/13 Rajaveedhi Street, Choolaimedu, Chennai, Tamil Nadu - 600094",
+      "Statutory GST": "12% Statutory GST Included (Statutory Tax Invoice provided)"
+    }
+  },
+  {
+    id: 3,
+    name: "Ayurgold Kumkumadi Face Oil",
+    category: "Ayurgold Face Care",
+    size: "30 ml",
+    sizes: ["30 ml (Glass Dropper Bottle)"],
+    price: 499,
+    mrp: 699,
+    discount: "29% OFF",
+    offer: "Festive Radiance Special: Save ₹200 · 29% OFF",
+    badge: "Kashmiri Saffron Elixir",
+    img: "../../assets/themes/smeram/face-care.jpg",
+    file: "face-care.jpg",
+    rating: "★★★★★ (5.0/5 · 340 Verified Reviews)",
+    desc: "Miraculous facial radiance elixir crafted with pure Grade-A Kashmiri Saffron, Red Sandalwood, Manjistha, and Sacred Blue Lotus infused in pure goat's milk and cold-pressed virgin sesame oil.",
+    longDesc: "Described in the classical Ashtanga Hridaya as the premier skin rejuvenator (Varnya). Handcrafted by slowly simmering Grade-A Kashmiri saffron stigmas with 26 botanical herbs. Penetrates epidermal layers overnight to fade stubborn pigmentation, acne scars, sun tan, and blemishes while imparting a youthful golden luminance.",
+    benefits: [
+      "Fades Dark Spots & Pigmentation — Manjistha & Kashmiri saffron inhibit excessive melanin clusters.",
+      "Golden Youthful Glow — Restores skin translucency, even tone, and natural radiance.",
+      "Ultra-Lightweight & Fast Absorbing — Micro-filtered botanical lipids absorb cleanly overnight.",
+      "100% Free of Parabens, Mineral Oil & Chemical Emulsifiers — Clean label luxury beauty."
+    ],
+    ingredients: "Kashmiri Saffron (Crocus Sativus Stigmas), Red Sandalwood (Pterocarpus Santalinus), Indian Madder (Manjistha), Blue Sacred Lotus (Utpala), Licorice (Yashtimadhu), Pure Fresh Goat's Milk, Cold-Pressed Sesame Seed Oil.",
+    instructions: [
+      "Step 1: Thoroughly cleanse your face and neck with mild water or pure rose water, then pat dry.",
+      "Step 2: Dispense 2 to 3 drops of Ayurgold Kumkumadi Oil onto clean fingertips using the precision dropper.",
+      "Step 3: Dab lightly across forehead, cheeks, nose, and jawline; massage gently in upward circular motions.",
+      "Step 4: Leave on overnight as a beauty repair elixir. For oily skin types, leave on for 45–60 minutes before rinsing with lukewarm water. Use nightly."
+    ],
+    additional: {
+      "Pack Net Volume": "30 ml (Approx. 600 drops · 3-month supply)",
+      "Formulation Lineage": "Classical Ashtanga Hridaya (Mukha Kanti Tailam)",
+      "Primary Indications": "Melasma, Post-Acne Pigmentation, Dull Skin Tone, Early Fine Lines",
+      "Skin Suitability": "All Skin Types (Normal, Dry, Combination, Sensitive)",
+      "Shelf Life": "24 Months from Manufacturing Date",
+      "Storage": "Store in a cool, dark location away from direct sunlight.",
+      "Manufacturing Facility": "Smeram Industries, 22/13 Rajaveedhi Street, Choolaimedu, Chennai, Tamil Nadu - 600094",
+      "Statutory GST": "18% Statutory GST Included (Input Tax Credit eligible invoice provided)"
+    }
+  },
+  {
+    id: 4,
+    name: "Vedic A2 Desi Gir Cow Bilona Ghee",
+    category: "Health Foods",
+    size: "500 ml",
+    sizes: ["500 ml (Glass Jar)", "1000 ml (Value Pack · Save 10%)"],
+    price: 799,
+    mrp: 999,
+    discount: "20% OFF",
+    offer: "Pure Vedic Special: Save ₹200 · 20% OFF",
+    badge: "Curd-Churned Bilona",
+    img: "../../assets/themes/smeram/health-foods.jpg",
+    file: "health-foods.jpg",
+    rating: "★★★★★ (4.9/5 · 185 Verified Reviews)",
+    desc: "Pure A2 cultured golden ghee prepared exclusively from grass-fed Desi Gir cows using the Vedic bi-directional wooden churner (Bilona) method. Rich in natural A2 beta-casein, butyric acid, and Ojas vitality.",
+    longDesc: "Unlike industrial cream-churned butter ghee, Smeram A2 Ghee is prepared strictly following the ancient 5-samskara Vedic protocol: Raw milk is boiled over earthen fire, cultured into whole curd overnight, hand-churned in wooden pots (Bilona), and the Makkhan slowly simmered over cow dung cakes to produce authentic golden granular ghee.",
+    benefits: [
+      "100% Cultured A2 Curd Churned — Free from synthetic hormones, GMO feed, or preservatives.",
+      "Granular Golden Texture & Divine Aroma — Rich, nutty Vedic fragrance reminiscent of village traditions.",
+      "Gut Health & Digestive Fire (Agni) — Natural butyrate lubricates intestinal mucosa and supports gut flora.",
+      "High Thermal Smoke Point (~250°C) — Does not degrade or release free radicals during Indian cooking."
+    ],
+    ingredients: "100% Pure Cultured Desi Gir Cow A2 Milk Fat (Traditional Bi-Directional Wooden Bilona Method).",
+    instructions: [
+      "Daily Wellness: Take 1–2 teaspoons daily mixed with warm milk, steamed rice, or brushed onto hot rotis.",
+      "Digestive Agni: Consume 1 teaspoon first thing in the morning with a cup of warm water to stimulate metabolism.",
+      "Ayurvedic Nasya Therapy: Instill 1–2 lukewarm drops in each nostril at bedtime for sound sleep and mental clarity.",
+      "Cooking & Sautéing: Ideal for high-heat cooking, baking, and medicinal herbal preparations."
+    ],
+    additional: {
+      "Pack Net Volume": "500 ml (Also available in 1000 ml)",
+      "Formulation Lineage": "Vedic Bilona Churning (5 Samskara Protocol)",
+      "Nutritional Highlights": "Rich in A2 Beta-Casein, Butyric Acid, Vitamin A, D, E & K2",
+      "Diet Suitability": "Vegetarian, Lactose-Sensitive Friendly, Keto & Paleo Compliant",
+      "Shelf Life": "12 Months from Manufacturing Date",
+      "Storage": "Store in a cool, dry place. Keep lid tightly closed. Always use a dry spoon.",
+      "Manufacturing Facility": "Smeram Industries, 22/13 Rajaveedhi Street, Choolaimedu, Chennai, Tamil Nadu - 600094",
+      "Statutory GST": "12% Statutory GST Included (Statutory Tax Invoice provided)"
+    }
+  }
+];
+
+// In-Memory Cart State
+let cart = [];
+let appliedDiscount = 0;
+let couponCode = '';
+
+// Image fallback handler
+function fallbackImg(img) {
+  if (!img._fallback) {
+    img._fallback = true;
+    img.src = '/assets/themes/smeram/' + img.dataset.file;
+  }
+}
+
+// Navigation handlers
+function goToHome(e) {
+  if (e) e.preventDefault();
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('nav-home')?.classList.add('active');
+  const hero = document.getElementById('hero') || document.querySelector('.hero');
+  if (hero) hero.scrollIntoView({ behavior: 'smooth' });
+  else window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Category filter logic
+function showCategory(catName, e) {
+  if (e) e.preventDefault();
+  
+  // Update nav active states
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  if (catName === 'all') document.getElementById('nav-all')?.classList.add('active');
+  else if (catName === 'Hair Care Oil') document.getElementById('nav-hair')?.classList.add('active');
+  else if (catName === 'Joint Pain & Orthocare') document.getElementById('nav-joint')?.classList.add('active');
+  else if (catName === 'Ayurgold Face Care') document.getElementById('nav-face')?.classList.add('active');
+  else if (catName === 'Health Foods') document.getElementById('nav-health')?.classList.add('active');
+
+  // Update tabs
+  document.querySelectorAll('.cat-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === catName);
+  });
+
+  // Filter cards
+  const cards = document.querySelectorAll('.p-card');
+  let matchCount = 0;
+  cards.forEach(card => {
+    const cardCat = card.dataset.category;
+    if (catName === 'all' || cardCat === catName) {
+      card.style.display = 'flex';
+      matchCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  const titleEl = document.getElementById('catalogTitle');
+  if (titleEl) {
+    titleEl.textContent = catName === 'all' ? 'All Products' : catName;
+  }
+
+  // Smooth scroll to products
+  const pSec = document.getElementById('products');
+  if (pSec) {
+    pSec.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function scrollToSection(id, e) {
+  if (e) e.preventDefault();
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  if (id === 'why') document.getElementById('nav-why')?.classList.add('active');
+  else if (id === 'contact') document.getElementById('nav-contact')?.classList.add('active');
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Cart Drawer
+function openCart() {
+  renderCart();
+  document.getElementById('cartDrawer').classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('cartDrawer').classList.remove('open');
+}
+
+function addToCart(productId) {
+  const item = cart.find(x => x.id === productId);
+  if (item) item.qty++;
+  else cart.push({ id: productId, qty: 1 });
+  
+  updateCartBadge();
+  showToast('🛒 Added to cart!');
+  renderCart();
+}
+
+function buyNow(productId) {
+  addToCart(productId);
+  openCart();
+}
+
+function updateCartQty(productId, delta) {
+  const item = cart.find(x => x.id === productId);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) {
+    cart = cart.filter(x => x.id !== productId);
+  }
+  updateCartBadge();
+  renderCart();
+}
+
+function removeCartItem(productId) {
+  cart = cart.filter(x => x.id !== productId);
+  updateCartBadge();
+  renderCart();
+}
+
+function updateCartBadge() {
+  const count = cart.reduce((sum, x) => sum + x.qty, 0);
+  document.getElementById('cartBadgeCount').textContent = count;
+}
+
+function renderCart() {
+  const host = document.getElementById('cartItemsList');
+  if (!host) return;
+  host.innerHTML = '';
+
+  if (!cart.length) {
+    host.innerHTML = '<div style="text-align:center;padding:30px 10px;color:var(--muted)">Your shopping cart is empty.<br><button type="button" class="btn-view" style="margin-top:12px" onclick="closeCart()">Browse Products</button></div>';
+    document.getElementById('subtotalVal').textContent = '₹0';
+    document.getElementById('grandTotalVal').textContent = '₹0';
+    return;
+  }
+
+  let subtotal = 0;
+  cart.forEach(c => {
+    const p = catalog.find(x => x.id === c.id);
+    if (!p) return;
+    const itemTotal = p.price * c.qty;
+    subtotal += itemTotal;
+
+    const row = document.createElement('div');
+    row.className = 'c-item-row';
+    row.innerHTML = `
+      <img src="${p.img}" data-file="${p.file}" alt="${p.name}" class="c-item-img" onerror="fallbackImg(this)">
+      <div class="c-item-info">
+        <div class="c-item-name">${p.name}</div>
+        <div class="c-item-price">₹${p.price}</div>
+        <div class="c-qty-wrap">
+          <button type="button" class="c-qty-btn" onclick="updateCartQty(${p.id}, -1)">−</button>
+          <span class="c-qty-val">${c.qty}</span>
+          <button type="button" class="c-qty-btn" onclick="updateCartQty(${p.id}, 1)">+</button>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;color:var(--dark)">₹${itemTotal}</div>
+        <button type="button" class="c-item-del" onclick="removeCartItem(${p.id})" title="Remove item">🗑</button>
+      </div>
+    `;
+    host.appendChild(row);
+  });
+
+  const discountAmount = Math.round(subtotal * appliedDiscount);
+  const grandTotal = Math.max(0, subtotal - discountAmount);
+
+  document.getElementById('subtotalVal').textContent = '₹' + subtotal;
+  if (discountAmount > 0) {
+    document.getElementById('discountRow').style.display = 'flex';
+    document.getElementById('discountVal').textContent = '−₹' + discountAmount;
+  } else {
+    document.getElementById('discountRow').style.display = 'none';
+  }
+  document.getElementById('grandTotalVal').textContent = '₹' + grandTotal;
+
+  // Free shipping banner
+  const banner = document.getElementById('freeShippingBanner');
+  if (grandTotal >= 399) {
+    banner.innerHTML = '🎉 You qualified for <b>FREE Shipping</b> across India!';
+    banner.style.background = 'var(--green-light)';
+    banner.style.color = 'var(--green-dark)';
+    banner.style.borderColor = '#C8E6C9';
+  } else {
+    const diff = 399 - grandTotal;
+    banner.innerHTML = `Add <b>₹${diff}</b> more to unlock <b>FREE Delivery</b>!`;
+    banner.style.background = 'var(--pink-light)';
+    banner.style.color = 'var(--pink)';
+    banner.style.borderColor = 'var(--pink-border)';
+  }
+}
+
+function applyCoupon() {
+  const code = (document.getElementById('couponInput').value || '').trim().toUpperCase();
+  const msgEl = document.getElementById('couponMsg');
+  if (code === 'SMERAM10') {
+    appliedDiscount = 0.10;
+    couponCode = 'SMERAM10';
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✅ Coupon SMERAM10 applied! 10% discount deducted.';
+  } else if (!code) {
+    appliedDiscount = 0;
+    couponCode = '';
+    msgEl.textContent = '';
+  } else {
+    appliedDiscount = 0;
+    couponCode = '';
+    msgEl.style.color = '#C93D51';
+    msgEl.textContent = '❌ Invalid coupon. Try SMERAM10 for 10% off.';
+  }
+  renderCart();
+}
+
+function handlePlaceOrder(e) {
+  e.preventDefault();
+  if (!cart.length) {
+    alert('Please add at least one product to your cart.');
+    return;
+  }
+
+  const fd = new FormData(e.target);
+  const name = fd.get('name');
+  const phone = fd.get('phone');
+  const address = fd.get('address');
+  const city = fd.get('city');
+  const pincode = fd.get('pincode');
+  const payMethod = fd.get('payment_method');
+  const total = document.getElementById('grandTotalVal').textContent;
+
+  const orderNum = 'SM-' + Math.floor(1000 + Math.random() * 9000);
+
+  // Build items text for WhatsApp
+  let itemsSummary = cart.map(c => {
+    const p = catalog.find(x => x.id === c.id);
+    return `${p.name} (x${c.qty}) - ₹${p.price * c.qty}`;
+  }).join('%0A');
+
+  const waMessage = `*New Order: ${orderNum}*%0A%0A*Customer Details:*%0AName: ${encodeURIComponent(name)}%0APhone: ${encodeURIComponent(phone)}%0AAddress: ${encodeURIComponent(address)}, ${encodeURIComponent(city)} - ${encodeURIComponent(pincode)}%0A%0A*Items:*%0A${itemsSummary}%0A%0A*Total Payable:* ${encodeURIComponent(total)}%0A*Payment Method:* ${payMethod === 'cod' ? 'Cash on Delivery' : 'Paid Online (Razorpay)'}`;
+
+  const waUrl = `https://wa.me/917539972026?text=${waMessage}`;
+
+  // If Razorpay online payment chosen, show simulated gateway confirmation
+  if (payMethod === 'razorpay') {
+    alert(`[Razorpay Payment Gateway]\nSecure Payment of ${total} initialized for ${name}.\nTransaction approved successfully!`);
+  }
+
+  // Display Order Success Screen
+  const panel = document.querySelector('.drawer-panel');
+  panel.innerHTML = `
+    <div style="text-align:center;padding:40px 10px">
+      <div style="font-size:54px;margin-bottom:14px">🎉</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:26px;color:var(--pink);margin-bottom:8px">Order Confirmed!</h3>
+      <p style="font-size:15px;color:var(--dark);font-weight:700">Order ID: #${orderNum}</p>
+      <p style="font-size:13.5px;color:var(--muted);margin:14px 0 24px;line-height:1.6">
+        Thank you, <b>${name}</b>! Your order has been registered in the ZKCommerce merchant database. Estimated dispatch within 24 business hours.
+      </p>
+      <div style="background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;font-size:13px;margin-bottom:24px">
+        <div><b>Total Amount:</b> ${total} (${payMethod === 'cod' ? 'Cash on Delivery' : 'Paid via Razorpay'})</div>
+        <div><b>Delivery Address:</b> ${address}, ${city} - ${pincode}</div>
+        <div><b>WhatsApp Updates:</b> ${phone}</div>
+      </div>
+      <a href="${waUrl}" target="_blank" rel="noopener" class="btn-place-order" style="display:inline-block;text-decoration:none;background:#25D366;margin-bottom:12px">
+        📲 Send Order Details on WhatsApp →
+      </a>
+      <button type="button" class="btn-view" style="width:100%;padding:12px" onclick="location.reload()">Back to Store</button>
+    </div>
+  `;
+
+  // Reset cart
+  cart = [];
+  updateCartBadge();
+}
+
+// Product Quick-View & Expanded Detail Modal
+function openProductDetail(id, selectedSizeIndex = 0) {
+  const p = catalog.find(x => x.id === id);
+  if (!p) return;
+
+  const currentSize = (p.sizes && p.sizes[selectedSizeIndex]) ? p.sizes[selectedSizeIndex] : (p.size || 'Standard Pack');
+
+  const content = document.getElementById('detailContent');
+  content.innerHTML = `
+    <div class="pd-grid">
+      <!-- Media Left Column -->
+      <div>
+        <div class="pd-img-box">
+          <img src="${p.img}" data-file="${p.file}" alt="${p.name}" onerror="fallbackImg(this)">
+          <div class="pd-badges-row">
+            <span class="pd-badge-item">🌿 100% Herbal</span>
+            <span class="pd-badge-item">🐰 Cruelty Free</span>
+            <span class="pd-badge-item">🇮🇳 Made in Chennai</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Information Right Column -->
+      <div>
+        <div class="pd-header">
+          <div class="pd-cat-line">
+            <span class="pd-cat-badge">${p.category}</span>
+            <span class="pd-method-pill">${p.badge}</span>
+          </div>
+          <h2 class="pd-title">${p.name}</h2>
+          <div class="pd-rating">${p.rating}</div>
+        </div>
+
+        <!-- Product Size / Pack Selector -->
+        <div class="pd-size-picker">
+          <div class="pd-size-label">
+            <span>Choose Product Pack Size:</span>
+            <b style="color:var(--pink)">${currentSize}</b>
+          </div>
+          <div class="pd-size-btns">
+            ${(p.sizes || [p.size || 'Standard']).map((s, idx) => `
+              <button type="button" class="pd-size-btn ${idx === selectedSizeIndex ? 'active' : ''}" onclick="openProductDetail(${p.id}, ${idx})">${s}</button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Pricing & GST / Free Shipping -->
+        <div class="pd-price-box">
+          <div class="pd-price-row">
+            <span class="pd-main-price">₹${p.price}</span>
+            <span class="pd-mrp">MRP ₹${p.mrp}</span>
+            <span class="pd-savings">${p.discount}</span>
+          </div>
+          <div class="pd-tax-note">
+            <span>✓ Inclusive of all statutory GST (Tax invoice provided)</span>
+            <span>•</span>
+            <span>🚚 Free Shipping across India</span>
+          </div>
+          <div class="pd-offer-banner">
+            <span>🎁 ${p.offer || 'Use coupon SMERAM10 for an extra 10% instant discount!'}</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="pd-cta-row">
+          <button type="button" class="btn-add" style="padding:14px;font-size:14px" onclick="addToCart(${p.id});closeDetailModal()">🛒 Add to Cart</button>
+          <button type="button" class="btn-buy" style="padding:14px;font-size:14px" onclick="buyNow(${p.id});closeDetailModal()">⚡ Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description (Increased Height & Width) -->
+    <div class="pd-section-block">
+      <h3 class="pd-sec-heading">📜 Authentic Formulation Description</h3>
+      <p class="pd-desc-text">${p.desc}</p>
+      <p class="pd-desc-text" style="color:var(--muted)">${p.longDesc || ''}</p>
+    </div>
+
+    <!-- Key Benefits (Increased Height & Width) -->
+    <div class="pd-section-block">
+      <h3 class="pd-sec-heading">✨ Key Clinical &amp; Therapeutic Benefits</h3>
+      <div class="pd-benefits-grid">
+        ${p.benefits.map(b => `
+          <div class="pd-benefit-item">
+            <span class="pd-benefit-icon">✓</span>
+            <div class="pd-benefit-text">${b}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- User Instructions (Step by Step Directions) -->
+    <div class="pd-section-block">
+      <h3 class="pd-sec-heading">📖 User Instructions &amp; How to Use</h3>
+      <div class="pd-instructions-box">
+        ${(p.instructions || [
+          "Step 1: Take adequate quantity in your palm.",
+          "Step 2: Gently apply over the intended area with light circular massage.",
+          "Step 3: Leave for recommended duration for deep bio-active absorption.",
+          "Step 4: Use regularly as directed for peak clinical efficacy."
+        ]).map((inst, i) => `
+          <div class="pd-step-row">
+            <div class="pd-step-num">${i + 1}</div>
+            <div class="pd-step-content">${inst.replace(/^Step \d+:\s*/, '')}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Active Ingredients Breakdown -->
+    <div class="pd-section-block">
+      <h3 class="pd-sec-heading">🌿 Active Classical Botanical Ingredients</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;background:var(--soft);border:1px solid var(--border-light);padding:14px;border-radius:10px">
+        ${p.ingredients}
+      </p>
+    </div>
+
+    <!-- Additional Product Specifications -->
+    <div class="pd-section-block">
+      <h3 class="pd-sec-heading">ℹ️ Additional Product Specifications</h3>
+      <table class="pd-specs-table">
+        <tbody>
+          ${Object.entries(p.additional || {}).map(([key, val]) => `
+            <tr>
+              <td>${key}</td>
+              <td>${val}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('open');
+}
+
+// Policy Modals (About Us, Privacy Policy, Terms, Refund, Shipping)
+const policies = {
+  about: {
+    title: "About Smeram Naturals",
+    body: `
+      <p><b>Welcome to Smeram Naturals.</b></p>
+      <p>We are a dedicated Ayurvedic &amp; Siddha wellness brand manufacturing authentic classical formulations in Chennai, Tamil Nadu. Centered on the traditional <b>Sneha-Kalka-Drava</b> procedure, our flagship hair oils and orthocare remedies are crafted strictly in small batches to preserve medicinal bio-actives.</p>
+      <p>Every single batch undergoes two-stage low-heat simmering (Double Boiled &amp; Double Infused) with 13 hand-selected medicinal herbs to maximize phytonutrient extraction without burning delicate plant enzymes.</p>
+      <h4>Our Core Guarantees:</h4>
+      <p>🌿 100% Plant-Based &amp; Vegan formulations<br>
+      🐰 Cruelty-Free &amp; Ethical testing<br>
+      🚫 0% Mineral oil, light liquid paraffin, parabens, or silicones<br>
+      🏭 Batch traceability from our manufacturing facility in Choolaimedu, Chennai.</p>
+    `
+  },
+  privacy: {
+    title: "Privacy Policy",
+    body: `
+      <p><b>Customer Privacy Commitment:</b></p>
+      <p>At Smeram Naturals, your privacy is paramount to us. We collect customer information (such as your name, shipping address, contact phone, and email) solely to process your orders, provide dispatch tracking alerts via WhatsApp, and ensure dependable customer service.</p>
+      <h4>Secure Online Payments:</h4>
+      <p>All online payment transactions are processed securely through RBI-licensed, PCI-DSS certified payment aggregators (Razorpay) using 256-bit SSL encryption. We never store credit/debit card numbers or CVVs on our servers.</p>
+      <h4>Zero Third-Party Marketing:</h4>
+      <p>We never sell, rent, or trade your personal telephone numbers or addresses with third-party marketers or advertisers.</p>
+    `
+  },
+  terms: {
+    title: "Terms of Service",
+    body: `
+      <p>By browsing, accessing, or placing an order on Smeram Naturals, you agree to our standard terms of purchase.</p>
+      <p>1. <b>Pricing &amp; GST:</b> All prices are quoted in Indian Rupees (INR) and are inclusive of statutory GST.</p>
+      <p>2. <b>Order Dispatch:</b> Orders are dispatched within 24 to 48 business hours via leading domestic express couriers (ST Courier, Delhivery, Professional Couriers).</p>
+      <p>3. <b>Jurisdiction:</b> Any legal disputes are subject to the exclusive jurisdiction of the competent courts in Chennai, Tamil Nadu.</p>
+    `
+  },
+  refund: {
+    title: "Refund &amp; Cancellation Policy",
+    body: `
+      <p><b>Satisfaction Guarantee:</b></p>
+      <p>If your parcel arrives damaged, leaking, or defective, please contact our support team within 48 hours of delivery at <b>smeramindustries@gmail.com</b> or via WhatsApp at <b>+91 75399 72026</b> with unboxing photos.</p>
+      <p>Upon verification, we will promptly dispatch a free replacement bottle or process a full 100% refund to your original payment method within 5–7 working days.</p>
+    `
+  },
+  shipping: {
+    title: "Shipping &amp; Delivery Policy",
+    body: `
+      <p><b>Delivery Coverage Across India:</b></p>
+      <p>We deliver to all serviceable pincodes in India.</p>
+      <p><b>Standard Transit Times:</b><br>
+      - South India (Tamil Nadu, Karnataka, Kerala, AP, Telangana): 2 to 3 business days.<br>
+      - Rest of India: 3 to 6 business days.</p>
+      <p><b>Free Shipping:</b> Orders above ₹399 receive 100% free delivery across India. Live tracking numbers are sent to your registered WhatsApp number upon parcel handover.</p>
+    `
+  }
+};
+
+function openPolicyModal(key, e) {
+  if (e) e.preventDefault();
+  const p = policies[key] || policies.about;
+  document.getElementById('policyTitle').textContent = p.title;
+  document.getElementById('policyBody').innerHTML = p.body;
+  document.getElementById('policyModal').classList.add('open');
+}
+
+function closePolicyModal() {
+  document.getElementById('policyModal').classList.remove('open');
+}
+
+// Contact Form Submit
+function handleContactSubmit(e) {
+  e.preventDefault();
+  showToast('✅ Message sent! We will contact you shortly.');
+  e.target.reset();
+}
+
+// Toast
+function showToast(msg) {
+  const t = document.getElementById('toastBox');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Mobile menu toggle
+function toggleMobileMenu() {
+  const links = document.getElementById('navLinks');
+  if (links.style.display === 'flex') {
+    links.style.display = '';
+  } else {
+    links.style.display = 'flex';
+    links.style.flexDirection = 'column';
+    links.style.position = 'absolute';
+    links.style.top = '74px';
+    links.style.left = '0';
+    links.style.right = '0';
+    links.style.background = '#fff';
+    links.style.padding = '20px';
+    links.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+  }
+}
+
+// Keyboard ESC to close any modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeCart();
+    closePolicyModal();
+    closeDetailModal();
+  }
+});
+
+// Initialize on page load
+updateCartBadge();
+</script>
+
+</body>
+</html>

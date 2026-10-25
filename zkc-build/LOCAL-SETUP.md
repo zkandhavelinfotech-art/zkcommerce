@@ -1,653 +1,210 @@
-# ZKCommerce v4.1 — Local Development Setup
-## Step-by-step guide to run on your laptop (Mac / Windows / Linux)
+# ZKCommerce — Local Desktop Setup Guide
+# Get the full platform running on your Windows PC in 15 minutes
 
 ---
 
-## Prerequisites — What you need installed
+## What you need installed first
 
-| Tool | Version | Why needed | Download |
-|---|---|---|---|
-| Node.js | 20+ (LTS) | Runs the API server | nodejs.org |
-| npm | 10+ (comes with Node) | Installs packages | (with Node) |
-| PostgreSQL | 15+ | Database | postgresql.org |
-| Git | Any | Clone/manage code | git-scm.com |
-| VS Code | Any | Edit code (recommended) | code.visualstudio.com |
-
-**Optional but recommended:**
-| Tool | Why | Download |
-|---|---|---|
-| pgAdmin 4 | GUI to view your database | pgadmin.org |
-| Postman | Test API routes | postman.com |
+| Tool | Download | Why |
+|------|----------|-----|
+| Node.js 20 LTS | nodejs.org/en/download | Runs the API server |
+| Git | git-scm.com | Version control |
+| VS Code | code.visualstudio.com | Code editor (optional) |
+| PowerShell 7 | Already on Windows 10/11 | Run commands |
 
 ---
 
-## PART 1 — Install required tools
+## Step 1 — Extract the project
 
-### Step 1 — Install Node.js 20
-
-**Mac:**
-```bash
-# Option A — download installer (easiest)
-# Go to https://nodejs.org → click "20.x LTS" → download .pkg → run installer
-
-# Option B — using Homebrew
-brew install node@20
-echo 'export PATH="/opt/homebrew/opt/node@20/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+Unzip `zkcommerce-v4-complete.zip` to:
+```
+D:\ZKCommerce\zkc-build\
 ```
 
-**Windows:**
-```
-1. Go to https://nodejs.org
-2. Click "20.x LTS" — download the .msi installer
-3. Run installer — tick "Add to PATH" checkbox
-4. Restart Command Prompt / PowerShell after install
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-**Verify install:**
-```bash
-node --version   # should show v20.x.x
-npm --version    # should show 10.x.x
+Open PowerShell and navigate there:
+```powershell
+cd "D:\ZKCommerce\zkc-build"
 ```
 
 ---
 
-### Step 2 — Install PostgreSQL 15
+## Step 2 — Install dependencies
 
-**Mac:**
-```bash
-# Option A — Postgres.app (easiest for Mac, GUI included)
-# Go to https://postgresapp.com → download → drag to Applications → Open
-# Click "Initialize" → database is running
-
-# Option B — Homebrew
-brew install postgresql@15
-brew services start postgresql@15
-echo 'export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-**Windows:**
-```
-1. Go to https://www.postgresql.org/download/windows/
-2. Click "Download the installer" → pick version 15
-3. Run installer:
-   - Port: 5432 (default — keep it)
-   - Password: set a password you will remember (e.g. zkcommerce123)
-   - Locale: default
-4. Untick "Stack Builder" at the end (not needed)
-5. PostgreSQL is now running as a Windows service
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update
-sudo apt install -y postgresql-15 postgresql-client-15
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-```
-
-**Verify install:**
-```bash
-psql --version    # should show psql (PostgreSQL) 15.x
-```
-
----
-
-### Step 3 — Install Git (if not already installed)
-
-**Mac:** Git comes pre-installed. Verify: `git --version`
-
-**Windows:**
-```
-Go to https://git-scm.com/download/win
-Download and run the installer (all defaults are fine)
-```
-
-**Linux:**
-```bash
-sudo apt install -y git
-```
-
----
-
-## PART 2 — Project setup
-
-### Step 4 — Get the project files
-
-**Option A — From the ZIP file you downloaded:**
-```bash
-# Mac / Linux
-cd ~/Desktop
-unzip zkcommerce-v4-complete.zip
-cd zkc-build
-
-# Windows (PowerShell)
-cd $env:USERPROFILE\Desktop
-Expand-Archive zkcommerce-v4-complete.zip -DestinationPath .
-cd zkc-build
-```
-
-**Option B — If you have a Git repository:**
-```bash
-git clone https://github.com/your-org/zkcommerce.git
-cd zkcommerce
-```
-
----
-
-### Step 5 — Install Node.js packages
-
-```bash
-# Inside the zkc-build folder:
+```powershell
 npm install
 ```
 
-This installs all 14 packages: express, bcryptjs, jsonwebtoken, pg, razorpay, zod, helmet, cors, multer, nodemailer, passport, etc.
-
-Expected output: `added 187 packages` (no errors)
-
-**If you see errors:**
-```bash
-# Clear cache and retry
-npm cache clean --force
-rm -rf node_modules package-lock.json
-npm install
-```
+This installs all packages (takes 2–3 minutes first time).
 
 ---
 
-### Step 6 — Create your .env file
+## Step 3 — Create your .env file
 
-```bash
-# Mac / Linux
-cp .env.example .env
-
-# Windows (PowerShell)
-Copy-Item .env.example .env
+Copy the example:
+```powershell
+copy .env.example .env
 ```
 
-Now open `.env` in VS Code and fill in these values:
-
-```env
-# ── REQUIRED for local dev ──────────────────────────────────
-PORT=3000
+Open `.env` in Notepad or VS Code and set:
+```
 NODE_ENV=development
+PORT=3000
 
-# Database — you will create this in Step 7
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/zkcommerce
+# Your Neon database URL (from neon.tech dashboard)
+DATABASE_URL=postgresql://neondb_owner:YOUR_PASSWORD@ep-proud-rice-axslvoko.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require
 
-# JWT — paste any long random string (min 32 chars)
-JWT_SECRET=zkcommerce_local_dev_secret_key_change_in_production_2026
+# Generate a secret: open PowerShell and run:
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=PASTE_YOUR_64_CHAR_SECRET_HERE
 
-# ── OPTIONAL for local dev (can leave as placeholder) ───────
-# Razorpay (use test keys — get free at razorpay.com/x/test)
-RAZORPAY_KEY_ID=rzp_test_placeholder
-RAZORPAY_KEY_SECRET=placeholder
-RAZORPAY_WEBHOOK_SECRET=placeholder
-
-# Email (payments + alerts won't send emails locally without this)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_gmail@gmail.com
-SMTP_PASS=your_gmail_app_password
-
-# WhatsApp (optional — skip for local dev)
-GUPSHUP_API_KEY=skip_for_local
-GUPSHUP_APP_NAME=ZKCommerce
-WHATSAPP_FROM=+919000012345
-
-# Delhivery (optional — shipping will use stub locally)
-DELHIVERY_API_KEY=skip_for_local
-
-# Storage (optional — image upload will use local disk)
-R2_PUBLIC_URL=http://localhost:3000/uploads
-
-# URLs
-FRONTEND_URL=http://localhost:3000
-API_URL=http://localhost:3000
+# Razorpay test keys (get from razorpay.com → Settings → API Keys)
+RAZORPAY_KEY_ID=rzp_test_YOUR_KEY
+RAZORPAY_KEY_SECRET=YOUR_SECRET
 ```
-
-**Important on Windows:** Replace `YOUR_PASSWORD` with the PostgreSQL password you set during install.
 
 ---
 
-## PART 3 — Database setup
+## Step 4 — Run the database migration
 
-### Step 7 — Create the database
-
-**Mac (Postgres.app):**
-```bash
-# Open Terminal
-createdb zkcommerce
-```
-
-**Mac (Homebrew) / Linux:**
-```bash
-# Create database
-createdb -U postgres zkcommerce
-
-# If the above gives "role postgres does not exist":
-createdb zkcommerce
-```
-
-**Windows (PowerShell):**
+This creates all 43 tables in Neon:
 ```powershell
-# Open PowerShell as Administrator
-# Replace YOUR_PASSWORD with your PostgreSQL password
-$env:PGPASSWORD="YOUR_PASSWORD"
-& "C:\Program Files\PostgreSQL\15\bin\createdb.exe" -U postgres zkcommerce
+node deployment/scripts/neon-migrate.js
 ```
 
-**Verify database was created:**
-```bash
-psql -U postgres -l | grep zkcommerce
-# Should show: zkcommerce | postgres | UTF8 ...
+Expected output:
+```
+✅ Connected to Neon database
+✅ Running migration...
+✅ 43 tables created
+✅ Seed data inserted
+✅ Migration complete
 ```
 
----
-
-### Step 8 — Run database migrations
-
-This creates all 36 tables, views, indexes, and seed data.
-
-**Mac / Linux:**
-```bash
-# Set DATABASE_URL first
-export DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/zkcommerce"
-
-# Run all 4 SQL files in order
-psql $DATABASE_URL -f database/schema.sql
-psql $DATABASE_URL -f database/phase1-additions.sql
-psql $DATABASE_URL -f database/phase2-additions.sql
-psql $DATABASE_URL -f database/phase3-additions.sql
-```
-
-**Or use the npm script:**
-```bash
-# Mac / Linux only
-npm run db:migrate
-```
-
-**Windows (PowerShell):**
+If you see an error about KEY= prefix, pass the URL directly:
 ```powershell
-$env:PGPASSWORD="YOUR_PASSWORD"
-$psql = "C:\Program Files\PostgreSQL\15\bin\psql.exe"
-
-& $psql -U postgres -d zkcommerce -f database\schema.sql
-& $psql -U postgres -d zkcommerce -f database\phase1-additions.sql
-& $psql -U postgres -d zkcommerce -f database\phase2-additions.sql
-& $psql -U postgres -d zkcommerce -f database\phase3-additions.sql
-```
-
-**Expected output for each file:**
-```
-CREATE TABLE
-CREATE TABLE
-CREATE INDEX
-...
-INSERT 0 1   ← seed data inserted
-```
-
-**Verify tables were created:**
-```bash
-psql $DATABASE_URL -c "\dt"
-# Should list 20+ tables: users, stores, products, orders, etc.
+node deployment/scripts/neon-migrate.js "postgresql://neondb_owner:PASS@host/neondb?sslmode=require"
 ```
 
 ---
 
-### Step 9 — Update .env with your database password
+## Step 5 — Start the API server
 
-Open `.env` and make sure DATABASE_URL matches:
-```env
-# Mac/Linux (if no password set):
-DATABASE_URL=postgresql://postgres@localhost:5432/zkcommerce
-
-# Mac/Linux (with password):
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/zkcommerce
-
-# Windows (always has password):
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/zkcommerce
-```
-
----
-
-## PART 4 — Start the server
-
-### Step 10 — Start the API
-
-```bash
+```powershell
 npm run dev
 ```
 
-**Expected output:**
+Expected output:
 ```
-[nodemon] starting `node api/server.js`
-
-  ⚡ ZKCommerce API v4.1 running on port 3000
-  🗄️  Database: Connected
-  💳 Razorpay: Test mode
-  📧 Email:    Not configured
-  🌍 Env:      development
+[ZKCommerce] API running on port 3000
+[ZKCommerce] Database connected ✅
+[ZKCommerce] Environment: development
 ```
 
-**If you see an error like `Cannot find module 'bcryptjs'`:**
-```bash
-npm install    # packages not installed yet
+Keep this PowerShell window open — it's your API server.
+
+---
+
+## Step 6 — Open the frontend
+
+**Option A — Double-click (simplest)**
+Open File Explorer → `D:\ZKCommerce\zkc-build\auth\login.html`
+Double-click to open in browser.
+
+**Option B — Local web server (recommended)**
+Open a NEW PowerShell window:
+```powershell
+cd "D:\ZKCommerce\zkc-build"
+npx serve . -p 8080
 ```
+Then open: http://localhost:8080/auth/login.html
 
-**If you see `ECONNREFUSED` (database not running):**
-```bash
-# Mac — restart PostgreSQL
-brew services restart postgresql@15
-# or if using Postgres.app — click the elephant icon, click Stop, then Start
+---
 
-# Windows — restart service
-net stop postgresql-x64-15
-net start postgresql-x64-15
+## Step 7 — Login and test
 
-# Linux
-sudo systemctl restart postgresql
+Use these local demo accounts (password: **demo1234** for the demo merchants; register the admin email first and choose its password, then run `database/seed.sql` to grant the admin role):
+
+| Role | Email | What you can do |
+|------|-------|-----------------|
+| Admin | admin@zkcommerce.in | Platform dashboard, all merchants |
+| Merchant | merchant@miliro.in | Store Builder: Miliro |
+| Merchant | merchant@smeramnaturals.in | Store Builder: Smeram Naturals |
+
+Open `http://localhost:3000/admin/dashboard.html` for platform store review. Demo stores start in draft status; use Store Builder or the admin preview to inspect them before publishing.
+
+---
+
+## What you'll see
+
+| URL | Page |
+|-----|------|
+| /auth/login.html | Merchant login |
+| /merchant/dashboard.html | Store dashboard |
+| /admin/dashboard.html | Admin panel |
+| /storefront/home.html | Customer storefront |
+| /theme-1-dark.html | Dark marketing theme |
+| /theme-2-light.html | Light marketing theme |
+| /theme-3-gradient.html | Gradient marketing theme |
+
+---
+
+## API test (verify server is working)
+
+In your browser or Postman:
 ```
-
-**If you see `password authentication failed`:**
-```bash
-# Check your DATABASE_URL password matches PostgreSQL password
-# Edit .env and fix DATABASE_URL
+GET http://localhost:3000/health
+→ {"status":"ok","db":"connected","version":"4.2.0"}
 ```
 
 ---
 
-### Step 11 — Test the API is working
+## Troubleshooting
 
-Open a new terminal tab and run:
-
-```bash
-# Health check
-curl http://localhost:3000/health
-
-# Expected response:
-# {"status":"ok","version":"v4.1","db":"connected"}
-```
-
-Or open in browser: **http://localhost:3000/health**
-
-**Test auth:**
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"merchant@zkcommerce.in","password":"demo1234"}'
-
-# Expected: {"token":"eyJ...","user":{...}}
-```
-
----
-
-### Step 12 — Open the frontend
-
-The frontend is static HTML — just open any file in your browser:
-
-```bash
-# Mac
-open index.html                       # Marketing page
-open auth/login.html                  # Login
-open merchant/dashboard.html          # Merchant dashboard
-open storefront/home.html             # Customer storefront
-open admin/dashboard.html             # Admin panel
-open admin/release-status.html        # Release status report
-open admin/gap-analysis-full.html     # Gap analysis
-
-# Windows
-start index.html
-start auth\login.html
-
-# Linux
-xdg-open index.html
-```
-
-**Demo login credentials:**
-```
-Merchant:  merchant@zkcommerce.in  / demo1234
-Admin:     admin@zkcommerce.in     / admin1234
-Customer:  customer@zkcommerce.in  / demo1234
-```
-
----
-
-## PART 5 — Test core flows locally
-
-### Step 13 — Test registration (API)
-
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Test",
-    "lastName": "Merchant",
-    "email": "test@mystore.in",
-    "phone": "9876543210",
-    "password": "password123",
-    "storeName": "My Test Store"
-  }'
-```
-
-Expected: `{"token":"eyJ...","user":{...},"message":"Registration successful"}`
-
-### Step 14 — Test product creation (API)
-
-```bash
-# First get a token from login
-TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"merchant@zkcommerce.in","password":"demo1234"}' \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
-
-# Create a product
-curl -X POST http://localhost:3000/api/products \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "name": "Kanjivaram Silk Saree",
-    "price": 12500,
-    "gst_rate": "12",
-    "stock": 50,
-    "status": "published"
-  }'
-```
-
-### Step 15 — Use Postman (easier than curl)
-
-1. Download Postman from postman.com
-2. Create new collection: "ZKCommerce v4.1"
-3. Set base URL variable: `{{base_url}}` = `http://localhost:3000`
-4. Test these endpoints in order:
-   - `POST {{base_url}}/api/auth/login` → copy token
-   - Set Authorization: Bearer `{{token}}` on all subsequent requests
-   - `GET {{base_url}}/api/products`
-   - `GET {{base_url}}/api/orders`
-   - `GET {{base_url}}/api/analytics/revenue`
-
----
-
-## PART 6 — Common issues and fixes
-
-### Port 3000 already in use
-
-```bash
-# Mac / Linux — find and kill process on port 3000
-lsof -ti:3000 | xargs kill -9
-
-# Windows (PowerShell)
-netstat -ano | findstr :3000
-taskkill /PID <PID_NUMBER> /F
-
-# Or just change the port in .env:
-PORT=3001
-```
-
-### PostgreSQL not found (Mac)
-
-```bash
-# Add PostgreSQL to PATH
-echo 'export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-# or for Postgres.app:
-echo 'export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-### "relation does not exist" error (API)
-
-The SQL migrations haven't been run. Go back to Step 8.
-
-```bash
-psql $DATABASE_URL -f database/schema.sql
-psql $DATABASE_URL -f database/phase1-additions.sql
-psql $DATABASE_URL -f database/phase2-additions.sql
-psql $DATABASE_URL -f database/phase3-additions.sql
-```
-
-### Windows: 'psql' not recognised
-
-Add PostgreSQL to your PATH:
-```
-1. Search "Environment Variables" in Windows search
-2. Click "Environment Variables"
-3. Under System Variables → find "Path" → click Edit
-4. Add new: C:\Program Files\PostgreSQL\15\bin
-5. Click OK → restart PowerShell
-```
-
-### node_modules missing after unzip
-
-```bash
-cd zkc-build
+**"Cannot find module" error**
+```powershell
 npm install
 ```
 
-### Login shows "demo mode" — not calling real API
+**"EADDRINUSE port 3000"** — port already in use
+```powershell
+# Find what's using port 3000
+netstat -ano | findstr :3000
+# Kill it (replace PID with the number shown)
+taskkill /PID 12345 /F
+```
 
-This is a known issue. The fix is to edit `auth/login.html` and remove the demo fallback block. The API endpoint works correctly — this is a frontend wiring task.
+**"SSL connection failed"** — Neon URL missing ?sslmode=require
+Make sure your DATABASE_URL ends with `?sslmode=require`
+
+**Page shows "API error"** — API server not running
+Make sure `npm run dev` is running in a PowerShell window
+
+**"fetch failed" on file://** — open via serve instead
+Use `npx serve . -p 8080` and http://localhost:8080
 
 ---
 
-## PART 7 — View your database (optional)
+## npm commands reference
 
-### Using pgAdmin (GUI — recommended for beginners)
-
-1. Download pgAdmin 4 from pgadmin.org
-2. Open pgAdmin → Servers → right-click → Register Server
-3. Name: ZKCommerce Local
-4. Connection tab:
-   - Host: localhost
-   - Port: 5432
-   - Database: zkcommerce
-   - Username: postgres
-   - Password: your password
-5. Save → expand the server → Databases → zkcommerce → Schemas → Tables
-6. You should see all 36 tables
-
-### Using psql (command line)
-
-```bash
-psql $DATABASE_URL
-
-# Useful commands:
-\dt              # list all tables
-\d users         # describe users table
-SELECT * FROM users;
-SELECT * FROM stores;
-SELECT COUNT(*) FROM products;
-\q               # quit
+```powershell
+npm run dev              # Start API (auto-restart on changes)
+npm start                # Start API (production mode)
+npm run db:migrate       # Run database migration
+npm run health:dev       # Check all services status
 ```
 
 ---
 
-## PART 8 — What works locally vs what needs live services
+## Quick 5-command setup (copy-paste)
 
-| Feature | Works locally? | What's needed for full functionality |
-|---|---|---|
-| API server start | ✅ Yes | Just `npm run dev` |
-| Database (all 36 tables) | ✅ Yes | PostgreSQL running locally |
-| Auth (register/login/JWT) | ✅ Yes | Works fully |
-| Product CRUD | ✅ Yes | Works fully |
-| Order creation | ✅ Yes | Works fully |
-| Cart management | ✅ Yes | Works fully |
-| GST report (JSON) | ✅ Yes | Works fully |
-| GSTR-1 CSV export | ✅ Yes | Works fully |
-| Loyalty points | ✅ Yes | Works fully |
-| Razorpay payments | ⚠️ Partial | Get free test keys at razorpay.com |
-| Email (welcome/order) | ⚠️ Partial | Need Gmail App Password or Resend key |
-| WhatsApp alerts | ❌ Needs key | Gupshup API key required |
-| Delhivery AWB | ⚠️ Stub | Returns fake AWB locally (real API needs key) |
-| Image upload | ⚠️ Partial | Saves to memory — need R2/S3 for persistence |
-| Frontend ↔ API | ⚠️ Partial | 2 of 47 pages wired; rest show demo data |
-
----
-
-## Quick reference — daily commands
-
-```bash
-# Start everything
-cd zkc-build
-npm run dev          # starts API on http://localhost:3000
-
-# Check API health
-curl http://localhost:3000/health
-
-# View logs (nodemon shows in terminal)
-# Press Ctrl+C to stop
-
-# Reset database (WARNING: deletes all data)
-dropdb zkcommerce && createdb zkcommerce && npm run db:migrate
-
-# Update code without restart (nodemon auto-restarts on file save)
-# Just save any file in api/ and the server reloads automatically
+```powershell
+cd "D:\ZKCommerce\zkc-build"
+npm install
+copy .env.example .env
+# Edit .env with your Neon URL and JWT secret, then:
+node deployment/scripts/neon-migrate.js
+npm run dev
 ```
 
----
-
-## Folder structure reminder
-
-```
-zkc-build/
-├── api/
-│   ├── server.js          ← API server — start with npm run dev
-│   ├── phase2-routes.js   ← Additional routes (auto-loaded)
-│   ├── whatsapp.js        ← WhatsApp integration
-│   └── jobs.js            ← Background job queue
-├── database/
-│   ├── schema.sql         ← Run first
-│   ├── phase1-additions.sql ← Run second
-│   ├── phase2-additions.sql ← Run third
-│   └── phase3-additions.sql ← Run fourth
-├── auth/                  ← Login, register pages
-├── merchant/              ← Merchant dashboard pages
-├── storefront/            ← Customer-facing pages
-├── admin/                 ← Admin panel pages
-├── assets/
-│   ├── css/design-system.css
-│   └── js/app.js
-├── .env                   ← YOUR config (not in git)
-├── .env.example           ← Template
-├── package.json
-└── LOCAL-SETUP.md         ← This file
-```
-
----
-
-## Need help?
-
-- API not starting → check Step 10 troubleshooting
-- Database errors → check Step 8, verify Step 9
-- Pages showing demo data → this is expected (frontend wiring pending)
-- Test API calls with Postman → Step 15
-
-*ZKCommerce v4.1 · ZKanadavel Infotech Pvt Ltd · Local Development Guide*
+Open browser: http://localhost:8080/auth/login.html
+(in second terminal: `npx serve . -p 8080`)

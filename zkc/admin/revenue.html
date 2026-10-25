@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Revenue — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+</head>
+<body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>
+    <span>ZKCommerce</span>
+    <span style="font-size:9px;background:rgba(255,107,0,.3);color:#FF9A4D;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800">ADMIN</span>
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Platform</div>
+    <a href="admin/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a>
+<a href="admin/merchants.html" class="zk-sidebar-link "><span class="sl-icon">🏪</span>Merchants</a>
+<a href="admin/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>All orders</a>
+<a href="admin/revenue.html" class="zk-sidebar-link active"><span class="sl-icon">💰</span>Revenue</a>
+<a href="admin/plans.html" class="zk-sidebar-link "><span class="sl-icon">📋</span>Plans & billing</a>
+<a href="admin/reviews.html" class="zk-sidebar-link "><span class="sl-icon">⭐</span>Reviews</a>
+<a href="admin/migrations.html" class="zk-sidebar-link "><span class="sl-icon">🚀</span>Migrations</a>
+<a href="admin/support.html" class="zk-sidebar-link "><span class="sl-icon">💬</span>Support tickets</a>
+<a href="admin/settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Platform settings</a>
+<a href="admin/gaps.html" class="zk-sidebar-link "><span class="sl-icon">🔍</span>Gap analysis</a>
+
+  </nav>
+  <div class="zk-sidebar-footer">
+    <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:6px">ZKCommerce Admin v3.0</div>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a>
+  </div>
+</aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Revenue</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span style="font-size:12px;color:var(--zk-muted)">🟢 All systems operational</span>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff">A</div>
+  </div>
+</div><div class="zk-page">
+<div class="zk-page-header flex-between">
+  <div><div class="zk-page-title">Revenue & Finance</div><div class="zk-page-sub">Platform subscription revenue and MRR</div></div>
+  <button class="btn btn-secondary btn-sm" onclick="toast.info('Revenue report exported')">↓ Export P&L</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+  <div class="zk-stat-card"><div class="zk-stat-label">MRR</div><div class="zk-stat-value fire-text">₹18.4L</div><div class="zk-stat-change up">↑ 22% MoM</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">ARR</div><div class="zk-stat-value">₹2.21Cr</div><div class="zk-stat-change up">↑ 34% YoY</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Churn rate</div><div class="zk-stat-value">1.2%</div><div class="zk-stat-change up">↓ 0.3% improved</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">LTV (avg)</div><div class="zk-stat-value">₹28,400</div><div class="zk-stat-change up">↑ ₹2,100 vs Q1</div></div>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px">
+  <div class="zk-chart-wrap">
+    <div class="zk-chart-header"><div class="zk-chart-title">MRR breakdown by plan</div></div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:12px">
+      <div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:13px;font-weight:600">Growth (₹799 × 1,240)</span><span style="font-weight:800;font-family:var(--font-display)">₹9.9L</span></div><div style="height:10px;background:var(--zk-chalk);border-radius:5px"><div style="width:54%;height:100%;background:var(--g-fire);border-radius:5px"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:13px;font-weight:600">Enterprise (₹1,999 × 172)</span><span style="font-weight:800;font-family:var(--font-display)">₹3.4L</span></div><div style="height:10px;background:var(--zk-chalk);border-radius:5px"><div style="width:18%;height:100%;background:var(--g-brand);border-radius:5px"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:13px;font-weight:600">Starter (₹399 × 480)</span><span style="font-weight:800;font-family:var(--font-display)">₹1.9L</span></div><div style="height:10px;background:var(--zk-chalk);border-radius:5px"><div style="width:10%;height:100%;background:#22C55E;border-radius:5px"></div></div></div>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:linear-gradient(135deg,rgba(255,107,0,.08),rgba(196,30,58,.08));border-radius:10px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:700">Total MRR</span>
+      <span style="font-family:var(--font-display);font-size:24px;font-weight:800;background:var(--g-fire);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">₹18.4L</span>
+    </div>
+  </div>
+  <div class="zk-chart-wrap">
+    <div class="zk-chart-header"><div class="zk-chart-title">New vs churned</div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+      <div style="padding:14px;background:#F0FDF4;border-radius:10px"><div style="font-size:11px;font-weight:700;color:#15803D;margin-bottom:4px">NEW THIS MONTH</div><div style="font-family:var(--font-display);font-size:28px;font-weight:800;color:#15803D">+₹3.2L</div><div style="font-size:12px;color:#15803D">48 new merchants</div></div>
+      <div style="padding:14px;background:#FEF2F2;border-radius:10px"><div style="font-size:11px;font-weight:700;color:#DC2626;margin-bottom:4px">CHURNED THIS MONTH</div><div style="font-family:var(--font-display);font-size:28px;font-weight:800;color:#DC2626">−₹0.4L</div><div style="font-size:12px;color:#DC2626">28 cancelled (1.2%)</div></div>
+    </div>
+  </div>
+</div>
+<div class="zk-table-wrap">
+  <div style="padding:14px 20px;border-bottom:1px solid var(--zk-border);font-size:14px;font-weight:800">Recent subscription transactions</div>
+  <table class="zk-table">
+    <thead><tr><th>Merchant</th><th>Plan</th><th>Amount</th><th>Type</th><th>Date</th></tr></thead>
+    <tbody>
+      <tr><td class="col-primary">Salem Jewellers</td><td>Enterprise</td><td>₹1,999</td><td><span class="badge badge-green">New</span></td><td>17 Jul</td></tr>
+      <tr><td class="col-primary">Rajan Textiles</td><td>Growth</td><td>₹799</td><td><span class="badge badge-brand">Renewal</span></td><td>16 Jul</td></tr>
+      <tr><td class="col-primary">Chennai Electronics</td><td>Enterprise</td><td>₹1,999</td><td><span class="badge badge-brand">Renewal</span></td><td>15 Jul</td></tr>
+      <tr><td class="col-primary">Trichy Foods</td><td>Starter → Growth</td><td>₹400</td><td><span class="badge badge-fire">Upgrade</span></td><td>14 Jul</td></tr>
+    </tbody>
+  </table>
+</div>
+</div></div></div>
+<script src="../assets/js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+var revenueChart=null, planChart=null;
+
+async function loadRevenue(period){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  period=period||'30days';
+  try{
+    var r=await fetch(API_BASE+'/admin/revenue?period='+period,
+      {headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+
+    // Stats
+    var totalRev=d.daily.reduce(function(s,row){return s+parseFloat(row.revenue||0);},0);
+    var totalOrd=d.daily.reduce(function(s,row){return s+parseInt(row.orders||0);},0);
+    setEl('total-revenue', fmt.inrCompact(totalRev));
+    setEl('total-orders',  totalOrd);
+    setEl('avg-order',     totalOrd>0?fmt.inr(totalRev/totalOrd):'₹0');
+
+    // MRR from plan distribution
+    var mrr=0;
+    d.byPlan.forEach(function(p){
+      var rates={starter:399,growth:799,enterprise:1999};
+      mrr+=(rates[p.plan]||0)*parseInt(p.stores||0);
+    });
+    setEl('platform-mrr', fmt.inrCompact(mrr));
+
+    // Revenue line chart
+    var labels=d.daily.map(function(row){return row.date?row.date.toString().slice(5,10):'-';});
+    var revenues=d.daily.map(function(row){return parseFloat(row.revenue||0);});
+    var ctx1=document.getElementById('revenue-chart');
+    if(ctx1){
+      if(revenueChart) revenueChart.destroy();
+      revenueChart=new Chart(ctx1.getContext('2d'),{
+        type:'line',
+        data:{
+          labels:labels,
+          datasets:[{
+            label:'Daily Revenue (₹)',
+            data:revenues,
+            borderColor:'#FF6B00',
+            backgroundColor:'rgba(255,107,0,.1)',
+            tension:.4,fill:true,pointRadius:3
+          }]
+        },
+        options:{responsive:true,plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true,ticks:{callback:function(v){return '₹'+v.toLocaleString('en-IN');}}}}}
+      });
+    }
+
+    // Plan pie chart
+    var ctx2=document.getElementById('plan-chart');
+    if(ctx2&&d.byPlan.length){
+      if(planChart) planChart.destroy();
+      planChart=new Chart(ctx2.getContext('2d'),{
+        type:'doughnut',
+        data:{
+          labels:d.byPlan.map(function(p){return p.plan;}),
+          datasets:[{
+            data:d.byPlan.map(function(p){return p.stores;}),
+            backgroundColor:['#FF6B00','#4F46E5','#22C55E','#F59E0B']
+          }]
+        },
+        options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+      });
+    }
+
+    // Top stores table
+    var tbody=document.getElementById('top-stores-tbody');
+    if(tbody&&d.topStores&&d.topStores.length){
+      tbody.innerHTML=d.topStores.map(function(s,i){
+        return '<tr><td style="font-weight:800;color:#FF6B00">'+(i+1)+'</td>'
+          +'<td class="col-primary">'+s.name+'</td>'
+          +'<td><span class="badge">'+s.plan+'</span></td>'
+          +'<td>'+fmt.inr(s.gmv)+'</td>'
+          +'<td>'+s.orders+'</td></tr>';
+      }).join('');
+    }
+  }catch(e){console.warn('Admin revenue:',e.message);}
+}
+
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',function(){loadRevenue('30days');});
+</script>
+</body>
+</html>

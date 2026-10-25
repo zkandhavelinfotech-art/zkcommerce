@@ -1,0 +1,37 @@
+{
+  "project": {
+    "name": "ZKCommerce",
+    "version": "4.1.0",
+    "description": "B2C SaaS eCommerce platform for Indian merchants",
+    "company": "ZKanadavel Infotech Pvt Ltd",
+    "domain": "zkcommerce.in",
+    "api_domain": "api.zkcommerce.in",
+    "app_domain": "app.zkcommerce.in"
+  },
+  "stack": {
+    "runtime": "node",
+    "runtime_version": "20",
+    "package_manager": "npm",
+    "backend_framework": "express",
+    "frontend": "vanilla-html",
+    "database": "postgresql",
+    "database_version": "15",
+    "cache": "redis",
+    "reverse_proxy": "nginx",
+    "container": "docker",
+    "cloud_provider": "railway",
+    "cdn": "cloudflare",
+    "storage": "cloudflare-r2",
+    "email": "resend",
+    "monitoring": "sentry",
+    "payments": "razorpay",
+    "whatsapp": "gupshup"
+  },
+  "ports": {
+    "api": 3000,
+    "frontend": 80,
+    "postgres": 5432,
+    "redis": 6379
+  },
+  "environments": ["development", "testing", "staging", "production"]
+}

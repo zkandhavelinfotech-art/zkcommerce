@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Next Release Roadmap — ZKCommerce v4.1 Final → v5.0 → v6.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+*{box-sizing:border-box}
+body{background:#0F0F1A;color:#E2E8F0;font-family:'Plus Jakarta Sans',sans-serif;margin:0}
+.pg{max-width:1200px;margin:0 auto;padding:28px 5%}
+.rg-hdr{background:linear-gradient(180deg,#1a0530 0%,#0F0F1A 100%);padding:52px 5% 36px;text-align:center}
+.rg-hdr h1{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,50px);font-weight:800;background:linear-gradient(135deg,#FF6B00,#FF9A4D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px}
+.rg-hdr p{font-size:15px;color:#94A3B8;max-width:600px;margin:0 auto 20px}
+.rg-meta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.rg-meta span{font-size:11px;color:#64748B;background:#1E1E2E;padding:5px 14px;border-radius:99px;border:1px solid #2D2D40}
+.rg-meta b{color:#94A3B8}
+.rg-nav{display:flex;background:#1E1E2E;border-radius:14px;padding:5px;margin-bottom:28px;overflow-x:auto;gap:2px}
+.rn{padding:9px 16px;font-size:12px;font-weight:700;color:#64748B;cursor:pointer;border-radius:9px;white-space:nowrap;transition:all .15s}
+.rn.on{background:#FF6B00;color:#fff}
+.panel{display:none}.panel.on{display:block}
+.sec-t{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#F1F5F9;margin-bottom:4px}
+.sec-s{font-size:12px;color:#64748B;margin-bottom:20px}
+.sum-g{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.sum{background:#1E1E2E;border:1px solid #2D2D40;border-radius:12px;padding:16px;text-align:center}
+.sum-n{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;line-height:1;margin-bottom:4px}
+.sum-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569}
+.sum-b{height:4px;background:#2D2D40;border-radius:2px;margin-top:10px;overflow:hidden}
+.sum-f{height:100%;border-radius:2px}
+.vban{display:inline-flex;align-items:center;gap:8px;padding:7px 18px;border-radius:99px;font-size:12px;font-weight:800;margin-bottom:18px}
+.v41{background:linear-gradient(135deg,#FF6B00,#FF9A4D);color:#fff}
+.v50{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff}
+.v60{background:#1E1E2E;color:#64748B;border:1px solid #2D2D40}
+.cbar{background:#1E1E2E;border:1px solid #2D2D40;border-radius:12px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:16px}
+.cbar-l{min-width:210px;font-size:12px;font-weight:700;color:#E2E8F0}
+.cbar-t{flex:1;height:7px;background:#2D2D40;border-radius:4px;overflow:hidden}
+.cbar-f{height:100%;border-radius:4px}
+.cbar-p{min-width:44px;text-align:right;font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
+.cbar-n{font-size:11px;color:#64748B;min-width:160px;text-align:right}
+.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:22px}
+.fc{background:#1E1E2E;border:1px solid #2D2D40;border-radius:13px;padding:16px;position:relative;overflow:hidden}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.fc-done::before{background:#22C55E}.fc-part::before{background:#F59E0B}
+.fc-miss::before{background:#EF4444}.fc-v5::before{background:linear-gradient(90deg,#4F46E5,#7C3AED)}
+.fc-v6::before{background:#374151}.fc-new::before{background:linear-gradient(90deg,#FF6B00,#4F46E5)}
+.f-title{font-weight:800;font-size:13px;color:#F1F5F9;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.f-desc{font-size:12px;color:#94A3B8;line-height:1.6;margin-bottom:8px}
+.f-rev{font-size:11px;color:#4ADE80;margin-bottom:8px}
+.f-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.tag-api{background:#1E3A5F;color:#60A5FA}.tag-ui{background:#1E3A2F;color:#4ADE80}
+.tag-db{background:#2D1B5A;color:#A78BFA}.tag-ext{background:#3B2A1A;color:#FB923C}
+.tag-code{background:#1E2D3B;color:#38BDF8}.tag-new{background:#14532D;color:#4ADE80}
+.sb{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;margin-bottom:7px}
+.sb-done{background:#14532D;color:#4ADE80;border:1px solid #166534}
+.sb-part{background:#3B2A00;color:#FCD34D;border:1px solid #92400E}
+.sb-miss{background:#3B0D0D;color:#F87171;border:1px solid #7F1D1D}
+.sb-v5{background:#1E1B4B;color:#818CF8;border:1px solid #3730A3}
+.sb-new{background:#1C2800;color:#A3E635;border:1px solid #3F6212}
+.sb-mv{background:#0C1A33;color:#60A5FA;border:1px solid #1E3A5F}
+.rt{width:100%;border-collapse:collapse;background:#1E1E2E;border-radius:13px;overflow:hidden;border:1px solid #2D2D40;margin-bottom:20px;font-size:12px}
+.rt th{padding:9px 13px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#475569;background:#151520;border-bottom:1px solid #2D2D40;text-align:left}
+.rt td{padding:10px 13px;border-bottom:1px solid #1A1A2E;vertical-align:top;line-height:1.5;color:#CBD5E1}
+.rt tr:last-child td{border-bottom:none}
+.rt tr:hover td{background:#252535}
+.fn{font-weight:700;color:#F1F5F9}.fd{font-size:11px;color:#64748B}
+.tl-wrap{background:#1E1E2E;border:1px solid #2D2D40;border-radius:13px;padding:24px 24px 4px}
+.tl-row{display:flex;margin-bottom:20px;position:relative}
+.tl-row::before{content:'';position:absolute;left:19px;top:22px;bottom:-20px;width:2px;background:#2D2D40}
+.tl-row:last-child::before{display:none}
+.tl-dot{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;margin-right:14px;z-index:1}
+.tl-head{display:flex;align-items:center;gap:10px;margin-bottom:3px}
+.tl-title{font-weight:800;font-size:13px;color:#F1F5F9}
+.tl-date{font-size:10px;color:#64748B;background:#151520;padding:2px 7px;border-radius:4px}
+.tl-body{font-size:12px;color:#94A3B8;line-height:1.5}
+.tl-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.box{background:#1E1E2E;border:1px solid #2D2D40;border-radius:13px;padding:16px}
+.box h4{font-weight:800;font-size:13px;margin-bottom:10px}
+.env-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.env-c{background:#1E1E2E;border:2px solid;border-radius:13px;padding:18px;text-align:center}
+.env-pct{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;line-height:1;margin:8px 0 4px}
+@media(max-width:760px){.sum-g,.env-g,.two,.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.sum-g,.env-g{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="rg-hdr">
+  <div style="display:inline-flex;align-items:center;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.3);border-radius:99px;padding:5px 16px;font-size:10px;font-weight:800;color:#FF9A4D;margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em">Next Release Roadmap — August 2026</div>
+  <h1>ZKCommerce Roadmap<br>v4.1 Final → v5.0 → v6.0</h1>
+  <p>v4.1 scope expanded: Instagram shop, BNPL, affiliates, recurring orders, abandoned cart cron all moved into v4.1. 129 API routes. 55 pages. 0 unwired.</p>
+  <div class="rg-meta">
+    <span>v4.1 pages: <b>55 (47 wired + 8 static)</b></span>
+    <span>API routes: <b>129</b></span>
+    <span>DB tables: <b>43</b></span>
+    <span>Unwired pages: <b>0</b></span>
+    <span>v5.0: <b>Q4 2026</b></span>
+  </div>
+</div>
+
+<div class="pg">
+  <div class="rg-nav">
+    <div class="rn on" onclick="show('overview',this)">Overview</div>
+    <div class="rn" onclick="show('moved',this)">Moved to v4.1</div>
+    <div class="rn" onclick="show('v41gaps',this)">v4.1 gaps</div>
+    <div class="rn" onclick="show('v50',this)">v5.0 scope</div>
+    <div class="rn" onclick="show('v60',this)">v6.0 vision</div>
+    <div class="rn" onclick="show('timeline',this)">Timeline</div>
+    <div class="rn" onclick="show('compare',this)">Full comparison</div>
+    <div class="rn" onclick="show('deploy',this)">Deploy checklist</div>
+  </div>
+
+<!-- OVERVIEW -->
+<div class="panel on" id="panel-overview">
+  <div class="sec-t">Platform snapshot — v4.1 final scope</div>
+  <div class="sec-s">6 features moved from v5.0 into v4.1. 55 pages, 129 routes, 0 unwired pages.</div>
+  <div class="env-g">
+    <div class="env-c" style="border-color:#22C55E">
+      <div style="font-size:22px">&#128187;</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;margin-top:6px">Development</div>
+      <div class="env-pct" style="color:#22C55E">90%</div>
+      <div style="display:inline-block;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;background:#14532D;color:#4ADE80;border:1px solid #166534;margin-top:6px">GO — Run now</div>
+      <div style="font-size:11px;color:#64748B;margin-top:8px;line-height:1.5">All 55 pages wired. GST PDF, blog, flash, affiliates, recurring, meta sync, BNPL all coded.</div>
+    </div>
+    <div class="env-c" style="border-color:#F59E0B">
+      <div style="font-size:22px">&#9888;</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;margin-top:6px">Staging</div>
+      <div class="env-pct" style="color:#D97706">54%</div>
+      <div style="display:inline-block;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;background:#3B2A00;color:#FCD34D;border:1px solid #92400E;margin-top:6px">After 3 fixes</div>
+      <div style="font-size:11px;color:#64748B;margin-top:8px;line-height:1.5">Railway env vars + Neon migration + Razorpay test keys.</div>
+    </div>
+    <div class="env-c" style="border-color:#EF4444">
+      <div style="font-size:22px">&#128683;</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;margin-top:6px">Production</div>
+      <div class="env-pct" style="color:#DC2626">42%</div>
+      <div style="display:inline-block;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;background:#3B0D0D;color:#F87171;border:1px solid #7F1D1D;margin-top:6px">HOLD 4–6 weeks</div>
+      <div style="font-size:11px;color:#64748B;margin-top:8px;line-height:1.5">Razorpay KYC + OWASP + load test + pilot merchants.</div>
+    </div>
+  </div>
+  <div class="sum-g">
+    <div class="sum"><div class="sum-n" style="color:#22C55E">55</div><div class="sum-l">HTML pages</div><div style="font-size:10px;color:#475569;margin-top:3px">47 wired + 8 static</div><div class="sum-b"><div class="sum-f" style="width:100%;background:#22C55E"></div></div></div>
+    <div class="sum"><div class="sum-n" style="color:#FF6B00">129</div><div class="sum-l">API routes</div><div style="font-size:10px;color:#475569;margin-top:3px">up from 83 in v4.0</div><div class="sum-b"><div class="sum-f" style="width:100%;background:#FF6B00"></div></div></div>
+    <div class="sum"><div class="sum-n" style="color:#818CF8">43</div><div class="sum-l">DB tables</div><div style="font-size:10px;color:#475569;margin-top:3px">36 v4 + 7 v5</div><div class="sum-b"><div class="sum-f" style="width:97%;background:#818CF8"></div></div></div>
+    <div class="sum"><div class="sum-n" style="color:#4ADE80">6</div><div class="sum-l">Moved to v4.1</div><div style="font-size:10px;color:#475569;margin-top:3px">from v5.0 scope</div><div class="sum-b"><div class="sum-f" style="width:100%;background:#4ADE80"></div></div></div>
+  </div>
+  <div class="vban v41">&#9889; v4.1 completion by module</div>
+  <div id="v41-bars"></div>
+</div>
+
+<!-- MOVED TO V4.1 -->
+<div class="panel" id="panel-moved">
+  <div class="sec-t">Moved from v5.0 → v4.1 (this sprint)</div>
+  <div class="sec-s">These 6 features were originally planned for v5.0 but are now coded and wired in v4.1.</div>
+  <div class="f-grid" id="moved-cards"></div>
+  <div style="background:#1E1E2E;border:1px solid #2D2D40;border-radius:13px;padding:18px;margin-top:8px">
+    <div style="font-weight:800;color:#F1F5F9;margin-bottom:12px;font-size:14px">Updated scope boundary — what is v4.1 vs v5.0</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:12px">
+      <div>
+        <div style="color:#4ADE80;font-weight:800;margin-bottom:8px">v4.1 INCLUDES (new additions)</div>
+        <div style="color:#94A3B8;line-height:2">
+          &#10003; Abandoned cart cron (endpoint active)<br>
+          &#10003; Instagram/Meta shop sync (skeleton + UI)<br>
+          &#10003; BNPL/EMI (initiate + verify + webhook)<br>
+          &#10003; Affiliate/influencer system (full CRUD)<br>
+          &#10003; Recurring/subscription orders (full CRUD)<br>
+          &#10003; WhatsApp template approval (6 templates coded)
+        </div>
+      </div>
+      <div>
+        <div style="color:#818CF8;font-weight:800;margin-bottom:8px">v5.0 STILL CONTAINS</div>
+        <div style="color:#94A3B8;line-height:2">
+          &#9643; Next.js SSR storefront migration<br>
+          &#9643; Tally ERP XML integration<br>
+          &#9643; AI product descriptions (Claude API)<br>
+          &#9643; Affiliate 2.0 (tiers, influencer portal)<br>
+          &#9643; Multi-courier live rates (real APIs)<br>
+          &#9643; Amazon/Flipkart marketplace sync<br>
+          &#9643; AWS App Runner migration (at 5000+ merchants)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- V4.1 GAPS -->
+<div class="panel" id="panel-v41gaps">
+  <div class="sec-t">v4.1 — Remaining gaps (12 items)</div>
+  <div class="sec-s">Ordered by priority. Mostly config and external services — not new code.</div>
+  <div class="f-grid" id="gap-cards"></div>
+</div>
+
+<!-- V5.0 -->
+<div class="panel" id="panel-v50">
+  <div class="vban v50">&#128640; v5.0 — Q4 2026 (updated scope)</div>
+  <div class="sec-s">After moving 6 features to v4.1, v5.0 focuses on platform scale, Next.js SSR, and enterprise features.</div>
+  <div class="f-grid" id="v50-cards"></div>
+</div>
+
+<!-- V6.0 -->
+<div class="panel" id="panel-v60">
+  <div class="vban v60">&#127758; v6.0 — 2027</div>
+  <div class="sec-s">Scale features requiring v5 live with 1,000+ merchants and ₹1Cr+ monthly GMV.</div>
+  <div class="f-grid" id="v60-cards"></div>
+</div>
+
+<!-- TIMELINE -->
+<div class="panel" id="panel-timeline">
+  <div class="sec-t">Full release timeline</div>
+  <div class="tl-wrap" id="tl-body"></div>
+</div>
+
+<!-- COMPARE -->
+<div class="panel" id="panel-compare">
+  <div class="sec-t">v4.1 vs v5.0 vs v6.0 — every feature</div>
+  <table class="rt">
+    <thead><tr><th>Feature</th><th>v4.1</th><th>v5.0</th><th>v6.0</th><th>Notes</th></tr></thead>
+    <tbody id="cmp-tbody"></tbody>
+  </table>
+</div>
+
+<!-- DEPLOY -->
+<div class="panel" id="panel-deploy">
+  <div class="sec-t">Deployment checklist — 18 steps to production</div>
+  <table class="rt">
+    <thead><tr><th>#</th><th>Item</th><th>Env</th><th>Time</th><th>How to fix</th></tr></thead>
+    <tbody id="deploy-tbody"></tbody>
+  </table>
+</div>
+
+</div>
+<script src="../assets/js/app.js"></script>
+<script>
+function show(id,el){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.rn').forEach(function(t){t.classList.remove('on');});
+  document.getElementById('panel-'+id).classList.add('on');
+  el.classList.add('on'); window.scrollTo(0,0);
+}
+var TC={api:'tag-api',ui:'tag-ui',db:'tag-db',ext:'tag-ext',code:'tag-code',new:'tag-new'};
+var SC={done:'fc-done',part:'fc-part',miss:'fc-miss',v5:'fc-v5',v6:'fc-v6',new:'fc-new'};
+function sb(st){
+  return {done:'<span class="sb sb-done">&#10003; Done</span>',
+          part:'<span class="sb sb-part">&#9658; Partial</span>',
+          miss:'<span class="sb sb-miss">&#10007; Missing</span>',
+          v5:  '<span class="sb sb-v5">&#128640; v5.0</span>',
+          new: '<span class="sb sb-new">&#10024; NEW</span>',
+          mv:  '<span class="sb sb-mv">&#8594; Moved to v4.1</span>'}[st]||'';
+}
+function card(f){
+  return '<div class="fc '+(SC[f.st]||'fc-miss')+'">'
+    +sb(f.st)+(f.isNew?sb('new'):'')+(f.isMv?sb('mv'):'')
+    +'<div class="f-title">'+f.t+'<span style="font-size:11px;color:#F59E0B;font-weight:700;margin-left:auto">'+f.e+'</span></div>'
+    +'<div class="f-desc">'+f.d+'</div>'
+    +(f.rev?'<div class="f-rev">&#8599; '+f.rev+'</div>':'')
+    +(f.tags?'<div class="f-tags">'+f.tags.map(function(t){return '<span class="tag '+(TC[t]||'tag-code')+'">'+t+'</span>';}).join('')+'</div>':'')
+    +'</div>';
+}
+function bar(l,p,c,n){
+  return '<div class="cbar"><div class="cbar-l">'+l+'</div>'
+    +'<div class="cbar-t"><div class="cbar-f" style="width:'+p+'%;background:'+c+'"></div></div>'
+    +'<div class="cbar-p" style="color:'+c+'">'+p+'%</div>'
+    +'<div class="cbar-n">'+n+'</div></div>';
+}
+
+document.getElementById('v41-bars').innerHTML=[
+  bar('Auth + store creation + settings', 100,'#22C55E','Complete'),
+  bar('Product CRUD + variants + categories',100,'#22C55E','Complete'),
+  bar('Orders + returns + payouts',       100,'#22C55E','Complete'),
+  bar('Razorpay payments + checkout',      90,'#F59E0B','Needs live keys'),
+  bar('GST report + PDF invoice',          85,'#F59E0B','PDF: npm install puppeteer'),
+  bar('Blog + flash sales (API + UI)',     100,'#22C55E','Complete'),
+  bar('Abandoned cart cron',               70,'#F59E0B','Endpoint ready — cron scheduler needed'),
+  bar('WhatsApp 6 templates',              60,'#F59E0B','Code done — Meta approval pending'),
+  bar('Instagram/Meta shop sync',          40,'#EF4444','Skeleton done — Meta credentials needed'),
+  bar('BNPL/EMI (Simpl/LazyPay/Bajaj)',   35,'#EF4444','Routes live — SDK integration needed'),
+  bar('Affiliates + recurring orders',     95,'#22C55E','API + UI complete'),
+  bar('Admin (revenue, merchant, plans)',  100,'#22C55E','Complete'),
+  bar('Image upload (R2)',                  50,'#EF4444','Multer ready — R2 bucket needed'),
+  bar('Railway deployment',                70,'#F59E0B','Env vars needed'),
+  bar('Vercel deployment',                 80,'#F59E0B','Root redirect fixed'),
+].join('');
+
+// Moved to v4.1
+var MOVED=[
+  {t:'Abandoned Cart WA Recovery',  st:'part',isMv:true,e:'1 day (cron setup)',  tags:['api','ext'],
+   d:'POST /api/cron/abandoned-carts live. WA.abandonedCart() coded. Add Upstash QStash job to call every 60 min + Gupshup API key.',
+   rev:'22% avg cart recovery rate'},
+  {t:'Instagram/Meta Shop Sync',    st:'part',isMv:true,e:'2 weeks (Meta setup)',tags:['api','ui','ext'],
+   d:'GET/POST /api/meta/status + /sync live. merchant/meta-shop.html built. Needs: Meta Business account + Facebook App + Catalogue ID + access token.',
+   rev:'2x product reach via Instagram'},
+  {t:'BNPL / No-Cost EMI',          st:'part',isMv:true,e:'1 week (SDK work)',   tags:['api','ext'],
+   d:'POST /api/payments/bnpl/initiate + /verify + /webhook all live. Integrate Simpl, LazyPay, Bajaj Finserv SDKs. Wire to checkout.html EMI option.',
+   rev:'35% higher avg order value'},
+  {t:'Affiliate/Influencer System', st:'done',isMv:true,e:'Done',               tags:['api','ui'],
+   d:'GET/POST /api/affiliates + /track + /stats all live. merchant/affiliates.html built. Unique ref codes, commission tracking, link copying.',
+   rev:'Viral growth channel for merchants'},
+  {t:'Recurring Subscription Orders',st:'done',isMv:true,e:'Done',              tags:['api','ui','db'],
+   d:'GET/POST/PUT /api/recurring + /cron/recurring-orders all live. merchant/subscriptions.html built. recurring_orders table in v5-additions.sql.',
+   rev:'Predictable MRR for merchants'},
+  {t:'WhatsApp Template Approval',  st:'part',isMv:true,e:'2 days (Meta wait)', tags:['ext'],
+   d:'6 templates coded in whatsapp.js: order_confirmed, order_shipped, cod_otp, low_stock, abandoned_cart, flash_sale. Submit at business.facebook.com.',
+   rev:'Enables all WA automation'},
+];
+document.getElementById('moved-cards').innerHTML=MOVED.map(card).join('');
+
+// v4.1 gaps
+var GAPS=[
+  {t:'Neon DB migration',           st:'miss',e:'10 min', tags:['code'],  rev:'Critical — DB must exist before API starts',
+   d:'node deployment/scripts/neon-migrate.js "postgresql://neondb_owner:PASS@host/db?sslmode=require" — URL value only, no KEY= prefix.'},
+  {t:'Railway environment variables',st:'miss',e:'15 min',tags:['config'],rev:'Critical — API crashes on start without these',
+   d:'Railway → Variables → Raw Editor → paste: DATABASE_URL, JWT_SECRET, PORT=3000, NODE_ENV=production, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET.'},
+  {t:'Razorpay test keys',          st:'miss',e:'30 min', tags:['ext'],   rev:'Critical — checkout fails without keys',
+   d:'razorpay.com → Settings → API Keys → Generate test key pair. Add rzp_test_xxx and secret to Railway Variables. Test full checkout flow.'},
+  {t:'npm install puppeteer',       st:'part',e:'5 min',  tags:['code'],  rev:'GST PDF becomes real PDF (currently HTML fallback)',
+   d:'Run in project folder: npm install puppeteer. The route GET /api/invoices/:id/pdf already exists — Puppeteer activates it automatically.'},
+  {t:'Gupshup WhatsApp API key',    st:'miss',e:'2 days', tags:['ext'],   rev:'Enables all 6 WA templates + abandoned cart recovery',
+   d:'gupshup.io → WhatsApp Business API → get API key. Add GUPSHUP_API_KEY to Railway. Submit 6 templates to Meta for approval (24-48h each).'},
+  {t:'Resend email API key',        st:'miss',e:'30 min', tags:['ext'],   rev:'Order confirmation + password reset emails',
+   d:'resend.com → Create API key → add SMTP_PASS=re_xxx to Railway Variables → verify domain zkcommerce.in in Resend dashboard.'},
+  {t:'Cloudflare R2 bucket',        st:'miss',e:'30 min', tags:['ext'],   rev:'Product image upload and storage',
+   d:'Cloudflare → R2 → Create bucket "zkcommerce-production". Add R2_ACCESS_KEY, R2_SECRET_KEY, R2_BUCKET, R2_ENDPOINT to Railway Variables.'},
+  {t:'Upstash QStash cron scheduler',st:'miss',e:'1 day', tags:['config'],rev:'Abandoned cart (60min) + recurring orders (daily)',
+   d:'console.upstash.com/qstash → Schedule two cron jobs: POST /api/cron/abandoned-carts (*/60 * * * *) and POST /api/cron/recurring-orders (0 9 * * *). Use x-cron-secret header.'},
+  {t:'Meta credentials for Instagram',st:'miss',e:'2 weeks',tags:['ext'],rev:'Instagram + Facebook shop sync live',
+   d:'Meta Business account + Facebook App + Catalogue ID + long-lived access token. Add META_APP_ID, META_APP_SECRET, META_CATALOGUE_ID, META_ACCESS_TOKEN to Railway.'},
+  {t:'BNPL SDK integration',        st:'part',e:'1 week', tags:['code','ext'],rev:'No-cost EMI at checkout',
+   d:'Routes /api/payments/bnpl/* are live. Integrate: Simpl SDK (simpl.com/developers), LazyPay (lazypay.in), Bajaj Finserv (bajajfinserv.in). Wire checkout.html EMI tab.'},
+  {t:'OWASP security audit',        st:'miss',e:'3 days', tags:['ext'],   rev:'Required before production launch',
+   d:'Run OWASP ZAP on all API endpoints. Test auth brute-force, SQL injection, Razorpay webhook replay. Fix any High/Critical findings.'},
+  {t:'Razorpay live KYC + launch',  st:'miss',e:'3 days', tags:['ext'],   rev:'Real payments = real revenue',
+   d:'razorpay.com → KYC → upload company documents. Takes 2-3 business days. After approval: swap rzp_test_ keys with rzp_live_ in Railway Variables.'},
+];
+document.getElementById('gap-cards').innerHTML=GAPS.map(card).join('');
+
+// v5.0 features (updated — only what remains)
+var V50=[
+  {t:'Next.js SSR Storefront',       st:'v5',e:'4 weeks', rev:'Google indexes each merchant store', tags:['code'],
+   d:'Migrate storefront/*.html to Next.js 14 App Router. Dynamic routes: /[slug], /[slug]/products/[id]. SSR enables Google to index individual store pages.'},
+  {t:'Tally ERP XML Integration',    st:'v5',e:'2 weeks', rev:'Auto-sync orders to TallyPrime',    tags:['api','ext'],
+   d:'tally_sync_log table ready. Build XML push API. Map ZK orders to Tally voucher format. Add daily cron sync + merchant UI page.'},
+  {t:'AI Product Descriptions',      st:'v5',e:'1 week',  rev:'80% reduction in product setup time',tags:['api','code'],
+   d:'Claude API integration. Merchant uploads product image + enters name → Claude generates SEO-optimised description automatically.'},
+  {t:'Affiliate 2.0 (advanced)',      st:'v5',e:'2 weeks', rev:'Influencer portal + commission tiers',tags:['api','ui'],
+   d:'v4.1 has basic affiliates. v5 adds: commission tiers (5%/10%/15% based on volume), influencer self-registration portal, real-time analytics dashboard.'},
+  {t:'Multi-Courier Live Rates',      st:'v5',e:'1 week',  rev:'20% shipping cost savings',          tags:['api','ext'],
+   d:'POST /api/shipping/compare has hardcoded rates. Replace with real Delhivery + BlueDart + XpressBees API calls. Store rates in courier_rates table.'},
+  {t:'Amazon/Flipkart Sync',          st:'v5',e:'3 weeks', rev:'2x order volume for power merchants', tags:['api','ext'],
+   d:'Marketplace API access, product mapping, order import from Amazon/Flipkart, fulfilment sync, return reconciliation.'},
+  {t:'AWS App Runner Migration',      st:'v5',e:'At 5000+',rev:'99.99% uptime at scale',             tags:['code'],
+   d:'Mumbai VPC, autoscale, WAF, RDS Multi-AZ, Redis cluster. Required at 5000+ merchants. Migrate from Railway to AWS App Runner.'},
+];
+document.getElementById('v50-cards').innerHTML=V50.map(card).join('');
+
+// v6.0
+var V60=[
+  {t:'Multi-Language Storefront', e:'Q1 2027',d:'Tamil, Hindi, Telugu, Kannada, Malayalam. i18n + RTL support for Urdu/Arabic.'},
+  {t:'POS Physical Store App',    e:'Q3 2027',d:'iOS/Android. Barcode scanner. Cash drawer. Daily reconciliation to ZK dashboard.'},
+  {t:'Stripe International',      e:'Q1 2027',d:'USD/EUR/GBP/SGD for export merchants. Currency conversion. International tax compliance.'},
+  {t:'B2B / Wholesale Module',    e:'Q3 2027',d:'Wholesale pricing, MOQ, buyer login, net-30 payment terms, invoice-based checkout.'},
+  {t:'Subscription Commerce 2.0', e:'Q2 2027',d:'AI-driven subscription timing, pause/skip predictions, churn prevention alerts.'},
+  {t:'Offline Kiosk Mode',        e:'Q4 2027',d:'Store works without internet. Sync to cloud when connection restored.'},
+].map(function(f){return '<div class="fc fc-v6"><span class="sb" style="background:#1A1A2E;color:#64748B;border:1px solid #374151">&#127758; '+f.e+'</span><div class="f-title">'+f.t+'</div><div class="f-desc">'+f.d+'</div></div>';}).join('');
+document.getElementById('v60-cards').innerHTML=V60;
+
+// Timeline
+var TL=[
+  {ico:'&#9989;',bg:'#14532D',t:'v4.0 complete',         dt:'Jul 2026',
+   d:'48 pages, 83 API routes, 36 tables, design system, deployment manager',
+   chips:['48 pages','83 routes','36 tables'],cc:['#14532D','#4ADE80']},
+  {ico:'&#9989;',bg:'#14532D',t:'v4.1 sprint 1',         dt:'Aug 2026',
+   d:'CSS fixed, auth wired, 44 pages wired to API, admin charts, category CRUD, GST PDF, blog, flash sales',
+   chips:['44 wired','Admin charts','Blog+Flash','GST PDF'],cc:['#14532D','#4ADE80']},
+  {ico:'&#9989;',bg:'#14532D',t:'v4.1 sprint 2 — scope expanded',dt:'Aug 2026',
+   d:'6 features moved from v5→v4.1: affiliates, recurring, BNPL, meta sync, abandoned cart cron, WA templates. 55 pages, 129 routes.',
+   chips:['Affiliates','Recurring','BNPL','Meta sync','Cron','55 pages','129 routes'],cc:['#14532D','#4ADE80']},
+  {ico:'&#128315;',bg:'#7C2D12',t:'Railway + Vercel fix',  dt:'NOW',
+   d:'Fix Railway env vars. Push to GitHub. Vercel import. Test health endpoint.',
+   chips:['Railway vars','GitHub push','Vercel'],cc:['#7C2D12','#FB923C']},
+  {ico:'&#128315;',bg:'#7C2D12',t:'External services',     dt:'Week 1',
+   d:'Neon migration, Razorpay test keys, Gupshup, Resend, R2 bucket, npm install puppeteer',
+   chips:['Neon','Razorpay','Gupshup','R2','Puppeteer'],cc:['#7C2D12','#FB923C']},
+  {ico:'&#9899;',bg:'#1E3A5F',t:'Staging live',            dt:'Week 2',
+   d:'End-to-end payment test. 5 pilot merchants. Upstash QStash cron configured.',
+   chips:['E2E test','5 merchants','QStash cron'],cc:['#1E3A5F','#60A5FA']},
+  {ico:'&#9899;',bg:'#1E3A5F',t:'Meta + BNPL setup',       dt:'Week 2–3',
+   d:'Meta credentials for Instagram sync. BNPL SDK integration (Simpl/LazyPay/Bajaj). WA template approval.',
+   chips:['Meta credentials','BNPL SDKs','WA templates'],cc:['#1E3A5F','#60A5FA']},
+  {ico:'&#9899;',bg:'#1E3A5F',t:'Security + load test',    dt:'Week 3–4',
+   d:'OWASP ZAP scan. k6 100 concurrent checkouts. Razorpay live KYC approved.',
+   chips:['OWASP ZAP','k6 load test','KYC approved'],cc:['#1E3A5F','#60A5FA']},
+  {ico:'&#128640;',bg:'#1E1B4B',t:'Production launch',     dt:'Week 5–6',
+   d:'zkcommerce.in live. Live Razorpay. Sentry monitoring. First paying merchants.',
+   chips:['zkcommerce.in','Live payments','Sentry','First revenue'],cc:['#1E1B4B','#818CF8']},
+  {ico:'&#128640;',bg:'#1E1B4B',t:'v5.0 development',     dt:'Q4 2026',
+   d:'Next.js SSR, Tally ERP, AI product descriptions, Affiliate 2.0, multi-courier live rates, marketplace sync.',
+   chips:['Next.js SSR','Tally ERP','AI descriptions','Marketplace'],cc:['#1E1B4B','#818CF8']},
+  {ico:'&#127758;',bg:'#1A1A2E',t:'v6.0',                 dt:'2027',
+   d:'Multi-language, POS app, Stripe, B2B wholesale, AWS App Runner',
+   chips:['Multi-lang','POS app','Stripe','AWS'],cc:['#1A1A2E','#475569']},
+];
+document.getElementById('tl-body').innerHTML=TL.map(function(t){
+  return '<div class="tl-row"><div class="tl-dot" style="background:'+t.bg+';border:2px solid '+t.bg+'">'+t.ico+'</div>'
+    +'<div style="flex:1"><div class="tl-head"><span class="tl-title">'+t.t+'</span><span class="tl-date">'+t.dt+'</span></div>'
+    +'<div class="tl-body">'+t.d+'</div>'
+    +'<div class="tl-chips">'+t.chips.map(function(c){return '<span class="chip" style="background:'+t.cc[0]+';color:'+t.cc[1]+'">'+c+'</span>';}).join('')+'</div>'
+    +'</div></div>';
+}).join('');
+
+// Full comparison
+function vc(v){
+  if(!v||v==='—') return '<td style="color:#374151">—</td>';
+  if(v==='Done'||v==='Active'||v==='Live') return '<td style="color:#4ADE80;font-weight:700">'+v+'</td>';
+  if(v==='No') return '<td style="color:#374151">No</td>';
+  var isNew=v.includes('★');
+  return '<td style="color:'+(isNew?'#A3E635':v.startsWith('+')?'#818CF8':'#FCD34D')+';font-weight:600">'+v+'</td>';
+}
+var CMP=[
+  ['Auth (login/register/forgot/reset)','Done','Same','+ SSO/OAuth',''],
+  ['Store creation + wizard',           'Done','Same','+ AI builder',''],
+  ['Product CRUD',                      'Done','Same','Same',''],
+  ['Product images (R2)',               'Partial','+ Full R2','Same','v4.1: Multer ready; v5: R2 configured'],
+  ['Category create UI',                'Done','Same','Same',''],
+  ['Orders + returns + payouts',        'Done','Same','Same',''],
+  ['Razorpay checkout',                 'Partial*','+ BNPL live ★','+ Stripe intl','*needs live keys'],
+  ['BNPL / No-cost EMI',               'Routes live ★','+ SDK integration','Same','Simpl/LazyPay/Bajaj'],
+  ['GST report + invoice PDF',          'Partial','+ Puppeteer ★','+ Tally push','v5: auto-sync to Tally'],
+  ['WhatsApp 6 templates',             'Coded ★','Templates live','+ AI replies','Meta approval pending'],
+  ['Abandoned cart recovery',           'Cron ready ★','Same + QStash','+ AI timing','60min idle trigger'],
+  ['Blog + SEO module',                'Done ★','Same','+ AI content',''],
+  ['Flash sales + countdown',          'Done ★','+ Cron auto','Same',''],
+  ['Affiliate/influencer',             'Done ★','Affiliate 2.0','Same','v5 adds tiers+portal'],
+  ['Recurring/subscription orders',    'Done ★','Same','+ AI churn detect',''],
+  ['Instagram/Meta shop sync',         'Skeleton ★','Done','+ TikTok/YouTube','Meta credentials needed'],
+  ['Storefront (dynamic)',             'Done','+ Next.js SSR','Same','v5: SSR for Google indexing'],
+  ['Admin (revenue/merchants/plans)',  'Done','Same','Same',''],
+  ['Tally ERP integration',            'No','Done ★','+ SAP connector','v5: TallyPrime XML'],
+  ['AI product descriptions',          'No','Done ★','Same','v5: Claude API'],
+  ['Multi-courier live rates',         'Hardcoded','+ Real APIs ★','Same','v5: Delhivery+BlueDart+XpressBees'],
+  ['Amazon/Flipkart marketplace',      'No','Done ★','Same','v5: Q2 2027'],
+  ['Multi-language storefront',        'No','No','Done','v6: Tamil/Hindi/Telugu'],
+  ['POS physical store app',           'No','No','Done','v6: iOS/Android, Q3 2027'],
+  ['AWS App Runner migration',         'No','No','At 5000+','v6: Mumbai VPC, autoscale'],
+];
+document.getElementById('cmp-tbody').innerHTML=CMP.map(function(r){
+  return '<tr><td class="fn">'+r[0]+'</td>'+vc(r[1])+vc(r[2])+vc(r[3])
+    +'<td class="fd">'+r[4]+'</td></tr>';
+}).join('');
+
+// Deploy checklist
+var DC=[
+  [1,'Neon DB migration',                'Staging+Prod','10 min','node deployment/scripts/neon-migrate.js "YOUR_NEON_URL"'],
+  [2,'Railway env vars',                 'Staging',     '15 min','Railway → Variables → Raw Editor: DATABASE_URL, JWT_SECRET, PORT=3000, NODE_ENV=production'],
+  [3,'GitHub push',                      'All',         '5 min', 'git init && git add . && git commit -m "v4.1" && git push origin main'],
+  [4,'Railway build passes',             'Staging',     '5 min', 'Dockerfile fixed (no .env.example copy). Push → Railway auto-redeploys.'],
+  [5,'Vercel deploy + RAILWAY_API_URL',  'Staging',     '5 min', 'vercel.com → New Project → Import repo → Deploy. Add RAILWAY_API_URL env var.'],
+  [6,'Razorpay test keys',              'Staging',     '30 min','razorpay.com → API Keys → add rzp_test_xxx + secret to Railway Variables'],
+  [7,'Health endpoint test',            'Staging',     '2 min', 'https://YOUR-RAILWAY-URL/health → {"status":"ok","db":"connected"}'],
+  [8,'End-to-end checkout test',        'Staging',     '30 min','Login → product → cart → checkout → Razorpay test → order confirmed'],
+  [9,'npm install puppeteer',           'Staging',     '5 min', 'Run in project folder. GET /api/invoices/:id/pdf generates real PDFs.'],
+  [10,'Gupshup API key + WA templates', 'Staging',     '2 days','gupshup.io → API key → submit 6 templates to Meta (24-48h approval each)'],
+  [11,'Resend email key',               'Staging',     '30 min','resend.com → API key → SMTP_PASS=re_xxx in Railway → verify domain'],
+  [12,'Cloudflare R2 bucket',           'Staging',     '30 min','Cloudflare → R2 → Create bucket → add R2 credentials to Railway'],
+  [13,'Upstash QStash cron jobs',       'Staging',     '1 day', 'console.upstash.com/qstash → Schedule /api/cron/abandoned-carts + /cron/recurring-orders'],
+  [14,'Meta credentials (Instagram)',   'Staging',     '2 weeks','Meta Business + Facebook App + Catalogue ID + access token → add to Railway'],
+  [15,'BNPL SDK integration',           'Staging',     '1 week', 'Integrate Simpl/LazyPay/Bajaj SDKs. Wire checkout.html EMI option.'],
+  [16,'5 pilot merchants',              'Staging',     '1 week', 'Share Vercel URL. Free 30-day trial. Collect feedback. Fix issues.'],
+  [17,'OWASP security audit',           'Production',  '3 days', 'OWASP ZAP scan. Fix High/Critical findings before production.'],
+  [18,'Razorpay live KYC + launch',     'Production',  '3 days', 'razorpay.com → KYC docs → swap test→live keys → zkcommerce.in DNS → launch'],
+];
+var eC={'Staging+Prod':'#FCD34D','All':'#4ADE80','Staging':'#FCD34D','Production':'#F87171'};
+document.getElementById('deploy-tbody').innerHTML=DC.map(function(r){
+  return '<tr><td style="font-weight:800;color:#FF6B00;font-size:14px">'+r[0]+'</td>'
+    +'<td class="fn">'+r[1]+'</td>'
+    +'<td style="font-weight:700;font-size:11px;color:'+(eC[r[2]]||'#94A3B8')+'">'+r[2]+'</td>'
+    +'<td style="color:#F59E0B;font-weight:700;white-space:nowrap">'+r[3]+'</td>'
+    +'<td class="fd" style="max-width:280px">'+r[4]+'</td></tr>';
+}).join('');
+</script>
+</body>
+</html>

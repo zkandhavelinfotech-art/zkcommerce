@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZKCommerce — Deployment Guide | GoDaddy Domain + Hostinger Hosting</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1688E8;--sky:#36A7FF;--green:#A6D900;--gd:#59BB3D;--navy:#06152B;--navy2:#0B2342;--orange:#FF6B00}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;color:#1E293B;overflow-x:hidden}
+nav{background:var(--navy);padding:14px 32px;display:flex;align-items:center;gap:14px}
+nav .logo{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:#fff}
+nav .logo b{color:var(--sky)}
+nav .badge{font-size:11px;font-weight:700;color:var(--green);background:rgba(166,217,0,.12);border:1px solid rgba(166,217,0,.3);padding:3px 10px;border-radius:99px}
+.hero-bar{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:48px 32px;border-bottom:1px solid rgba(255,255,255,.06)}
+.hero-bar h1{font-family:'Poppins',sans-serif;font-size:clamp(24px,4vw,40px);font-weight:800;color:#fff;margin-bottom:8px}
+.hero-bar p{font-size:15px;color:rgba(255,255,255,.55);max-width:640px}
+.route-pills{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.rp{font-size:12px;font-weight:700;padding:6px 16px;border-radius:99px;display:flex;align-items:center;gap:6px}
+.rp-godaddy{background:rgba(0,110,230,.15);color:#36A7FF;border:1px solid rgba(54,167,255,.3)}
+.rp-hostinger{background:rgba(104,44,255,.15);color:#A78BFA;border:1px solid rgba(167,139,250,.3)}
+.rp-arrow{font-size:16px;color:rgba(255,255,255,.25)}
+.container{max-width:1100px;margin:0 auto;padding:48px 24px}
+/* section */
+.sec{margin-bottom:56px}
+.sec-num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;margin-right:12px;flex-shrink:0}
+.sec-head{display:flex;align-items:center;margin-bottom:24px}
+.sec-title{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;color:var(--navy)}
+.sec-sub{font-size:14px;color:#64748B;margin-top:2px}
+/* steps */
+.steps{display:flex;flex-direction:column;gap:16px}
+.step{background:#fff;border:1px solid #E2E8F0;border-radius:14px;overflow:hidden;transition:box-shadow .2s}
+.step:hover{box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.step-head{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;justify-content:space-between}
+.step-left{display:flex;align-items:center;gap:14px}
+.step-num{width:32px;height:32px;border-radius:8px;background:var(--navy);color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-label{font-size:14px;font-weight:700;color:var(--navy)}
+.step-sub{font-size:12px;color:#64748B;margin-top:1px}
+.step-time{font-size:11px;font-weight:600;color:var(--sky);background:rgba(54,167,255,.08);padding:3px 10px;border-radius:99px;white-space:nowrap}
+.step-body{padding:0 22px 20px;border-top:1px solid #F1F5F9}
+/* code block */
+.code-block{background:var(--navy);border-radius:10px;padding:18px 20px;margin:14px 0;position:relative;overflow-x:auto}
+.code-block pre{font-family:'JetBrains Mono',monospace;font-size:13px;color:#E2E8F0;line-height:1.7;white-space:pre}
+.code-block .comment{color:#5EEAD4}
+.code-block .key{color:#93C5FD}
+.code-block .val{color:#86EFAC}
+.code-block .str{color:#FCA5A5}
+.copy-btn{position:absolute;top:10px;right:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);border-radius:7px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+.copy-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+/* info boxes */
+.info-box{border-radius:10px;padding:14px 18px;margin:14px 0;font-size:13px;line-height:1.6;display:flex;align-items:flex-start;gap:10px}
+.info-tip{background:#F0F9FF;border:1px solid #BAE6FD;color:#0369A1}
+.info-warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+.info-ok{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534}
+.info-box .ico{font-size:16px;flex-shrink:0;margin-top:1px}
+/* DNS table */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th{background:var(--navy);color:#fff;font-family:'Poppins',sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;text-align:left}
+td{padding:10px 14px;border-bottom:1px solid #F1F5F9;color:var(--navy)}
+tr:hover td{background:#F8FAFF}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;background:#F1F5F9;padding:2px 6px;border-radius:4px}
+/* provider cards */
+.provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}
+.pcard{background:#fff;border:2px solid #E2E8F0;border-radius:16px;padding:24px;transition:border-color .2s}
+.pcard.active{border-color:var(--blue)}
+.pcard-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.pcard-ico{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.pcard-name{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--navy)}
+.pcard-role{font-size:12px;color:#64748B}
+.pcard-items li{font-size:13px;color:#475569;padding:4px 0;list-style:none;display:flex;align-items:flex-start;gap:7px;border-bottom:1px solid #F8FAFC}
+.pcard-items li::before{content:'✓';color:var(--gd);font-weight:800;flex-shrink:0;margin-top:1px}
+/* checklist */
+.checklist{display:flex;flex-direction:column;gap:8px}
+.ci{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--navy)}
+.ci::before{content:'☐';font-size:16px;flex-shrink:0;color:var(--blue)}
+.ci.done::before{content:'✅'}
+/* customer cards */
+.customer-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.cc{background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:24px}
+.cc-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cc-ico{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.cc-name{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--navy)}
+.cc-product{font-size:12px;color:#64748B}
+.cc-domain{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--blue);background:#EFF6FF;padding:8px 14px;border-radius:8px;margin-bottom:14px;border:1px solid #BFDBFE}
+.cc-steps li{font-size:13px;color:#475569;padding:5px 0;border-bottom:1px solid #F8FAFC;list-style:none;display:flex;gap:8px}
+.cc-steps li::before{content:'→';color:var(--sky);font-weight:700;flex-shrink:0}
+/* theme uploader */
+.theme-uploader{background:#fff;border:2px dashed #CBD5E1;border-radius:16px;padding:40px;text-align:center;transition:border-color .2s;cursor:pointer}
+.theme-uploader:hover{border-color:var(--blue)}
+.theme-uploader .up-icon{font-size:48px;margin-bottom:14px}
+.theme-uploader h3{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.theme-uploader p{font-size:14px;color:#64748B;max-width:400px;margin:0 auto 20px}
+.up-btn{background:var(--blue);color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;display:inline-flex;align-items:center;gap:8px}
+.up-btn:hover{background:var(--sky)}
+.up-types{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.up-type{font-size:11px;font-weight:700;color:#64748B;background:#F1F5F9;padding:3px 10px;border-radius:99px}
+/* theme preview cards */
+.theme-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+.tp{background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s}
+.tp:hover{border-color:var(--blue);box-shadow:0 6px 24px rgba(22,136,232,.1)}
+.tp.selected{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue)}
+.tp-preview{height:100px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.tp-label{padding:12px;border-top:1px solid #F1F5F9}
+.tp-name{font-size:13px;font-weight:700;color:var(--navy)}
+.tp-desc{font-size:11px;color:#64748B;margin-top:2px}
+.tp-check{display:none;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;align-items:center;justify-content:center;margin-top:6px}
+.tp.selected .tp-check{display:flex}
+@media(max-width:700px){.provider-grid,.customer-grid,.theme-preview-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><b>ZK</b>Commerce™</div>
+  <div class="badge">Deployment & Hosting Guide v4.1</div>
+</nav>
+
+<div class="hero-bar">
+  <h1>Deploy Your ZKCommerce Store</h1>
+  <p>Step-by-step guide to connect your GoDaddy domain, host on Hostinger, and go live with Miliro and Smeram Naturals stores.</p>
+  <div class="route-pills">
+    <div class="rp rp-godaddy">🌐 GoDaddy — Domain</div>
+    <div class="rp-arrow">→</div>
+    <div class="rp rp-hostinger">⚡ Hostinger — Hosting</div>
+    <div class="rp-arrow">→</div>
+    <div class="rp" style="background:rgba(166,217,0,.12);color:#A6D900;border:1px solid rgba(166,217,0,.3)">✅ Live Store</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CUSTOMER OVERVIEW -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-num">0</div>
+    <div><div class="sec-title">Your Two ZKCommerce Customers</div><div class="sec-sub">Each gets their own domain, hosting, and custom store</div></div>
+  </div>
+  <div class="customer-grid">
+    <div class="cc">
+      <div class="cc-head">
+        <div class="cc-ico" style="background:#F0FDF4">🫧</div>
+        <div><div class="cc-name">Miliro</div><div class="cc-product">Liquid Dishwash · Lumipure Essentials Pvt Ltd</div></div>
+      </div>
+      <div class="cc-domain">miliro.in &nbsp;·&nbsp; miliro.zkcommerce.in</div>
+      <ul class="cc-steps">
+        <li>Buy miliro.in on GoDaddy (if not owned)</li>
+        <li>Point DNS to Hostinger nameservers</li>
+        <li>Upload miliro-store.html to Hostinger</li>
+        <li>Connect Razorpay test keys</li>
+        <li>Go live — 400ml Lemon Fresh</li>
+      </ul>
+    </div>
+    <div class="cc">
+      <div class="cc-head">
+        <div class="cc-ico" style="background:#FFF8F0">🌿</div>
+        <div><div class="cc-name">Smeram Naturals</div><div class="cc-product">Hair Oil · Tamil Nadu D2C</div></div>
+      </div>
+      <div class="cc-domain">smeramnaturals.in &nbsp;·&nbsp; smeram.zkcommerce.in</div>
+      <ul class="cc-steps">
+        <li>Buy smeramnaturals.in on GoDaddy</li>
+        <li>Point DNS to Hostinger nameservers</li>
+        <li>Upload smeram-store.html to Hostinger</li>
+        <li>Connect Razorpay test keys</li>
+        <li>Go live — 100ml Pure Hair Oil</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- PROVIDER SETUP -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <div><div class="sec-title">Your Hosting Setup — GoDaddy Domain + Hostinger Hosting</div><div class="sec-sub">Why this combination works perfectly for ZKCommerce stores</div></div>
+  </div>
+  <div class="provider-grid">
+    <div class="pcard active">
+      <div class="pcard-head">
+        <div class="pcard-ico" style="background:#E8F4FF">🌐</div>
+        <div><div class="pcard-name">GoDaddy</div><div class="pcard-role">Domain Registrar — where you own the domain name</div></div>
+      </div>
+      <ul class="pcard-items">
+        <li>Purchase .in / .com domains for each client</li>
+        <li>Update nameservers to point to Hostinger</li>
+        <li>Manage domain renewal (1–3 years)</li>
+        <li>Keep domain separate from hosting (best practice)</li>
+      </ul>
+    </div>
+    <div class="pcard">
+      <div class="pcard-head">
+        <div class="pcard-ico" style="background:#F5F0FF">⚡</div>
+        <div><div class="pcard-name">Hostinger</div><div class="pcard-role">Web Hosting — where your store files actually live</div></div>
+      </div>
+      <ul class="pcard-items">
+        <li>Upload HTML store files via File Manager or FTP</li>
+        <li>Free SSL certificate (HTTPS) included</li>
+        <li>Fast servers in India (low latency for Tamil Nadu)</li>
+        <li>hPanel easy control panel — no technical skills needed</li>
+        <li>Business plan: ₹249/mo · supports multiple domains</li>
+      </ul>
+    </div>
+  </div>
+  <div class="info-box info-tip"><span class="ico">💡</span><div>Recommended Hostinger plan: <b>Business Web Hosting (₹249/mo)</b> — supports up to 100 websites, free SSL, daily backups, and 200GB SSD storage. Perfect for hosting both Miliro and Smeram Naturals on one account.</div></div>
+</div>
+
+<!-- STEP BY STEP -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <div><div class="sec-title">Step-by-Step Deployment</div><div class="sec-sub">Complete setup from zero to live store — estimated time: 45 minutes</div></div>
+  </div>
+  <div class="steps">
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">1</div>
+          <div><div class="step-label">Buy domain on GoDaddy</div><div class="step-sub">Search and purchase miliro.in and smeramnaturals.in</div></div>
+        </div>
+        <div class="step-time">⏱ 10 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>Go to <b>godaddy.com</b> → search for <span class="mono">miliro.in</span></li>
+          <li>Add to cart → complete purchase (₹699–₹999/year for .in)</li>
+          <li>Repeat for <span class="mono">smeramnaturals.in</span></li>
+          <li>Do NOT purchase GoDaddy hosting — you already have Hostinger</li>
+        </ol>
+        <div class="info-box info-warn"><span class="ico">⚠️</span><div>When GoDaddy offers "Website Builder" or "Hosting" during checkout — <b>skip and decline</b>. You only need the domain from GoDaddy. Hosting is on Hostinger.</div></div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">2</div>
+          <div><div class="step-label">Sign up for Hostinger</div><div class="step-sub">Create account and choose the Business plan</div></div>
+        </div>
+        <div class="step-time">⏱ 5 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>Go to <b>hostinger.in</b> → Choose <b>Business Web Hosting</b></li>
+          <li>Select 12 or 24 month plan (longer = cheaper per month)</li>
+          <li>During signup: when asked for domain → select <b>"I already have a domain"</b></li>
+          <li>Type <span class="mono">miliro.in</span> as your primary domain</li>
+          <li>Complete payment → you'll get access to hPanel</li>
+        </ol>
+        <div class="info-box info-ok"><span class="ico">✅</span><div>Hostinger gives you a <b>free SSL certificate</b> — this makes your store load as <b>https://miliro.in</b> (the padlock icon). This is required for customer trust and Razorpay payments.</div></div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">3</div>
+          <div><div class="step-label">Get Hostinger Nameservers</div><div class="step-sub">Find the NS1 and NS2 values to paste in GoDaddy</div></div>
+        </div>
+        <div class="step-time">⏱ 2 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>In Hostinger hPanel → go to <b>Hosting → Manage</b></li>
+          <li>Scroll to <b>DNS / Nameservers</b> section</li>
+          <li>You'll see two nameserver values like:</li>
+        </ol>
+        <div class="code-block">
+          <pre><span class="comment"># Hostinger nameservers — copy these two values</span>
+<span class="key">NS1:</span>  <span class="val">ns1.dns-parking.com</span>
+<span class="key">NS2:</span>  <span class="val">ns2.dns-parking.com</span>
+
+<span class="comment"># Note: your actual values will be specific to your account
+# They may look like: ns1.hostinger.com / ns2.hostinger.com</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">4</div>
+          <div><div class="step-label">Point GoDaddy domain to Hostinger</div><div class="step-sub">Update nameservers in GoDaddy DNS settings</div></div>
+        </div>
+        <div class="step-time">⏱ 5 min + 24h propagation</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>Login to GoDaddy → go to <b>My Products → Domains → miliro.in</b></li>
+          <li>Click <b>Manage DNS</b></li>
+          <li>Scroll to <b>Nameservers</b> section → click <b>Change</b></li>
+          <li>Select <b>"Enter my own nameservers"</b></li>
+          <li>Paste the two Hostinger nameserver values</li>
+          <li>Click <b>Save</b></li>
+          <li>Repeat for <span class="mono">smeramnaturals.in</span></li>
+        </ol>
+        <div class="info-box info-warn"><span class="ico">⏳</span><div>DNS propagation takes <b>2–48 hours</b> (usually 2–4 hours in India). During this time the domain may not work. This is normal — continue with the next steps while waiting.</div></div>
+        <table>
+          <tr><th>What to change</th><th>Old value (GoDaddy)</th><th>New value (Hostinger)</th></tr>
+          <tr><td>Nameserver 1</td><td><span class="mono">ns1.domaincontrol.com</span></td><td><span class="mono">ns1.hostinger.com</span></td></tr>
+          <tr><td>Nameserver 2</td><td><span class="mono">ns2.domaincontrol.com</span></td><td><span class="mono">ns2.hostinger.com</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">5</div>
+          <div><div class="step-label">Add domain in Hostinger hPanel</div><div class="step-sub">Add miliro.in and smeramnaturals.in to your hosting account</div></div>
+        </div>
+        <div class="step-time">⏱ 5 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>Login to Hostinger hPanel</li>
+          <li>Go to <b>Websites → Add Website</b></li>
+          <li>Enter <span class="mono">miliro.in</span> → click Add</li>
+          <li>Hostinger creates a folder: <span class="mono">public_html/miliro.in/</span></li>
+          <li>Repeat → Add <span class="mono">smeramnaturals.in</span></li>
+          <li>Enable <b>Free SSL</b> for both domains (hPanel → SSL → Install)</li>
+        </ol>
+        <div class="info-box info-ok"><span class="ico">✅</span><div>After adding domains, Hostinger creates separate folders for each website. Files you upload to <span class="mono">miliro.in/</span> folder will show at <b>https://miliro.in</b>. Files in <span class="mono">smeramnaturals.in/</span> will show at <b>https://smeramnaturals.in</b>.</div></div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">6</div>
+          <div><div class="step-label">Upload store files to Hostinger</div><div class="step-sub">Upload miliro-store.html and smeram-store.html via File Manager</div></div>
+        </div>
+        <div class="step-time">⏱ 5 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>In hPanel → go to <b>Files → File Manager</b></li>
+          <li>Navigate to <span class="mono">public_html/miliro.in/</span></li>
+          <li>Delete the default <span class="mono">index.html</span> that Hostinger puts there</li>
+          <li>Click <b>Upload</b> → upload <span class="mono">miliro-store.html</span></li>
+          <li><b>Rename</b> it to <span class="mono">index.html</span> (right-click → Rename)</li>
+          <li>Repeat for <span class="mono">smeramnaturals.in/</span> with <span class="mono">smeram-store.html</span> → rename to <span class="mono">index.html</span></li>
+        </ol>
+        <div class="code-block">
+          <pre><span class="comment"># Hostinger folder structure — what it looks like</span>
+public_html/
+├── miliro.in/
+│   └── <span class="val">index.html</span>         ← miliro-store.html renamed
+│
+└── smeramnaturals.in/
+    └── <span class="val">index.html</span>         ← smeram-store.html renamed</pre>
+        </div>
+        <div class="info-box info-tip"><span class="ico">💡</span><div>The file MUST be named <b>index.html</b> — this is what the web server loads when someone visits your domain. Any other name won't work automatically.</div></div>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">7</div>
+          <div><div class="step-label">Enable SSL (HTTPS) for both stores</div><div class="step-sub">Free Let's Encrypt SSL — required for Razorpay and customer trust</div></div>
+        </div>
+        <div class="step-time">⏱ 3 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <ol style="padding-left:20px;font-size:13px;color:#475569;line-height:2">
+          <li>In hPanel → go to <b>Advanced → SSL</b></li>
+          <li>Click <b>Install SSL</b> for <span class="mono">miliro.in</span></li>
+          <li>Select <b>Let's Encrypt</b> (free) → Install</li>
+          <li>Enable <b>Force HTTPS</b> redirect (so http:// auto-redirects to https://)</li>
+          <li>Repeat for <span class="mono">smeramnaturals.in</span></li>
+        </ol>
+        <div class="info-box info-warn"><span class="ico">⚠️</span><div>Razorpay will <b>not work</b> without HTTPS. Always enable SSL before testing payments. Also, Google ranks HTTPS sites higher — important for SEO.</div></div>
+      </div>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">8</div>
+          <div><div class="step-label">Connect ZKCommerce API (Railway)</div><div class="step-sub">Link your store frontend to the ZKCommerce backend API</div></div>
+        </div>
+        <div class="step-time">⏱ 10 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <p style="font-size:13px;color:#475569;margin-bottom:14px">Your store HTML files need to know where the ZKCommerce API lives. Update this one line in each HTML file before uploading:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><span class="comment">// In miliro-store.html and smeram-store.html
+// Find this line near the top of the &lt;script&gt; section:</span>
+
+<span class="comment">// BEFORE (development):</span>
+<span class="key">var</span> API_BASE = <span class="str">'http://localhost:3000/api'</span>;
+
+<span class="comment">// AFTER (production — replace with your Railway URL):</span>
+<span class="key">var</span> API_BASE = <span class="str">'https://zkcommerce-api.up.railway.app/api'</span>;
+
+<span class="comment">// To find your Railway URL:
+// Railway dashboard → your project → Settings → Domains
+// It looks like: https://YOUR-APP-NAME.up.railway.app</span></pre>
+        </div>
+        <div class="info-box info-tip"><span class="ico">💡</span><div>Open the HTML file in Notepad or VS Code, find the line with <span class="mono">localhost:3000</span>, replace it with your Railway URL, save, then re-upload to Hostinger.</div></div>
+      </div>
+    </div>
+
+    <!-- Step 9 -->
+    <div class="step">
+      <div class="step-head">
+        <div class="step-left">
+          <div class="step-num">9</div>
+          <div><div class="step-label">Test everything before going live</div><div class="step-sub">Checklist before telling customers to visit the store</div></div>
+        </div>
+        <div class="step-time">⏱ 10 min</div>
+      </div>
+      <div class="step-body" style="padding-top:18px">
+        <div class="checklist">
+          <div class="ci">Visit https://miliro.in — store loads correctly</div>
+          <div class="ci">Padlock icon (🔒) shows in browser = SSL working</div>
+          <div class="ci">All images and fonts load (check on mobile too)</div>
+          <div class="ci">Add to Cart button works — toast notification appears</div>
+          <div class="ci">Notify me email form accepts email and shows confirmation</div>
+          <div class="ci">Footer shows "Powered by ZKCommerce™"</div>
+          <div class="ci">Visit https://smeramnaturals.in — same checks</div>
+          <div class="ci">Test on mobile (Android Chrome, iPhone Safari)</div>
+          <div class="ci">WhatsApp share link works for product page</div>
+          <div class="ci">Razorpay test payment completes (once API keys added)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CUSTOM THEME UPLOAD -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <div><div class="sec-title">Custom Theme Upload System</div><div class="sec-sub">How customers upload their own logo, cover image, and brand colours to ZKCommerce</div></div>
+  </div>
+
+  <div class="info-box info-tip" style="margin-bottom:24px"><span class="ico">💡</span><div>When a customer signs up for ZKCommerce, they can customise their store's look — logo, cover/banner, colours, and fonts — from the merchant dashboard. No coding needed. Here's how the system works.</div></div>
+
+  <!-- Theme uploader demo -->
+  <div class="theme-uploader" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" style="display:none" accept=".png,.jpg,.jpeg,.svg" onchange="handleUpload(event)">
+    <div class="up-icon">🖼️</div>
+    <h3>Upload Your Store Logo or Cover</h3>
+    <p>Drag and drop your file here, or click to browse. Your store will update instantly with your brand.</p>
+    <button class="up-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">📁 Choose File</button>
+    <div class="up-types">
+      <div class="up-type">PNG</div>
+      <div class="up-type">JPG</div>
+      <div class="up-type">SVG</div>
+      <div class="up-type">Max 5MB</div>
+      <div class="up-type">Logo: 300×100px</div>
+      <div class="up-type">Cover: 1200×400px</div>
+    </div>
+    <div id="uploadResult" style="display:none;margin-top:16px;color:#059669;font-weight:700;font-size:14px"></div>
+  </div>
+
+  <!-- Theme preview cards -->
+  <h3 style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--navy);margin-top:36px;margin-bottom:6px">Choose Your Store Theme</h3>
+  <p style="font-size:13px;color:#64748B;margin-bottom:0">Click a theme to preview it. Your uploaded logo and colours will be applied on top.</p>
+  <div class="theme-preview-grid">
+    <div class="tp selected" onclick="selectTheme(this,'Dark Navy')">
+      <div class="tp-preview" style="background:linear-gradient(135deg,#06152B,#1688E8)">🌑</div>
+      <div class="tp-label">
+        <div class="tp-name">Dark Navy</div>
+        <div class="tp-desc">Professional · Tech · SaaS style</div>
+        <div class="tp-check">✓</div>
+      </div>
+    </div>
+    <div class="tp" onclick="selectTheme(this,'Clean Light')">
+      <div class="tp-preview" style="background:linear-gradient(135deg,#F8FAFC,#E0F2FE)">☀️</div>
+      <div class="tp-label">
+        <div class="tp-name">Clean Light</div>
+        <div class="tp-desc">Fresh · Minimal · Trust-first</div>
+        <div class="tp-check">✓</div>
+      </div>
+    </div>
+    <div class="tp" onclick="selectTheme(this,'Green Natural')">
+      <div class="tp-preview" style="background:linear-gradient(135deg,#1A4D2E,#4CAF50)">🌿</div>
+      <div class="tp-label">
+        <div class="tp-name">Green Natural</div>
+        <div class="tp-desc">Organic · Natural · Wellness</div>
+        <div class="tp-check">✓</div>
+      </div>
+    </div>
+    <div class="tp" onclick="selectTheme(this,'Warm Amber')">
+      <div class="tp-preview" style="background:linear-gradient(135deg,#5D2E0C,#D4A017)">🪔</div>
+      <div class="tp-label">
+        <div class="tp-name">Warm Amber</div>
+        <div class="tp-desc">Traditional · Premium · Ayurvedic</div>
+        <div class="tp-check">✓</div>
+      </div>
+    </div>
+    <div class="tp" onclick="selectTheme(this,'Gradient Bold')">
+      <div class="tp-preview" style="background:linear-gradient(135deg,#1565C0,#36A7FF,#A6D900)">🌈</div>
+      <div class="tp-label">
+        <div class="tp-name">Gradient Bold</div>
+        <div class="tp-desc">Energetic · Growth · D2C brands</div>
+        <div class="tp-check">✓</div>
+      </div>
+    </div>
+    <div class="tp" onclick="selectTheme(this,'Custom Brand')">
+      <div class="tp-preview" style="background:linear-gradient(135deg,#1E293B,#334155);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+        <span style="font-size:20px">🎨</span>
+        <span style="font-size:10px;color:#94A3B8;font-weight:600">Upload your own</span>
+      </div>
+      <div class="tp-label">
+        <div class="tp-name">Custom Brand</div>
+        <div class="tp-desc">Your logo · Your colours · Your fonts</div>
+        <div class="tp-check">✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colour customiser -->
+  <h3 style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--navy);margin-top:36px;margin-bottom:16px">Brand Colour Customiser</h3>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px">
+      <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Primary Colour</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="color" value="#1688E8" id="col1" onchange="updateColour('col1',this.value)" style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px">
+        <span id="col1hex" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--navy)">#1688E8</span>
+      </div>
+      <div style="font-size:11px;color:#94A3B8;margin-top:8px">Buttons, links, CTAs</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px">
+      <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Accent Colour</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="color" value="#A6D900" id="col2" onchange="updateColour('col2',this.value)" style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px">
+        <span id="col2hex" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--navy)">#A6D900</span>
+      </div>
+      <div style="font-size:11px;color:#94A3B8;margin-top:8px">Badges, highlights</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px">
+      <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Background</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="color" value="#06152B" id="col3" onchange="updateColour('col3',this.value)" style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px">
+        <span id="col3hex" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--navy)">#06152B</span>
+      </div>
+      <div style="font-size:11px;color:#94A3B8;margin-top:8px">Hero, dark sections</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px">
+      <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Text Colour</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="color" value="#1E293B" id="col4" onchange="updateColour('col4',this.value)" style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px">
+        <span id="col4hex" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--navy)">#1E293B</span>
+      </div>
+      <div style="font-size:11px;color:#94A3B8;margin-top:8px">Headings, body text</div>
+    </div>
+  </div>
+</div>
+
+<!-- ONGOING MANAGEMENT -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <div><div class="sec-title">Ongoing Management After Go-Live</div><div class="sec-sub">How to update store content, add products, and manage orders</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px">
+      <div style="font-size:24px;margin-bottom:12px">📦</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Adding Products</div>
+      <div style="font-size:13px;color:#475569;line-height:1.65">Login to ZKCommerce merchant dashboard → Products → Add New. Set name, price, description, variants (sizes), and upload product images. Published instantly.</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px">
+      <div style="font-size:24px;margin-bottom:12px">🛒</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Managing Orders</div>
+      <div style="font-size:13px;color:#475569;line-height:1.65">New orders appear in the dashboard and trigger a WhatsApp alert. Click any order to view details, update status (Processing/Shipped/Delivered), and generate GST invoice PDF.</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px">
+      <div style="font-size:24px;margin-bottom:12px">🖼️</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Updating Store Design</div>
+      <div style="font-size:13px;color:#475569;line-height:1.65">Store settings → Appearance. Upload new logo (PNG/SVG), change banner/cover image, update brand colours. Changes apply instantly without any developer needed.</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px">
+      <div style="font-size:24px;margin-bottom:12px">💳</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Payments Setup</div>
+      <div style="font-size:13px;color:#475569;line-height:1.65">Settings → Payments → Razorpay. Enter your Razorpay Key ID and Secret. Test with rzp_test_ keys first. Switch to rzp_live_ after KYC is approved at razorpay.com.</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px">
+      <div style="font-size:24px;margin-bottom:12px">📱</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">WhatsApp Alerts</div>
+      <div style="font-size:13px;color:#475569;line-height:1.65">Settings → Integrations → WhatsApp (Gupshup). Enter API key. Customers get order confirmation, shipping update, and delivery notification on WhatsApp automatically.</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px">
+      <div style="font-size:24px;margin-bottom:12px">🔄</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Updating Store Files</div>
+      <div style="font-size:13px;color:#475569;line-height:1.65">When you update the HTML store file — open Hostinger File Manager, navigate to the domain folder, delete the old index.html, and upload the new one. Takes 2 minutes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK REFERENCE -->
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <div><div class="sec-title">Quick Reference — URLs and Credentials</div><div class="sec-sub">Save these — you'll need them every time</div></div>
+  </div>
+  <div class="code-block">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><span class="comment"># ── CUSTOMER 1: MILIRO ──────────────────────────────────────────</span>
+<span class="key">Store URL:</span>         <span class="val">https://miliro.in</span>
+<span class="key">Hostinger folder:</span>  <span class="val">public_html/miliro.in/index.html</span>
+<span class="key">ZKCommerce login:</span>  <span class="val">merchant@miliro.in</span>
+<span class="key">Razorpay test:</span>     <span class="val">rzp_test_[KEY from razorpay.com]</span>
+
+<span class="comment"># ── CUSTOMER 2: SMERAM NATURALS ─────────────────────────────────</span>
+<span class="key">Store URL:</span>         <span class="val">https://smeramnaturals.in</span>
+<span class="key">Hostinger folder:</span>  <span class="val">public_html/smeramnaturals.in/index.html</span>
+<span class="key">ZKCommerce login:</span>  <span class="val">merchant@smeramnaturals.in</span>
+<span class="key">Razorpay test:</span>     <span class="val">rzp_test_[KEY from razorpay.com]</span>
+
+<span class="comment"># ── ZKCOMMERCE API (Railway) ─────────────────────────────────────</span>
+<span class="key">API URL:</span>           <span class="val">https://YOUR-APP.up.railway.app/api</span>
+<span class="key">Health check:</span>      <span class="val">https://YOUR-APP.up.railway.app/health</span>
+<span class="key">Admin login:</span>       <span class="val">admin@zkcommerce.in / demo1234</span>
+
+<span class="comment"># ── CONTROL PANELS ──────────────────────────────────────────────</span>
+<span class="key">GoDaddy DNS:</span>       <span class="val">godaddy.com → My Products → Domains</span>
+<span class="key">Hostinger hPanel:</span>  <span class="val">hpanel.hostinger.com</span>
+<span class="key">Railway dashboard:</span> <span class="val">railway.app/dashboard</span>
+<span class="key">Razorpay:</span>          <span class="val">razorpay.com → Settings → API Keys</span></pre>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div style="background:var(--navy);padding:32px;text-align:center;margin-top:0">
+  <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,.5)">ZKCommerce™ Deployment Guide v4.1 · ZKandavel Infotech Pvt Ltd</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.25);margin-top:6px">Smart Commerce. Limitless Growth. · Coimbatore, Tamil Nadu</div>
+</div>
+
+<script>
+function selectTheme(el, name) {
+  document.querySelectorAll('.tp').forEach(function(t){ t.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+function handleUpload(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var r = document.getElementById('uploadResult');
+  r.style.display = 'block';
+  r.innerHTML = '✅ Uploaded: <b>' + f.name + '</b> (' + Math.round(f.size/1024) + 'KB) — Your store logo has been updated!';
+}
+function updateColour(id, val) {
+  document.getElementById(id + 'hex').textContent = val.toUpperCase();
+}
+function copyCode(btn) {
+  var pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(function(){
+    btn.textContent = 'Copied!';
+    setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
