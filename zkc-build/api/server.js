@@ -70,7 +70,12 @@ app.use(cors({
   ],
   credentials: true,
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  },
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
@@ -843,24 +848,74 @@ app.post('/api/verify-payment', asyncHandler(async (req, res) => {
   });
 }));
 
-// POST /api/payments/webhook  — Razorpay webhook
-app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), asyncHandler(async (req, res) => {
+// POST /api/payments/webhook & /api/webhook — Razorpay Webhook Handler
+app.post(['/api/payments/webhook', '/api/webhook'], asyncHandler(async (req, res) => {
   const sig = req.headers['x-razorpay-signature'];
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
-  const expectedSig = crypto.createHmac('sha256', secret).update(req.body).digest('hex');
-  if (sig !== expectedSig) return res.status(400).json({ error: 'Invalid signature' });
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || RAZORPAY_KEY_SECRET || '';
 
-  const event = JSON.parse(req.body);
-  if (event.event === 'payment.failed') {
-    const orderId = event.payload.payment.entity.notes?.order_id;
-    if (orderId) {
-      await db.query(
-        "UPDATE orders SET payment_status='failed', updated_at=NOW() WHERE id=$1",
-        [orderId]
-      );
+  const rawBody = req.rawBody
+    ? req.rawBody.toString('utf8')
+    : (Buffer.isBuffer(req.body)
+      ? req.body.toString('utf8')
+      : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body)));
+
+  if (secret && sig) {
+    const expectedSig = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+    if (sig !== expectedSig) {
+      console.warn('⚠️  Razorpay webhook signature mismatch');
+      return res.status(400).json({ error: 'Invalid webhook signature' });
     }
   }
-  res.json({ status: 'ok' });
+
+  let event;
+  try {
+    event = (typeof req.body === 'object' && !Buffer.isBuffer(req.body)) ? req.body : JSON.parse(rawBody);
+  } catch (e) {
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+
+  const eventName = event.event;
+  console.log(`📩 Razorpay Webhook received: ${eventName}`);
+
+  if (eventName === 'order.paid' || eventName === 'payment.captured') {
+    const payment = event.payload?.payment?.entity || {};
+    const orderId = payment.notes?.order_id || event.payload?.order?.entity?.notes?.order_id;
+    const rzpOrderId = payment.order_id || event.payload?.order?.entity?.id;
+    const paymentId = payment.id;
+
+    if (db && db.type !== 'none') {
+      try {
+        if (orderId) {
+          await db.query(
+            "UPDATE orders SET payment_status='paid', status='processing', razorpay_payment_id=$1, paid_at=NOW(), updated_at=NOW() WHERE id=$2",
+            [paymentId, orderId]
+          );
+        } else if (rzpOrderId) {
+          await db.query(
+            "UPDATE orders SET payment_status='paid', status='processing', razorpay_payment_id=$1, paid_at=NOW(), updated_at=NOW() WHERE razorpay_order_id=$2",
+            [paymentId, rzpOrderId]
+          );
+        }
+      } catch (err) {
+        console.error('Error updating order from webhook:', err.message);
+      }
+    }
+  } else if (eventName === 'payment.failed') {
+    const payment = event.payload?.payment?.entity || {};
+    const orderId = payment.notes?.order_id;
+    if (db && db.type !== 'none' && orderId) {
+      try {
+        await db.query(
+          "UPDATE orders SET payment_status='failed', updated_at=NOW() WHERE id=$1",
+          [orderId]
+        );
+      } catch (err) {
+        console.error('Error updating failed order from webhook:', err.message);
+      }
+    }
+  }
+
+  return res.json({ status: 'ok', received: true });
 }));
 
 // POST /api/payments/razorpay/refund
