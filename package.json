@@ -6,11 +6,12 @@
   "scripts": {
     "start": "node zkc-build/api/server.js",
     "dev": "node zkc-build/api/server.js",
-    "db:migrate": "node deployment/scripts/neon-migrate.js",
+    "db:migrate": "node zkc-build/deployment/scripts/neon-migrate.js",
+    "db:migrate:mysql": "node zkc-build/database/migrate-mysql.js",
     "db:seed": "psql $DATABASE_URL -f database/phase3-additions.sql",
     "test": "jest --coverage",
     "lint": "eslint api/",
-    "build": "echo 'No build step for API'",
+    "build": "node zkc-build/scripts/build-static.js",
     "deploy": "node deployment/launcher.js deploy",
     "deploy:dev": "node deployment/launcher.js deploy development",
     "deploy:staging": "node deployment/launcher.js deploy staging",
@@ -28,8 +29,8 @@
     "docker:down": "docker-compose -f deployment/docker/docker-compose.yml down",
     "docker:logs": "docker-compose -f deployment/docker/docker-compose.yml logs -f api",
     "docker:build": "docker build -f Dockerfile -t zkcommerce-api:latest .",
-    "db:migrate:dev": "node deployment/scripts/neon-migrate.js",
-    "db:migrate:neon": "node deployment/scripts/neon-migrate.js"
+    "db:migrate:dev": "node zkc-build/deployment/scripts/neon-migrate.js",
+    "db:migrate:neon": "node zkc-build/deployment/scripts/neon-migrate.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

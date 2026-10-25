@@ -2,8 +2,15 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "outputDirectory": "zkc-build/dist",
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://api.zkcommerce.in/api/:path*" }
+    { "source": "/api/:path*", "destination": "https://api.zkcommerce.in/api/:path*" },
+    { "source": "/login", "destination": "/auth/login.html" },
+    { "source": "/register", "destination": "/auth/register.html" },
+    { "source": "/dashboard", "destination": "/merchant/dashboard.html" },
+    { "source": "/admin", "destination": "/admin/dashboard.html" },
+    { "source": "/checkout", "destination": "/storefront/checkout.html" },
+    { "source": "/cart", "destination": "/storefront/cart.html" }
   ],
   "headers": [
     {

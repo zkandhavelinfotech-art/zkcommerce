@@ -14,10 +14,16 @@ fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(output, { recursive: true });
 
 for (const directory of ['admin', 'assets', 'auth', 'merchant', 'storefront']) {
-  fs.cpSync(path.join(root, directory), path.join(output, directory), { recursive: true });
+  const dirPath = path.join(root, directory);
+  if (fs.existsSync(dirPath)) {
+    fs.cpSync(dirPath, path.join(output, directory), { recursive: true });
+  }
 }
-for (const filename of ['index.html', 'competitor-widget.html', 'migrate.html']) {
-  fs.copyFileSync(path.join(root, filename), path.join(output, filename));
+for (const filename of ['index.html', 'competitor-widget.html', 'migrate.html', 'manifest.json']) {
+  const filePath = path.join(root, filename);
+  if (fs.existsSync(filePath)) {
+    fs.copyFileSync(filePath, path.join(output, filename));
+  }
 }
 
 console.log(`Static site built at ${output}`);
