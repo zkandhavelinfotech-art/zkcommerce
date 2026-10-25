@@ -9,10 +9,28 @@
   <div class="card">
     <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Basic information</h3>
     <div class="field-group" style="margin-bottom:12px"><label class="field-label">Product name *</label><input type="text" class="field" id="pname" placeholder="e.g. Kanjivaram Silk Saree — Red"></div>
-    <div class="field-group" style="margin-bottom:12px"><label class="field-label">Description *</label><textarea class="field" id="pdesc" rows="5" placeholder="Fabric, dimensions, care instructions, origin..."></textarea></div>
+    <div class="field-group" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <label class="field-label" style="margin-bottom:0">Product Description *</label>
+        <span style="font-size:11px;color:var(--zk-muted)">Expanded area for detailed ingredients, formulation & specs</span>
+      </div>
+      <textarea class="field" id="pdesc" rows="8" style="min-height:180px;width:100%;font-size:14px;line-height:1.6;resize:vertical;" placeholder="Detailed product description, natural ingredients (e.g. Bhringraj, Amla, Hibiscus, Virgin Coconut Oil), extraction method, benefits, and quality certifications..."></textarea>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field-group"><label class="field-label">Category *</label><select class="field" id="pcat"><option>Select…</option><option>Sarees</option><option>Kurtas</option><option>Blouses</option><option>Accessories</option></select></div>
-      <div class="field-group"><label class="field-label">Brand</label><input type="text" class="field" id="pbrand" placeholder="Rajan Weavers"></div>
+      <div class="field-group">
+        <label class="field-label">Category *</label>
+        <select class="field" id="pcat">
+          <option value="">Select category...</option>
+          <option value="Hair Care">Hair Care</option>
+          <option value="Natural & Herbal">Natural & Herbal</option>
+          <option value="Skin Care">Skin Care</option>
+          <option value="Sarees">Sarees</option>
+          <option value="Kurtas">Kurtas</option>
+          <option value="Blouses">Blouses</option>
+          <option value="Accessories">Accessories</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Brand</label><input type="text" class="field" id="pbrand" placeholder="e.g. Smeram Naturals"></div>
     </div>
   </div>
   <div class="card">
@@ -40,7 +58,7 @@
         <span>📋 User Instructions (How to use / Care)</span>
       </label>
       <div id="box_instructions" style="display:none">
-        <textarea class="field" id="pinstructions" rows="3" placeholder="e.g. Dry clean only. Store in muslin cloth. Or dosage/usage instructions..."></textarea>
+        <textarea class="field" id="pinstructions" rows="4" style="min-height:100px;width:100%;font-size:13px;line-height:1.6;resize:vertical;" placeholder="e.g. Take 5-10 ml of hair oil. Warm slightly between palms. Gently massage into scalp for 10 minutes. Leave on for 1 hour or overnight before washing with mild herbal shampoo..."></textarea>
         <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Displayed on product details page under 'Instructions / How to Use'.</div>
       </div>
     </div>
@@ -52,7 +70,7 @@
         <span>⭐ Key Benefits / Highlights</span>
       </label>
       <div id="box_benefits" style="display:none">
-        <textarea class="field" id="pbenefits" rows="3" placeholder="e.g. • 100% Pure Mulberry Silk&#10;• Certified Silk Mark&#10;• Handcrafted by Master Weavers"></textarea>
+        <textarea class="field" id="pbenefits" rows="4" style="min-height:100px;width:100%;font-size:13px;line-height:1.6;resize:vertical;" placeholder="e.g. • Clinically proven to reduce hair fall and strengthen root follicles&#10;• Deeply conditions scalp, preventing dry flaking and stubborn dandruff&#10;• 100% pure cold-pressed natural herbal formulation&#10;• Free from mineral oil, silicones, artificial fragrance & parabens"></textarea>
         <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Displayed as bullet points or highlights on product page.</div>
       </div>
     </div>

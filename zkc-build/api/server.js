@@ -470,23 +470,38 @@ app.get('/api/products/:id', verifyToken, asyncHandler(async (req, res) => {
 // PUT /api/products/:id
 app.put('/api/products/:id', verifyToken, requireRole('merchant'), asyncHandler(async (req, res) => {
   const d = req.body;
+  const updates = [];
+  const params = [];
+  let idx = 1;
+
+  if (d.name !== undefined) { updates.push(`name=$${idx++}`); params.push(d.name); }
+  if (d.description !== undefined) { updates.push(`description=$${idx++}`); params.push(d.description); }
+  if (d.price !== undefined) { updates.push(`price=$${idx++}`); params.push(d.price); }
+  if (d.mrp !== undefined) { updates.push(`mrp=$${idx++}`); params.push(d.mrp); }
+  if (d.cost_price !== undefined) { updates.push(`cost_price=$${idx++}`); params.push(d.cost_price); }
+  if (d.status !== undefined) { updates.push(`status=$${idx++}`); params.push(d.status); }
+  if (d.stock !== undefined) { updates.push(`stock=$${idx++}`); params.push(d.stock); }
+  if (d.category_id !== undefined) { updates.push(`category_id=$${idx++}`); params.push(d.category_id); }
+  if (d.gst_rate !== undefined) { updates.push(`gst_rate=$${idx++}`); params.push(d.gst_rate); }
+  if (d.is_featured !== undefined) { updates.push(`is_featured=$${idx++}`); params.push(d.is_featured); }
+  if (d.user_instructions !== undefined) { updates.push(`user_instructions=$${idx++}`); params.push(d.user_instructions); }
+  if (d.benefits !== undefined) { updates.push(`benefits=$${idx++}`); params.push(d.benefits); }
+  if (d.additional_note !== undefined) { updates.push(`additional_note=$${idx++}`); params.push(d.additional_note); }
+
+  if (!updates.length) return err(res, 'No fields to update', 400);
+
+  updates.push('updated_at=NOW()');
+  params.push(req.params.id);
+  const idIdx = idx++;
+  params.push(req.user.store_id);
+  const storeIdIdx = idx++;
+
   const { rows } = await db.query(
-    `UPDATE products SET name=COALESCE($1,name), description=COALESCE($2,description),
-      price=COALESCE($3,price), mrp=COALESCE($4,mrp), status=COALESCE($5,status),
-      stock=COALESCE($6,stock), is_featured=COALESCE($7,is_featured),
-      user_instructions=COALESCE($8,user_instructions),
-      benefits=COALESCE($9,benefits),
-      additional_note=COALESCE($10,additional_note),
-      updated_at=NOW()
-     WHERE id=$11 AND store_id=$12 RETURNING *`,
-    [d.name, d.description, d.price, d.mrp, d.status, d.stock, d.is_featured,
-     d.user_instructions !== undefined ? d.user_instructions : null,
-     d.benefits !== undefined ? d.benefits : null,
-     d.additional_note !== undefined ? d.additional_note : null,
-     req.params.id, req.user.store_id]
+    `UPDATE products SET ${updates.join(', ')} WHERE id=$${idIdx} AND store_id=$${storeIdIdx} RETURNING *`,
+    params
   );
   if (!rows.length) return err(res, 'Product not found', 404);
-  respond(res, { product: rows[0] });
+  respond(res, { product: rows[0], message: 'Product updated successfully' });
 }));
 
 // DELETE /api/products/:id
@@ -1536,6 +1551,35 @@ app.post('/api/stores', verifyToken, asyncHandler(async (req, res) => {
       [req.user.id, name, slug, theme, primary_color, gstin || null, JSON.stringify(settings || {})]
     );
     await client.query('UPDATE users SET store_id=$1 WHERE id=$2', [store.id, req.user.id]);
+
+    // Auto-create category & sample product if natural/hair oil or smeram
+    try {
+      const isNaturalOrHair = (industry === 'organic' || industry === 'beauty' || slug.includes('smeram') || name.toLowerCase().includes('oil') || name.toLowerCase().includes('smeram') || name.toLowerCase().includes('natural'));
+      const catName = isNaturalOrHair ? 'Hair Care' : (industry === 'fashion' ? 'Sarees' : 'General');
+      const catSlug = isNaturalOrHair ? 'hair-care' : (industry === 'fashion' ? 'sarees' : 'general');
+      
+      const { rows: [cat] } = await client.query(
+        `INSERT INTO categories (store_id, name, slug, sort_order) VALUES ($1, $2, $3, 1) RETURNING id`,
+        [store.id, catName, catSlug]
+      );
+
+      if (isNaturalOrHair && cat) {
+        await client.query(
+          `INSERT INTO products (store_id, category_id, name, slug, price, mrp, stock, status, is_featured, is_cod,
+                                 description, user_instructions, benefits, additional_note, created_at, updated_at)
+           VALUES ($1, $2, 'Smeram 100% Natural Herbal Hair Oil (200ml)', 'smeram-natural-herbal-hair-oil-200ml',
+                   499, 699, 150, 'published', true, true,
+                   'Smeram 100% Natural Herbal Hair Oil is deeply infused with 18 vital ayurvedic herbs including Bhringraj, Amla, Brahmi, Hibiscus, Fenugreek, and cold-pressed Virgin Coconut Oil. Prepared using traditional slow-heat extraction to retain potent phytochemicals that nourish hair follicles, reduce hair thinning, and restore natural shine and density.',
+                   'Take 5-10 ml of Smeram Herbal Hair Oil. Warm gently between palms and apply directly to scalp. Massage with circular fingertip motions for 10 minutes to stimulate blood circulation. Leave on for at least 1-2 hours or overnight for deep nourishment. Wash off thoroughly with a mild herbal shampoo. Recommended 3 times weekly for optimal results.',
+                   '• Clinically proven to reduce hair fall and stimulate dormant hair follicles\n• Deeply conditions scalp, preventing dry flaking and stubborn dandruff\n• 100% pure cold-pressed natural herbal formulation\n• Free from mineral oil, silicones, artificial fragrance, and parabens',
+                   'Inclusive of GST and free shipping.', NOW(), NOW())`,
+          [store.id, cat.id]
+        );
+      }
+    } catch (seedErr) {
+      console.warn('Seed starter products warning:', seedErr.message);
+    }
+
     await client.query('COMMIT');
 
     respond(res, { store, message: 'Store created successfully' }, 201);
