@@ -4,8 +4,8 @@
   "description": "ZKCommerce v4.1 Production API — ZKanadavel Infotech",
   "main": "zkc-build/api/server.js",
   "scripts": {
-    "start": "node zkc-build/api/server.js",
-    "dev": "node zkc-build/api/server.js",
+    "start": "node server.js",
+    "dev": "node server.js",
     "db:migrate": "node zkc-build/deployment/scripts/neon-migrate.js",
     "db:migrate:mysql": "node zkc-build/database/migrate-mysql.js",
     "db:seed": "psql $DATABASE_URL -f database/phase3-additions.sql",

@@ -7,6 +7,8 @@
 'use strict';
 
 require('dotenv').config();
+const fs           = require('fs');
+const path         = require('path');
 const express      = require('express');
 const cors         = require('cors');
 const helmet       = require('helmet');
@@ -2038,6 +2040,50 @@ app.post('/api/meta/sync', authMiddleware, async (req, res) => {
       next_step: 'Obtain long-lived access token from Meta Business Manager and call Graph API batch endpoint'
     });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Serve Static Storefront & Admin (Local Dev, Railway, GoDaddy) ─
+const staticCandidates = [
+  path.join(__dirname, '..', '..', 'dist'),     // root dist
+  path.join(__dirname, '..', 'dist'),          // zkc-build/dist
+  path.join(__dirname, '..'),                  // zkc-build
+];
+
+const staticDir = staticCandidates.find(dir => fs.existsSync(path.join(dir, 'index.html'))) || path.join(__dirname, '..');
+
+app.use(express.static(staticDir));
+
+// Clean URL friendly routes
+app.get('/', (req, res) => res.sendFile(path.join(staticDir, 'index.html')));
+app.get('/login', (req, res) => {
+  const p = path.join(staticDir, 'auth', 'login.html');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.redirect('/');
+});
+app.get('/register', (req, res) => {
+  const p = path.join(staticDir, 'auth', 'register.html');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.redirect('/');
+});
+app.get('/dashboard', (req, res) => {
+  const p = path.join(staticDir, 'merchant', 'dashboard.html');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.redirect('/');
+});
+app.get('/admin', (req, res) => {
+  const p = path.join(staticDir, 'admin', 'dashboard.html');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.redirect('/');
+});
+app.get('/checkout', (req, res) => {
+  const p = path.join(staticDir, 'storefront', 'checkout.html');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.redirect('/');
+});
+app.get('/cart', (req, res) => {
+  const p = path.join(staticDir, 'storefront', 'cart.html');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.redirect('/');
 });
 
 // 404 Catch-All & Error Handling
