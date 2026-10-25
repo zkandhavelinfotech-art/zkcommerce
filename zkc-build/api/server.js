@@ -116,6 +116,8 @@ const verifyToken = asyncHandler(async (req, res, next) => {
   }
 });
 
+const authMiddleware = verifyToken;
+
 const requireRole = (...roles) => (req, res, next) => {
   if (!roles.includes(req.user?.role))
     return err(res, 'Insufficient permissions', 403);
@@ -1331,16 +1333,6 @@ app.get('/health', asyncHandler(async (req, res) => {
   });
 }));
 
-app.use((req, res) => err(res, `Route not found: ${req.method} ${req.path}`, 404));
-
-app.use((error, req, res, next) => {
-  console.error('API Error:', error);
-  if (error.code === '23505') return err(res, 'Duplicate entry — this record already exists', 409);
-  if (error.code === '23503') return err(res, 'Referenced record not found', 400);
-  if (error.name === 'ZodError') return err(res, 'Validation failed', 400);
-  err(res, process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message, 500);
-});
-
 
 // ── GST Invoice PDF ──────────────────────────────────────────
 app.get('/api/invoices/:id/pdf', authMiddleware, async (req, res) => {
@@ -1862,6 +1854,17 @@ app.post('/api/meta/sync', authMiddleware, async (req, res) => {
       next_step: 'Obtain long-lived access token from Meta Business Manager and call Graph API batch endpoint'
     });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// 404 Catch-All & Error Handling
+app.use((req, res) => err(res, `Route not found: ${req.method} ${req.path}`, 404));
+
+app.use((error, req, res, next) => {
+  console.error('API Error:', error);
+  if (error.code === '23505') return err(res, 'Duplicate entry — this record already exists', 409);
+  if (error.code === '23503') return err(res, 'Referenced record not found', 400);
+  if (error.name === 'ZodError') return err(res, 'Validation failed', 400);
+  err(res, process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message, 500);
 });
 
 app.listen(PORT, () => {
