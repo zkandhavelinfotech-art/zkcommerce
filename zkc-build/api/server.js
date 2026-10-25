@@ -62,14 +62,69 @@ const upload = multer({
 
 // ── Middleware ────────────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: false }));
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL.trim());
+}
+
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    /\.zkcommerce\.in$/,
-    /\.vercel\.app$/,
-  ],
+  origin: (origin, callback) => {
+    // Allow non-browser requests (mobile apps, curl, server-to-server, webhooks)
+    if (!origin) return callback(null, true);
+
+    // Allow localhost & local IP
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow zkcommerce.in & all subdomains (*.zkcommerce.in)
+    if (/^https?:\/\/([a-z0-9-]+\.)*zkcommerce\.in(:\d+)?$/i.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow vercel preview apps (*.vercel.app)
+    if (/^https?:\/\/([a-z0-9-]+\.)*vercel\.app$/i.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow specific merchant domains (e.g. smeram-natural.in)
+    if (/^https?:\/\/([a-z0-9-]+\.)*smeram-natural\.in(:\d+)?$/i.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow any explicitly configured origin in ALLOWED_ORIGINS
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Multi-tenant SaaS default: allow origin with credentials
+    return callback(null, true);
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-store-slug', 'x-cron-secret', 'x-razorpay-signature'],
 }));
+
+// GET /health & /api/health — Health check endpoint for api.zkcommerce.in
+app.get(['/health', '/api/health'], (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'zkcommerce-api',
+    version: '4.1.0',
+    database: db ? db.type : 'none',
+    razorpay: {
+      mode: process.env.RAZORPAY_MODE || 'test',
+      configured: Boolean(process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_Test_KEY_ID),
+    },
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
 app.use(express.json({
   limit: '10mb',
   verify: (req, res, buf) => {

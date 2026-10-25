@@ -16,37 +16,44 @@ window.ZK = window.ZK || {};
   var proto = window.location.protocol;
   var host  = window.location.hostname;
 
-  // Explicit override — set by Cloudflare Worker or server-side injection
+  // 1. Explicit JS override
   if (window.ZK_API_URL) { ZK.api = window.ZK_API_URL; return; }
 
-  // Local file opened directly
+  // 2. Meta tag override (<meta name="zk-api-url" content="https://api.zkcommerce.in/api">)
+  var metaApi = document.querySelector('meta[name="zk-api-url"]');
+  if (metaApi && metaApi.content) { ZK.api = metaApi.content; return; }
+
+  // 3. Local file opened directly
   if (proto === 'file:') { ZK.api = 'http://localhost:3000/api'; return; }
 
-  // localhost or 127.0.0.1 — local dev
+  // 4. localhost or local IP dev
   if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
     ZK.api = 'http://localhost:3000/api'; return;
   }
 
-  // Vercel preview URLs (*.vercel.app) — point to Railway staging
-  if (host.endsWith('.vercel.app')) {
-    // Read from meta tag if injected, else use Railway staging URL
-    var metaApi = document.querySelector('meta[name="zk-api-url"]');
-    ZK.api = metaApi ? metaApi.content : (window.RAILWAY_API_URL || 'https://zkcommerce-api.up.railway.app/api');
-    return;
-  }
-
-  // Custom domains
+  // 5. zkcommerce.in & subdomains (e.g. app.zkcommerce.in, smeram.zkcommerce.in)
   if (host.endsWith('zkcommerce.in')) {
     ZK.api = 'https://api.zkcommerce.in/api'; return;
   }
 
-  // Railway app domain
+  // 6. Custom tenant domains (e.g. smeram-natural.in)
+  if (host.endsWith('smeram-natural.in')) {
+    ZK.api = 'https://api.zkcommerce.in/api'; return;
+  }
+
+  // 7. Vercel preview URLs
+  if (host.endsWith('.vercel.app')) {
+    ZK.api = window.RAILWAY_API_URL || 'https://api.zkcommerce.in/api';
+    return;
+  }
+
+  // 8. Railway app domain
   if (host.endsWith('.railway.app')) {
     ZK.api = '/api'; return;
   }
 
-  // Fallback — relative URL (works when frontend and API on same domain)
-  ZK.api = '/api';
+  // Default production fallback for standalone frontends
+  ZK.api = 'https://api.zkcommerce.in/api';
 })();
 
 /* ── Auth ─────────────────────────────────────────────────── */
