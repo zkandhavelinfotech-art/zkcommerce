@@ -1,29 +1,48 @@
-/** Build the Vercel static artifact without publishing API or database source. */
+/**
+ * ZKCommerce v4.1 — Vercel Static Build Script
+ * Generates both 'dist' and 'zkc-build/dist' to satisfy all Vercel project configurations
+ */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 
-const root = path.resolve(__dirname, '..');
-const output = path.resolve(root, 'dist');
-if (path.dirname(output) !== root || path.basename(output) !== 'dist') {
-  throw new Error(`Refusing to clean unexpected output path: ${output}`);
-}
+const zkcRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(zkcRoot, '..');
 
-fs.rmSync(output, { recursive: true, force: true });
-fs.mkdirSync(output, { recursive: true });
+const targets = [
+  path.join(repoRoot, 'dist'),
+  path.join(zkcRoot, 'dist')
+];
 
-for (const directory of ['admin', 'assets', 'auth', 'merchant', 'storefront']) {
-  const dirPath = path.join(root, directory);
-  if (fs.existsSync(dirPath)) {
-    fs.cpSync(dirPath, path.join(output, directory), { recursive: true });
+for (const output of targets) {
+  try {
+    fs.rmSync(output, { recursive: true, force: true });
+    fs.mkdirSync(output, { recursive: true });
+
+    const directories = ['admin', 'assets', 'auth', 'merchant', 'storefront'];
+    for (const dir of directories) {
+      const src = path.join(zkcRoot, dir);
+      if (fs.existsSync(src)) {
+        fs.cpSync(src, path.join(output, dir), { recursive: true });
+      }
+    }
+
+    const files = [
+      'index.html',
+      'competitor-widget.html',
+      'migrate.html',
+      'manifest.json'
+    ];
+    for (const file of files) {
+      const src = path.join(zkcRoot, file);
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(output, file));
+      }
+    }
+
+    console.log(`✅ Static site built successfully at: ${output}`);
+  } catch (err) {
+    console.error(`❌ Error building static output at ${output}:`, err.message);
   }
 }
-for (const filename of ['index.html', 'competitor-widget.html', 'migrate.html', 'manifest.json']) {
-  const filePath = path.join(root, filename);
-  if (fs.existsSync(filePath)) {
-    fs.copyFileSync(filePath, path.join(output, filename));
-  }
-}
-
-console.log(`Static site built at ${output}`);

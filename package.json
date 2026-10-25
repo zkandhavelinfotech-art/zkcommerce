@@ -11,7 +11,7 @@
     "db:seed": "psql $DATABASE_URL -f database/phase3-additions.sql",
     "test": "jest --coverage",
     "lint": "eslint api/",
-    "build": "node zkc-build/scripts/build-static.js",
+    "build": "node scripts/build-static.js",
     "deploy": "node deployment/launcher.js deploy",
     "deploy:dev": "node deployment/launcher.js deploy development",
     "deploy:staging": "node deployment/launcher.js deploy staging",
