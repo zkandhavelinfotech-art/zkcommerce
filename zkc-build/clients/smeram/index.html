@@ -298,6 +298,288 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
 .btn-place-order{width:100%;padding:15px;background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(237,99,117,0.35);transition:all .2s}
 .btn-place-order:hover{transform:translateY(-1px)}
 
+/* ── Shopping Quantity Steppers & Continue Shopping Enhancements ── */
+.btn-continue-shop-head {
+  background: var(--pink-light);
+  border: 1px solid var(--pink-border);
+  color: var(--pink-dark);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all .15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-continue-shop-head:hover {
+  background: var(--pink);
+  color: #fff;
+}
+.btn-continue-shopping-block {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-continue-shopping-block:hover {
+  border-color: var(--pink);
+  color: var(--pink);
+  background: var(--pink-light);
+}
+
+.card-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 2px solid var(--pink);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 38px;
+  box-shadow: 0 2px 8px rgba(237, 99, 117, 0.15);
+}
+.card-stepper-btn {
+  border: none;
+  background: var(--pink-light);
+  color: var(--pink-dark);
+  width: 32px;
+  height: 100%;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-stepper-btn:hover {
+  background: var(--pink);
+  color: #fff;
+}
+.card-stepper-val {
+  padding: 0 10px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--dark);
+  white-space: nowrap;
+}
+.btn-view-cart-pill {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(46, 125, 50, 0.25);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-view-cart-pill:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+/* Floating Post-Add Action Banner */
+.cart-action-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(140%);
+  z-index: 999;
+  background: #241812;
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 22px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: calc(100% - 40px);
+  max-width: 620px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.cart-action-banner.show {
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.cab-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.cab-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cab-check {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #22C55E;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.cab-msg {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+}
+.cab-sub {
+  font-size: 11.5px;
+  color: #D1D5DB;
+}
+.cab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cab-btn-continue {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cab-btn-continue:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.cab-btn-view {
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(237, 99, 117, 0.4);
+  transition: transform 0.15s;
+}
+.cab-btn-view:hover {
+  transform: translateY(-1px);
+}
+
+/* Modal Quantity Selector */
+.pd-qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--soft);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+}
+.pd-qty-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.pd-stepper-box {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pd-stepper-btn {
+  border: none;
+  background: var(--soft);
+  color: var(--dark);
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pd-stepper-btn:hover {
+  background: var(--pink-light);
+  color: var(--pink-dark);
+}
+.pd-stepper-count {
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--dark);
+  min-width: 24px;
+  text-align: center;
+}
+.pd-modal-item-total {
+  margin-left: auto;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--pink);
+}
+.pd-modal-post-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.btn-continue-shop {
+  padding: 12px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-continue-shop:hover {
+  border-color: var(--pink);
+  color: var(--pink);
+  background: var(--pink-light);
+}
+.btn-view-cart-primary {
+  padding: 12px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-view-cart-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.3);
+}
+
 /* ── MODALS (Policy & Details) ── */
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center;padding:20px}
 .modal-backdrop.open{display:flex}
@@ -537,7 +819,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
                 <span>🚚 Free Shipping</span>
               </div>
             </div>
-            <div class="p-actions">
+            <div class="p-actions" id="p-actions-1">
               <button class="btn-view" type="button" onclick="openProductDetail(1)">View Details</button>
               <button class="btn-add" type="button" onclick="addToCart(1)">🛒 Add</button>
               <button class="btn-buy" type="button" onclick="buyNow(1)">⚡ Buy Now</button>
@@ -575,7 +857,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
                 <span>🚚 Free Shipping</span>
               </div>
             </div>
-            <div class="p-actions">
+            <div class="p-actions" id="p-actions-2">
               <button class="btn-view" type="button" onclick="openProductDetail(2)">View Details</button>
               <button class="btn-add" type="button" onclick="addToCart(2)">🛒 Add</button>
               <button class="btn-buy" type="button" onclick="buyNow(2)">⚡ Buy Now</button>
@@ -613,7 +895,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
                 <span>🚚 Free Shipping</span>
               </div>
             </div>
-            <div class="p-actions">
+            <div class="p-actions" id="p-actions-3">
               <button class="btn-view" type="button" onclick="openProductDetail(3)">View Details</button>
               <button class="btn-add" type="button" onclick="addToCart(3)">🛒 Add</button>
               <button class="btn-buy" type="button" onclick="buyNow(3)">⚡ Buy Now</button>
@@ -651,7 +933,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
                 <span>🚚 Free Shipping</span>
               </div>
             </div>
-            <div class="p-actions">
+            <div class="p-actions" id="p-actions-4">
               <button class="btn-view" type="button" onclick="openProductDetail(4)">View Details</button>
               <button class="btn-add" type="button" onclick="addToCart(4)">🛒 Add</button>
               <button class="btn-buy" type="button" onclick="buyNow(4)">⚡ Buy Now</button>
@@ -886,7 +1168,10 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
 <div class="drawer-backdrop" id="cartDrawer" onclick="if(event.target===this)closeCart()">
   <div class="drawer-panel">
     <div class="drawer-head">
-      <div class="drawer-title">Your Shopping Cart</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button type="button" class="btn-continue-shop-head" onclick="closeCart()" title="Continue Browsing Products">← Continue Shopping</button>
+        <div class="drawer-title">Your Cart</div>
+      </div>
       <button class="drawer-close" type="button" onclick="closeCart()" aria-label="Close cart">×</button>
     </div>
 
@@ -944,7 +1229,25 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
       </select>
 
       <button type="submit" class="btn-place-order" id="placeOrderBtn">Confirm &amp; Place Order</button>
+      <button type="button" class="btn-continue-shopping-block" onclick="closeCart()">🛍️ Continue Shopping</button>
     </form>
+  </div>
+</div>
+
+<!-- FLOATING POST-ADD ACTION BANNER -->
+<div id="cartActionBanner" class="cart-action-banner">
+  <div class="cab-inner">
+    <div class="cab-info">
+      <div class="cab-check">✓</div>
+      <div>
+        <div class="cab-msg" id="cabTitle">Item added to cart!</div>
+        <div class="cab-sub" id="cabSubtitle">Cart Total: ₹299 (1 item)</div>
+      </div>
+    </div>
+    <div class="cab-actions">
+      <button type="button" class="cab-btn-continue" onclick="dismissActionBanner()">🛍️ Continue Shopping</button>
+      <button type="button" class="cab-btn-view" onclick="dismissActionBanner();openCart()">🛒 View Cart &amp; Checkout →</button>
+    </div>
   </div>
 </div>
 
@@ -1223,18 +1526,70 @@ function closeCart() {
   document.getElementById('cartDrawer').classList.remove('open');
 }
 
-function addToCart(productId) {
+// Trigger Floating Post-Add Action Banner
+function triggerActionBanner(productName, price, qty) {
+  const b = document.getElementById('cartActionBanner');
+  if (!b) return;
+  const sub = document.getElementById('cabSubtitle');
+  const count = cart.reduce((s, x) => s + x.qty, 0);
+  const total = cart.reduce((s, x) => {
+    const prod = catalog.find(p => p.id === x.id);
+    return s + (prod ? prod.price * x.qty : 0);
+  }, 0);
+  if (sub) {
+    sub.textContent = `${productName || 'Item'} (x${qty}) · Cart Total: ₹${total} (${count} item${count > 1 ? 's' : ''})`;
+  }
+  b.classList.add('show');
+  clearTimeout(b._timer);
+  b._timer = setTimeout(() => {
+    b.classList.remove('show');
+  }, 6000);
+}
+
+function dismissActionBanner() {
+  const b = document.getElementById('cartActionBanner');
+  if (b) b.classList.remove('show');
+}
+
+// Dynamic Card Steppers (+1 / -1 / View Cart)
+function syncCardSteppers() {
+  catalog.forEach(p => {
+    const act = document.getElementById(`p-actions-${p.id}`);
+    if (!act) return;
+    const item = cart.find(x => x.id === p.id);
+    if (item && item.qty > 0) {
+      act.innerHTML = `
+        <div class="card-qty-stepper">
+          <button type="button" class="card-stepper-btn" onclick="updateCartQty(${p.id}, -1)" title="Remove one">−</button>
+          <span class="card-stepper-val">${item.qty} in cart</span>
+          <button type="button" class="card-stepper-btn" onclick="updateCartQty(${p.id}, 1)" title="Add one">+</button>
+        </div>
+        <button type="button" class="btn-view-cart-pill" onclick="openCart()">🛒 View Cart</button>
+      `;
+    } else {
+      act.innerHTML = `
+        <button class="btn-view" type="button" onclick="openProductDetail(${p.id})">View Details</button>
+        <button class="btn-add" type="button" onclick="addToCart(${p.id})">🛒 Add</button>
+        <button class="btn-buy" type="button" onclick="buyNow(${p.id})">⚡ Buy Now</button>
+      `;
+    }
+  });
+}
+
+function addToCart(productId, qtyDelta = 1) {
+  const p = catalog.find(x => x.id === productId);
   const item = cart.find(x => x.id === productId);
-  if (item) item.qty++;
-  else cart.push({ id: productId, qty: 1 });
+  if (item) item.qty += qtyDelta;
+  else cart.push({ id: productId, qty: qtyDelta });
   
   updateCartBadge();
-  showToast('🛒 Added to cart!');
+  syncCardSteppers();
+  triggerActionBanner(p ? p.name : '', p ? p.price : 0, item ? item.qty : qtyDelta);
   renderCart();
 }
 
 function buyNow(productId) {
-  addToCart(productId);
+  addToCart(productId, 1);
   openCart();
 }
 
@@ -1246,18 +1601,25 @@ function updateCartQty(productId, delta) {
     cart = cart.filter(x => x.id !== productId);
   }
   updateCartBadge();
+  syncCardSteppers();
   renderCart();
+  const p = catalog.find(x => x.id === productId);
+  if (item.qty > 0) {
+    triggerActionBanner(p ? p.name : '', p ? p.price : 0, item.qty);
+  }
 }
 
 function removeCartItem(productId) {
   cart = cart.filter(x => x.id !== productId);
   updateCartBadge();
+  syncCardSteppers();
   renderCart();
 }
 
 function updateCartBadge() {
   const count = cart.reduce((sum, x) => sum + x.qty, 0);
   document.getElementById('cartBadgeCount').textContent = count;
+  syncCardSteppers();
 }
 
 function renderCart() {
@@ -1377,6 +1739,23 @@ function handlePlaceOrder(e) {
 
   const waUrl = `https://wa.me/917539972026?text=${waMessage}`;
 
+  // If deployed on GoDaddy MySQL PHP environment, persist order into database
+  try {
+    fetch('order.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_number: orderNum,
+        customer_name: name,
+        customer_phone: phone,
+        address: `${address}, ${city} - ${pincode}`,
+        total: total.replace(/[^0-9]/g, ''),
+        payment_method: payMethod,
+        items: cart
+      })
+    }).catch(function(){});
+  } catch(_) {}
+
   // If Razorpay online payment chosen, show simulated gateway confirmation
   if (payMethod === 'razorpay') {
     alert(`[Razorpay Payment Gateway]\nSecure Payment of ${total} initialized for ${name}.\nTransaction approved successfully!`);
@@ -1472,10 +1851,25 @@ function openProductDetail(id, selectedSizeIndex = 0) {
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="pd-cta-row">
-          <button type="button" class="btn-add" style="padding:14px;font-size:14px" onclick="addToCart(${p.id});closeDetailModal()">🛒 Add to Cart</button>
-          <button type="button" class="btn-buy" style="padding:14px;font-size:14px" onclick="buyNow(${p.id});closeDetailModal()">⚡ Buy Now</button>
+        <!-- Quantity Selector & Actions -->
+        <div class="pd-qty-selector">
+          <span class="pd-qty-label">Quantity:</span>
+          <div class="pd-stepper-box">
+            <button type="button" class="pd-stepper-btn" onclick="adjustModalQty(${p.id}, -1)">−</button>
+            <span class="pd-stepper-count" id="modalQtyVal">1</span>
+            <button type="button" class="pd-stepper-btn" onclick="adjustModalQty(${p.id}, 1)">+</button>
+          </div>
+          <span class="pd-modal-item-total" id="modalItemTotal">₹${p.price}</span>
+        </div>
+
+        <div class="pd-cta-row" id="modalCtaRow">
+          <button type="button" class="btn-add" style="padding:14px;font-size:14px" onclick="addModalItemToCart(${p.id})">🛒 Add to Cart</button>
+          <button type="button" class="btn-buy" style="padding:14px;font-size:14px" onclick="buyModalItemNow(${p.id})">⚡ Buy Now</button>
+        </div>
+
+        <div class="pd-modal-post-actions" id="modalPostActions" style="display:none">
+          <button type="button" class="btn-continue-shop" onclick="closeDetailModal()">🛍️ Continue Shopping</button>
+          <button type="button" class="btn-view-cart-primary" onclick="closeDetailModal();openCart()">🛒 View Cart &amp; Checkout →</button>
         </div>
       </div>
     </div>
@@ -1659,8 +2053,37 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// Modal Quantity Helpers
+let modalQty = 1;
+
+function adjustModalQty(productId, delta) {
+  modalQty = Math.max(1, modalQty + delta);
+  const qtyEl = document.getElementById('modalQtyVal');
+  const totEl = document.getElementById('modalItemTotal');
+  const p = catalog.find(x => x.id === productId);
+  if (qtyEl) qtyEl.textContent = modalQty;
+  if (totEl && p) totEl.textContent = '₹' + (p.price * modalQty);
+}
+
+function addModalItemToCart(productId) {
+  addToCart(productId, modalQty);
+  const post = document.getElementById('modalPostActions');
+  const cta = document.getElementById('modalCtaRow');
+  if (post && cta) {
+    cta.style.display = 'none';
+    post.style.display = 'grid';
+  }
+}
+
+function buyModalItemNow(productId) {
+  addToCart(productId, modalQty);
+  closeDetailModal();
+  openCart();
+}
+
 // Initialize on page load
 updateCartBadge();
+syncCardSteppers();
 </script>
 
 </body>

@@ -144,15 +144,23 @@ async function serveStore(req, res, identifier, subpath = '/', basePathOverride 
   res.type('html').send(renderStore(snapshot, { page, product, collection, template, showContact: !page, basePath }));
 }
 
+// Serve assets for nested store and client paths (prevents HTML interception)
+app.use(['/store/:slug/assets', '/clients/:client/assets', '/clients/:client/merchant/assets', '/store/:slug/merchant/assets'], express.static(path.join(__dirname, '..', 'assets'), { fallthrough: true, maxAge: '7d' }));
+
 // Store-specific and client-specific merchant admin access
-app.get(['/store/:slug/merchant*', '/clients/:client/merchant*'], (req, res) => {
+app.get(['/store/:slug/merchant', '/clients/:client/merchant'], (req, res) => {
+  res.redirect(301, req.originalUrl.split('?')[0] + '/dashboard.html' + (req.originalUrl.includes('?') ? '?' + req.originalUrl.split('?')[1] : ''));
+});
+app.get(['/store/:slug/merchant/*', '/clients/:client/merchant/*'], (req, res, next) => {
   let subpath = req.path.replace(/^\/(store|clients)\/[^/]+\/merchant\/?/, '');
-  if (!subpath || subpath === '/') subpath = 'index.html';
+  if (!subpath || subpath === '/' || subpath === 'index.html') subpath = 'dashboard.html';
   const target = path.join(__dirname, '..', 'merchant', subpath);
   if (fs.existsSync(target) && fs.statSync(target).isFile()) {
     return res.sendFile(target);
   }
-  res.sendFile(path.join(__dirname, '..', 'merchant', 'index.html'));
+  const indexTarget = path.join(__dirname, '..', 'merchant', 'dashboard.html');
+  if (fs.existsSync(indexTarget)) return res.sendFile(indexTarget);
+  next();
 });
 
 // Direct path-based store access: /store/:slug and /store/:slug/*
@@ -161,6 +169,7 @@ app.get('/store/:slug*', async (req, res, next) => {
     const slug = req.params.slug;
     const basePath = `/store/${slug}`;
     const subpath = req.path.slice(basePath.length) || '/';
+    if (subpath.startsWith('/assets/')) return next();
     await serveStore(req, res, slug, subpath, basePath);
   } catch (e) { next(e); }
 });

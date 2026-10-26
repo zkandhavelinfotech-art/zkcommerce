@@ -9,7 +9,31 @@
 <meta name="theme-color" content="#1565C0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/design-system.css">
+<link rel="stylesheet" href="/assets/css/design-system.css" id="zk-ds-css-root">
+<link rel="stylesheet" href="../assets/css/design-system.css" id="zk-ds-css-rel">
+<script>
+// Prevent unstyled flash / collapse on nested URLs
+(function() {
+  function verifyStyles() {
+    var testEl = document.createElement('div');
+    testEl.className = 'zk-app-wrap';
+    document.head.appendChild(testEl);
+    var computed = window.getComputedStyle(testEl);
+    if (!computed || computed.display !== 'flex') {
+      var l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = window.location.origin + '/assets/css/design-system.css';
+      document.head.appendChild(l);
+    }
+    if (testEl.parentNode) testEl.parentNode.removeChild(testEl);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', verifyStyles);
+  } else {
+    verifyStyles();
+  }
+})();
+</script>
 <style>
 body {
   background: var(--zk-chalk);
@@ -20,6 +44,208 @@ body {
 @media (max-width: 1080px) {
   .zk-main { margin-left: 0 !important; }
   .sidebar-toggle { display: flex !important; }
+}
+
+/* ── Dual Co-Branding Sidebar Header ── */
+.zk-sidebar-header {
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.zk-platform-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 2px 4px;
+}
+.zk-platform-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.zk-platform-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #FF6B00, #E05300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(255, 107, 0, 0.4);
+}
+.zk-platform-title {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.zk-platform-ver {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(255, 107, 0, 0.22);
+  color: #FFA057;
+  border: 1px solid rgba(255, 107, 0, 0.4);
+  padding: 2px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.04em;
+}
+
+/* Client Store Co-Brand Card */
+.zk-client-brand-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+.zk-client-brand-card:hover {
+  border-color: rgba(255, 107, 0, 0.4);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+}
+.client-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.client-logo-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.client-brand-meta {
+  flex: 1;
+  min-width: 0;
+}
+.client-brand-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94A3B8;
+  font-weight: 700;
+}
+.client-brand-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+.client-brand-tag {
+  font-size: 10.5px;
+  color: #38BDF8;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.client-brand-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.client-action-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 6px;
+  border-radius: 6px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.client-action-btn.primary {
+  background: rgba(255, 107, 0, 0.18);
+  border: 1px solid rgba(255, 107, 0, 0.35);
+  color: #FFA057;
+}
+.client-action-btn.primary:hover {
+  background: #FF6B00;
+  color: #fff;
+}
+.client-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #CBD5E1;
+}
+.client-action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* Client Switcher Pill Strip */
+.client-switch-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+.client-switch-btn {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.client-switch-btn.active, .client-switch-btn:hover {
+  background: rgba(255, 107, 0, 0.2);
+  border-color: rgba(255, 107, 0, 0.4);
+  color: #FFA057;
+}
+
+/* Sidebar Footer Co-Promote Box */
+.copromote-footer-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.copromote-badge {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94A3B8;
+}
+.copromote-brands {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+.copromote-x {
+  color: #FF6B00;
+  font-size: 10px;
+  font-weight: 800;
 }
 
 /* ── Topbar Badge & Pulse ── */
@@ -283,11 +509,46 @@ body {
 
   <!-- ── Sidebar Navigation ── -->
   <aside class="zk-sidebar" id="sidebar">
-    <div class="zk-sidebar-logo">
-      <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span>ZKCommerce</span>
-        <span style="font-size:10px;font-weight:800;background:rgba(255,107,0,0.25);color:var(--zk-fire);padding:2px 6px;border-radius:4px">v4.8</span>
+    <!-- Dual Co-Branding Header (Our Product + Client Store) -->
+    <div class="zk-sidebar-header">
+      <!-- 1. Our Product Brand (ZKCommerce) -->
+      <div class="zk-platform-brand">
+        <div class="zk-platform-left">
+          <div class="zk-platform-logo">⚡</div>
+          <div>
+            <div class="zk-platform-title">ZKCommerce</div>
+          </div>
+        </div>
+        <span class="zk-platform-ver">v4.8</span>
+      </div>
+
+      <!-- 2. Client Store Co-Brand Card -->
+      <div class="zk-client-brand-card" id="client-brand-card">
+        <div class="client-brand-row">
+          <div class="client-logo-avatar" id="client-logo-avatar">
+            <span id="client-logo-icon">🌿</span>
+          </div>
+          <div class="client-brand-meta">
+            <div class="client-brand-label">Client Store</div>
+            <div class="client-brand-name" id="client-brand-name">Smeram Naturals</div>
+            <div class="client-brand-tag" id="client-brand-url">ayurveda.smeram.com</div>
+          </div>
+        </div>
+        <div class="client-brand-actions">
+          <a href="/clients/smeram/" id="side-visit-store" target="_blank" class="client-action-btn primary" title="Visit Live Storefront">
+            <span>🌐</span> Open Store
+          </a>
+          <a href="/store-builder/?store=smeram" id="side-open-builder" target="_blank" class="client-action-btn secondary" title="Customize in StoreBuilder">
+            <span>🖌️</span> StoreBuilder
+          </a>
+        </div>
+      </div>
+
+      <!-- 3. Client Switcher Pill Strip -->
+      <div class="client-switch-strip">
+        <button type="button" class="client-switch-btn active" data-client="smeram" onclick="switchClientContext('smeram')">🌿 Smeram</button>
+        <button type="button" class="client-switch-btn" data-client="miliro" onclick="switchClientContext('miliro')">🫧 Miliro</button>
+        <button type="button" class="client-switch-btn" data-client="demo" onclick="switchClientContext('demo')">⚡ Demo</button>
       </div>
     </div>
 
@@ -304,7 +565,7 @@ body {
       <div class="zk-sidebar-section-label">Online Store</div>
       <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
       <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
-      <a href="../store-builder/" target="_blank" class="zk-sidebar-link" style="color:#FFA057"><span class="sl-icon">🖌️</span>StoreBuilder</a>
+      <a href="/store-builder/" id="nav-store-builder" target="_blank" class="zk-sidebar-link" style="color:#FFA057"><span class="sl-icon">🖌️</span>StoreBuilder</a>
 
       <div class="zk-sidebar-section-label">Orders</div>
       <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
@@ -312,21 +573,24 @@ body {
 
       <div class="zk-sidebar-section-label">Operations &amp; System</div>
       <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
-      <a href="../db-migrations.html" class="zk-sidebar-link"><span class="sl-icon">🔄</span>DB Migrations</a>
-      <a href="../gap-analysis.html" class="zk-sidebar-link"><span class="sl-icon">📋</span>Gap Analysis</a>
-      <a href="../release-history.html" class="zk-sidebar-link"><span class="sl-icon">📜</span>Release History</a>
+      <a href="/db-migrations.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">🔄</span>DB Migrations</a>
+      <a href="/gap-analysis.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">📋</span>Gap Analysis</a>
+      <a href="/release-history.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">📜</span>Release History</a>
     </nav>
 
     <div class="zk-sidebar-footer">
-      <div style="margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.06)">
-        <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase">Store Analytics Engine</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-          <span class="topbar-pulse"></span>
-          <span style="font-size:12px;font-weight:700;color:#fff">Live Metrics Active</span>
+      <!-- Co-Promote Box in Footer -->
+      <div class="copromote-footer-box">
+        <div class="copromote-badge">Co-Branded Client Portal</div>
+        <div class="copromote-brands">
+          <span id="copromote-client-name">Smeram Naturals</span>
+          <span class="copromote-x">×</span>
+          <span>ZKCommerce</span>
         </div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:3px">Enterprise Multi-Store Engine</div>
       </div>
-      <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;display:flex;align-items:center;gap:6px">🌐 View storefront →</a>
-      <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.35);display:inline-block" onclick="auth.logout();return false;">Sign out</a>
+      <a href="/clients/smeram/" id="footer-store-link" target="_blank" style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;display:flex;align-items:center;gap:6px">🌐 View storefront →</a>
+      <a href="../auth/login.html" id="side-sign-out" style="font-size:12px;color:rgba(255,255,255,.35);display:inline-block" onclick="auth.logout();return false;">Sign out</a>
     </div>
   </aside>
 
@@ -362,7 +626,7 @@ body {
         <button onclick="loadAnalytics(true)" class="btn btn-secondary btn-sm" style="font-size:12px;padding:6px 12px;display:flex;align-items:center;gap:6px" title="Refresh Live Data">
           <span>🔄</span> Refresh
         </button>
-        <a href="../storefront/home.html" target="_blank" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px">
+        <a href="/clients/smeram/" id="topbar-store-link" target="_blank" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px">
           <span>🌐</span> View Store
         </a>
         <div style="display:flex;align-items:center;gap:10px;margin-left:8px;padding-left:12px;border-left:1px solid var(--zk-border)">
@@ -953,7 +1217,89 @@ function alertToast(msg) {
   setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
 }
 
+// Dynamic Client & Dual Co-Branding Context Engine
+const CLIENT_CONFIGS = {
+  smeram: {
+    slug: 'smeram',
+    name: 'Smeram Naturals',
+    tagline: 'Authentic Classical Ayurvedic Care',
+    domain: 'ayurveda.smeram.com',
+    icon: '🌿',
+    avatarBg: 'rgba(16, 185, 129, 0.2)',
+    storefrontUrl: '/clients/smeram/',
+    builderUrl: '/store-builder/?store=smeram'
+  },
+  miliro: {
+    slug: 'miliro',
+    name: 'Miliro Lifestyle',
+    tagline: 'Modern Apparel & Sustainable Living',
+    domain: 'shop.miliro.com',
+    icon: '🫧',
+    avatarBg: 'rgba(56, 189, 248, 0.2)',
+    storefrontUrl: '/store/miliro',
+    builderUrl: '/store-builder/?store=miliro'
+  },
+  demo: {
+    slug: 'demo',
+    name: 'ZKCommerce Showcase',
+    tagline: 'Enterprise Multi-Store Demo',
+    domain: 'demo.zkcommerce.io',
+    icon: '⚡',
+    avatarBg: 'rgba(255, 107, 0, 0.2)',
+    storefrontUrl: '/storefront/home.html',
+    builderUrl: '/store-builder/'
+  }
+};
+
+function detectClient() {
+  const p = window.location.pathname.toLowerCase();
+  const q = new URLSearchParams(window.location.search);
+  const explicit = q.get('client') || q.get('store');
+  if (explicit && CLIENT_CONFIGS[explicit]) return explicit;
+  if (p.includes('/smeram')) return 'smeram';
+  if (p.includes('/miliro')) return 'miliro';
+  return localStorage.getItem('zk_active_client') || 'smeram';
+}
+
+function applyClientBranding(slug) {
+  const c = CLIENT_CONFIGS[slug] || CLIENT_CONFIGS.smeram;
+  localStorage.setItem('zk_active_client', c.slug);
+  
+  // Update sidebar branding card
+  const nameEl = document.getElementById('client-brand-name');
+  if (nameEl) nameEl.textContent = c.name;
+  const tagEl = document.getElementById('client-brand-url');
+  if (tagEl) tagEl.textContent = c.domain;
+  const iconEl = document.getElementById('client-logo-icon');
+  if (iconEl) iconEl.textContent = c.icon;
+  const avatarEl = document.getElementById('client-logo-avatar');
+  if (avatarEl) avatarEl.style.background = c.avatarBg;
+  
+  // Update buttons & storefront links
+  const visitBtn = document.getElementById('side-visit-store');
+  if (visitBtn) visitBtn.href = c.storefrontUrl;
+  const bldBtn = document.getElementById('side-open-builder');
+  if (bldBtn) bldBtn.href = c.builderUrl;
+  const topStoreBtn = document.getElementById('topbar-store-link');
+  if (topStoreBtn) topStoreBtn.href = c.storefrontUrl;
+  const footStoreLink = document.getElementById('footer-store-link');
+  if (footStoreLink) footStoreLink.href = c.storefrontUrl;
+  const copromoteClient = document.getElementById('copromote-client-name');
+  if (copromoteClient) copromoteClient.textContent = c.name;
+  
+  // Update switcher pills
+  document.querySelectorAll('.client-switch-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.client === c.slug);
+  });
+}
+
+function switchClientContext(slug) {
+  applyClientBranding(slug);
+  alertToast('Switched analytics context to ' + CLIENT_CONFIGS[slug].name);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  applyClientBranding(detectClient());
   loadAnalytics(false);
 });
 </script>
