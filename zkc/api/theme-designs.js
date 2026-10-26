@@ -93,6 +93,15 @@ function renderDesign(name, ctx) {
   const email = fields.contact_email || '';
   const address = [store.address, store.city, store.state].filter(Boolean).join(', ');
   const publishedPages = (pages || []).filter(p => p.status === 'published');
+  const isPolicyPage = p => /privacy|terms|refund|return|shipping|cancellation|policy|disclaimer/i.test(p.slug + ' ' + p.title);
+  const isContactPage = p => /contact/i.test(p.slug);
+  const isAboutPage = p => /about/i.test(p.slug);
+  const policyPages = publishedPages.filter(isPolicyPage);
+  const contactPage = publishedPages.find(p => isContactPage(p) && !isPolicyPage(p));
+  const infoPages = publishedPages.filter(p => !isPolicyPage(p) && p !== contactPage).sort((a, b) => (isAboutPage(b) ? 1 : 0) - (isAboutPage(a) ? 1 : 0));
+  const pageUrl = p => storeUrl('/page/' + encodeURIComponent(p.slug));
+  // Page text saved with escaped line breaks ("\n") shows them as real breaks.
+  const pageBodyOf = p => String((p.content || {}).body || (p.content || {}).text || '').replace(/\\r\\n|\\n/g, '\n').replace(/\r\n/g, '\n');
   const productPath = p => p.slug ? storeUrl(`/products/${encodeURIComponent(p.slug)}`) : '#';
   const imagesOf = p => (Array.isArray(p.images) ? p.images : []).map(safeImage).filter(Boolean);
   const catOverrides = (sec('hero') && sec('hero').category_images) || fields.category_images || {};
@@ -162,15 +171,15 @@ function renderDesign(name, ctx) {
     if (!isVisible('nav')) return '';
     const s = sec('nav'), bg = s.background || fields.nav_bg;
     const catLinks = categories.slice(0, 6).map(c => `<li><a href="${storeUrl('/collections/' + encodeURIComponent(c.slug))}">${esc(c.name)}</a></li>`);
-    const navPageSlugs = ['about-us', 'contact-us', 'privacy-policy'];
-    const topPages = publishedPages.filter(p => navPageSlugs.includes(p.slug));
-    const otherPages = publishedPages.filter(p => !navPageSlugs.includes(p.slug));
-    const pageLinks = [...topPages, ...otherPages].slice(0, 3).map(p => `<li><a href="${storeUrl('/page/' + encodeURIComponent(p.slug))}">${esc(p.title)}</a></li>`);
+    // Header: About pages → Why us → Contact. Policy pages live in the footer only.
+    const pageLinks = infoPages.slice(0, 2).map(p => `<li><a href="${pageUrl(p)}">${esc(p.title)}</a></li>`);
     const whyLabel = esc(sec('why').nav_label || fields.why_nav || ('Why ' + storeName.split(/\s+/)[0]));
     const whyLink = isVisible('why') ? `<li><a href="${template === 'home' ? '#why' : storeUrl('/#why')}">${whyLabel}</a></li>` : '';
+    const contactLink = contactPage ? `<li><a href="${pageUrl(contactPage)}">${esc(contactPage.title)}</a></li>` : isVisible('contact') ? `<li><a href="${template === 'home' ? '#contact' : storeUrl('/#contact')}">Contact</a></li>` : '';
     const allProductsLink = `<li><a href="${template === 'home' ? '#products' : storeUrl('/#products')}">All Products</a></li>`;
     const links = [...(showAllProducts ? [allProductsLink] : []), ...catLinks, ...pageLinks];
     if (whyLink) links.push(whyLink);
+    if (contactLink) links.push(contactLink);
     const link = wa(`Hello ${storeName}, I have an enquiry about your products`);
     return `<nav data-zkc-section="navigation" style="${bg ? `background:${safeColor(bg, '#fff')};` : ''}"><div class="nav-inner"><a href="${storeUrl('/')}" class="brand-logo-wrap">${wordmark()}</a><ul class="nav-links">${links.join('')}</ul><div class="nav-right">${link ? `<a href="${link}" target="_blank" rel="noopener" class="whatsapp-btn-top">💬 <span>WhatsApp</span></a>` : ''}${fields.nav_cart_show === false ? '' : `<button class="cart-btn" type="button" onclick="openCheckout(event)">🛒 Cart <span class="cart-badge" id="cart">0</span></button>`}</div></div></nav>`;
   };
@@ -186,7 +195,7 @@ function renderDesign(name, ctx) {
     const tagline = fields.footer_text || store.tagline || '';
     const ig = store.instagram_handle ? `https://instagram.com/${encodeURIComponent(String(store.instagram_handle).replace(/^@/, ''))}` : '';
     const whyLabel = esc(sec('why').nav_label || fields.why_nav || ('Why ' + storeName.split(/\s+/)[0]));
-    return `<footer data-zkc-section="footer" style="${bg ? `background-color:${safeColor(bg, skin.dark)};` : ''}${img ? `background-image:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.7)),url('${img}');background-size:cover;` : ''}${fields.footer_text_c ? `color:${safeColor(fields.footer_text_c, '#fff')}` : ''}"><div class="footer-inner"><div class="footer-top"><div><div class="footer-logo-badge">${wordmark('footer-logo')}</div>${tagline ? `<p class="footer-about">${esc(tagline)}</p>` : ''}${trustItems.length ? `<div class="footer-pillars">${trustItems.slice(0, 4).map(t => `<span>${esc(parseItem(t).title.toUpperCase())}</span>`).join(' · ')}</div>` : ''}</div><div class="footer-col"><h4>${categories.length ? 'Categories' : 'Shop'}</h4>${showAllProducts ? `<a href="${template === 'home' ? '#products' : storeUrl('/#products')}">All Products</a>` : ''}${categories.slice(0, 6).map(c => `<a href="${storeUrl('/collections/' + encodeURIComponent(c.slug))}">${esc(c.name)}</a>`).join('')}</div><div class="footer-col"><h4>About</h4>${isVisible('why') ? `<a href="${template === 'home' ? '#why' : storeUrl('/#why')}">${whyLabel}</a>` : ''}${publishedPages.map(p => `<a href="${storeUrl('/page/' + encodeURIComponent(p.slug))}">${esc(p.title)}</a>`).join('')}${isVisible('contact') ? `<a href="${template === 'home' ? '#contact' : storeUrl('/#contact')}">Contact</a>` : ''}</div><div class="footer-col footer-contact"><h4>Contact</h4><span class="fc-strong">${esc(storeName)}</span>${address ? `<span>📍 ${esc(address)}</span>` : ''}${phone ? `<span>📞 ${esc(phone)}</span>` : ''}${waNumber ? `<a href="${wa('Hello ' + storeName)}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}${email ? `<a href="mailto:${esc(email)}">✉️ ${esc(email)}</a>` : ''}${ig && fields.footer_social !== false ? `<a href="${ig}" target="_blank" rel="noopener">📸 Instagram</a>` : ''}</div></div><div class="footer-bottom"><div>© ${new Date().getFullYear()} ${esc(storeName)}${address ? ' · ' + esc(address) : ''} · All rights reserved</div>${fields.footer_zk === false ? '' : '<div>Store powered by <b>ZKCommerce™</b></div>'}</div></div></footer>`;
+    return `<footer data-zkc-section="footer" style="${bg ? `background-color:${safeColor(bg, skin.dark)};` : ''}${img ? `background-image:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.7)),url('${img}');background-size:cover;` : ''}${fields.footer_text_c ? `color:${safeColor(fields.footer_text_c, '#fff')}` : ''}"><div class="footer-inner"><div class="footer-top"><div><div class="footer-logo-badge">${wordmark('footer-logo')}</div>${tagline ? `<p class="footer-about">${esc(tagline)}</p>` : ''}${trustItems.length ? `<div class="footer-pillars">${trustItems.slice(0, 4).map(t => `<span>${esc(parseItem(t).title.toUpperCase())}</span>`).join(' · ')}</div>` : ''}</div><div class="footer-col"><h4>${categories.length ? 'Categories' : 'Shop'}</h4>${showAllProducts ? `<a href="${template === 'home' ? '#products' : storeUrl('/#products')}">All Products</a>` : ''}${categories.slice(0, 6).map(c => `<a href="${storeUrl('/collections/' + encodeURIComponent(c.slug))}">${esc(c.name)}</a>`).join('')}</div><div class="footer-col"><h4>About</h4>${infoPages.slice(0, 1).map(p => `<a href="${pageUrl(p)}">${esc(p.title)}</a>`).join('')}${isVisible('why') ? `<a href="${template === 'home' ? '#why' : storeUrl('/#why')}">${whyLabel}</a>` : ''}${infoPages.slice(1).map(p => `<a href="${pageUrl(p)}">${esc(p.title)}</a>`).join('')}${contactPage ? `<a href="${pageUrl(contactPage)}">${esc(contactPage.title)}</a>` : isVisible('contact') ? `<a href="${template === 'home' ? '#contact' : storeUrl('/#contact')}">Contact</a>` : ''}</div>${policyPages.length ? `<div class="footer-col"><h4>Policies</h4>${policyPages.map(p => `<a href="${pageUrl(p)}">${esc(p.title)}</a>`).join('')}</div>` : ''}<div class="footer-col footer-contact"><h4>Contact</h4><span class="fc-strong">${esc(storeName)}</span>${address ? `<span>📍 ${esc(address)}</span>` : ''}${phone ? `<span>📞 ${esc(phone)}</span>` : ''}${waNumber ? `<a href="${wa('Hello ' + storeName)}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}${email ? `<a href="mailto:${esc(email)}">✉️ ${esc(email)}</a>` : ''}${ig && fields.footer_social !== false ? `<a href="${ig}" target="_blank" rel="noopener">📸 Instagram</a>` : ''}</div></div><div class="footer-bottom"><div>© ${new Date().getFullYear()} ${esc(storeName)}${address ? ' · ' + esc(address) : ''} · All rights reserved</div>${fields.footer_zk === false ? '' : '<div>Store powered by <b>ZKCommerce™</b></div>'}</div></div></footer>`;
   };
 
   // ── Home sections ──
@@ -254,6 +263,40 @@ function renderDesign(name, ctx) {
     }
   };
 
+  // Contact page: quick actions, info cards built from the page text (address with PIN, hours) and store details, plus the message form.
+  function contactPageHtml(page, body) {
+    const lines = body.split('\n').map(l => l.trim());
+    const valueOf = re => { const l = lines.find(x => re.test(x)); return l ? l.replace(re, '').replace(/^[\s:—-]+/, '').trim() : ''; };
+    const addrStart = lines.findIndex(l => /^(operating |registered |our )?address:?$/i.test(l));
+    const addrEnd = lines.findIndex((l, i) => i > addrStart && !l);
+    const addrLines = addrStart >= 0 ? lines.slice(addrStart + 1, addrEnd === -1 ? undefined : addrEnd) : [];
+    const fullAddress = addrLines.length ? addrLines.join(', ') : address;
+    // What the merchant wrote on the page wins over the store-wide contact fields.
+    const mail = valueOf(/^e-?mail\s*:/i) || email;
+    const tel = valueOf(/^(phone|mobile|call)[^:]*:/i) || phone;
+    const hours = valueOf(/^(support |working |business |office )?hours\s*:/i).replace(/\.$/, '');
+    const intro = lines.find(l => l && !/:/.test(l) && addrLines.indexOf(l) < 0 && !/^(operating |registered |our )?address$/i.test(l)) || 'Questions about a product, your order or bulk buying — we are happy to help.';
+    const telHref = String(tel).replace(/[^\d+]/g, '');
+    const chat = wa('Hello ' + storeName + ', I have a question');
+    const map = fullAddress ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(fullAddress) : '';
+    const card = (icon, label, val, extra = '') => `<div class="cp-card"><div class="cp-icon">${icon}</div><div><div class="cp-label">${label}</div><div class="cp-val">${val}</div>${extra}</div></div>`;
+    return `<div class="breadcrumb-bar"><div class="breadcrumb-inner"><div class="breadcrumb-links"><a href="${storeUrl('/')}">Home</a><span class="sep">/</span><span class="current">${esc(page.title)}</span></div></div></div>
+<main class="main-container contact-page" data-zkc-section="page_content">
+  <section class="cp-hero"><span class="cp-eyebrow">${esc(storeName)}</span><h1>${esc(page.title)}</h1><p>${esc(intro)}</p>
+    <div class="cp-actions">${telHref ? `<a class="cp-btn" href="tel:${esc(telHref)}">📞 Call us</a>` : ''}${chat ? `<a class="cp-btn cp-wa" href="${chat}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}${mail ? `<a class="cp-btn" href="mailto:${esc(mail)}">✉️ Email</a>` : ''}</div></section>
+  <div class="cp-grid">
+    <div class="cp-info">
+      ${tel ? card('📞', 'Customer care', `<a href="tel:${esc(telHref)}">${esc(tel)}</a>`) : ''}
+      ${chat ? card('💬', 'WhatsApp', `<a href="${chat}" target="_blank" rel="noopener">Chat with us</a>`, '<div class="cp-note">Fastest for order questions</div>') : ''}
+      ${mail ? card('✉️', 'Email', `<a href="mailto:${esc(mail)}">${esc(mail)}</a>`) : ''}
+      ${fullAddress ? card('📍', 'Visit us', esc(fullAddress), map ? `<a class="cp-map" href="${map}" target="_blank" rel="noopener">Open in Google Maps →</a>` : '') : ''}
+      ${hours ? card('🕘', 'Support hours', esc(hours)) : ''}
+    </div>
+    <form class="contact-form cp-form" onsubmit="return contactStore(event)"><div class="form-title">Send us a message</div><p class="cp-note">We usually reply within one working day.</p><div class="form-row"><label class="form-field"><span>Your name</span><input name="name" required autocomplete="name"></label><label class="form-field"><span>Phone / WhatsApp</span><input name="phone" inputmode="tel" autocomplete="tel"></label></div><label class="form-field"><span>Email</span><input name="email" type="email" autocomplete="email"></label><label class="form-field"><span>Message</span><textarea name="message" required rows="5"></textarea></label><button class="btn-primary full">Send message →</button></form>
+  </div>
+</main>`;
+  }
+
   // ── Templates ──
   let content = '';
   if (template === 'product' && product) {
@@ -274,8 +317,9 @@ function renderDesign(name, ctx) {
     const label = (categories.find(c => c.slug === active) || {}).name || collection || 'All Products';
     content = `<div class="breadcrumb-bar"><div class="breadcrumb-inner"><div class="breadcrumb-links"><a href="${storeUrl('/')}">Home</a><span class="sep">/</span><span class="current">${esc(label)}</span></div></div></div><main class="main-container" id="products" data-zkc-section="collection" style="${s.background ? `background:${safeColor(s.background, '#fff')}` : ''}"><div class="list-head"><h1 class="list-title">${esc(s.heading || fields.collection_heading || label)}</h1></div>${categoryTabs(active)}<div class="products-box-grid">${products.map(productCard).join('') || '<p class="empty">No products in this collection yet.</p>'}</div></main>`;
   } else if (page) {
-    const body = String((page.content || {}).body || (page.content || {}).text || '');
-    content = `<div class="breadcrumb-bar"><div class="breadcrumb-inner"><div class="breadcrumb-links"><a href="${storeUrl('/')}">Home</a><span class="sep">/</span><span class="current">${esc(page.title)}</span></div></div></div><main class="main-container"><section class="page-card" data-zkc-section="page_content"><h1 class="detail-title">${esc(page.title)}</h1>${body.split(/\n{2,}/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</section></main>`;
+    const body = pageBodyOf(page);
+    if (isContactPage(page) && !isPolicyPage(page)) content = contactPageHtml(page, body);
+    else content = `<div class="breadcrumb-bar"><div class="breadcrumb-inner"><div class="breadcrumb-links"><a href="${storeUrl('/')}">Home</a><span class="sep">/</span><span class="current">${esc(page.title)}</span></div></div></div><main class="main-container"><section class="page-card" data-zkc-section="page_content"><h1 class="detail-title">${esc(page.title)}</h1>${body.split(/\n{2,}/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</section></main>`;
   } else {
     const keys = Object.keys(sections);
     const order = (Array.isArray(cfg.section_order) && cfg.section_order.length ? cfg.section_order : skin.defaultOrder)
@@ -299,7 +343,7 @@ nav{background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border-bottom:1.
 .nav-inner{max-width:1440px;margin:0 auto;padding:0 20px;height:86px;display:flex;align-items:center;justify-content:space-between;gap:14px}
 .brand-logo-wrap{display:flex;align-items:center;text-decoration:none;flex-shrink:0}.brand-logo-img{height:58px;width:auto;max-width:220px;object-fit:contain;display:block}
 .wordmark{display:flex;flex-direction:column;line-height:1}.wm-1{font:700 42px var(--hf);color:var(--brand);letter-spacing:-.01em;line-height:0.95}.wm-2{font:700 22px var(--hf);color:var(--accent-dark);margin-top:2px;padding-left:26px;position:relative}.wm-2::before{content:'';position:absolute;left:0;top:50%;width:20px;height:10px;border-bottom:2.5px solid var(--accent);border-radius:0 0 50% 50%;transform:translateY(-70%)}
-.nav-links{display:flex;gap:12px;list-style:none;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}.nav-links a{font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;transition:color .2s;white-space:nowrap}.nav-links a:hover{color:var(--brand)}
+.nav-links{display:flex;gap:20px;list-style:none;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}.nav-links a{font-size:${Math.max(12, Math.min(20, Number(fields.nav_font_size) || 15))}px;font-weight:600;color:var(--muted);text-decoration:none;transition:color .2s;white-space:nowrap}.nav-links a:hover{color:var(--brand)}
 .nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .whatsapp-btn-top{background:#E8F8EE;color:#1E8E3E;border:1.5px solid #25D366;padding:7px 12px;border-radius:99px;font-size:11.5px;font-weight:800;text-decoration:none;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(37,211,102,.15);white-space:nowrap}.whatsapp-btn-top:hover{background:#25D366;color:#fff}
 .cart-btn{background:var(--brand);color:#fff;padding:8px 16px;border-radius:99px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;box-shadow:0 4px 14px ${rgba(brand, .3)};white-space:nowrap}.cart-btn:hover{background:var(--brand-dark)}
@@ -372,16 +416,17 @@ ${skin.whyDark ? `.why-section .section-title{color:#fff}.why-section .section-e
 .tc-av{width:40px;height:40px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}.tc-name{font-size:14px;font-weight:700;color:var(--dark)}.tc-role{font-size:12px;color:var(--muted)}
 .contact-sec{background:linear-gradient(145deg,#FFFDF9,var(--brand-light))}.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}.contact-info{display:flex;flex-direction:column;gap:14px}
 .ci{display:flex;gap:14px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px}.ci-icon{width:42px;height:42px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
-.ci-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}.ci-val{font-size:14px;font-weight:600;color:var(--dark)}.ci-val a{color:var(--brand);text-decoration:none}
+.ci-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}.ci-val{font-size:16px;font-weight:600;color:var(--dark)}.ci-val a{color:var(--brand);text-decoration:none}
 .contact-form{background:#fff;border-radius:20px;padding:30px;border:1px solid var(--border);box-shadow:var(--shadow-sm)}.form-title{font:700 22px var(--hf);color:var(--dark);margin-bottom:18px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.form-field span{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .form-field input,.form-field textarea,.notify-row input{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font:14px inherit;color:var(--dark);background:#FFFDF9;outline:none}.form-field input:focus,.form-field textarea:focus{border-color:var(--brand);background:#fff}.form-field textarea{height:100px;resize:vertical}
 .footer-feature{text-align:center;padding:44px 24px 8px}
 .footer-above-floral-bar{width:100%;height:72px;background-color:#fff;background-repeat:repeat-x;background-size:auto 72px;background-position:bottom center;border-top:1.5px solid var(--border-light);margin-top:40px}.footer-spacer{height:40px}
-footer{background:var(--dark);color:#fff;padding:50px 24px 30px}.footer-inner{max-width:1260px;margin:0 auto}.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:40px;margin-bottom:40px}
+footer{background:var(--dark);color:#fff;padding:50px 24px 30px}.footer-inner{max-width:1260px;margin:0 auto}.footer-top{display:grid;grid-template-columns:2fr repeat(auto-fit,minmax(150px,1fr));gap:40px;margin-bottom:40px}
+.contact-page{max-width:1100px}.cp-hero{text-align:center;padding:12px 0 30px}.cp-eyebrow{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);margin-bottom:8px}.cp-hero h1{font-size:clamp(32px,5vw,46px);margin:0 0 10px;color:var(--dark)}.cp-hero p{font-size:18px;color:var(--muted);max-width:640px;margin:0 auto 22px;line-height:1.6}.cp-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.cp-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;border:1.5px solid var(--brand);color:var(--brand);font-weight:700;font-size:16px;text-decoration:none;background:#fff}.cp-btn:hover{background:var(--soft)}.cp-btn.cp-wa{background:#25D366;border-color:#25D366;color:#fff}.cp-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:32px;align-items:start}.cp-info{display:grid;gap:14px}.cp-card{display:flex;gap:16px;background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:20px 22px}.cp-icon{width:50px;height:50px;border-radius:14px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}.cp-label{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.cp-val{font-size:18px;font-weight:600;color:var(--dark);line-height:1.5}.cp-val a{color:var(--brand);text-decoration:none}.cp-map{display:inline-block;margin-top:6px;font-size:15px;font-weight:700;color:var(--brand);text-decoration:none}.cp-note{font-size:14px;color:var(--muted);margin:2px 0 14px}.cp-form .form-field span{font-size:14px}.cp-form input,.cp-form textarea{font-size:16px}
 .footer-logo-badge{background:#fff;border-radius:12px;padding:8px 16px;display:inline-block;box-shadow:0 4px 16px rgba(0,0,0,.25);margin-bottom:16px}.footer-logo-badge .brand-logo-img{height:48px}
 .footer-about{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;max-width:320px}.footer-pillars{margin-top:12px;font-size:10.5px;color:var(--gold);font-weight:800}
-.footer-col h4{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}.footer-col a,.footer-col span{display:block;font-size:13px;color:rgba(255,255,255,.7);text-decoration:none;margin-bottom:8px}.footer-col a:hover{color:var(--gold)}.footer-col .fc-strong{color:#fff;font-weight:700}
+.footer-col h4{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}.footer-col a,.footer-col span{display:block;font-size:14.5px;color:rgba(255,255,255,.7);text-decoration:none;margin-bottom:8px}.footer-col a:hover{color:var(--gold)}.footer-col .fc-strong{color:#fff;font-weight:700}
 .footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:rgba(255,255,255,.45)}
 .breadcrumb-bar{background:var(--soft);border-bottom:1px solid var(--border-light);padding:12px 24px}.breadcrumb-inner{max-width:1260px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .breadcrumb-links{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}.breadcrumb-links a{color:var(--muted);text-decoration:none}.breadcrumb-links a:hover{color:var(--brand)}.breadcrumb-links .sep{color:#C0B0A4}.breadcrumb-links .current{color:var(--brand);font-weight:700}
@@ -419,7 +464,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}.footer-inner{ma
 .label-product-title-bold{font:700 28px var(--hf);color:var(--dark)}.label-product-title-bold span{color:var(--method);font-size:18px}
 .label-orange-bar{background:var(--method);color:#fff;font-size:14px;font-weight:800;padding:9px 20px;border-radius:6px;width:100%;max-width:320px}
 .label-bullet-vertical{display:flex;flex-direction:column;gap:10px;align-items:flex-start}.label-bullet-row{display:flex;gap:10px;font-size:14px;font-weight:700;color:var(--dark)}
-.related{margin-top:20px}.page-card{background:#fff;border:1.5px solid var(--border);border-radius:28px;padding:44px;max-width:900px;margin:0 auto;line-height:1.8;min-height:40vh}.page-card p{margin-bottom:14px}
+.related{margin-top:20px}.page-card{background:#fff;border:1.5px solid var(--border);border-radius:28px;padding:44px;max-width:900px;margin:0 auto;line-height:1.8;min-height:40vh;font-size:17px}.page-card p{margin-bottom:14px}
 .empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)}
 .zk-toast{position:fixed;bottom:28px;right:28px;background:var(--dark);color:#fff;padding:14px 22px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:0 10px 32px ${rgba(skin.dark, .35)};transform:translateY(120px);opacity:0;transition:all .35s;z-index:2000}.zk-toast.show{transform:none;opacity:1}
 .zk-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;align-items:center;justify-content:center;cursor:zoom-out}.zk-lightbox.open{display:flex}.zk-lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px}
@@ -444,7 +489,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}.footer-inner{ma
 .qv-add,.qv-buy{flex:1;min-width:140px;height:46px;border-radius:var(--radius);font-weight:800;font-size:14px;cursor:pointer}.qv-add{background:var(--brand-light);color:var(--brand);border:1.5px solid var(--brand-border)}.qv-buy{background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;border:none}
 .qv-sec{margin-top:18px;border-top:1.5px solid var(--border-light);padding-top:14px}.qv-sec h4{font-family:var(--hf);font-size:17px;color:var(--dark);margin-bottom:8px}.qv-sec p,.qv-sec li{font-size:14px;line-height:1.7;color:var(--text)}.qv-sec ul{padding-left:18px}.qv-chips{display:flex;flex-wrap:wrap;gap:6px}.qv-chips span{font-size:12px;background:var(--soft);border:1px solid var(--border-light);padding:4px 10px;border-radius:99px}.qv-sizes{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.qv-size{border:1.5px solid var(--brand-border);background:#fff;color:var(--dark);padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer}.qv-size.active{background:var(--brand-light);color:var(--brand);border-color:var(--brand)}.qv-size[disabled],.variant-chip[disabled]{opacity:.45;cursor:not-allowed}.qv-full{display:inline-block;margin-top:16px;color:var(--brand);font-weight:700;font-size:13px}
 @media(max-width:820px){.qv-grid{grid-template-columns:1fr;gap:18px}.qv-media{position:static}.qv-main{height:320px}.zk-qv-box{padding:20px 16px;border-radius:16px}.zk-qv{padding:8px}}
-@media(max-width:900px){.detail-grid,.label-body-content,.contact-grid{grid-template-columns:1fr}.detail-gallery{position:static}.label-left-col{border-right:none;border-bottom:1.5px solid var(--border-light);padding:0 0 24px}.why-grid,.testi-grid{grid-template-columns:1fr}.footer-top{grid-template-columns:1fr 1fr}.nav-links{display:none}.full-gallery{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.detail-grid,.label-body-content,.contact-grid,.cp-grid{grid-template-columns:1fr}.detail-gallery{position:static}.label-left-col{border-right:none;border-bottom:1.5px solid var(--border-light);padding:0 0 24px}.why-grid,.testi-grid{grid-template-columns:1fr}.footer-top{grid-template-columns:1fr 1fr}.nav-links{display:none}.full-gallery{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.nav-inner{padding:0 14px;gap:10px}.brand-logo-img{height:40px}.wm-1{font-size:24px}.whatsapp-btn-top span{display:none}.footer-top,.form-row,.label-bullet-grid{grid-template-columns:1fr}.product-details-hero{padding:18px;border-radius:20px}.detail-main-media{height:340px}.ingredients-grid-section{padding:28px 16px}.label-body-content{padding:24px 18px}.products-box-grid{grid-template-columns:1fr}.pillars-inner{gap:14px}.header-top-floral-bar{height:48px;background-size:auto 48px}}`;
 
   // "View Details" quick-view popup: everything the modal shows, keyed by product id.
