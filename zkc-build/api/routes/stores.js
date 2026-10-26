@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { exportStoreDeployment, exportDbMigration } = require('../services/deployment-exporter');
 // Defined here (not imported) so listing and downloading packages keeps working whatever the exporter exports.
-const DEPLOY_ROOT = path.join(__dirname, '..', '..', 'deployment');
+const DEPLOY_ROOT = process.env.ZKC_DEPLOY_ROOT || path.join(__dirname, '..', '..', 'deployment');
 const mysqlMigrations = require('../services/mysql-migrations');
 const orderMessages = require('../services/order-messages');
 const deploySettings = require('../services/deployment-settings');
@@ -234,12 +234,27 @@ const VERSION_RE = /^\d{1,4}(\.\d{1,4}){0,3}$/;
 const sendError = (res, e) => res.status(e.status || 500).json({ error: e.message });
 
 async function loadPackageData(storeId, db = pool) {
-  const [products, pages, categories] = await Promise.all([
+  const [products, pages, categories, coupons, shippingRates] = await Promise.all([
     db.query('SELECT p.*,c.name AS category_name,c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC,p.created_at DESC', [storeId]),
     db.query("SELECT * FROM store_pages WHERE store_id=$1 AND status='published' ORDER BY sort_order,id", [storeId]),
-    db.query('SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id', [storeId])
+    db.query('SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id', [storeId]),
+    db.query('SELECT * FROM coupons WHERE store_id=$1 ORDER BY id', [storeId]),
+    db.query('SELECT * FROM store_shipping_rates WHERE store_id=$1 ORDER BY id', [storeId])
   ]);
-  return { products: products.rows, pages: pages.rows, categories: categories.rows };
+  return { products: products.rows, pages: pages.rows, categories: categories.rows, coupons: coupons.rows, shipping_rates: shippingRates.rows };
+}
+
+// Settings the PHP package needs to apply the same rules as this server: GST, stock alerts, Ekart, WhatsApp sender.
+async function packageCommerce(storeId) {
+  const [{ rows: [gst] }, inv, ship, sender] = await Promise.all([
+    pool.query('SELECT enabled, default_rate, gstin FROM gst_settings WHERE store_id=$1', [storeId]),
+    require('../services/inventory').settingsFor(storeId),
+    require('../services/shipping').settingsFor(storeId),
+    require('../services/wa-sender').loadSender(storeId)
+  ]);
+  const plain = { ...sender, zkwaconnect: { ...sender.zkwaconnect, api_key: deploySettings.decrypt(sender.zkwaconnect.api_key) || '' },
+    gupshup: { ...sender.gupshup, api_key: deploySettings.decrypt(sender.gupshup.api_key) || '' } };
+  return { gst: gst || {}, inventory: inv, shipping: { enabled: ship.enabled, courier_name: ship.courier_name, tracking_url_template: ship.tracking_url_template }, sender: plain };
 }
 
 // Razorpay keys for a package: this environment's saved keys, else the keys this server runs with.
@@ -247,7 +262,8 @@ function razorpayKeysFor(saved) {
   const p = saved.payments || {};
   const key_id = p.key_id && p.key_secret ? p.key_id : (process.env.RAZORPAY_KEY_ID || '');
   const key_secret = p.key_id && p.key_secret ? p.key_secret : (process.env.RAZORPAY_KEY_SECRET || '');
-  return key_id && key_secret ? { key_id, key_secret, mode: /^rzp_live_/.test(key_id) ? 'live' : 'test', source: p.key_id ? 'environment' : 'server' } : null;
+  const webhook_secret = p.webhook_secret || process.env.RAZORPAY_WEBHOOK_SECRET || '';
+  return key_id && key_secret ? { key_id, key_secret, webhook_secret, mode: /^rzp_live_/.test(key_id) ? 'live' : 'test', source: p.key_id ? 'environment' : 'server' } : null;
 }
 
 // Build a versioned package for one environment, using saved settings with optional request overrides.
@@ -267,7 +283,7 @@ async function buildPackage(store, merchantId, body, data) {
   const customDomain = env === 'production' ? (store.custom_domain || saved.custom_domain) : (body.custom_domain || saved.custom_domain);
   const deployment = await exportStoreDeployment({
     store, themeConfig: store.theme_config || {}, ...(data || await loadPackageData(store.id)),
-    options: { env, technology, version, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved), whatsapp: await orderMessages.loadSettings(store.id) }
+    options: { env, technology, version, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved), whatsapp: await orderMessages.loadSettings(store.id), commerce: await packageCommerce(store.id) }
   });
   settings.versions[`${env}:${technology}`] = version;
   const envSettings = settings.environments[env] || {};
@@ -475,7 +491,7 @@ router.post('/:id/db-migration', auth, async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
     const migration = await exportDbMigration({
       store: rows[0], ...(await loadPackageData(req.params.id)),
-      env, fromVersion, fromSchema, toVersion, includeSeed: req.body.include_seed !== false, whatsapp: await orderMessages.loadSettings(req.params.id)
+      env, fromVersion, fromSchema, toVersion, includeSeed: req.body.include_seed !== false, whatsapp: await orderMessages.loadSettings(req.params.id), commerce: await packageCommerce(req.params.id)
     });
     if (!migration.zip_path) return res.status(500).json({ error: 'Could not create the migration ZIP: ' + migration.zip_error });
     envSettings.last_migration = { from_version: migration.from_version, to_version: toVersion, zip_name: migration.zip_name, zip_path: migration.zip_path, built_at: migration.built_at };

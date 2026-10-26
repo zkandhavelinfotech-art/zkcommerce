@@ -77,7 +77,9 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
 <div id="printArea"></div>
 
 <script>
-const API = '/api', token = localStorage.getItem('zk_token');
+// Two hosts share this page: the Node dashboard (login token) and the PHP package's shipments.php (admin session, api.php).
+const PHP_MODE = !!window.ZKC_SHIPMENTS_PHP;
+const API = '/api', token = PHP_MODE ? '' : localStorage.getItem('zk_token');
 const params = new URLSearchParams(location.search), storeId = params.get('store_id');
 if (params.get('embed')) document.body.classList.add('embed');
 let data = { orders: [], store: {}, settings: {} }, selected = new Set();
@@ -90,8 +92,21 @@ const items = o => { const i = parse(o.items); return Array.isArray(i) ? i : [];
 const isCod = o => o.payment_method === 'cod';
 const status = (t, color) => { const el = document.getElementById('status'); el.textContent = t; el.style.color = color || '#64748b'; };
 const withStore = p => p + (storeId ? (p.includes('?') ? '&' : '?') + 'store_id=' + encodeURIComponent(storeId) : '');
+// Node paths → api.php admin routes (order id travels in the body there).
+function phpRoute(path, opts) {
+  const [p, q] = path.split('?');
+  let m, route = null, body = opts.body ? JSON.parse(opts.body) : {};
+  if (p === '/shipments/orders') route = 'admin/shipments';
+  else if ((m = p.match(/^\/shipments\/orders\/(\d+)\/awb$/))) { route = 'admin/awb'; body.order_id = Number(m[1]); }
+  else if ((m = p.match(/^\/shipments\/orders\/(\d+)\/book$/))) route = 'admin/book';
+  else if ((m = p.match(/^\/orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); }
+  if (!route) throw Error('Not available on this site');
+  return { url: 'api.php?route=' + encodeURIComponent(route) + (q ? '&' + q : ''), opts: { ...opts, body: opts.body || opts.method === 'PUT' ? JSON.stringify(body) : undefined } };
+}
 async function api(path, opts = {}) {
-  const r = await fetch(API + withStore(path), { ...opts, headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } });
+  let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  if (PHP_MODE) { const t = phpRoute(path, opts); url = t.url; opts = t.opts; headers = { 'Content-Type': 'application/json' }; }
+  const r = await fetch(url, { ...opts, credentials: 'same-origin', headers });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw Error(d.error || 'Request failed (' + r.status + ')');
   return d;
@@ -126,6 +141,7 @@ async function load() {
     data = await api('/shipments/orders?' + q);
     document.getElementById('storeName').textContent = data.store.store_name || '';
     document.getElementById('offNotice').hidden = !!data.settings.enabled;
+    if (PHP_MODE) { document.getElementById('enableBtn').hidden = true; document.getElementById('offNotice').lastElementChild.insertAdjacentHTML('beforebegin', '<p>Turn it on in the ZKCommerce dashboard (Shipping → Ekart shipping) and upload the next package.</p>'); document.querySelector('header a').href = 'admin-orders.php'; }
     document.getElementById('modeNote').textContent = data.settings.mode === 'api' && data.settings.api_ready
       ? 'Ekart API connected: use “Book” to get the AWB automatically, or type one from the portal.'
       : 'Book each shipment on the Ekart portal, then type or scan its AWB below (Enter saves and moves to the next order).';
@@ -252,7 +268,7 @@ document.getElementById('enableBtn').onclick = async () => {
 };
 document.getElementById('loadBtn').onclick = load;
 document.getElementById('stage').onchange = load;
-if (!token) location.href = '../auth/login.html'; else load();
+if (!PHP_MODE && !token) location.href = '../auth/login.html'; else load();
 </script>
 </body>
 </html>

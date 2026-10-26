@@ -145,6 +145,102 @@ const MIGRATIONS = [
     steps: [
       { addColumn: { table: 'products', column: 'quantity', definition: 'INT DEFAULT 100' } }
     ]
+  },
+  {
+    id: '006_commerce',
+    description: 'Sizes and stock, coupons, shipping rates, GST totals, invoices, Ekart tracking and WhatsApp log',
+    steps: [
+      { addColumn: { table: 'products', column: 'variants', definition: 'LONGTEXT DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'net_quantity_value', definition: 'DECIMAL(10,2) DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'net_quantity_unit', definition: 'VARCHAR(10) DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'low_stock_threshold', definition: 'INT DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'show_offer', definition: 'TINYINT(1) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'subtotal', definition: 'DECIMAL(12,2) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'discount_amount', definition: 'DECIMAL(12,2) NOT NULL DEFAULT 0' } },
+      { addColumn: { table: 'orders', column: 'gst_rate', definition: 'DECIMAL(5,2) NOT NULL DEFAULT 0' } },
+      { addColumn: { table: 'orders', column: 'gst_amount', definition: 'DECIMAL(12,2) NOT NULL DEFAULT 0' } },
+      { addColumn: { table: 'orders', column: 'shipping_amount', definition: 'DECIMAL(12,2) NOT NULL DEFAULT 0' } },
+      { addColumn: { table: 'orders', column: 'shipping_rate_id', definition: 'BIGINT DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'coupon_code', definition: 'VARCHAR(40) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'stock_deducted', definition: 'TINYINT(1) NOT NULL DEFAULT 0' } },
+      { addColumn: { table: 'orders', column: 'paid_at', definition: 'DATETIME DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'courier', definition: 'VARCHAR(40) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'tracking_url', definition: 'TEXT DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'shipped_at', definition: 'DATETIME DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'delivered_at', definition: 'DATETIME DEFAULT NULL' } },
+      { addIndex: { table: 'orders', name: 'idx_orders_tracking', columns: '`store_id`, `tracking_number`' } },
+      { addIndex: { table: 'orders', name: 'idx_orders_phone', columns: '`store_id`, `customer_phone`' } },
+      `CREATE TABLE IF NOT EXISTS \`product_stock\` (
+  \`store_id\` BIGINT NOT NULL,
+  \`product_id\` BIGINT NOT NULL,
+  \`variant_id\` VARCHAR(40) NOT NULL DEFAULT '',
+  \`quantity\` INT NOT NULL DEFAULT 0,
+  \`updated_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (\`product_id\`, \`variant_id\`)
+) ${TABLE_OPTS}`,
+      `CREATE TABLE IF NOT EXISTS \`inventory_movements\` (
+  \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  \`store_id\` BIGINT NOT NULL,
+  \`product_id\` BIGINT NOT NULL,
+  \`variant_id\` VARCHAR(40) NOT NULL DEFAULT '',
+  \`delta\` INT NOT NULL,
+  \`quantity_after\` INT NOT NULL,
+  \`reason\` VARCHAR(20) NOT NULL,
+  \`order_id\` BIGINT DEFAULT NULL,
+  \`note\` VARCHAR(200) DEFAULT NULL,
+  \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX \`idx_mov_product\` (\`product_id\`, \`created_at\`)
+) ${TABLE_OPTS}`,
+      `CREATE TABLE IF NOT EXISTS \`coupons\` (
+  \`id\` BIGINT PRIMARY KEY,
+  \`store_id\` BIGINT NOT NULL,
+  \`code\` VARCHAR(40) NOT NULL,
+  \`discount_type\` VARCHAR(10) NOT NULL,
+  \`discount_value\` DECIMAL(10,2) NOT NULL,
+  \`minimum_order\` INT NOT NULL DEFAULT 0,
+  \`usage_limit\` INT DEFAULT NULL,
+  \`used_count\` INT NOT NULL DEFAULT 0,
+  \`starts_at\` DATETIME DEFAULT NULL,
+  \`expires_at\` DATETIME DEFAULT NULL,
+  \`active\` TINYINT(1) NOT NULL DEFAULT 1,
+  UNIQUE KEY \`uq_coupon_code\` (\`store_id\`, \`code\`)
+) ${TABLE_OPTS}`,
+      `CREATE TABLE IF NOT EXISTS \`shipping_rates\` (
+  \`id\` BIGINT PRIMARY KEY,
+  \`store_id\` BIGINT NOT NULL,
+  \`name\` VARCHAR(120) NOT NULL,
+  \`rate\` INT NOT NULL DEFAULT 0,
+  \`free_above\` INT DEFAULT NULL,
+  \`postal_prefix\` VARCHAR(12) DEFAULT NULL,
+  \`estimated_days\` VARCHAR(60) DEFAULT NULL,
+  \`courier\` VARCHAR(60) DEFAULT NULL,
+  \`active\` TINYINT(1) NOT NULL DEFAULT 1,
+  INDEX \`idx_rates_store\` (\`store_id\`)
+) ${TABLE_OPTS}`,
+      `CREATE TABLE IF NOT EXISTS \`invoices\` (
+  \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  \`store_id\` BIGINT NOT NULL,
+  \`order_id\` BIGINT NOT NULL UNIQUE,
+  \`invoice_number\` VARCHAR(50) NOT NULL UNIQUE,
+  \`issued_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ${TABLE_OPTS}`,
+      `CREATE TABLE IF NOT EXISTS \`whatsapp_outbox\` (
+  \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  \`store_id\` BIGINT NOT NULL,
+  \`kind\` VARCHAR(30) NOT NULL,
+  \`to_phone\` VARCHAR(20) NOT NULL,
+  \`message\` TEXT NOT NULL,
+  \`provider\` VARCHAR(20) DEFAULT NULL,
+  \`status\` VARCHAR(20) NOT NULL DEFAULT 'pending',
+  \`error\` TEXT DEFAULT NULL,
+  \`order_id\` BIGINT DEFAULT NULL,
+  \`product_id\` BIGINT DEFAULT NULL,
+  \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  \`sent_at\` DATETIME DEFAULT NULL,
+  INDEX \`idx_outbox_store\` (\`store_id\`, \`status\`, \`created_at\`)
+) ${TABLE_OPTS}`
+      // Older orders keep stock_deducted = 0: they predate stock tracking, so cancelling them puts nothing back.
+    ]
   }
 ];
 

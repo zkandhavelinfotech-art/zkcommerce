@@ -9,7 +9,7 @@ const { checkoutSettings } = require('./checkout-settings');
 const orderMessages = require('./order-messages');
 
 const REPO_ROOT = path.join(__dirname, '..', '..');
-const DEPLOY_ROOT = path.join(REPO_ROOT, 'deployment');
+const DEPLOY_ROOT = process.env.ZKC_DEPLOY_ROOT || path.join(REPO_ROOT, 'deployment');
 const ENV_SUFFIX = { development: '-dev', stage: '-stage', preview: '-preview', production: '' };
 
 function safeSlug(s) {
@@ -25,7 +25,12 @@ const productQuantity = p => (p.quantity !== undefined && p.quantity !== null ? 
 
 // Catalog data as idempotent upserts. Re-running refreshes rows; products no longer in the
 // catalog are deactivated (not deleted) so old orders keep their references.
-function mysqlSeedStatements(store, categories = [], products = [], pages = []) {
+// Postgres timestamps → MySQL DATETIME in IST (the PHP site runs its session at +05:30).
+const istDateTime = v => v ? new Date(new Date(v).getTime() + 5.5 * 3600e3).toISOString().slice(0, 19).replace('T', ' ') : null;
+const activeVariants = p => (Array.isArray(p.variants) ? p.variants : []).filter(v => v && typeof v === 'object' && v.id && v.active !== false);
+const sqlNum = v => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? 'NULL' : String(Number(v));
+
+function mysqlSeedStatements(store, categories = [], products = [], pages = [], extra = {}) {
   const sid = Number(store.id);
   const out = [];
   out.push(`INSERT INTO \`stores\` (\`id\`, \`store_name\`, \`slug\`, \`custom_domain\`, \`tagline\`, \`hero_headline\`, \`hero_subtext\`, \`hero_cta_text\`, \`primary_colour\`, \`bg_colour\`, \`accent_colour\`, \`logo_url\`, \`whatsapp_number\`, \`instagram_handle\`, \`address\`, \`city\`, \`state\`, \`theme_config\`, \`status\`)
@@ -40,9 +45,27 @@ ON DUPLICATE KEY UPDATE \`name\`=VALUES(\`name\`), \`slug\`=VALUES(\`slug\`), \`
 
   for (const p of products) {
     const imgJson = Array.isArray(p.images) ? JSON.stringify(p.images) : (p.images ? JSON.stringify([p.images]) : '[]');
-    out.push(`INSERT INTO \`products\` (\`id\`, \`store_id\`, \`category_id\`, \`name\`, \`slug\`, \`sku\`, \`price\`, \`compare_price\`, \`product_size\`, \`offer_text\`, \`badge_text\`, \`description\`, \`ingredients\`, \`user_instructions\`, \`benefits\`, \`additional_note\`, \`images\`, \`quantity\`, \`in_stock\`, \`active\`)
-VALUES (${Number(p.id)}, ${sid}, ${p.category_id ? Number(p.category_id) : 'NULL'}, ${escapeSqlString(p.name)}, ${escapeSqlString(p.slug)}, ${escapeSqlString(p.sku)}, ${Number(p.price || 0)}, ${p.compare_price ? Number(p.compare_price) : 'NULL'}, ${escapeSqlString(p.product_size || p.size)}, ${escapeSqlString(p.offer_text || p.offer)}, ${escapeSqlString(p.badge_text)}, ${escapeSqlString(p.description)}, ${escapeSqlString(p.ingredients)}, ${escapeSqlString(p.user_instructions)}, ${escapeSqlString(p.benefits)}, ${escapeSqlString(p.additional_note || 'Inclusive of GST and free shipping.')}, ${escapeSqlString(imgJson)}, ${productQuantity(p)}, ${p.in_stock !== false ? 1 : 0}, ${p.active !== false ? 1 : 0})
-ON DUPLICATE KEY UPDATE \`category_id\`=VALUES(\`category_id\`), \`name\`=VALUES(\`name\`), \`slug\`=VALUES(\`slug\`), \`sku\`=VALUES(\`sku\`), \`price\`=VALUES(\`price\`), \`compare_price\`=VALUES(\`compare_price\`), \`product_size\`=VALUES(\`product_size\`), \`offer_text\`=VALUES(\`offer_text\`), \`badge_text\`=VALUES(\`badge_text\`), \`description\`=VALUES(\`description\`), \`ingredients\`=VALUES(\`ingredients\`), \`user_instructions\`=VALUES(\`user_instructions\`), \`benefits\`=VALUES(\`benefits\`), \`additional_note\`=VALUES(\`additional_note\`), \`images\`=VALUES(\`images\`), \`quantity\`=VALUES(\`quantity\`), \`in_stock\`=VALUES(\`in_stock\`), \`active\`=VALUES(\`active\`)`);
+    out.push(`INSERT INTO \`products\` (\`id\`, \`store_id\`, \`category_id\`, \`name\`, \`slug\`, \`sku\`, \`price\`, \`compare_price\`, \`product_size\`, \`offer_text\`, \`badge_text\`, \`description\`, \`ingredients\`, \`user_instructions\`, \`benefits\`, \`additional_note\`, \`images\`, \`quantity\`, \`in_stock\`, \`active\`, \`variants\`, \`net_quantity_value\`, \`net_quantity_unit\`, \`low_stock_threshold\`, \`show_offer\`)
+VALUES (${Number(p.id)}, ${sid}, ${p.category_id ? Number(p.category_id) : 'NULL'}, ${escapeSqlString(p.name)}, ${escapeSqlString(p.slug)}, ${escapeSqlString(p.sku)}, ${Number(p.price || 0)}, ${p.compare_price ? Number(p.compare_price) : 'NULL'}, ${escapeSqlString(p.product_size || p.size)}, ${escapeSqlString(p.offer_text || p.offer)}, ${escapeSqlString(p.badge_text)}, ${escapeSqlString(p.description)}, ${escapeSqlString(p.ingredients)}, ${escapeSqlString(p.user_instructions)}, ${escapeSqlString(p.benefits)}, ${escapeSqlString(p.additional_note || 'Inclusive of GST and free shipping.')}, ${escapeSqlString(imgJson)}, ${productQuantity(p)}, ${p.in_stock !== false ? 1 : 0}, ${p.active !== false ? 1 : 0}, ${escapeSqlString(JSON.stringify(Array.isArray(p.variants) ? p.variants : []))}, ${sqlNum(p.net_quantity_value)}, ${escapeSqlString(p.net_quantity_unit)}, ${sqlNum(p.low_stock_threshold)}, ${p.show_offer === true ? 1 : p.show_offer === false ? 0 : 'NULL'})
+ON DUPLICATE KEY UPDATE \`category_id\`=VALUES(\`category_id\`), \`name\`=VALUES(\`name\`), \`slug\`=VALUES(\`slug\`), \`sku\`=VALUES(\`sku\`), \`price\`=VALUES(\`price\`), \`compare_price\`=VALUES(\`compare_price\`), \`product_size\`=VALUES(\`product_size\`), \`offer_text\`=VALUES(\`offer_text\`), \`badge_text\`=VALUES(\`badge_text\`), \`description\`=VALUES(\`description\`), \`ingredients\`=VALUES(\`ingredients\`), \`user_instructions\`=VALUES(\`user_instructions\`), \`benefits\`=VALUES(\`benefits\`), \`additional_note\`=VALUES(\`additional_note\`), \`images\`=VALUES(\`images\`), \`active\`=VALUES(\`active\`), \`variants\`=VALUES(\`variants\`), \`net_quantity_value\`=VALUES(\`net_quantity_value\`), \`net_quantity_unit\`=VALUES(\`net_quantity_unit\`), \`low_stock_threshold\`=VALUES(\`low_stock_threshold\`), \`show_offer\`=VALUES(\`show_offer\`)`);
+  }
+  // Opening stock for products / sizes the site has not seen yet (INSERT IGNORE keeps counts it already has).
+  const stockRows = products.flatMap(p => { const vs = activeVariants(p); return vs.length ? vs.map(v => [p.id, v.id, Number(v.quantity) || 0]) : [[p.id, '', productQuantity(p)]]; });
+  if (stockRows.length) out.push(`INSERT IGNORE INTO \`product_stock\` (\`store_id\`, \`product_id\`, \`variant_id\`, \`quantity\`) VALUES ${stockRows.map(([pid, vid, q]) => `(${sid}, ${Number(pid)}, ${escapeSqlString(String(vid))}, ${Math.trunc(q)})`).join(', ')}`);
+  // Coupons and shipping rates are managed in the dashboard; usage counts stay with the site.
+  if (Array.isArray(extra.coupons)) {
+    for (const c of extra.coupons) out.push(`INSERT INTO \`coupons\` (\`id\`, \`store_id\`, \`code\`, \`discount_type\`, \`discount_value\`, \`minimum_order\`, \`usage_limit\`, \`starts_at\`, \`expires_at\`, \`active\`)
+VALUES (${Number(c.id)}, ${sid}, ${escapeSqlString(String(c.code).toUpperCase())}, ${escapeSqlString(c.discount_type)}, ${sqlNum(c.discount_value)}, ${Number(c.minimum_order) || 0}, ${sqlNum(c.usage_limit)}, ${escapeSqlString(istDateTime(c.starts_at))}, ${escapeSqlString(istDateTime(c.expires_at))}, ${c.active !== false ? 1 : 0})
+ON DUPLICATE KEY UPDATE \`code\`=VALUES(\`code\`), \`discount_type\`=VALUES(\`discount_type\`), \`discount_value\`=VALUES(\`discount_value\`), \`minimum_order\`=VALUES(\`minimum_order\`), \`usage_limit\`=VALUES(\`usage_limit\`), \`starts_at\`=VALUES(\`starts_at\`), \`expires_at\`=VALUES(\`expires_at\`), \`active\`=VALUES(\`active\`)`);
+    const ids = extra.coupons.map(c => Number(c.id)).filter(Boolean);
+    out.push(`UPDATE \`coupons\` SET \`active\` = 0 WHERE \`store_id\` = ${sid}${ids.length ? ` AND \`id\` NOT IN (${ids.join(', ')})` : ''}`);
+  }
+  if (Array.isArray(extra.shipping_rates)) {
+    for (const r of extra.shipping_rates) out.push(`INSERT INTO \`shipping_rates\` (\`id\`, \`store_id\`, \`name\`, \`rate\`, \`free_above\`, \`postal_prefix\`, \`estimated_days\`, \`courier\`, \`active\`)
+VALUES (${Number(r.id)}, ${sid}, ${escapeSqlString(r.name)}, ${Number(r.rate) || 0}, ${sqlNum(r.free_above)}, ${escapeSqlString(r.postal_prefix || null)}, ${escapeSqlString(r.estimated_days)}, ${escapeSqlString(r.courier)}, ${r.active !== false ? 1 : 0})
+ON DUPLICATE KEY UPDATE \`name\`=VALUES(\`name\`), \`rate\`=VALUES(\`rate\`), \`free_above\`=VALUES(\`free_above\`), \`postal_prefix\`=VALUES(\`postal_prefix\`), \`estimated_days\`=VALUES(\`estimated_days\`), \`courier\`=VALUES(\`courier\`), \`active\`=VALUES(\`active\`)`);
+    const ids = extra.shipping_rates.map(r => Number(r.id)).filter(Boolean);
+    out.push(`UPDATE \`shipping_rates\` SET \`active\` = 0 WHERE \`store_id\` = ${sid}${ids.length ? ` AND \`id\` NOT IN (${ids.join(', ')})` : ''}`);
   }
   const productIds = products.map(p => Number(p.id)).filter(Boolean);
   out.push(`UPDATE \`products\` SET \`active\` = 0 WHERE \`store_id\` = ${sid}${productIds.length ? ` AND \`id\` NOT IN (${productIds.join(', ')})` : ''}`);
@@ -66,7 +89,7 @@ function packageMarkerSql(version, env) {
  * Full install / upgrade script: every migration (each skipped when already applied) + catalog seed.
  * Safe on an empty database and on one created by any earlier version.
  */
-function generateMySqlSeed(store, categories = [], products = [], pages = [], { version = '', env = 'production' } = {}) {
+function generateMySqlSeed(store, categories = [], products = [], pages = [], { version = '', env = 'production', extra = {} } = {}) {
   return `-- ============================================================
 -- ${store.store_name} — MySQL install / upgrade${version ? ` (package v${version}, ${env})` : ''}
 -- Target: GoDaddy / cPanel / MariaDB / MySQL 5.7+ / 8.0+
@@ -82,14 +105,14 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 ${migrationsLib.guardedSql(migrationsLib.MIGRATIONS)}
 -- ── Catalog data (${products.length} products, ${categories.length} categories, ${pages.length} pages)
-${mysqlSeedStatements(store, categories, products, pages).join(';\n\n')};
+${mysqlSeedStatements(store, categories, products, pages, extra).join(';\n\n')};
 ${version ? `\n${packageMarkerSql(version, env)};\n` : ''}
 SET FOREIGN_KEY_CHECKS = 1;
 `;
 }
 
 /** Only the schema changes after `fromSchema` (+ optional catalog refresh), for an existing database. */
-function generateMySqlMigration(store, { fromVersion, fromSchema, toVersion, env, includeSeed, categories = [], products = [], pages = [] }) {
+function generateMySqlMigration(store, { fromVersion, fromSchema, toVersion, env, includeSeed, categories = [], products = [], pages = [], extra = {} }) {
   const pending = migrationsLib.migrationsAfter(fromSchema);
   return {
     pending,
@@ -107,7 +130,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 ${pending.length ? migrationsLib.guardedSql(pending) : `${migrationsLib.SCHEMA_TABLE_SQL};\n-- No schema changes since ${fromVersion ? 'v' + fromVersion : 'the start'}.\n`}
-${includeSeed ? `-- ── Catalog data (${products.length} products, ${categories.length} categories, ${pages.length} pages)\n${mysqlSeedStatements(store, categories, products, pages).join(';\n\n')};\n` : ''}
+${includeSeed ? `-- ── Catalog data (${products.length} products, ${categories.length} categories, ${pages.length} pages)\n${mysqlSeedStatements(store, categories, products, pages, extra).join(';\n\n')};\n` : ''}
 ${packageMarkerSql(toVersion, env)};
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -805,7 +828,9 @@ try {
 }
 
 // ── PHP + MySQL (GoDaddy / cPanel / Plesk) bundle ──────────────────────────
-function generateStoreConfigPhp(store, env, version, checkout = checkoutSettings(store.theme_config), wa = orderMessages.normalize(null, store)) {
+function generateStoreConfigPhp(store, env, version, checkout = checkoutSettings(store.theme_config), wa = orderMessages.normalize(null, store), commerce = {}) {
+  wa = orderMessages.normalize(wa, store);
+  const gst = commerce.gst || {}, inv = commerce.inventory || {}, ship = commerce.shipping || {};
   return `<?php
 // ${store.store_name} — store identity and checkout options for api.php and admin-orders.php (${env}, v${version}).
 define('STORE_ID', ${Number(store.id)});
@@ -829,6 +854,20 @@ define('WA_CARE_NUMBER', ${phpString(wa.care_number || '')});
 define('WA_CARE_LABEL', ${phpString(wa.care_label || '')});
 define('WA_CARE_TEMPLATE', ${phpString(wa.care_template || '')});
 define('WA_CUSTOMER_TEMPLATE', ${phpString(wa.customer_template || '')});
+define('WA_LOW_STOCK_TEMPLATE', ${phpString(wa.low_stock_template || '')});
+define('WA_SHIPPED_TEMPLATE', ${phpString(wa.shipped_template || '')});
+define('WA_DELIVERED_TEMPLATE', ${phpString(wa.delivered_template || '')});
+// GST (dashboard → Invoices & GST). Amounts are added on top of prices, like the Node store.
+define('GST_ENABLED', ${gst.enabled ? 'true' : 'false'});
+define('GST_RATE', ${Number(gst.default_rate) || 0});
+define('GSTIN', ${phpString(gst.gstin || store.gst_number || '')});
+// Stock alerts (dashboard → Inventory): WhatsApp to customer care when an item falls to this level.
+define('LOW_STOCK_THRESHOLD', ${Number.isInteger(inv.low_stock_threshold) ? inv.low_stock_threshold : 50});
+define('LOW_STOCK_ALERTS', ${inv.alerts_enabled === false ? 'false' : 'true'});
+// Ekart shipping (dashboard → Shipping). Off until the merchant enables it.
+define('EKART_ENABLED', ${ship.enabled ? 'true' : 'false'});
+define('SHIP_COURIER', ${phpString(ship.courier_name || 'Ekart')});
+define('SHIP_TRACKING_URL', ${phpString(ship.tracking_url_template || 'https://ekartlogistics.com/shipmenttrack/{awb}')});
 `;
 }
 
@@ -837,6 +876,26 @@ function generatePaymentConfigPhp(store, env, rzp) {
 // ${store.store_name} — Razorpay keys (${env}, ${rzp.mode} mode). Keep this file private; it is blocked from the web.
 define('RAZORPAY_KEY_ID', ${phpString(rzp.key_id)});
 define('RAZORPAY_KEY_SECRET', ${phpString(rzp.key_secret)});
+// Razorpay Dashboard → Webhooks → https://<your-domain>/api.php?route=payments/razorpay/webhook (payment.captured, payment.failed).
+define('RAZORPAY_WEBHOOK_SECRET', ${phpString(rzp.webhook_secret || '')});
+`;
+}
+
+/** WhatsApp sender keys (ZKWAConnect / Gupshup) for automatic messages. Private: blocked from the web like payment_config.php. */
+function generateWhatsAppConfigPhp(store, env, sender) {
+  const z = sender.zkwaconnect || {}, g = sender.gupshup || {};
+  return `<?php
+// ${store.store_name} — WhatsApp sender (${env}). Set in the dashboard → WhatsApp → WhatsApp sender. Keep this file private.
+define('WA_PROVIDER', ${phpString(sender.provider || 'none')});
+define('ZKWA_BASE_URL', ${phpString(z.base_url || '')});
+define('ZKWA_API_KEY', ${phpString(z.api_key || '')});
+define('ZKWA_PHONE_NUMBER_ID', ${phpString(z.phone_number_id || '')});
+define('GUPSHUP_APP_NAME', ${phpString(g.app_name || '')});
+define('GUPSHUP_SOURCE_NUMBER', ${phpString(g.source_number || '')});
+define('GUPSHUP_API_KEY', ${phpString(g.api_key || '')});
+// Approved Meta templates per message type ({name, language, variables: "{a}|{b}"}) and which types send automatically.
+define('WA_TEMPLATES', ${phpString(JSON.stringify(sender.templates || {}))});
+define('WA_AUTO', ${phpString(JSON.stringify(sender.auto || {}))});
 `;
 }
 
@@ -858,6 +917,19 @@ if (($_SESSION['zkc_admin'] ?? null) !== STORE_ID) { header('Location: admin-ord
 ?>
 ` + html.replace('</head>', '<script>window.ZKC_PACKAGING_PHP = true;</script>\n</head>');
 }
+
+function generateShipmentsPhp() {
+  const html = fs.readFileSync(path.join(REPO_ROOT, 'merchant', 'shipments.html'), 'utf8');
+  return `<?php
+session_start();
+require_once __DIR__ . '/store_config.php';
+if (($_SESSION['zkc_admin'] ?? null) !== STORE_ID) { header('Location: admin-orders.php?next=shipments'); exit; }
+?>
+` + html.replace('</head>', '<script>window.ZKC_SHIPMENTS_PHP = true;</script>\n</head>');
+}
+
+// Real PHP files in api/services/php/, copied verbatim into every PHP package.
+const PHP_FILES = ['api.php', 'admin-orders.php', 'admin_common.php', 'commerce.php', 'whatsapp_orders.php', 'packaging_api.php', 'stock.php', 'customers.php', 'coupons.php', 'invoice.php'];
 
 function generateDbConfigPhp(store, db, adminKey, env) {
   return `<?php
@@ -894,232 +966,9 @@ function getDbConnection() {
 `;
 }
 
-function generateApiPhp() {
-  return `<?php
-/**
- * Storefront API for PHP + MySQL hosting.
- * The storefront's fetch('/api/...') calls are routed here as api.php?route=... by a small script in each page.
- */
-header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/store_config.php';
-require_once __DIR__ . '/db_config.php';
-if (is_file(__DIR__ . '/payment_config.php')) require_once __DIR__ . '/payment_config.php';
-require_once __DIR__ . '/whatsapp_orders.php';
-require_once __DIR__ . '/packaging_api.php';
-if (!defined('CHECKOUT_COD')) define('CHECKOUT_COD', true);
-if (!defined('CHECKOUT_RAZORPAY')) define('CHECKOUT_RAZORPAY', false);
-if (!defined('CHECKOUT_COUPON')) define('CHECKOUT_COUPON', false);
+function generateApiPhp() { return fs.readFileSync(path.join(PHP_DIR, 'api.php'), 'utf8'); }
 
-function respond($data, $status = 200) {
-    http_response_code($status);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$route  = trim($_GET['route'] ?? '', '/');
-$method = $_SERVER['REQUEST_METHOD'];
-$body   = json_decode(file_get_contents('php://input'), true);
-if (!is_array($body)) $body = $_POST;
-
-$pdo = getDbConnection();
-if ($route === 'health') respond(['status' => $pdo ? 'ok' : 'error', 'db' => $pdo ? 'connected' : 'disconnected', 'store' => STORE_SLUG, 'env' => STORE_ENV, 'version' => PACKAGE_VERSION]);
-if (!$pdo) respond(['error' => 'The store database is not reachable. Check db_config.php.'], 503);
-// Store order times in IST (DATETIME defaults follow the session time zone).
-try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Exception $e) { /* keep the server default */ }
-
-// Merchant tools (packaging labels), behind the admin-orders.php login.
-if (strpos($route, 'admin/') === 0) zkcHandleAdminRoute($pdo, $route, $method, $body);
-
-if (preg_match('#^storefront/[^/]+/shipping-rates$#', $route)) respond(['rates' => []]);
-
-if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
-    $customer = $body['customer'] ?? [];
-    $address  = $body['address'] ?? [];
-    $name  = trim($customer['name'] ?? '');
-    $phone = trim($customer['phone'] ?? '');
-    $email = trim($customer['email'] ?? '');
-    $line1 = trim($address['line1'] ?? '');
-    if ($name === '' || $phone === '' || $line1 === '') respond(['error' => 'Name, phone and delivery address are required.'], 400);
-    // Merchant checkout settings (store_config.php) are enforced here, not only in the page.
-    $payMethod = ($body['payment_method'] ?? 'cod') === 'razorpay' ? 'razorpay' : 'cod';
-    if ($payMethod === 'cod' && !CHECKOUT_COD) respond(['error' => 'Cash on delivery is not available for this store. Please pay online.'], 400);
-    if ($payMethod === 'razorpay' && !CHECKOUT_RAZORPAY) respond(['error' => 'Online payment is not available for this store.'], 400);
-    if (!empty($body['coupon_code'])) respond(['error' => CHECKOUT_COUPON ? 'Coupon codes are not available on this site yet.' : 'Discount codes are not available for this store.'], 400);
-
-    $items = [];
-    $total = 0;
-    $find = $pdo->prepare('SELECT id, name, price, product_size FROM products WHERE id = ? AND store_id = ? AND active = 1 AND in_stock = 1');
-    foreach (($body['items'] ?? []) as $item) {
-        $qty = max(1, min(99, (int)($item['quantity'] ?? 1)));
-        $find->execute([(int)($item['product_id'] ?? 0), STORE_ID]);
-        $p = $find->fetch();
-        if (!$p) respond(['error' => 'A product in your cart is no longer available.'], 400);
-        $items[] = ['product_id' => (int)$p['id'], 'name' => $p['name'], 'size' => $p['product_size'], 'quantity' => $qty, 'price' => (float)$p['price']];
-        $total += $qty * (float)$p['price'];
-    }
-    if (!$items) respond(['error' => 'Your cart is empty.'], 400);
-
-    $orderNumber = 'ORD-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
-    // COD orders are confirmed now; Razorpay orders stay 'pending' until the payment is verified.
-    $insert = $pdo->prepare('INSERT INTO orders (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json, total_amount, payment_method, payment_status, order_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-    $insert->execute([STORE_ID, $orderNumber, $name, $phone, $email, $line1, $address['city'] ?? '', $address['state'] ?? '', $address['pincode'] ?? '', json_encode($items, JSON_UNESCAPED_UNICODE), $total, $payMethod, $payMethod === 'cod' ? 'cod' : 'unpaid', $payMethod === 'cod' ? 'new' : 'pending']);
-    $orderId = (int)$pdo->lastInsertId();
-    // COD is confirmed now, so hand the order to customer care on WhatsApp; Razorpay does this after payment.
-    $handoff = $payMethod === 'cod' ? zkcHandoffUrl(['order_number' => $orderNumber, 'customer_name' => $name, 'customer_phone' => $phone, 'customer_email' => $email, 'shipping_address' => $line1, 'city' => $address['city'] ?? '', 'state' => $address['state'] ?? '', 'pincode' => $address['pincode'] ?? '', 'items' => $items, 'total_amount' => $total, 'payment_method' => 'cod', 'payment_status' => 'cod', 'created_at' => date('Y-m-d H:i:s')]) : null;
-    respond(['order_id' => $orderId, 'order_number' => $orderNumber, 'total' => $total, 'next' => $payMethod === 'cod' ? 'confirmed' : 'razorpay_checkout', 'whatsapp_handoff_url' => $handoff]);
-}
-
-if (preg_match('#^notify/[^/]+/(contact|notify)$#', $route, $m) && $method === 'POST') {
-    $insert = $pdo->prepare('INSERT INTO inquiries (store_id, kind, name, email, phone, message) VALUES (?,?,?,?,?,?)');
-    $insert->execute([STORE_ID, $m[1], $body['name'] ?? null, $body['email'] ?? null, $body['phone'] ?? null, $body['message'] ?? ($body['product_label'] ?? null)]);
-    respond(['ok' => true]);
-}
-
-if (preg_match('#^coupons/validate/#', $route)) respond(['valid' => false, 'error' => 'Coupon codes are not available on this site yet.'], 400);
-
-// ── Razorpay ─────────────────────────────────────────────
-function razorpayRequest($httpMethod, $path, $payload = null) {
-    $id = defined('RAZORPAY_KEY_ID') ? RAZORPAY_KEY_ID : '';
-    $secret = defined('RAZORPAY_KEY_SECRET') ? RAZORPAY_KEY_SECRET : '';
-    if ($id === '' || $secret === '') respond(['error' => 'Online payment is not configured. Add Razorpay keys to payment_config.php.'], 503);
-    if (!function_exists('curl_init')) respond(['error' => 'The PHP curl extension is required for online payment.'], 503);
-    $ch = curl_init('https://api.razorpay.com/v1/' . $path);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_USERPWD => $id . ':' . $secret, CURLOPT_TIMEOUT => 25, CURLOPT_CUSTOMREQUEST => $httpMethod, CURLOPT_HTTPHEADER => ['Content-Type: application/json']]);
-    if ($payload !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    $raw = curl_exec($ch);
-    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
-    $data = json_decode((string)$raw, true);
-    if ($raw === false || $status >= 400 || !is_array($data)) respond(['error' => 'Razorpay: ' . (($data['error']['description'] ?? '') ?: ($curlError ?: 'request failed (HTTP ' . $status . ')'))], 502);
-    return $data;
-}
-function paise($amount) { return (int)round((float)$amount * 100); }
-
-if (preg_match('#^payments/#', $route) && !CHECKOUT_RAZORPAY) respond(['error' => 'Online payment is not available for this store.'], 400);
-
-if ($route === 'payments/razorpay/order' && $method === 'POST') {
-    $stmt = $pdo->prepare("SELECT id, order_number, total_amount, payment_status FROM orders WHERE id = ? AND store_id = ? AND payment_method = 'razorpay'");
-    $stmt->execute([(int)($body['order_id'] ?? 0), STORE_ID]);
-    $order = $stmt->fetch();
-    if (!$order) respond(['error' => 'Order not found'], 404);
-    if (!in_array($order['payment_status'], ['unpaid', 'failed'], true)) respond(['error' => 'This payment has already started or finished. Please place the order again.'], 409);
-    $rzp = razorpayRequest('POST', 'orders', ['amount' => paise($order['total_amount']), 'currency' => 'INR', 'receipt' => $order['order_number'], 'notes' => ['order_id' => (string)$order['id']]]);
-    $pdo->prepare("UPDATE orders SET razorpay_order_id = ?, payment_status = 'processing' WHERE id = ?")->execute([$rzp['id'], $order['id']]);
-    respond(['razorpay_order_id' => $rzp['id'], 'amount' => $rzp['amount'], 'currency' => 'INR', 'key' => RAZORPAY_KEY_ID]);
-}
-
-if ($route === 'payments/razorpay/verify' && $method === 'POST') {
-    $rzpOrderId = (string)($body['razorpay_order_id'] ?? '');
-    $paymentId  = (string)($body['razorpay_payment_id'] ?? '');
-    $signature  = (string)($body['razorpay_signature'] ?? '');
-    if ($rzpOrderId === '' || $paymentId === '' || !defined('RAZORPAY_KEY_SECRET')) respond(['error' => 'Payment verification details are incomplete'], 400);
-    if (!hash_equals(hash_hmac('sha256', $rzpOrderId . '|' . $paymentId, RAZORPAY_KEY_SECRET), $signature)) respond(['error' => 'Invalid payment signature'], 400);
-    $stmt = $pdo->prepare("SELECT id, total_amount, payment_status FROM orders WHERE id = ? AND store_id = ? AND razorpay_order_id = ?");
-    $stmt->execute([(int)($body['order_id'] ?? 0), STORE_ID, $rzpOrderId]);
-    $order = $stmt->fetch();
-    if (!$order) respond(['error' => 'Pending order not found for this payment'], 404);
-    if ($order['payment_status'] === 'paid') respond(['message' => 'Payment already verified', 'order_id' => (int)$order['id']]);
-    $payment = razorpayRequest('GET', 'payments/' . rawurlencode($paymentId));
-    if (($payment['order_id'] ?? '') !== $rzpOrderId || (int)($payment['amount'] ?? 0) !== paise($order['total_amount']) || ($payment['currency'] ?? '') !== 'INR') respond(['error' => 'Payment does not match the order amount'], 400);
-    if (($payment['status'] ?? '') !== 'captured') respond(['error' => 'Payment is not captured yet. Please retry or contact the store.'], 409);
-    $pdo->prepare("UPDATE orders SET payment_status = 'paid', order_status = 'new', razorpay_payment_id = ? WHERE id = ?")->execute([$paymentId, $order['id']]);
-    $paid = $pdo->prepare('SELECT * FROM orders WHERE id = ?');
-    $paid->execute([$order['id']]);
-    respond(['message' => 'Payment verified', 'order_id' => (int)$order['id'], 'whatsapp_handoff_url' => zkcHandoffUrl($paid->fetch() ?: [])]);
-}
-
-if ($route === 'payments/razorpay/failure' && $method === 'POST') {
-    $pdo->prepare("UPDATE orders SET payment_status = 'failed' WHERE id = ? AND store_id = ? AND razorpay_order_id = ? AND payment_status <> 'paid'")
-        ->execute([(int)($body['order_id'] ?? 0), STORE_ID, (string)($body['razorpay_order_id'] ?? '')]);
-    respond(['recorded' => true, 'retryable' => true]);
-}
-
-respond(['error' => 'Route not found', 'route' => $route], 404);
-`;
-}
-
-function generateAdminOrdersPhp() {
-  return `<?php
-/**
- * Merchant order dashboard for PHP + MySQL hosting. Password: ADMIN_SECRET_KEY in db_config.php.
- */
-session_start();
-require_once __DIR__ . '/store_config.php';
-require_once __DIR__ . '/db_config.php';
-
-$error = '';
-$message = '';
-$statuses = ['pending', 'new', 'processing', 'shipped', 'delivered', 'cancelled'];
-
-if (isset($_POST['login_pass'])) {
-    if (hash_equals((string)ADMIN_SECRET_KEY, (string)$_POST['login_pass'])) {
-        $_SESSION['zkc_admin'] = STORE_ID;
-        if (($_GET['next'] ?? '') === 'packaging') { header('Location: packaging.php'); exit; }
-    }
-    else $error = 'Invalid password.';
-}
-if (isset($_GET['logout'])) { session_destroy(); header('Location: admin-orders.php'); exit; }
-
-$isLoggedIn = ($_SESSION['zkc_admin'] ?? null) === STORE_ID;
-$pdo = getDbConnection();
-if ($isLoggedIn && !$pdo) $error = 'Could not connect to MySQL. Check db_config.php.';
-
-if ($isLoggedIn && $pdo && ($_POST['action'] ?? '') === 'update_status' && in_array($_POST['new_status'] ?? '', $statuses, true)) {
-    $stmt = $pdo->prepare('UPDATE orders SET order_status = ? WHERE id = ? AND store_id = ?');
-    $stmt->execute([$_POST['new_status'], (int)$_POST['order_id'], STORE_ID]);
-    $message = 'Order updated to ' . strtoupper($_POST['new_status']);
-}
-
-$orders = [];
-$revenue = 0;
-if ($isLoggedIn && $pdo) {
-    $stmt = $pdo->prepare('SELECT * FROM orders WHERE store_id = ? ORDER BY id DESC LIMIT 200');
-    $stmt->execute([STORE_ID]);
-    $orders = $stmt->fetchAll();
-    // Revenue counts only money that is in or due: COD orders and paid online orders.
-    foreach ($orders as $o) if ($o['order_status'] !== 'cancelled' && in_array($o['payment_status'], ['cod', 'paid', 'pending'], true)) $revenue += (float)$o['total_amount'];
-}
-function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-?>
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= h(STORE_NAME) ?> — Orders</title>
-<style>
-*{box-sizing:border-box}body{font-family:system-ui,Arial,sans-serif;background:#f8fafc;color:#1e293b;margin:0;padding:20px}
-.wrap{max-width:1200px;margin:0 auto}.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:16px}
-.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:20px;margin:0}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left;vertical-align:top}
-th{background:#f1f5f9;font-size:11px;text-transform:uppercase;color:#475569}.err{color:#b91c1c}.ok{color:#15803d}
-input,select,button{font:inherit;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px}button{background:#0f172a;color:#fff;cursor:pointer}
-.scroll{overflow-x:auto}
-</style></head><body><div class="wrap">
-<?php if (!$isLoggedIn): ?>
-  <div class="card" style="max-width:380px;margin:60px auto"><h1><?= h(STORE_NAME) ?> — Orders</h1>
-  <?php if ($error): ?><p class="err"><?= h($error) ?></p><?php endif; ?>
-  <form method="post"><p><input type="password" name="login_pass" placeholder="Admin password" required style="width:100%"></p><button>Sign in</button></form></div>
-<?php else: ?>
-  <div class="card head"><h1><?= h(STORE_NAME) ?> — Orders <small style="color:#64748b">(<?= h(STORE_ENV) ?> · v<?= h(PACKAGE_VERSION) ?>)</small></h1>
-  <div><?= count($orders) ?> orders · ₹<?= number_format($revenue, 2) ?> · <a href="packaging.php"><b>📦 Packaging labels</b></a> · <a href="?logout=1">Sign out</a></div></div>
-  <?php if ($error): ?><p class="err"><?= h($error) ?></p><?php endif; ?>
-  <?php if ($message): ?><p class="ok"><?= h($message) ?></p><?php endif; ?>
-  <div class="card scroll"><table><thead><tr><th>Order</th><th>Customer</th><th>Address</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>
-  <?php foreach ($orders as $o): $items = json_decode($o['items_json'], true) ?: []; ?>
-    <tr><td><strong><?= h($o['order_number']) ?></strong><br><small><?= h($o['created_at']) ?></small></td>
-    <td><?= h($o['customer_name']) ?><br><?= h($o['customer_phone']) ?><br><small><?= h($o['customer_email']) ?></small></td>
-    <td><?= h($o['shipping_address']) ?><br><?= h(trim($o['city'] . ', ' . $o['state'] . ' ' . $o['pincode'], ', ')) ?></td>
-    <td><?php foreach ($items as $i): ?><?= h($i['name'] ?? '') ?> × <?= (int)($i['quantity'] ?? 1) ?><br><?php endforeach; ?></td>
-    <td>₹<?= number_format((float)$o['total_amount'], 2) ?></td>
-    <td><?= h(strtoupper($o['payment_method'])) ?><br><small class="<?= $o['payment_status'] === 'paid' ? 'ok' : ($o['payment_status'] === 'failed' ? 'err' : '') ?>"><?= h($o['payment_status']) ?></small></td>
-    <td><form method="post"><input type="hidden" name="action" value="update_status"><input type="hidden" name="order_id" value="<?= (int)$o['id'] ?>">
-    <select name="new_status" onchange="this.form.submit()"><?php foreach ($statuses as $s): ?><option value="<?= $s ?>" <?= $o['order_status'] === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option><?php endforeach; ?></select></form></td></tr>
-  <?php endforeach; ?>
-  <?php if (!$orders): ?><tr><td colspan="7">No orders yet.</td></tr><?php endif; ?>
-  </tbody></table></div>
-<?php endif; ?>
-</div></body></html>
-`;
-}
+function generateAdminOrdersPhp() { return fs.readFileSync(path.join(PHP_DIR, 'admin-orders.php'), 'utf8'); }
 
 /**
  * Browser-run migration tool: applies pending schema migrations (and optionally the catalog seed)
@@ -1256,6 +1105,9 @@ function generateWebConfig() {
                     <add segment="database" />
                     <add segment="store_config.php" />
                     <add segment="payment_config.php" />
+                    <add segment="whatsapp_config.php" />
+                    <add segment="admin_common.php" />
+                    <add segment="commerce.php" />
                 </hiddenSegments>
             </requestFiltering>
         </security>
@@ -1279,7 +1131,7 @@ function generatePhpHtaccess() {
 DirectoryIndex index.html index.php
 Options -Indexes
 RedirectMatch 404 ^/database(/|$)
-<FilesMatch "^(store|payment)_config\\.php$">
+<FilesMatch "^((store|payment|whatsapp)_config|admin_common|commerce)\\.php$">
   Require all denied
 </FilesMatch>
 <IfModule mod_mime.c>
@@ -1299,14 +1151,17 @@ function generatePhpReadme(store, env, version, dbName, zipName, assets) {
 |---|---|
 | \`index.html\`, \`products/\`, \`collections/\`, \`page/\` | Pre-rendered storefront pages (relative links: works at the domain root or in a subfolder) |
 | \`assets/\` | Images used by the storefront (${assets.copied} files) |
-| \`api.php\` | Checkout (COD / Razorpay), contact and restock API (saves into MySQL) |
-| \`admin-orders.php\` | Password-protected order dashboard |
+| \`api.php\` | Checkout (COD / Razorpay + webhook), sizes and stock, coupons, shipping rates, GST, contact and restock API |
+| \`admin-orders.php\` | Password-protected order dashboard (status, AWB, stock back on cancel, WhatsApp updates) |
+| \`stock.php\`, \`customers.php\`, \`coupons.php\`, \`invoice.php\` | Stock per size, customer list (CSV), coupons & shipping rates, printable GST invoice — same login |
 | \`packaging.php\` | Delivery-address labels (A4 / 4×6), Ekart CSV, mark as packed — same login |
+| \`shipments.php\` | Ekart AWB entry / scan, barcode shipping labels, shipped / delivered (when Ekart is enabled) |
+| \`whatsapp_config.php\` | WhatsApp sender keys (ZKWAConnect / Gupshup) for automatic messages (blocked from the web) |
 | \`migrate.php\` | Password-protected database upgrade tool (applies pending migrations) |
 | \`db_config.php\` | MySQL credentials + admin password |
 | \`store_config.php\` | Store id / version + checkout options + WhatsApp templates (blocked from the web) |
 | \`payment_config.php\` | Razorpay key id + secret (blocked from the web; needs the PHP curl extension) |
-| \`whatsapp_orders.php\`, \`packaging_api.php\` | Helpers for WhatsApp order messages and packaging |
+| \`whatsapp_orders.php\`, \`packaging_api.php\`, \`commerce.php\`, \`admin_common.php\` | Shared helpers (WhatsApp messages, packaging, commerce rules, admin pages) |
 | \`database/${slug}_mysql.sql\` | Install / upgrade script — safe on new or existing databases (not uploaded by FTP) |
 | \`web.config\` / \`.htaccess\` | IIS (Windows/Plesk) and Apache (Linux/cPanel) settings |
 
@@ -1315,6 +1170,9 @@ function generatePhpReadme(store, env, version, dbName, zipName, assets) {
 2. **db_config.php** — confirm host, name, user and password (the Store Builder fills these from the saved Database settings).
 3. **Upload** — use *Upload via FTP* in the Store Builder, or upload this ZIP in File Manager to the domain's web root and Extract.
 4. **Check** — open \`https://<your-domain>/api.php?route=health\` → \`"db":"connected"\`, then place a test order and see it in \`/admin-orders.php\`.
+5. **Razorpay webhook** (online payment) — Razorpay Dashboard → Webhooks → URL \`https://<your-domain>/api.php?route=payments/razorpay/webhook\`, events *payment.captured* and *payment.failed*, secret = \`RAZORPAY_WEBHOOK_SECRET\` in \`payment_config.php\`.
+
+Stock on this site lives in MySQL: orders take it, \`stock.php\` sets it, and uploading a newer package adds new products and sizes without resetting counts.
 
 ## Upgrading an existing database
 Schema changes ship as numbered migrations (latest: \`${migrationsLib.latestId()}\`). Each database records what it has run in the
@@ -1399,7 +1257,9 @@ function technologyFor(options) {
  * nodejs → deployment/published/<slug>[-env]/            zip: deployment/published/<slug>[-env]-nodejs-v<version>.zip
  * static → deployment/published/<slug>-static[-env]/     zip: deployment/published/<slug>-static[-env]-v<version>.zip
  */
-async function exportStoreDeployment({ store, themeConfig, products = [], categories = [], pages = [], options = {} }) {
+async function exportStoreDeployment({ store, themeConfig, products = [], categories = [], pages = [], coupons, shipping_rates, options = {} }) {
+  const extra = { coupons, shipping_rates };
+  const commerce = options.commerce || {};
   const technology = technologyFor(options);
   const env = ENV_SUFFIX[options.env] !== undefined ? options.env : 'production';
   const provider = options.provider || 'godaddy';
@@ -1440,7 +1300,7 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
   const shim = technology === 'php' ? phpFetchShim : technology === 'static' ? staticFetchShim(store, products) : '';
   const htmls = renderSite(snapshot, storefrontRoutes(products, categories, livePages), siteDir, shim);
   const assets = copyReferencedAssets(htmls, siteDir);
-  const mysqlSql = generateMySqlSeed(store, categories, products, livePages, { version, env });
+  const mysqlSql = generateMySqlSeed(store, categories, products, livePages, { version, env, extra });
   const versionInfo = `${store.store_name}\nenvironment=${env}\ntechnology=${technology}\nversion=${version}\nbuilt=${new Date().toISOString()}\n`;
   fs.writeFileSync(path.join(exportDir, 'VERSION.txt'), versionInfo, 'utf8');
 
@@ -1448,7 +1308,10 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
     const dbDir = path.join(exportDir, 'database');
     fs.mkdirSync(dbDir, { recursive: true });
     fs.writeFileSync(path.join(dbDir, `${slug}_mysql.sql`), mysqlSql, 'utf8');
-    fs.writeFileSync(path.join(exportDir, 'store_config.php'), generateStoreConfigPhp(store, env, version, checkout, options.whatsapp || undefined), 'utf8');
+    fs.writeFileSync(path.join(exportDir, 'store_config.php'), generateStoreConfigPhp(store, env, version, checkout, options.whatsapp || undefined, commerce), 'utf8');
+    // WhatsApp sender keys: write when known, otherwise keep a hand-edited file, otherwise one-click links only.
+    if (commerce.sender) fs.writeFileSync(path.join(exportDir, 'whatsapp_config.php'), generateWhatsAppConfigPhp(store, env, commerce.sender), 'utf8');
+    else if (!fs.existsSync(path.join(exportDir, 'whatsapp_config.php'))) fs.writeFileSync(path.join(exportDir, 'whatsapp_config.php'), generateWhatsAppConfigPhp(store, env, { provider: 'none' }), 'utf8');
     // Razorpay keys: write when known, otherwise keep a hand-edited file, otherwise leave blank placeholders.
     const rzp = options.razorpay || {};
     if (rzp.key_id && rzp.key_secret) fs.writeFileSync(path.join(exportDir, 'payment_config.php'), generatePaymentConfigPhp(store, env, rzp), 'utf8');
@@ -1459,13 +1322,12 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
       const adminKey = readExistingAdminKey(exportDir) || crypto.randomBytes(9).toString('base64url');
       fs.writeFileSync(path.join(exportDir, 'db_config.php'), generateDbConfigPhp(store, db, adminKey, env), 'utf8');
     }
-    fs.writeFileSync(path.join(exportDir, 'api.php'), generateApiPhp(), 'utf8');
-    // WhatsApp order messages + packaging labels (shared helpers are real PHP files, copied verbatim).
+    // Storefront API, admin pages and shared helpers are real PHP files, copied verbatim.
     assertPhpPlaceholdersInSync();
-    for (const helper of ['whatsapp_orders.php', 'packaging_api.php']) fs.copyFileSync(path.join(PHP_DIR, helper), path.join(exportDir, helper));
+    for (const file of PHP_FILES) fs.copyFileSync(path.join(PHP_DIR, file), path.join(exportDir, file));
     fs.writeFileSync(path.join(exportDir, 'packaging.php'), generatePackagingPhp(), 'utf8');
-    fs.writeFileSync(path.join(exportDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages), version, env), 'utf8');
-    fs.writeFileSync(path.join(exportDir, 'admin-orders.php'), generateAdminOrdersPhp(), 'utf8');
+    fs.writeFileSync(path.join(exportDir, 'shipments.php'), generateShipmentsPhp(), 'utf8');
+    fs.writeFileSync(path.join(exportDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages, extra), version, env), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'web.config'), generateWebConfig(), 'utf8');
     fs.writeFileSync(path.join(exportDir, '.htaccess'), generatePhpHtaccess(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), generatePhpReadme(store, env, version, db.name, zipName, assets), 'utf8');
@@ -1530,7 +1392,8 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
  * deployment/db-migrations/<slug>[-env]-db-migration-v<from>-to-v<to>.zip with the .sql, migrate.php and a README.
  * fromSchema is the last migration the deployed version shipped with (empty = fresh database).
  */
-async function exportDbMigration({ store, products = [], categories = [], pages = [], env = 'production', fromVersion, fromSchema, toVersion, includeSeed = true, whatsapp = null }) {
+async function exportDbMigration({ store, products = [], categories = [], pages = [], coupons, shipping_rates, env = 'production', fromVersion, fromSchema, toVersion, includeSeed = true, whatsapp = null, commerce = {} }) {
+  const extra = { coupons, shipping_rates };
   const slug = safeSlug(store.slug || 'store');
   const livePages = pages.filter(p => p.status !== 'draft');
   const base = `${slug}${ENV_SUFFIX[env] || ''}-db-migration-v${fromVersion || '0'}-to-v${toVersion}`;
@@ -1539,10 +1402,10 @@ async function exportDbMigration({ store, products = [], categories = [], pages 
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
 
-  const { sql, pending } = generateMySqlMigration(store, { fromVersion, fromSchema, toVersion, env, includeSeed, categories, products, pages: livePages });
+  const { sql, pending } = generateMySqlMigration(store, { fromVersion, fromSchema, toVersion, env, includeSeed, categories, products, pages: livePages, extra });
   fs.writeFileSync(path.join(outDir, base + '.sql'), sql, 'utf8');
-  fs.writeFileSync(path.join(outDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages), toVersion, env), 'utf8');
-  fs.writeFileSync(path.join(outDir, 'store_config.php'), generateStoreConfigPhp(store, env, toVersion, undefined, whatsapp || undefined), 'utf8');
+  fs.writeFileSync(path.join(outDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages, extra), toVersion, env), 'utf8');
+  fs.writeFileSync(path.join(outDir, 'store_config.php'), generateStoreConfigPhp(store, env, toVersion, undefined, whatsapp || undefined, commerce), 'utf8');
   fs.writeFileSync(path.join(outDir, 'README.md'), `# ${store.store_name} — database upgrade ${fromVersion ? 'v' + fromVersion : '(fresh)'} → v${toVersion} (${env})
 
 Schema changes: ${pending.length ? pending.map(m => `\`${m.id}\` (${m.description})`).join(', ') : 'none'}
