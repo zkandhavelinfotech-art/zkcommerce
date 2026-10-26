@@ -1195,7 +1195,12 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
     <div class="cart-totals">
       <div class="ct-row"><span>Cart Subtotal</span><span id="subtotalVal">₹0</span></div>
       <div class="ct-row" id="discountRow" style="display:none;color:var(--green)"><span>Coupon Discount</span><span id="discountVal">−₹0</span></div>
-      <div class="ct-row"><span>Shipping Charges</span><span id="shippingVal">FREE</span></div>
+      <div class="ct-row" id="deliveryTaxFeeRow" style="align-items:center">
+        <span>Delivery &amp; Tax Fee</span>
+        <span class="delivery-tax-badge" id="deliveryTaxBadge" style="display:inline-flex;align-items:center;gap:4px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:4px 9px;border-radius:6px;font-size:11.5px;font-weight:700">
+          ✓ Inclusive of GST and free shipping
+        </span>
+      </div>
       <div class="ct-row total"><span>Total Amount</span><span id="grandTotalVal">₹0</span></div>
       <div style="font-size:11px;color:var(--muted);margin-top:4px">Inclusive of all statutory GST &amp; Taxes</div>
     </div>
@@ -1222,10 +1227,17 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
         <option value="Other">Other State</option>
       </select>
 
+      <div class="cart-shipping-field" id="chDeliveryTaxField" style="margin:10px 0">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Delivery &amp; Tax Fee</label>
+        <div style="display:flex;align-items:center;gap:6px;background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:8px;font-size:12.5px;font-weight:700">
+          <span style="color:#059669;font-size:15px">✓</span> Inclusive of GST and free shipping
+        </div>
+      </div>
+
       <div class="ch-title" style="margin-top:10px">Payment Method</div>
       <select name="payment_method" id="payMethodSelect" required>
-        <option value="cod" selected>Cash on Delivery (COD)</option>
-        <option value="razorpay">Pay Online via UPI / Cards / NetBanking (Razorpay)</option>
+        <option value="cod" id="optPayCod" selected>Cash on Delivery (COD)</option>
+        <option value="razorpay" id="optPayRazorpay">Pay Online via UPI / Cards / NetBanking (Razorpay)</option>
       </select>
 
       <button type="submit" class="btn-place-order" id="placeOrderBtn">Confirm &amp; Place Order</button>
@@ -1519,6 +1531,7 @@ function scrollToSection(id, e) {
 // Cart Drawer
 function openCart() {
   renderCart();
+  syncCheckoutSettings();
   document.getElementById('cartDrawer').classList.add('open');
 }
 
@@ -2082,10 +2095,81 @@ function buyModalItemNow(productId) {
   openCart();
 }
 
+// Sync store & checkout settings from API and localStorage
+async function syncCheckoutSettings() {
+  let checkout = { cod: true, razorpay: true, show_shipping_field: true };
+  
+  // Try to load from published storefront endpoint
+  try {
+    const res = await fetch('/api/storefront/smeram');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.theme_config && data.theme_config.checkout) {
+        checkout = { ...checkout, ...data.theme_config.checkout };
+      }
+      if (data.theme_config && data.theme_config.announcement_enabled !== undefined) {
+        localStorage.setItem('zk_announcement_enabled', String(data.theme_config.announcement_enabled));
+        checkAnnouncementVisibility();
+      }
+    }
+  } catch (_) {}
+
+  // Local storage overrides if set from store settings
+  if (localStorage.getItem('zk_checkout_cod') !== null) {
+    checkout.cod = localStorage.getItem('zk_checkout_cod') !== 'false';
+  }
+  if (localStorage.getItem('zk_show_shipping_field') !== null) {
+    checkout.show_shipping_field = localStorage.getItem('zk_show_shipping_field') !== 'false';
+  }
+
+  // Apply COD visibility to payment method dropdown
+  const paySelect = document.getElementById('payMethodSelect');
+  if (paySelect) {
+    const codOption = paySelect.querySelector('option[value="cod"]');
+    const rzpOption = paySelect.querySelector('option[value="razorpay"]');
+    if (codOption) {
+      if (checkout.cod === false) {
+        codOption.disabled = true;
+        codOption.hidden = true;
+        codOption.style.display = 'none';
+        if (rzpOption) {
+          rzpOption.selected = true;
+          paySelect.value = 'razorpay';
+        }
+      } else {
+        codOption.disabled = false;
+        codOption.hidden = false;
+        codOption.style.display = '';
+      }
+    }
+  }
+
+  // Apply show_shipping_field visibility to Delivery & Tax Fee badge
+  const row = document.getElementById('deliveryTaxFeeRow');
+  const chField = document.getElementById('chDeliveryTaxField');
+  if (row) row.style.display = checkout.show_shipping_field === false ? 'none' : 'flex';
+  if (chField) chField.style.display = checkout.show_shipping_field === false ? 'none' : 'block';
+}
+
 // Check if announcement bar is disabled by store or page settings
-function checkAnnouncementVisibility() {
+async function checkAnnouncementVisibility() {
   const ann = document.getElementById('top-announcement-bar') || document.querySelector('.ann-bar');
   if (!ann) return;
+
+  // Also check database API if available
+  try {
+    const res = await fetch('/api/storefront/smeram');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.theme_config) {
+        const secAnn = data.theme_config.sections?.announcement;
+        const apiEnabled = data.theme_config.announcement_enabled !== false && secAnn?.visible !== false;
+        localStorage.setItem('zk_announcement_enabled', String(apiEnabled));
+        localStorage.setItem('zk_announcement_disabled', String(!apiEnabled));
+      }
+    }
+  } catch (_) {}
+
   const disabled = localStorage.getItem('zk_announcement_disabled') === 'true' || 
                    localStorage.getItem('zk_announcement_enabled') === 'false';
   if (disabled) {
@@ -2099,6 +2183,7 @@ function checkAnnouncementVisibility() {
 updateCartBadge();
 syncCardSteppers();
 checkAnnouncementVisibility();
+syncCheckoutSettings();
 </script>
 
 </body>

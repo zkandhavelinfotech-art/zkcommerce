@@ -702,7 +702,11 @@ async function storeForDisplay(req) {
   const { rows } = await pool.query('SELECT id, theme_config, published_snapshot FROM stores WHERE id=$1 AND (merchant_id=$2 OR $3=true)', [req.params.id, req.user.id, req.user.role === 'admin']);
   return rows[0];
 }
-const displayOf = cfg => ({ show_offers: ((cfg || {}).display || {}).show_offers !== false, show_all_products: (((cfg || {}).sections || {}).products || {}).visible !== false });
+const displayOf = cfg => ({ 
+  show_offers: ((cfg || {}).display || {}).show_offers !== false, 
+  show_all_products: (((cfg || {}).sections || {}).products || {}).visible !== false,
+  announcement_enabled: (cfg || {}).announcement_enabled !== false && (((cfg || {}).sections || {}).announcement || {}).visible !== false
+});
 router.get('/:id/display', auth, async (req, res) => {
   try {
     const s = await storeForDisplay(req);
@@ -720,6 +724,11 @@ router.put('/:id/display', auth, async (req, res) => {
       if (req.body.show_all_products !== undefined) {
         cfg.sections = cfg.sections || {};
         cfg.sections.products = { ...(cfg.sections.products || {}), visible: req.body.show_all_products !== false };
+      }
+      if (req.body.announcement_enabled !== undefined) {
+        cfg.announcement_enabled = req.body.announcement_enabled !== false;
+        cfg.sections = cfg.sections || {};
+        cfg.sections.announcement = { ...(cfg.sections.announcement || {}), visible: req.body.announcement_enabled !== false };
       }
       return cfg;
     };

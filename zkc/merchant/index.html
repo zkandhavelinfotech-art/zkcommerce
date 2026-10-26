@@ -778,6 +778,7 @@
         <div class="card">
           <div style="display:grid;gap:10px;max-width:680px">
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCoupon"><span><b>Show discount code box</b><br><small style="color:var(--muted)">Shoppers can enter a coupon in the cart.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowShipping"><span><b>Show Delivery &amp; Tax Fee badge</b><br><small style="color:var(--muted)">Display "Delivery &amp; Tax Fee: ✓ Inclusive of GST and free shipping" locked badge in the cart.</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Payment methods offered</div>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)" id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately, paid on delivery.</small></span></label>
@@ -793,6 +794,7 @@
           <h3 style="font-size:15px;margin-bottom:4px">Shop display</h3>
           <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Applies to the live store straight away. Each product can override the offer setting in the Store Builder product details.</p>
           <div style="display:grid;gap:10px;max-width:680px">
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAnnouncement"><span><b>Show Announcement Bar</b><br><small style="color:var(--muted)">Display top notification banner (promotions, announcements) across the storefront.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP strike-through, “% OFF” badges and offer tags such as “Special Introductory Offer”.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The product grid on the home page and its menu, tab and footer links. Other sections are switched in Store Builder → Settings.</small></span></label>
           </div>
@@ -1395,16 +1397,25 @@
         const v = d.live || d.display;
         document.getElementById('dsShowOffers').checked = v.show_offers;
         document.getElementById('dsAllProducts').checked = v.show_all_products;
+        if (document.getElementById('dsAnnouncement')) {
+          document.getElementById('dsAnnouncement').checked = v.announcement_enabled !== false;
+        }
         document.getElementById('dsStatus').textContent = '';
       } catch (e) { console.warn('Display settings:', e.message); }
     }
     async function saveDisplaySettings() {
       const st = document.getElementById('dsStatus');
       try {
+        const annEnabled = document.getElementById('dsAnnouncement')?.checked !== false;
         const d = await req('/stores/' + currentStoreId + '/display', { method: 'PUT', body: JSON.stringify({
           show_offers: document.getElementById('dsShowOffers').checked,
-          show_all_products: document.getElementById('dsAllProducts').checked
+          show_all_products: document.getElementById('dsAllProducts').checked,
+          announcement_enabled: annEnabled
         }) });
+        try {
+          localStorage.setItem('zk_announcement_enabled', String(annEnabled));
+          localStorage.setItem('zk_announcement_disabled', String(!annEnabled));
+        } catch(_) {}
         st.style.color = '#166534';
         st.textContent = d.live ? 'Saved — the live store is updated.' : 'Saved. The store is not published yet; it applies when you publish.';
       } catch (e) { st.style.color = '#b91c1c'; st.textContent = e.message; }
@@ -1416,6 +1427,9 @@
         razorpayInfo = d.payments || {};
         const c = checkoutThemeConfig.checkout || {};
         document.getElementById('coShowCoupon').checked = c.show_coupon !== false;
+        if (document.getElementById('coShowShipping')) {
+          document.getElementById('coShowShipping').checked = c.show_shipping_field !== false && c.show_shipping !== false;
+        }
         document.getElementById('coRazorpay').checked = c.razorpay !== false;
         document.getElementById('coCod').checked = c.cod !== false || c.razorpay === false;
         document.getElementById('coRzpStatus').innerHTML = 'UPI, cards, netbanking, wallets. ' + (razorpayInfo.razorpay_configured
@@ -1440,11 +1454,18 @@
       try {
         // Re-read the draft right before saving so changes made in the Store Builder meanwhile are kept.
         const fresh = await req('/stores/' + currentStoreId + '/builder');
+        const showShipping = document.getElementById('coShowShipping')?.checked !== false;
+        const codEnabled = document.getElementById('coCod').checked;
         const theme_config = { ...(fresh.store.theme_config || {}), checkout: {
           show_coupon: document.getElementById('coShowCoupon').checked,
+          show_shipping_field: showShipping,
           razorpay: document.getElementById('coRazorpay').checked,
-          cod: document.getElementById('coCod').checked
+          cod: codEnabled
         } };
+        try {
+          localStorage.setItem('zk_checkout_cod', String(codEnabled));
+          localStorage.setItem('zk_show_shipping_field', String(showShipping));
+        } catch(_) {}
         await req('/stores/' + currentStoreId + '/draft', { method: 'PUT', body: JSON.stringify({ theme_config }) });
         if (publish) await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });
         checkoutThemeConfig = theme_config;

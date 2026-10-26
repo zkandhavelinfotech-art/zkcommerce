@@ -194,6 +194,9 @@ body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-
           <button class="btn btn-secondary btn-sm" id="btn-toggle-ann" onclick="toggleAnnouncementBar()" title="Click to enable or disable top announcement bar on storefront">
             <span id="ann-status-ico">📢</span> Announcement Bar: <strong id="ann-status-lbl" style="color:#16A34A">Visible</strong>
           </button>
+          <span id="ann-save-status" style="font-size:11.5px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:5px 10px;border-radius:12px;display:inline-flex;align-items:center;gap:4px">
+            ✓ Auto-saved: Visible on Storefront
+          </span>
           <button class="btn btn-secondary btn-sm" onclick="scaffoldDefaultLegalPages()" id="scaffold-btn">⚡ Generate Standard Policies</button>
           <button class="btn btn-primary btn-sm" onclick="openAddPageModal()">+ Add Page</button>
         </div>
@@ -593,10 +596,28 @@ function escapeHtml(str) {
   });
 }
 
+async function syncAnnouncementStatusFromApi() {
+  var token = auth && auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    const r = await fetch(API_BASE + '/stores/' + (STORE_ID || 2) + '/display', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const enabled = (d.live || d.display)?.announcement_enabled !== false;
+      localStorage.setItem('zk_announcement_enabled', String(enabled));
+      localStorage.setItem('zk_announcement_disabled', String(!enabled));
+      updateAnnouncementBarUI();
+    }
+  } catch (_) {}
+}
+
 function updateAnnouncementBarUI() {
   const isEnabled = localStorage.getItem('zk_announcement_enabled') !== 'false';
   const lbl = document.getElementById('ann-status-lbl');
   const ico = document.getElementById('ann-status-ico');
+  const badge = document.getElementById('ann-save-status');
   if (lbl) {
     lbl.textContent = isEnabled ? 'Visible' : 'Disabled';
     lbl.style.color = isEnabled ? '#16A34A' : '#EF4444';
@@ -604,31 +625,48 @@ function updateAnnouncementBarUI() {
   if (ico) {
     ico.textContent = isEnabled ? '📢' : '🚫';
   }
+  if (badge) {
+    badge.innerHTML = isEnabled 
+      ? '<span style="color:#059669">✓</span> Auto-saved: Visible on Storefront' 
+      : '<span style="color:#dc2626">✕</span> Auto-saved: Hidden on Storefront';
+    badge.style.color = isEnabled ? '#047857' : '#991b1b';
+    badge.style.background = isEnabled ? '#ecfdf5' : '#fef2f2';
+    badge.style.borderColor = isEnabled ? '#a7f3d0' : '#fecaca';
+  }
 }
 
-function toggleAnnouncementBar() {
+async function toggleAnnouncementBar() {
   const currentlyEnabled = localStorage.getItem('zk_announcement_enabled') !== 'false';
   const newStatus = !currentlyEnabled;
   localStorage.setItem('zk_announcement_enabled', String(newStatus));
   localStorage.setItem('zk_announcement_disabled', String(!newStatus));
   updateAnnouncementBarUI();
 
-  // Also persist to store settings via API if logged in
+  const badge = document.getElementById('ann-save-status');
+  if (badge) badge.textContent = 'Saving to storefront…';
+
   var token = auth && auth.token;
   if (token && !token.startsWith('demo_token')) {
-    fetch('/api/stores/' + (STORE_ID || 2) + '/checkout-settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ announcement_enabled: newStatus })
-    }).catch(function(){});
+    try {
+      const res = await fetch(API_BASE + '/stores/' + (STORE_ID || 2) + '/display', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ announcement_enabled: newStatus })
+      });
+      const d = await res.json();
+      updateAnnouncementBarUI();
+      toast.success('Announcement Bar ' + (newStatus ? 'enabled' : 'disabled') + ' — Auto-saved & live on storefront!');
+      return;
+    } catch(e) {}
   }
-
+  updateAnnouncementBarUI();
   toast.info('Announcement Bar ' + (newStatus ? 'enabled (visible on storefront)' : 'disabled (hidden on storefront)'));
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   initPages();
   updateAnnouncementBarUI();
+  syncAnnouncementStatusFromApi();
 });
 </script>
 </body>
