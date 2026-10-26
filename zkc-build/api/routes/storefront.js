@@ -118,6 +118,17 @@ router.post('/:slug/checkout',async(req,res)=>{
         // Customer confirmation + customer-care alert through the store's WhatsApp sender; low-stock alerts to the merchant.
         waResults = await waSender.notifyOrderConfirmed(storeId, { ...fullOrder, id: order.id }, storeInfo);
         waSender.notifyLowStock(storeId, lowStock);
+
+        // Auto-generate invoice immediately for Invoices & GST Tax Filing
+        try {
+          const invNumber = `ZK-${storeId}-${order.id}`;
+          await pool.query(
+            'INSERT INTO invoices(store_id, order_id, invoice_number) VALUES($1, $2, $3) ON CONFLICT (order_id) DO NOTHING',
+            [storeId, order.id, invNumber]
+          );
+        } catch (invErr) {
+          console.warn('[Storefront Checkout] Invoice creation error:', invErr.message);
+        }
       } catch (waErr) {
         console.warn('[Storefront Checkout] WhatsApp alert warning:', waErr.message);
       }

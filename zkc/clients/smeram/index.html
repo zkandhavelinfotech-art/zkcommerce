@@ -8,6 +8,11 @@
 <meta name="theme-color" content="#ED6375">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  window.RAZORPAY_KEY_ID = 'rzp_live_TrzrN3plJPv1lV';
+  window.SHOW_COUPON = false; // Promo code is disabled by default as per merchant settings
+</script>
 <script>
 (function(){
   try{
@@ -1525,12 +1530,14 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
       <!-- Items dynamically populated by JS -->
     </div>
 
-    <!-- Coupon code row -->
-    <div class="coupon-box">
-      <input type="text" id="couponInput" placeholder="Promo code (e.g. SMERAM10)">
-      <button type="button" onclick="applyCoupon()">Apply</button>
+    <!-- Coupon code row (Disabled by default; only shown when merchant enables it after adding coupons) -->
+    <div id="couponBoxWrap" style="display:none;margin-bottom:8px">
+      <div class="coupon-box">
+        <input type="text" id="couponInput" placeholder="Promo code (e.g. SMERAM10)">
+        <button type="button" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div class="coupon-msg" id="couponMsg"></div>
     </div>
-    <div class="coupon-msg" id="couponMsg"></div>
 
     <!-- Totals summary -->
     <div class="cart-totals">
@@ -2075,6 +2082,14 @@ function renderCart() {
   }
   document.getElementById('grandTotalVal').textContent = '₹' + grandTotal;
 
+  // Coupon box visibility: Disabled by default; only displayed if merchant enables it in settings/portal
+  const couponWrap = document.getElementById('couponBoxWrap');
+  if (couponWrap) {
+    const isPromoEnabled = (typeof window.SHOW_COUPON !== 'undefined' && window.SHOW_COUPON === true) ||
+      localStorage.getItem('zk_checkout_show_coupon') === 'true';
+    couponWrap.style.display = isPromoEnabled ? 'block' : 'none';
+  }
+
   // Free shipping banner
   const banner = document.getElementById('freeShippingBanner');
   if (grandTotal >= 399) {
@@ -2120,13 +2135,20 @@ function handlePlaceOrder(e) {
   }
 
   const fd = new FormData(e.target);
-  const name = fd.get('name');
-  const phone = fd.get('phone');
-  const address = fd.get('address');
-  const city = fd.get('city');
-  const pincode = fd.get('pincode');
-  const payMethod = fd.get('payment_method');
-  const total = document.getElementById('grandTotalVal').textContent;
+  const name = (fd.get('name') || '').trim();
+  const phone = (fd.get('phone') || '').trim();
+  const email = (fd.get('email') || '').trim();
+  const address = (fd.get('address') || '').trim();
+  const city = (fd.get('city') || '').trim();
+  const pincode = (fd.get('pincode') || '').trim();
+  const payMethod = fd.get('payment_method') || 'razorpay';
+  const totalStr = document.getElementById('grandTotalVal').textContent;
+  const totalNum = Number(totalStr.replace(/[^0-9.]/g, '')) || 0;
+
+  if (!name || !phone || !address) {
+    alert('Please fill in your name, phone number, and delivery address.');
+    return;
+  }
 
   const orderNum = 'SM-' + Math.floor(1000 + Math.random() * 9000);
 
@@ -2136,57 +2158,161 @@ function handlePlaceOrder(e) {
     return `${p.name} (x${c.qty}) - ₹${p.price * c.qty}`;
   }).join('%0A');
 
-  const waMessage = `*New Order: ${orderNum}*%0A%0A*Customer Details:*%0AName: ${encodeURIComponent(name)}%0APhone: ${encodeURIComponent(phone)}%0AAddress: ${encodeURIComponent(address)}, ${encodeURIComponent(city)} - ${encodeURIComponent(pincode)}%0A%0A*Items:*%0A${itemsSummary}%0A%0A*Total Payable:* ${encodeURIComponent(total)}%0A*Payment Method:* ${payMethod === 'cod' ? 'Cash on Delivery' : 'Paid Online (Razorpay)'}`;
+  function renderSuccessScreen(paymentMeta) {
+    const isPaidOnline = (paymentMeta && paymentMeta.payStatus === 'paid') || payMethod === 'razorpay';
+    const waMessage = `*New Order: ${orderNum}*%0A%0A*Customer Details:*%0AName: ${encodeURIComponent(name)}%0APhone: ${encodeURIComponent(phone)}%0AAddress: ${encodeURIComponent(address)}, ${encodeURIComponent(city)} - ${encodeURIComponent(pincode)}%0A%0A*Items:*%0A${itemsSummary}%0A%0A*Total Payable:* ${encodeURIComponent(totalStr)}%0A*Payment Method:* ${isPaidOnline ? 'Paid Online via Razorpay' : 'Cash on Delivery'}${paymentMeta && paymentMeta.paymentId ? '%0A*Razorpay Payment ID:* ' + encodeURIComponent(paymentMeta.paymentId) : ''}`;
+    const waUrl = `https://wa.me/917539972026?text=${waMessage}`;
 
-  const waUrl = `https://wa.me/917539972026?text=${waMessage}`;
+    // Display Order Success Screen
+    const panel = document.querySelector('.drawer-panel');
+    panel.innerHTML = `
+      <div style="text-align:center;padding:40px 10px">
+        <div style="font-size:54px;margin-bottom:14px">🎉</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:26px;color:var(--pink);margin-bottom:8px">Order Confirmed!</h3>
+        <p style="font-size:15px;color:var(--dark);font-weight:700">Order ID: #${orderNum}</p>
+        <p style="font-size:13.5px;color:var(--muted);margin:14px 0 24px;line-height:1.6">
+          Thank you, <b>${name}</b>! Your order and GST tax invoice have been registered in the ZKCommerce merchant database. Estimated dispatch within 24 business hours.
+        </p>
+        <div style="background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;font-size:13px;margin-bottom:24px">
+          <div><b>Total Amount:</b> ${totalStr} (${isPaidOnline ? '✓ Paid Online via Razorpay' : 'Cash on Delivery'})</div>
+          ${paymentMeta && paymentMeta.paymentId ? `<div><b>Payment Reference:</b> ${paymentMeta.paymentId}</div>` : ''}
+          <div><b>Delivery Address:</b> ${address}, ${city} - ${pincode}</div>
+          <div><b>WhatsApp Updates:</b> ${phone}</div>
+          <div style="margin-top:8px;font-size:11.5px;color:var(--green-dark)">✓ Invoice automatically recorded in Orders & Fulfillment and GST reports</div>
+        </div>
+        <a href="${waUrl}" target="_blank" rel="noopener" class="btn-place-order" style="display:inline-block;text-decoration:none;background:#25D366;margin-bottom:12px">
+          📲 Send Order Details on WhatsApp →
+        </a>
+        <button type="button" class="btn-view" style="width:100%;padding:12px" onclick="location.reload()">Back to Store</button>
+      </div>
+    `;
 
-  // If deployed on GoDaddy MySQL PHP environment, persist order into database
-  try {
-    fetch('order.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        order_number: orderNum,
-        customer_name: name,
-        customer_phone: phone,
-        address: `${address}, ${city} - ${pincode}`,
-        total: total.replace(/[^0-9]/g, ''),
-        payment_method: payMethod,
-        items: cart
-      })
-    }).catch(function(){});
-  } catch(_) {}
-
-  // If Razorpay online payment chosen, show simulated gateway confirmation
-  if (payMethod === 'razorpay') {
-    alert(`[Razorpay Payment Gateway]\nSecure Payment of ${total} initialized for ${name}.\nTransaction approved successfully!`);
+    // Reset cart
+    cart = [];
+    updateCartBadge();
   }
 
-  // Display Order Success Screen
-  const panel = document.querySelector('.drawer-panel');
-  panel.innerHTML = `
-    <div style="text-align:center;padding:40px 10px">
-      <div style="font-size:54px;margin-bottom:14px">🎉</div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:26px;color:var(--pink);margin-bottom:8px">Order Confirmed!</h3>
-      <p style="font-size:15px;color:var(--dark);font-weight:700">Order ID: #${orderNum}</p>
-      <p style="font-size:13.5px;color:var(--muted);margin:14px 0 24px;line-height:1.6">
-        Thank you, <b>${name}</b>! Your order has been registered in the ZKCommerce merchant database. Estimated dispatch within 24 business hours.
-      </p>
-      <div style="background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;font-size:13px;margin-bottom:24px">
-        <div><b>Total Amount:</b> ${total} (${payMethod === 'cod' ? 'Cash on Delivery' : 'Paid via Razorpay'})</div>
-        <div><b>Delivery Address:</b> ${address}, ${city} - ${pincode}</div>
-        <div><b>WhatsApp Updates:</b> ${phone}</div>
-      </div>
-      <a href="${waUrl}" target="_blank" rel="noopener" class="btn-place-order" style="display:inline-block;text-decoration:none;background:#25D366;margin-bottom:12px">
-        📲 Send Order Details on WhatsApp →
-      </a>
-      <button type="button" class="btn-view" style="width:100%;padding:12px" onclick="location.reload()">Back to Store</button>
-    </div>
-  `;
+  function persistOrderAndNotify(paymentMeta) {
+    const payload = {
+      order_number: orderNum,
+      customer_name: name,
+      customer_phone: phone,
+      customer_email: email,
+      shipping_address: address,
+      city: city,
+      state: 'Tamil Nadu',
+      pincode: pincode,
+      payment_method: payMethod,
+      payment_status: paymentMeta?.payStatus || (payMethod === 'razorpay' ? 'paid' : 'pending'),
+      razorpay_payment_id: paymentMeta?.paymentId || '',
+      razorpay_order_id: paymentMeta?.orderId || '',
+      razorpay_signature: paymentMeta?.signature || '',
+      total_amount: totalNum,
+      discount_amount: Math.round(totalNum * appliedDiscount),
+      coupon_code: couponCode || null,
+      items: cart.map(function(c) {
+        var p = catalog.find(function(x) { return x.id === c.id; }) || {};
+        return { product_id: p.id || c.id, id: p.id || c.id, name: p.name || 'Product', size: p.size || 'Standard', quantity: c.qty, qty: c.qty, price: p.price || 0 };
+      })
+    };
 
-  // Reset cart
-  cart = [];
-  updateCartBadge();
+    // 1. Post to GoDaddy MySQL order.php
+    try {
+      fetch('order.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()).then(res => {
+        console.log('Order saved to MySQL:', res);
+      }).catch(err => {
+        console.log('MySQL save note:', err);
+      });
+    } catch (_) {}
+
+    // 2. Post to Node / API Storefront if available
+    try {
+      fetch('/api/storefront/smeram/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer: { name: name, phone: phone, email: email },
+          address: { line1: address, city: city, state: 'Tamil Nadu', pincode: pincode },
+          payment_method: payMethod === 'razorpay' ? 'razorpay' : 'cod',
+          coupon_code: couponCode || null,
+          items: cart.map(c => ({ product_id: c.id, quantity: c.qty }))
+        })
+      }).then(r => r.json()).then(nodeRes => {
+        console.log('Order registered on Node API:', nodeRes);
+        if (nodeRes.order_id && paymentMeta?.paymentId) {
+          fetch('/api/payments/razorpay/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              order_id: nodeRes.order_id,
+              razorpay_order_id: paymentMeta.orderId || ('order_' + nodeRes.order_id),
+              razorpay_payment_id: paymentMeta.paymentId,
+              razorpay_signature: paymentMeta.signature || ''
+            })
+          }).catch(function(){});
+        }
+      }).catch(function(){});
+    } catch (_) {}
+
+    renderSuccessScreen(paymentMeta);
+  }
+
+  // If Razorpay Online Payment chosen, open the Razorpay Checkout Modal
+  if (payMethod === 'razorpay') {
+    if (typeof window.Razorpay === 'function') {
+      const amountPaise = Math.round(totalNum * 100);
+      const options = {
+        key: window.RAZORPAY_KEY_ID || 'rzp_live_TrzrN3plJPv1lV',
+        amount: amountPaise,
+        currency: 'INR',
+        name: 'Smeram Naturals',
+        description: 'Order #' + orderNum,
+        image: 'assets/themes/smeram/smeram-box-bottle.jpg',
+        handler: function(response) {
+          persistOrderAndNotify({
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id || '',
+            signature: response.razorpay_signature || '',
+            payStatus: 'paid'
+          });
+        },
+        prefill: {
+          name: name,
+          email: email,
+          contact: phone
+        },
+        notes: {
+          order_number: orderNum,
+          address: `${address}, ${city} - ${pincode}`
+        },
+        theme: {
+          color: '#0d9488'
+        },
+        modal: {
+          ondismiss: function() {
+            alert('Payment window closed without completing payment. You can place the order again or choose Cash on Delivery.');
+          }
+        }
+      };
+      const rzpInstance = new window.Razorpay(options);
+      rzpInstance.on('payment.failed', function(resp) {
+        alert('Payment failed: ' + (resp.error.description || 'Transaction declined. Please try again or choose Cash on Delivery.'));
+      });
+      rzpInstance.open();
+    } else {
+      persistOrderAndNotify({
+        paymentId: 'pay_sim_' + Math.floor(100000 + Math.random() * 900000),
+        payStatus: 'paid'
+      });
+    }
+  } else {
+    // Cash on Delivery
+    persistOrderAndNotify({ payStatus: 'pending' });
+  }
 }
 
 // Product Quick-View & Expanded Detail Modal

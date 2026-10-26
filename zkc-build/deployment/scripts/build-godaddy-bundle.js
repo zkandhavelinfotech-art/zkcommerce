@@ -23,40 +23,9 @@ function buildBundle() {
   // Replace ../../assets/ with assets/
   html = html.replace(/\.\.\/\.\.\/assets\/themes\/smeram\//g, 'assets/themes/smeram/');
 
-  // Inject MySQL save call into handlePlaceOrder
-  const targetSnippet = "const orderNum = 'SM-' + Math.floor(1000 + Math.random() * 9000);";
-  const orderSaveSnippet = `const orderNum = 'SM-' + Math.floor(1000 + Math.random() * 9000);
-  // Persist order into GoDaddy MySQL database
-  fetch('order.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      order_number: orderNum,
-      customer_name: name,
-      customer_phone: phone,
-      customer_email: fd.get('email') || '',
-      shipping_address: address,
-      city: city,
-      pincode: pincode,
-      payment_method: payMethod,
-      total_amount: grandTotal,
-      discount_amount: discountAmount,
-      coupon_code: couponCode,
-      items: cart.map(function(c) {
-        var p = catalog.find(function(x) { return x.id === c.id; });
-        return { id: p.id, name: p.name, size: p.size, qty: c.qty, price: p.price };
-      })
-    })
-  }).then(function(r) { return r.json(); }).then(function(res) {
-    console.log('MySQL Order Saved:', res);
-  }).catch(function(err) {
-    console.log('MySQL Note (Offline Mode):', err);
-  });`;
+  // Path normalization for root httpdocs
+  html = html.replace(/\.\.\/\.\.\/assets\/themes\/smeram\//g, 'assets/themes/smeram/');
 
-  if (html.includes(targetSnippet)) {
-    html = html.replace(targetSnippet, orderSaveSnippet);
-    console.log('✅ Injected GoDaddy MySQL order recording into handlePlaceOrder()');
-  }
 
   const destHtmlPath = path.join(bundleDir, 'index.html');
   fs.writeFileSync(destHtmlPath, html, 'utf8');

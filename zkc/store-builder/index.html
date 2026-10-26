@@ -764,7 +764,7 @@ const frameWrapEl=document.getElementById('frameWrap');if(frameWrapEl){frameWrap
 function checkoutConfig() {
   const c = themeConfig.checkout || {};
   return { 
-    show_coupon: c.show_coupon !== false, 
+    show_coupon: c.show_coupon === true, 
     show_shipping_field: c.show_shipping_field !== false && c.show_shipping !== false,
     cod: c.cod !== false || c.razorpay === false, 
     razorpay: c.razorpay !== false 
@@ -779,7 +779,7 @@ function renderCheckoutSettings(host) {
     <h3 style="font-size:15px;margin-bottom:4px">Shopping cart &amp; checkout</h3>
     <p style="font-size:12px;color:#64748b;margin-bottom:12px">Choose what shoppers see in the cart. The preview updates immediately; the live store changes after you Publish.</p>
     <div style="display:grid;gap:8px;max-width:620px">
-      ${row('chk_show_coupon', c.show_coupon, 'Show discount code box', 'Shoppers can enter a coupon in the cart. Turn off if you do not run coupon offers.')}
+      ${row('chk_show_coupon', c.show_coupon, 'Show discount code box', 'Shoppers can enter a coupon in the cart. Disabled by default; enable if you run active coupon offers.')}
       ${row('chk_show_shipping', c.show_shipping_field, 'Show Delivery &amp; Tax Fee badge', 'Display "Delivery &amp; Tax Fee: ✓ Inclusive of GST and free shipping" locked badge in the cart.')}
       <div style="font-size:12px;font-weight:700;color:#475569;margin-top:6px">Payment methods offered</div>
       ${row('chk_pay_razorpay', c.razorpay, 'Pay online via Razorpay', 'UPI, cards, netbanking, wallets. ' + (rzpReady ? `Razorpay is configured (${esc(paymentsInfo.razorpay_mode || 'test')} keys).` : '<b style="color:#b91c1c">Razorpay keys are not configured on the server.</b>'))}

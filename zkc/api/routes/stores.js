@@ -498,7 +498,7 @@ router.post('/:id/db-migration', auth, async (req, res) => {
       }
     }
     if (req.body.to_version && !VERSION_RE.test(String(req.body.to_version))) return res.status(400).json({ error: 'Version must look like 1.0.3' });
-    const toVersion = String(req.body.to_version || (builds[0] && builds[0].version) || mysqlMigrations.latestVersion() || '1.0.8');
+    const toVersion = String(req.body.to_version || (builds[0] && builds[0].version) || mysqlMigrations.latestVersion() || '1.0.9');
     const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
     const migration = await exportDbMigration({
       store: rows[0], ...(await loadPackageData(req.params.id)),

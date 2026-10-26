@@ -6,19 +6,19 @@
   <title>Merchant Dashboard · ZKCommerce</title>
   <style>
     :root {
-      --bg: #fff5f7;
+      --bg: #f5f7fb;
       --card: #ffffff;
-      --navy: #1f1216;
-      --sidebar: #1e1217;
-      --sidebar-hover: #2d1822;
-      --primary: #ed6375;
-      --primary-hover: #db4b60;
+      --navy: #0e1726;
+      --sidebar: #101c30;
+      --sidebar-hover: #182944;
+      --primary: #1976d2;
+      --primary-hover: #145ea8;
       --success: #0d8a56;
       --warning: #b76e00;
       --danger: #d32f2f;
-      --border: #fce7ec;
-      --text: #2d1e24;
-      --muted: #8b6875;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
       --radius: 10px;
     }
     * { box-sizing: border-box; }
@@ -349,14 +349,14 @@
 
   <!-- Sidebar -->
   <aside>
-    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid rgba(237,99,117,0.2)">
+    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;gap:7px">
         <div style="width:24px;height:24px;border-radius:6px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:900;flex-shrink:0">ZK</div>
-        <span style="color:#ffffff;font-weight:800;font-size:13px;letter-spacing:-0.2px">ZKCommerce</span>
+        <span style="font-weight:800;font-size:13px;letter-spacing:-0.2px">ZKCommerce</span>
       </div>
-      <span style="color:rgba(237,99,117,0.5);font-size:13px;font-weight:300">✕</span>
+      <span style="color:#cbd5e1;font-size:13px;font-weight:300">✕</span>
       <div id="clientBrandWrap" style="display:flex;align-items:center;gap:6px;min-width:0">
-        <img id="clientBrandLogo" src="../../../assets/themes/smeram/smeram-logo.png" alt="Smeram Naturals" style="height:26px;max-width:32px;object-fit:contain;border-radius:4px" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+        <img id="clientBrandLogo" src="../assets/themes/smeram/smeram-logo.png" alt="Smeram Naturals" style="height:26px;max-width:32px;object-fit:contain;border-radius:4px" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
         <span id="clientBrandName" style="font-size:12px;font-weight:700;color:#ed6375;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Smeram Naturals</span>
       </div>
     </div>
@@ -569,6 +569,18 @@
         <h1 class="page-title">Discount Coupons</h1>
         <p class="page-sub">Create promo codes, percentage/fixed discounts, and minimum order rules.</p>
 
+        <!-- View Cart Promo Code Status Banner -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <strong style="font-size:14px;color:var(--dark)">Cart Promo Code Input:</strong>
+              <span id="cartPromoBadge" class="badge badge-cancelled" style="font-size:12px;padding:3px 8px">Disabled (Default)</span>
+            </div>
+            <p style="margin:4px 0 0;font-size:12.5px;color:var(--muted)">Controls whether promo code box is visible in View Cart / Checkout. Disabled by default; enable after adding coupons.</p>
+          </div>
+          <button type="button" id="btnToggleCartPromo" class="btn-primary btn-sm" onclick="toggleCartPromoBox()">Enable in View Cart</button>
+        </div>
+
         <div class="card">
           <h2 style="font-size:16px;margin:0 0 16px">Create New Coupon</h2>
           <form id="couponForm">
@@ -578,6 +590,12 @@
               <div class="form-group"><label>Discount Value</label><input name="discount_value" type="number" min="1" step="0.5" required placeholder="20"></div>
               <div class="form-group"><label>Min. Order (₹)</label><input name="minimum_order" type="number" min="0" value="0"></div>
               <div class="form-group"><label>Usage Limit</label><input name="usage_limit" type="number" min="1" placeholder="Unlimited"></div>
+            </div>
+            <div style="margin:12px 0 16px">
+              <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="autoEnableCartPromo" checked>
+                <span><b>Enable Promo code box in View Cart immediately</b> so customers can enter this coupon</span>
+              </label>
             </div>
             <button class="btn-primary" type="submit">Save Coupon</button>
           </form>
@@ -970,6 +988,19 @@
       };
       if (currentStore.whatsapp_number) {
         document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;
+      }
+      const cLogo = document.getElementById('clientBrandLogo');
+      const cName = document.getElementById('clientBrandName');
+      if (cLogo && currentStore.logo_url) cLogo.src = currentStore.logo_url;
+      if (cName) cName.textContent = currentStore.store_name || 'Client Store';
+      if (currentStore.slug === 'smeram') {
+        document.documentElement.style.setProperty('--bg', '#fff5f7');
+        document.documentElement.style.setProperty('--border', '#fce7ec');
+        document.documentElement.style.setProperty('--primary', '#ed6375');
+      } else {
+        document.documentElement.style.setProperty('--bg', '#f5f7fb');
+        document.documentElement.style.setProperty('--border', '#e2e8f0');
+        document.documentElement.style.setProperty('--primary', '#1976d2');
       }
       updateStoreBuilderLinks();
     }
@@ -1464,13 +1495,43 @@
         st.textContent = d.live ? 'Saved — the live store is updated.' : 'Saved. The store is not published yet; it applies when you publish.';
       } catch (e) { st.style.color = '#b91c1c'; st.textContent = e.message; }
     }
+    function updateCartPromoBadge(isEnabled) {
+      const badge = document.getElementById('cartPromoBadge');
+      const btn = document.getElementById('btnToggleCartPromo');
+      if (badge) {
+        badge.className = 'badge ' + (isEnabled ? 'badge-shipped' : 'badge-cancelled');
+        badge.textContent = isEnabled ? 'Enabled in View Cart' : 'Disabled (Default)';
+      }
+      if (btn) {
+        btn.textContent = isEnabled ? 'Disable in View Cart' : 'Enable in View Cart';
+        btn.className = isEnabled ? 'btn-outline btn-sm' : 'btn-primary btn-sm';
+      }
+    }
+
+    async function toggleCartPromoBox() {
+      try {
+        const fresh = await req('/stores/' + currentStoreId + '/builder');
+        const prevTheme = fresh.store.theme_config || {};
+        const prevCheckout = prevTheme.checkout || {};
+        const newState = !(prevCheckout.show_coupon === true);
+        const theme_config = { ...prevTheme, checkout: { ...prevCheckout, show_coupon: newState } };
+        await req('/stores/' + currentStoreId + '/draft', { method: 'PUT', body: JSON.stringify({ theme_config }) });
+        await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });
+        if (document.getElementById('coShowCoupon')) document.getElementById('coShowCoupon').checked = newState;
+        updateCartPromoBadge(newState);
+        try { localStorage.setItem('zk_checkout_show_coupon', String(newState)); } catch(_) {}
+        notify(newState ? 'Promo code input is now ENABLED in View Cart!' : 'Promo code input is now DISABLED in View Cart (default).');
+      } catch (e) { notify(e.message, true); }
+    }
+
     async function loadCheckoutSettings() {
       try {
         const d = await req('/stores/' + currentStoreId + '/builder');
         checkoutThemeConfig = d.store.theme_config || {};
         razorpayInfo = d.payments || {};
         const c = checkoutThemeConfig.checkout || {};
-        document.getElementById('coShowCoupon').checked = c.show_coupon !== false;
+        document.getElementById('coShowCoupon').checked = c.show_coupon === true;
+        updateCartPromoBadge(c.show_coupon === true);
         if (document.getElementById('coShowShipping')) {
           document.getElementById('coShowShipping').checked = c.show_shipping_field !== false && c.show_shipping !== false;
         }
@@ -1755,7 +1816,9 @@
     document.getElementById('couponForm').onsubmit = async e => {
       e.preventDefault();
       const f = new FormData(e.target);
+      const autoEnable = document.getElementById('autoEnableCartPromo')?.checked;
       const body = Object.fromEntries(f);
+      delete body.enable_in_cart;
       body.store_id = Number(currentStoreId);
       body.discount_value = Number(body.discount_value);
       body.minimum_order = Number(body.minimum_order || 0);
@@ -1763,7 +1826,22 @@
       body.active = true;
       try {
         await req('/coupons', { method: 'POST', body: JSON.stringify(body) });
-        notify('Coupon saved!');
+        if (autoEnable) {
+          try {
+            const fresh = await req('/stores/' + currentStoreId + '/builder');
+            const prevTheme = fresh.store.theme_config || {};
+            const prevCheckout = prevTheme.checkout || {};
+            if (prevCheckout.show_coupon !== true) {
+              const theme_config = { ...prevTheme, checkout: { ...prevCheckout, show_coupon: true } };
+              await req('/stores/' + currentStoreId + '/draft', { method: 'PUT', body: JSON.stringify({ theme_config }) });
+              await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });
+              if (document.getElementById('coShowCoupon')) document.getElementById('coShowCoupon').checked = true;
+              updateCartPromoBadge(true);
+              localStorage.setItem('zk_checkout_show_coupon', 'true');
+            }
+          } catch(_) {}
+        }
+        notify(autoEnable ? 'Coupon saved and Promo code input enabled in View Cart!' : 'Coupon saved!');
         e.target.reset();
         loadCoupons();
       } catch (err) { notify(err.message, true); }
@@ -1799,7 +1877,14 @@
     function logout() {
       localStorage.removeItem('zk_token');
       localStorage.removeItem('zk_user');
-      location.href = '../index.html';
+      const isClient = window.location.pathname.includes('/clients/');
+      if (isClient) {
+        location.href = '../index.html';
+      } else if (currentStore && currentStore.slug === 'smeram') {
+        location.href = '../clients/smeram/index.html';
+      } else {
+        location.href = '../auth/login.html';
+      }
     }
 
     init();

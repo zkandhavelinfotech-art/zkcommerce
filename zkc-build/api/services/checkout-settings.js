@@ -1,12 +1,11 @@
-// Merchant-controlled cart & checkout options, stored in theme_config.checkout and published with the snapshot.
-// Defaults keep the original behaviour (discount box shown, COD + Razorpay offered).
+// Defaults keep promo code disabled by default until merchant enables it after adding coupon codes.
 function checkoutSettings(themeConfig) {
   const c = (themeConfig && themeConfig.checkout) || {};
   const razorpay = c.razorpay !== false;
   // At least one payment method must stay available.
   const cod = c.cod !== false || !razorpay;
   const show_shipping_field = c.show_shipping_field !== false && c.show_shipping !== false;
-  return { show_coupon: c.show_coupon !== false, cod, razorpay, show_shipping_field };
+  return { show_coupon: c.show_coupon === true, cod, razorpay, show_shipping_field };
 }
 
 const PAYMENT_LABELS = {

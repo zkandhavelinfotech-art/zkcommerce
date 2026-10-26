@@ -272,6 +272,15 @@ const MIGRATIONS = [
       { addColumn: { table: 'products', column: 'cost_price', definition: 'DECIMAL(12,2) DEFAULT NULL' } },
       { addColumn: { table: 'products', column: 'gst_rate', definition: "VARCHAR(10) DEFAULT '12'" } }
     ]
+  },
+  {
+    id: '009_order_payment_meta',
+    version: '1.0.9',
+    description: 'Razorpay signature, payment gateway and invoice audit tracking (v1.0.9)',
+    steps: [
+      { addColumn: { table: 'orders', column: 'razorpay_signature', definition: 'VARCHAR(255) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'payment_gateway', definition: "VARCHAR(40) DEFAULT 'razorpay'" } }
+    ]
   }
 ];
 
@@ -324,7 +333,7 @@ function guardedSql(migrations) {
 }
 
 const latestId = () => MIGRATIONS[MIGRATIONS.length - 1].id;
-const latestVersion = () => MIGRATIONS[MIGRATIONS.length - 1].version || '1.0.8';
+const latestVersion = () => MIGRATIONS[MIGRATIONS.length - 1].version || '1.0.9';
 
 // Migrations newer than `fromId` (all of them when fromId is empty or unknown).
 function migrationsAfter(fromId) {

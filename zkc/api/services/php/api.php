@@ -138,6 +138,7 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
     $handoff = null;
     if ($payMethod === 'cod') {
         $order = zkcOrderById($pdo, $orderId);
+        zkcEnsureInvoice($pdo, $order);
         $handoff = zkcHandoffUrl($order);
         $wa = zkcNotifyOrderConfirmed($pdo, $order);
         zkcNotifyLowStock($pdo, $low);

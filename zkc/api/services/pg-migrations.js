@@ -103,6 +103,13 @@ const MIGRATIONS = [
       'ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(12,2)',
       "ALTER TABLE products ADD COLUMN IF NOT EXISTS gst_rate VARCHAR(10) DEFAULT '12'"
     ]
+  },
+  {
+    id: '009_order_payment_meta',
+    description: 'Adds payment_gateway column to orders table (v1.0.9)',
+    sql: [
+      "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_gateway VARCHAR(40) DEFAULT 'razorpay'"
+    ]
   }
 ];
 

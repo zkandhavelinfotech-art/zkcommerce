@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ZKCommerce Universal Database Migration Engine
  * Supports PostgreSQL and MySQL with version tracking, batching, and step-by-step execution.
  */
@@ -137,6 +137,18 @@ const MASTER_MIGRATIONS = [
       'ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_price NUMERIC(12,2)',
       'ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(12,2)',
       "ALTER TABLE products ADD COLUMN IF NOT EXISTS gst_rate VARCHAR(10) DEFAULT '12'"
+    ]
+  },
+  {
+    version: 'v1.0.9',
+    id: '009_order_payment_meta',
+    name: 'Razorpay Signature & Payment Gateway Audit',
+    description: 'Adds razorpay_signature and payment_gateway columns for verified online transactions and invoices',
+    target_tables: ['orders'],
+    target_columns: ['razorpay_signature', 'payment_gateway'],
+    sql: [
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_signature TEXT',
+      "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_gateway VARCHAR(40) DEFAULT 'razorpay'"
     ]
   }
 ];

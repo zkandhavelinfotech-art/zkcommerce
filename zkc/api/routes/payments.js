@@ -2,14 +2,30 @@ const router = require('express').Router();
 const pool = require('../db');
 const crypto = require('crypto');
 
+function getRazorpayConfig() {
+  const mode = (process.env.RAZORPAY_MODE || 'live').toLowerCase();
+  const key_id = mode === 'test'
+    ? (process.env.RAZORPAY_TEST_KEY_ID || process.env.RAZORPAY_KEY_ID)
+    : (process.env.RAZORPAY_LIVE_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_live_TrzrN3plJPv1lV');
+  const key_secret = mode === 'test'
+    ? (process.env.RAZORPAY_TEST_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET)
+    : (process.env.RAZORPAY_LIVE_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET || 'LrNPKD7DytSnHcsc5NxQMKCb');
+  const webhook_secret = mode === 'test'
+    ? (process.env.RAZORPAY_TEST_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET || 'smeram_test_webhook_secret_2026')
+    : (process.env.RAZORPAY_LIVE_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET || 'smeram_live_webhook_secret_2026');
+  return { mode, key_id, key_secret, webhook_secret };
+}
+
 function getRazorpay() {
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) throw new Error('Razorpay is not configured');
+  const cfg = getRazorpayConfig();
+  if (!cfg.key_id || !cfg.key_secret) throw new Error('Razorpay is not configured');
   const Razorpay = require('razorpay');
-  return new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+  return new Razorpay({ key_id: cfg.key_id, key_secret: cfg.key_secret });
 }
 /**
  * Runs once when an order becomes paid (from /verify or the webhook, whichever flips it first):
- * takes stock, sends the WhatsApp confirmation / care alert, and low-stock alerts. Never throws.
+ * takes stock, sends the WhatsApp confirmation / care alert, auto-generates the invoice for
+ * Invoices & GST Tax Filing page, and sends low-stock alerts. Never throws.
  */
 async function afterPaid(order) {
   let whatsappHandoffUrl = null;
@@ -29,6 +45,18 @@ async function afterPaid(order) {
     const store = storeRows[0] || {};
     const lineItems = typeof order.items === 'string' ? JSON.parse(order.items || '[]') : order.items;
     const full = { ...order, items: lineItems };
+
+    // Auto-generate invoice immediately for Invoices & GST Tax Filing
+    try {
+      const invNumber = `ZK-${order.store_id}-${order.id}`;
+      await pool.query(
+        'INSERT INTO invoices(store_id, order_id, invoice_number) VALUES($1, $2, $3) ON CONFLICT (order_id) DO NOTHING',
+        [order.store_id, order.id, invNumber]
+      );
+    } catch (invErr) {
+      console.warn('[Payment] auto invoice creation error:', invErr.message);
+    }
+
     const waSettings = await orderMessages.loadSettings(order.store_id);
     if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, full, store).care_url;
     waSender.notifyOrderConfirmed(order.store_id, full, store);
@@ -65,7 +93,7 @@ router.post('/razorpay/order', async (req, res) => {
       notes: { zkcommerce_order_id: String(orderId) }
     });
     await pool.query("UPDATE orders SET razorpay_order_id=$1,payment_failure=NULL WHERE id=$2 AND payment_status='processing'", [rzpOrder.id, orderId]);
-    res.json({ razorpay_order_id: rzpOrder.id, amount: rzpOrder.amount, currency: 'INR', key: process.env.RAZORPAY_KEY_ID });
+    res.json({ razorpay_order_id: rzpOrder.id, amount: rzpOrder.amount, currency: 'INR', key: getRazorpayConfig().key_id });
   } catch (e) {
     try {
       const { rows } = await pool.query("UPDATE orders SET payment_status='failed',payment_failure=$1,updated_at=NOW() WHERE id=$2 AND payment_status='processing' AND payment_method='razorpay' RETURNING store_id,coupon_code", [rzpError(e).slice(0,500), orderId]);
@@ -78,8 +106,9 @@ router.post('/razorpay/order', async (req, res) => {
 router.post('/razorpay/verify', async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, order_id } = req.body;
-    if (!razorpay_order_id || !razorpay_payment_id || !order_id || !process.env.RAZORPAY_KEY_SECRET) return res.status(400).json({ error: 'Payment verification details are incomplete' });
-    const expected = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(`${razorpay_order_id}|${razorpay_payment_id}`).digest('hex');
+    const keySecret = getRazorpayConfig().key_secret;
+    if (!razorpay_order_id || !razorpay_payment_id || !order_id || !keySecret) return res.status(400).json({ error: 'Payment verification details are incomplete' });
+    const expected = crypto.createHmac('sha256', keySecret).update(`${razorpay_order_id}|${razorpay_payment_id}`).digest('hex');
     if (!safeEqualHex(razorpay_signature, expected)) return res.status(400).json({ error: 'Invalid payment signature' });
     const orderCheck = await pool.query("SELECT total_amount FROM orders WHERE id=$1 AND razorpay_order_id=$2 AND payment_method='razorpay'", [order_id, razorpay_order_id]);
     if (!orderCheck.rows.length) return res.status(404).json({ error: 'Pending order not found for this payment' });
@@ -118,7 +147,7 @@ router.post('/razorpay/failure', async (req, res) => {
 
 router.post('/razorpay/webhook', async (req, res) => {
   try {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const secret = getRazorpayConfig().webhook_secret;
     if (!secret) return res.status(503).json({ error: 'Razorpay webhook secret is not configured' });
     const signature = req.headers['x-razorpay-signature'];
     const expected = crypto.createHmac('sha256', secret).update(req.rawBody || Buffer.alloc(0)).digest('hex');

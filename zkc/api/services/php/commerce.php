@@ -314,12 +314,24 @@ function zkcNotifyShipment($pdo, $o, $stage) {
 
 // ── Payment and status changes ──────────────────────────
 
-/** Order became paid (verify or webhook, whichever is first): stock, notifications, hand-off link. */
+function zkcEnsureInvoice($pdo, $o) {
+    if (!$o || empty($o['id'])) return;
+    try {
+        $invNum = 'ZK-' . STORE_ID . '-' . $o['id'];
+        $stmt = $pdo->prepare("INSERT INTO invoices (store_id, order_id, invoice_number) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE order_id = order_id");
+        $stmt->execute([STORE_ID, (int)$o['id'], $invNum]);
+    } catch (Exception $e) {
+        error_log('[Invoice] ' . $e->getMessage());
+    }
+}
+
+/** Order became paid (verify or webhook, whichever is first): stock, notifications, hand-off link, invoice generation. */
 function zkcAfterPaid($pdo, $orderId) {
     $pdo->beginTransaction();
     try { $low = zkcDeductForOrder($pdo, $orderId, true); $pdo->commit(); }
     catch (Exception $e) { $pdo->rollBack(); error_log('[Stock] ' . $e->getMessage()); $low = []; }
     $o = zkcOrderById($pdo, $orderId);
+    if ($o) zkcEnsureInvoice($pdo, $o);
     $wa = $o ? zkcNotifyOrderConfirmed($pdo, $o) : [];
     zkcNotifyLowStock($pdo, $low);
     return ['order' => $o, 'whatsapp' => $wa];

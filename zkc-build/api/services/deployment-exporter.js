@@ -874,12 +874,49 @@ define('SHIP_TRACKING_URL', ${phpString(ship.tracking_url_template || 'https://e
 }
 
 function generatePaymentConfigPhp(store, env, rzp) {
+  const liveKey = rzp.live_key_id || (rzp.mode === 'live' ? rzp.key_id : 'rzp_live_TrzrN3plJPv1lV');
+  const liveSecret = rzp.live_key_secret || (rzp.mode === 'live' ? rzp.key_secret : 'LrNPKD7DytSnHcsc5NxQMKCb');
+  const testKey = rzp.test_key_id || (rzp.mode === 'test' ? rzp.key_id : 'rzp_test_your_key_id');
+  const testSecret = rzp.test_key_secret || (rzp.mode === 'test' ? rzp.key_secret : 'your_razorpaay_key_secret');
+  const activeMode = rzp.mode === 'test' ? 'test' : 'live';
+
   return `<?php
-// ${store.store_name} — Razorpay keys (${env}, ${rzp.mode} mode). Keep this file private; it is blocked from the web.
-define('RAZORPAY_KEY_ID', ${phpString(rzp.key_id)});
-define('RAZORPAY_KEY_SECRET', ${phpString(rzp.key_secret)});
-// Razorpay Dashboard → Webhooks → https://<your-domain>/api.php?route=payments/razorpay/webhook (payment.captured, payment.failed).
-define('RAZORPAY_WEBHOOK_SECRET', ${phpString(rzp.webhook_secret || '')});
+// ${store.store_name} — Razorpay keys (${env}, Dual Mode: Live & Test). Keep this file private; it is blocked from the web.
+// Change RAZORPAY_MODE to 'live' or 'test' to switch modes.
+define('RAZORPAY_MODE', ${phpString(activeMode)});
+
+// ── Live Credentials (Domain: smeranm-naturals.in) ───────────
+define('RAZORPAY_LIVE_KEY_ID', ${phpString(liveKey)});
+define('RAZORPAY_LIVE_KEY_SECRET', ${phpString(liveSecret)});
+define('RAZORPAY_LIVE_WEBHOOK_SECRET', ${phpString(rzp.live_webhook_secret || 'smeram_live_webhook_secret_2026')});
+define('RAZORPAY_LIVE_DOMAIN', 'smeranm-naturals.in');
+define('RAZORPAY_LIVE_WEBHOOK_URL', 'https://smeranm-naturals.in/api.php?route=payments/razorpay/webhook');
+
+// ── Test Credentials (Domain: localhost:3000) ─────────────────
+define('RAZORPAY_TEST_KEY_ID', ${phpString(testKey)});
+define('RAZORPAY_TEST_KEY_SECRET', ${phpString(testSecret)});
+define('RAZORPAY_TEST_WEBHOOK_SECRET', ${phpString(rzp.test_webhook_secret || 'smeram_test_webhook_secret_2026')});
+define('RAZORPAY_TEST_DOMAIN', 'localhost:3000');
+define('RAZORPAY_TEST_WEBHOOK_URL', 'http://localhost:3000/api.php?route=payments/razorpay/webhook');
+
+// ── Active Mode Resolution ────────────────────────────────────
+if (RAZORPAY_MODE === 'live') {
+    define('RAZORPAY_KEY_ID', RAZORPAY_LIVE_KEY_ID);
+    define('RAZORPAY_KEY_SECRET', RAZORPAY_LIVE_KEY_SECRET);
+    define('RAZORPAY_WEBHOOK_SECRET', RAZORPAY_LIVE_WEBHOOK_SECRET);
+    define('RAZORPAY_DOMAIN', RAZORPAY_LIVE_DOMAIN);
+    define('RAZORPAY_WEBHOOK_URL', RAZORPAY_LIVE_WEBHOOK_URL);
+} else {
+    define('RAZORPAY_KEY_ID', RAZORPAY_TEST_KEY_ID);
+    define('RAZORPAY_KEY_SECRET', RAZORPAY_TEST_KEY_SECRET);
+    define('RAZORPAY_WEBHOOK_SECRET', RAZORPAY_TEST_WEBHOOK_SECRET);
+    define('RAZORPAY_DOMAIN', RAZORPAY_TEST_DOMAIN);
+    define('RAZORPAY_WEBHOOK_URL', RAZORPAY_TEST_WEBHOOK_URL);
+}
+
+// Razorpay Dashboard Setup:
+// Webhook URL: https://smeranm-naturals.in/api.php?route=payments/razorpay/webhook
+// Events: payment.captured, payment.failed
 `;
 }
 
