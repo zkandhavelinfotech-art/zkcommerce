@@ -839,6 +839,8 @@ define('STORE_ID', ${Number(store.id)});
 define('STORE_SLUG', ${phpString(store.slug)});
 define('STORE_NAME', ${phpString(store.store_name)});
 define('STORE_ENV', ${phpString(env)});
+define('STORE_DOMAIN', ${phpString(store.custom_domain || 'smeram-naturals.in')});
+define('API_BASE', 'https://' . STORE_DOMAIN . '/api');
 define('PACKAGE_VERSION', ${phpString(version)});
 // "From" address on packaging labels.
 define('STORE_ADDRESS', ${phpString(store.address || '')});
@@ -1138,6 +1140,14 @@ function generateWebConfig() {
                 <add value="index.php" />
             </files>
         </defaultDocument>
+        <rewrite>
+            <rules>
+                <rule name="ZKCommerce API Routing" stopProcessing="true">
+                    <match url="^api/(.*)$" />
+                    <action type="Rewrite" url="api.php?route={R:1}" />
+                </rule>
+            </rules>
+        </rewrite>
         <security>
             <requestFiltering>
                 <hiddenSegments>
@@ -1169,6 +1179,10 @@ function generatePhpHtaccess() {
   return `# Apache / cPanel (Linux GoDaddy hosting). Windows/Plesk hosting uses web.config instead.
 DirectoryIndex index.html index.php
 Options -Indexes
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^api/(.*)$ api.php?route=$1 [QSA,L]
+</IfModule>
 RedirectMatch 404 ^/database(/|$)
 <FilesMatch "^((store|payment|whatsapp)_config|admin_common|commerce)\\.php$">
   Require all denied
@@ -1367,14 +1381,33 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
     fs.writeFileSync(path.join(exportDir, 'packaging.php'), generatePackagingPhp(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'shipments.php'), generateShipmentsPhp(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages, extra), version, env), 'utf8');
-    // Bundled Merchant admin, auth, and shared design assets (accessible at /merchant/ and /auth/)
-    for (const folder of ['merchant', 'auth', 'assets']) {
+    // Bundled Merchant admin, Store Builder, auth, and shared design assets (accessible at /merchant/, /store-builder/ and /auth/)
+    for (const folder of ['merchant', 'store-builder', 'auth', 'assets']) {
       const src = path.join(REPO_ROOT, folder);
       if (fs.existsSync(src)) {
         try { fs.cpSync(src, path.join(exportDir, folder), { recursive: true }); }
         catch (e) { console.warn(`[deploy] Could not copy ${folder} to PHP export:`, e.message); }
       }
     }
+    // Standalone /api/ gateway for PHP hosting
+    const apiDir = path.join(exportDir, 'api');
+    fs.mkdirSync(apiDir, { recursive: true });
+    fs.writeFileSync(path.join(apiDir, 'index.php'), `<?php
+/**
+ * Standalone API Gateway for /api/* on PHP hosting.
+ */
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
+$route = trim($_GET['route'] ?? '', '/');
+if ($route === '') {
+    $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    $route = trim(preg_replace('#^.*?/api/?#', '', $uriPath), '/');
+}
+if (!empty($route)) $_GET['route'] = $route;
+require_once __DIR__ . '/../api.php';
+`, 'utf8');
     fs.writeFileSync(path.join(exportDir, 'web.config'), generateWebConfig(), 'utf8');
     fs.writeFileSync(path.join(exportDir, '.htaccess'), generatePhpHtaccess(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), generatePhpReadme(store, env, version, db.name, zipName, assets), 'utf8');

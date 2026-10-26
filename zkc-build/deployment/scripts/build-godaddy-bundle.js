@@ -57,6 +57,14 @@ function buildBundle() {
   fs.mkdirSync(destAuthDir, { recursive: true });
   fs.cpSync(srcAuthDir, destAuthDir, { recursive: true });
 
+  const srcStoreBuilderDir = path.join(__dirname, '../../store-builder');
+  const destStoreBuilderDir = path.join(bundleDir, 'store-builder');
+  if (fs.existsSync(srcStoreBuilderDir)) {
+    fs.mkdirSync(destStoreBuilderDir, { recursive: true });
+    fs.cpSync(srcStoreBuilderDir, destStoreBuilderDir, { recursive: true });
+    console.log(`✅ Bundled Store Builder into ${destStoreBuilderDir}`);
+  }
+
   const srcFullAssets = path.join(__dirname, '../../assets');
   const destFullAssets = path.join(bundleDir, 'assets');
   fs.cpSync(srcFullAssets, destFullAssets, { recursive: true });
@@ -75,7 +83,36 @@ function buildBundle() {
     console.log(`✅ Copied ${phpFiles.length} PHP backend endpoints to ${bundleDir}`);
   }
 
-  // 3. Create web.config for GoDaddy Windows IIS
+  // 5. Create api/ gateway for /api/* requests on GoDaddy
+  const apiDir = path.join(bundleDir, 'api');
+  fs.mkdirSync(apiDir, { recursive: true });
+  const apiIndexPhp = `<?php
+/**
+ * API Gateway for /api/* on GoDaddy PHP hosting.
+ * Routes directly to api.php with route parameter.
+ */
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+$route = trim($_GET['route'] ?? '', '/');
+if ($route === '') {
+    $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    $route = trim(preg_replace('#^.*?/api/?#', '', $uriPath), '/');
+}
+if (!empty($route)) {
+    $_GET['route'] = $route;
+}
+
+require_once __DIR__ . '/../api.php';
+`;
+  fs.writeFileSync(path.join(apiDir, 'index.php'), apiIndexPhp, 'utf8');
+
+  // 6. Create web.config for GoDaddy Windows IIS with URL Rewrite
   const webConfigContent = `<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <system.webServer>
@@ -86,6 +123,14 @@ function buildBundle() {
                 <add value="index.php" />
             </files>
         </defaultDocument>
+        <rewrite>
+            <rules>
+                <rule name="ZKCommerce API Routing" stopProcessing="true">
+                    <match url="^api/(.*)$" />
+                    <action type="Rewrite" url="api.php?route={R:1}" />
+                </rule>
+            </rules>
+        </rewrite>
         <httpProtocol>
             <customHeaders>
                 <add name="X-Content-Type-Options" value="nosniff" />
@@ -99,7 +144,7 @@ function buildBundle() {
     </system.webServer>
 </configuration>`;
   fs.writeFileSync(path.join(bundleDir, 'web.config'), webConfigContent, 'utf8');
-  console.log('✅ Generated web.config for GoDaddy Windows IIS');
+  console.log('✅ Generated web.config with API rewrite rules for GoDaddy Windows IIS');
 
   console.log('\n======================================================');
   console.log('🎉 GODADDY WINDOWS BUNDLE GENERATION COMPLETE!');

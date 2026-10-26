@@ -959,7 +959,24 @@
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
           <button type="button" class="btn-outline btn-sm" onclick="closeLogoUploadModal()">Cancel</button>
-          <button type="button" class="btn-primary btn-sm" onclick="saveStoreLogo()">Save     async function req(path, options = {}) {
+          <button type="button" class="btn-primary btn-sm" onclick="saveStoreLogo()">Save Logo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const localHost = ['localhost', '127.0.0.1'].includes(location.hostname);
+    const localPage = localHost || location.protocol === 'file:';
+    const separateFrontendPort = ['5173', '5500', '5501', '8080'].includes(location.port);
+    const API_BASE = localPage ? (location.port && !separateFrontendPort ? location.origin + '/api' : 'http://localhost:3000/api') : (location.origin + '/api');
+    const api = API_BASE;
+    const token = localStorage.getItem('zk_token');
+    let stores = [];
+    let currentStore = null;
+    let currentStoreId = '';
+
+    async function req(path, options = {}) {
       const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(options.headers || {}) };
       let res;
       try {

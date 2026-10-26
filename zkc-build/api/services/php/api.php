@@ -5,15 +5,23 @@
  * Same rules as the Node API: sizes and stock, coupons, shipping rates, GST, Razorpay (verify + webhook), WhatsApp.
  */
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/store_config.php';
+if (is_file(__DIR__ . '/store_config.php')) require_once __DIR__ . '/store_config.php';
 require_once __DIR__ . '/db_config.php';
 if (is_file(__DIR__ . '/payment_config.php')) require_once __DIR__ . '/payment_config.php';
 if (is_file(__DIR__ . '/whatsapp_config.php')) require_once __DIR__ . '/whatsapp_config.php';
 require_once __DIR__ . '/whatsapp_orders.php';
 require_once __DIR__ . '/commerce.php';
 require_once __DIR__ . '/packaging_api.php';
-if (!defined('CHECKOUT_COD')) define('CHECKOUT_COD', true);
-if (!defined('CHECKOUT_RAZORPAY')) define('CHECKOUT_RAZORPAY', false);
+
+if (!defined('STORE_ID')) define('STORE_ID', 2);
+if (!defined('STORE_SLUG')) define('STORE_SLUG', 'smeram');
+if (!defined('STORE_NAME')) define('STORE_NAME', 'Smeram Naturals');
+if (!defined('STORE_ENV')) define('STORE_ENV', 'production');
+if (!defined('STORE_DOMAIN')) define('STORE_DOMAIN', 'smeram-naturals.in');
+if (!defined('API_BASE')) define('API_BASE', 'https://smeram-naturals.in/api');
+if (!defined('PACKAGE_VERSION')) define('PACKAGE_VERSION', '1.0.12');
+if (!defined('CHECKOUT_COD')) define('CHECKOUT_COD', false);
+if (!defined('CHECKOUT_RAZORPAY')) define('CHECKOUT_RAZORPAY', true);
 if (!defined('CHECKOUT_COUPON')) define('CHECKOUT_COUPON', false);
 
 function respond($data, $status = 200) {
@@ -29,7 +37,13 @@ function respondError($e) {
     respond(['error' => $status === 500 ? 'Something went wrong. Please try again.' : $e->getMessage()], $status);
 }
 
-$route  = trim($_GET['route'] ?? '', '/');
+// 1. Check query parameter route
+$route = trim($_GET['route'] ?? '', '/');
+// 2. If route is empty (e.g. called via /api/auth/login or /api/orders directly), parse REQUEST_URI
+if ($route === '') {
+    $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    $route = trim(preg_replace('#^.*?/api/?#', '', $uriPath), '/');
+}
 $method = $_SERVER['REQUEST_METHOD'];
 $raw    = file_get_contents('php://input');
 $body   = json_decode($raw, true);
