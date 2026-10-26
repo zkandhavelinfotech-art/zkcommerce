@@ -1,7 +1,7 @@
-// ─────────────────────────────────────────────────────────────
-// ZKCommerce v4.4.0 — Main API Server
-// ZKandavel Infotech Pvt Ltd · Smart Commerce. Limitless Growth.
-// ─────────────────────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ZKCommerce v4.4.0 â€” Main API Server
+// ZKandavel Infotech Pvt Ltd Â· Smart Commerce. Limitless Growth.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const config       = require('./config');
 const express      = require('express');
 const cors         = require('cors');
@@ -17,7 +17,7 @@ const app  = express();
 const PORT = Number(process.env.PORT || 3000);
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) throw new Error('PORT must be a valid TCP port from 1 to 65535');
 
-// ── Middleware ────────────────────────────────────────────────
+// â”€â”€ Middleware â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE','PATCH'] }));
 app.use(express.json({ limit: '10mb', verify: (req, _res, buffer) => { req.rawBody = Buffer.from(buffer); } }));
@@ -28,9 +28,11 @@ app.use('/auth', express.static(path.join(__dirname, '..', 'auth')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
 app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
+app.get(['/release-history.html', '/release_history.html', '/changelog'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-history.html')));
+app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => res.sendFile(path.join(__dirname, '..', 'db-migrations.html')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets'), { fallthrough: true, maxAge: '7d' }));
 
-// ── Health check ─────────────────────────────────────────────
+// â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // /api/health is the Railway health-check path (railway.toml); /health is kept for local scripts.
 app.get(['/health', '/api/health'], async (req, res) => {
   try {
@@ -41,8 +43,9 @@ app.get(['/health', '/api/health'], async (req, res) => {
   }
 });
 
-// ── Route modules ─────────────────────────────────────────────
+// â”€â”€ Route modules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/auth',        require('./routes/auth'));
+app.use('/api/migrations',  require('./routes/migrations'));
 app.use('/api/stores',      require('./routes/stores'));
 app.use('/api/products',    require('./routes/products'));
 app.use('/api/categories',  require('./routes/categories'));
@@ -199,10 +202,10 @@ app.get('/:page', (req,res,next) => {
   res.sendFile(path.join(__dirname, '..', req.params.page));
 });
 
-// ── 404 ───────────────────────────────────────────────────────
+// â”€â”€ 404 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use((req, res) => res.status(404).json({ error: 'Route not found', path: req.path }));
 
-// ── Error handler ─────────────────────────────────────────────
+// â”€â”€ Error handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use((err, req, res, next) => {
   console.error('[ZKCommerce]', err.message);
   res.status(500).json({ error: 'Internal server error', detail: err.message });
@@ -224,3 +227,6 @@ server.on('error', error => {
 });
 
 module.exports = app;
+
+
+

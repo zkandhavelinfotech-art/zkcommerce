@@ -30,7 +30,7 @@ router.get('/:slug/products', async(req,res)=>{
     const {page=1,limit=12,category,search,sort='featured'}=req.query,offset=(Number(page)-1)*Number(limit);
     const {rows}=await pool.query(`SELECT published_snapshot FROM stores WHERE (slug=$1 OR lower(published_snapshot->'store'->>'custom_domain')=lower($1)) AND status IN ('published','live') AND published_snapshot IS NOT NULL`,[req.params.slug]);
     if(!rows.length)return res.status(404).json({error:'Store not found'});
-    let products=(rows[0].published_snapshot.products||[]).filter(p=>!category||p.category_name===category).filter(p=>!search||p.name.toLowerCase().includes(String(search).toLowerCase()));
+    let products=(rows[0].published_snapshot.products||[]).filter(p=>!p.unlisted).filter(p=>!category||p.category_name===category).filter(p=>!search||p.name.toLowerCase().includes(String(search).toLowerCase()));
     if(sort==='price_asc')products.sort((a,b)=>a.price-b.price);else if(sort==='price_desc')products.sort((a,b)=>b.price-a.price);else products.sort((a,b)=>Number(b.featured)-Number(a.featured)||new Date(b.created_at)-new Date(a.created_at));
     const total=products.length;res.json({products:products.slice(offset,offset+Number(limit)),pagination:{page:Number(page),limit:Number(limit),total}});
   }catch(e){res.status(500).json({error:e.message});}

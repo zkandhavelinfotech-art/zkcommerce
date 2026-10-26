@@ -77,6 +77,11 @@ const MIGRATIONS = [
       'ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ',
       'CREATE INDEX IF NOT EXISTS idx_orders_store_tracking ON orders(store_id, tracking_number)'
     ]
+  },
+  {
+    id: '006_product_unlisted',
+    description: 'Hidden (link-only) products: sold from their own page, left out of listings and search',
+    sql: ['ALTER TABLE products ADD COLUMN IF NOT EXISTS unlisted BOOLEAN NOT NULL DEFAULT false']
   }
 ];
 
