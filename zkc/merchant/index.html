@@ -728,6 +728,16 @@
           </div>
           <p style="font-size:12px;color:var(--muted);margin-top:10px">“Publish” also publishes any other unpublished design changes from the Store Builder. GoDaddy PHP sites pick up these options in the next package build.</p>
         </div>
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:4px">Shop display</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Applies to the live store straight away. Each product can override the offer setting in the Store Builder product details.</p>
+          <div style="display:grid;gap:10px;max-width:680px">
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP strike-through, “% OFF” badges and offer tags such as “Special Introductory Offer”.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The product grid on the home page and its menu, tab and footer links. Other sections are switched in Store Builder → Settings.</small></span></label>
+          </div>
+          <div id="dsStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
+          <button class="btn-primary" id="btnSaveDisplay">Save display settings</button>
+        </div>
       </section>
 
       <!-- VIEW: DEPLOY & HOSTING -->
@@ -870,6 +880,7 @@
         loadLegalPages(),
         loadWhatsAppSettings(),
         loadCheckoutSettings(),
+        loadDisplaySettings(),
         loadSender(),
         loadOutbox(),
         loadInventory()
@@ -1251,6 +1262,26 @@
 
     // ── Checkout & payments (theme_config.checkout, published with the store) ──
     let checkoutThemeConfig = null, razorpayInfo = {};
+    async function loadDisplaySettings() {
+      try {
+        const d = await req('/stores/' + currentStoreId + '/display');
+        const v = d.live || d.display;
+        document.getElementById('dsShowOffers').checked = v.show_offers;
+        document.getElementById('dsAllProducts').checked = v.show_all_products;
+        document.getElementById('dsStatus').textContent = '';
+      } catch (e) { console.warn('Display settings:', e.message); }
+    }
+    async function saveDisplaySettings() {
+      const st = document.getElementById('dsStatus');
+      try {
+        const d = await req('/stores/' + currentStoreId + '/display', { method: 'PUT', body: JSON.stringify({
+          show_offers: document.getElementById('dsShowOffers').checked,
+          show_all_products: document.getElementById('dsAllProducts').checked
+        }) });
+        st.style.color = '#166534';
+        st.textContent = d.live ? 'Saved — the live store is updated.' : 'Saved. The store is not published yet; it applies when you publish.';
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = e.message; }
+    }
     async function loadCheckoutSettings() {
       try {
         const d = await req('/stores/' + currentStoreId + '/builder');
@@ -1515,6 +1546,7 @@
     ['waCareTpl', 'waCustomerTpl', 'waLowTpl', 'waShippedTpl'].forEach(id => { const el = document.getElementById(id); el.onfocus = () => { waLastFocus = el; waRenderPreview(); }; el.oninput = waRenderPreview; });
     ['coShowCoupon', 'coRazorpay', 'coCod'].forEach(id => document.getElementById(id).onchange = validateCheckout);
     document.getElementById('btnSaveCheckout').onclick = () => saveCheckout(false);
+    document.getElementById('btnSaveDisplay').onclick = saveDisplaySettings;
     document.getElementById('btnPublishCheckout').onclick = () => saveCheckout(true);
     document.getElementById('depDlTarget').onchange = e => { try { localStorage.setItem('zk_dl_target', e.target.value); } catch (_) {} };
     document.getElementById('orderStatusFilter').onchange = loadOrders;

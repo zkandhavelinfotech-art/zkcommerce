@@ -12,6 +12,8 @@ function netQuantity(body) {
   return value === null ? { value: null, unit: null } : { value, unit: unit || 'g' };
 }
 // Per-product low-stock level; empty = use the store default.
+// Offer/discount display per product: true/false overrides the store setting, null follows it.
+function showOffer(v) { return v === true || v === 'true' || v === 'show' ? true : v === false || v === 'false' || v === 'hide' ? false : null; }
 function lowStockThreshold(v) {
   if (v === '' || v === null || v === undefined) return null;
   const n = parseInt(v, 10);
@@ -92,9 +94,9 @@ router.post('/', auth, async (req,res) => {
     const finalQty = fromVariants.quantity ?? parsedQty;
     if (fromVariants.quantity !== undefined) finalInStock = fromVariants.in_stock;
     const {rows} = await pool.query(
-      `INSERT INTO products (store_id,name,slug,sku,description,price,compare_price,images,variants,category_id,in_stock,active,featured,badge_text,ingredients,product_size,offer_text,user_instructions,benefits,additional_note,quantity,net_quantity_value,net_quantity_unit,low_stock_threshold)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) RETURNING *`,
-      [store.id,name,slug,sku||null,description||null,fromVariants.price ?? price,fromVariants.price !== undefined ? fromVariants.compare_price : (compare_price||null),JSON.stringify(images||[]),JSON.stringify(variantList),categoryId,finalInStock,active,featured,badge_text||null,ingredients||null,product_size||null,offer_text||null,user_instructions||null,benefits||null,additional_note||null,finalQty,net.value,net.unit,lowStockThreshold(req.body.low_stock_threshold)]
+      `INSERT INTO products (store_id,name,slug,sku,description,price,compare_price,images,variants,category_id,in_stock,active,featured,badge_text,ingredients,product_size,offer_text,user_instructions,benefits,additional_note,quantity,net_quantity_value,net_quantity_unit,low_stock_threshold,show_offer)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25) RETURNING *`,
+      [store.id,name,slug,sku||null,description||null,fromVariants.price ?? price,fromVariants.price !== undefined ? fromVariants.compare_price : (compare_price||null),JSON.stringify(images||[]),JSON.stringify(variantList),categoryId,finalInStock,active,featured,badge_text||null,ingredients||null,product_size||null,offer_text||null,user_instructions||null,benefits||null,additional_note||null,finalQty,net.value,net.unit,lowStockThreshold(req.body.low_stock_threshold),showOffer(req.body.show_offer)]
     );
     // New product → opening stock appears in the inventory history straight away.
     const opening = variantList.length ? variantList.filter(v => v.quantity > 0).map(v => [v.id, v.quantity]) : (finalQty > 0 ? [[null, finalQty]] : []);
@@ -131,6 +133,7 @@ router.put('/:id', auth, async (req,res) => {
       const net = netQuantity(f);
       updates.push(`net_quantity_value=$${idx++}`, `net_quantity_unit=$${idx++}`); params.push(net.value, net.unit);
     }
+    if (f.show_offer !== undefined) { updates.push(`show_offer=$${idx++}`); params.push(showOffer(f.show_offer)); }
     if (f.low_stock_threshold !== undefined) { updates.push(`low_stock_threshold=$${idx++}`); params.push(lowStockThreshold(f.low_stock_threshold)); }
     if (f.name !== undefined) { updates.push(`name=$${idx++}`); params.push(f.name); }
     if (f.sku !== undefined) { updates.push(`sku=$${idx++}`); params.push(f.sku); }

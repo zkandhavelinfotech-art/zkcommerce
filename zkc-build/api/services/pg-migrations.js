@@ -61,6 +61,11 @@ const MIGRATIONS = [
       )`,
       'CREATE INDEX IF NOT EXISTS idx_whatsapp_outbox_store ON whatsapp_outbox(store_id, status, created_at DESC)'
     ]
+  },
+  {
+    id: '004_product_display',
+    description: 'Per-product offer display override (NULL = follow the store setting)',
+    sql: ['ALTER TABLE products ADD COLUMN IF NOT EXISTS show_offer BOOLEAN']
   }
 ];
 

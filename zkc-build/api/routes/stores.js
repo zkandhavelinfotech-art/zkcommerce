@@ -680,6 +680,41 @@ router.put('/:id/theme', auth, async (req, res) => {
 });
 
 // PUT /api/stores/:id/status
+// Display switches for the merchant dashboard: offers/discounts and the "All Products" section.
+// Written to the draft and, when the store is published, to the live snapshot too, so they apply straight away.
+async function storeForDisplay(req) {
+  const { rows } = await pool.query('SELECT id, theme_config, published_snapshot FROM stores WHERE id=$1 AND (merchant_id=$2 OR $3=true)', [req.params.id, req.user.id, req.user.role === 'admin']);
+  return rows[0];
+}
+const displayOf = cfg => ({ show_offers: ((cfg || {}).display || {}).show_offers !== false, show_all_products: (((cfg || {}).sections || {}).products || {}).visible !== false });
+router.get('/:id/display', auth, async (req, res) => {
+  try {
+    const s = await storeForDisplay(req);
+    if (!s) return res.status(404).json({ error: 'Store not found' });
+    res.json({ display: displayOf(s.theme_config), live: s.published_snapshot ? displayOf(s.published_snapshot.theme_config) : null });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.put('/:id/display', auth, async (req, res) => {
+  try {
+    const s = await storeForDisplay(req);
+    if (!s) return res.status(404).json({ error: 'Store not found' });
+    const apply = cfg => {
+      cfg = cfg || {};
+      if (req.body.show_offers !== undefined) cfg.display = { ...(cfg.display || {}), show_offers: req.body.show_offers !== false };
+      if (req.body.show_all_products !== undefined) {
+        cfg.sections = cfg.sections || {};
+        cfg.sections.products = { ...(cfg.sections.products || {}), visible: req.body.show_all_products !== false };
+      }
+      return cfg;
+    };
+    const draft = apply(s.theme_config);
+    const snapshot = s.published_snapshot ? { ...s.published_snapshot, theme_config: apply(s.published_snapshot.theme_config) } : null;
+    await pool.query('UPDATE stores SET theme_config=$2::jsonb, published_snapshot=COALESCE($3::jsonb, published_snapshot), updated_at=NOW() WHERE id=$1',
+      [s.id, JSON.stringify(draft), snapshot ? JSON.stringify(snapshot) : null]);
+    res.json({ display: displayOf(draft), live: snapshot ? displayOf(snapshot.theme_config) : null });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 router.put('/:id/status', auth, async (req, res) => {
   try {
     const { status } = req.body;
