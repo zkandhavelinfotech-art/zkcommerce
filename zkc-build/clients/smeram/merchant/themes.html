@@ -387,8 +387,14 @@ body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-
 
         <!-- Tab 3: Hero & Announcement -->
         <div id="tab-panel-hero" class="customizer-tab-panel" style="display:none">
-          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
-            <span>📢</span> Announcement Bar &amp; Hero Content
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:13px;font-weight:700;color:var(--zk-text);display:flex;align-items:center;gap:6px">
+              <span>📢</span> Announcement Bar &amp; Hero Content
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--zk-text);cursor:pointer;background:var(--zk-pale);padding:4px 10px;border-radius:6px;border:1px solid var(--zk-border)">
+              <input type="checkbox" id="ann-enabled-checkbox" checked onchange="toggleAnnBarInTheme(this.checked)" style="accent-color:var(--zk-fire)">
+              <span>Enable Announcement Bar on Storefront</span>
+            </label>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:16px">
             <div class="field-group">
@@ -647,9 +653,12 @@ async function saveVisualCustomizer() {
   currentConfig.sections.nav.sub_bg = subBg;
   currentConfig.sections.nav.background = navBg;
 
+  const annEnabled = document.getElementById('ann-enabled-checkbox') ? document.getElementById('ann-enabled-checkbox').checked : true;
   if (!currentConfig.sections.announcement) currentConfig.sections.announcement = {};
   if (annText) currentConfig.sections.announcement.text = annText;
   currentConfig.sections.announcement.background = annBg;
+  currentConfig.sections.announcement.visible = annEnabled;
+  currentConfig.announcement_enabled = annEnabled;
 
   if (!currentConfig.sections.hero) currentConfig.sections.hero = {};
   if (heroH1) currentConfig.sections.hero.heading = heroH1;
@@ -700,6 +709,13 @@ async function saveVisualCustomizer() {
     btn.disabled = false;
     btn.textContent = '💾 Save & Publish Live';
   }
+}
+
+function toggleAnnBarInTheme(enabled) {
+  localStorage.setItem('zk_announcement_enabled', String(enabled));
+  localStorage.setItem('zk_announcement_disabled', String(!enabled));
+  toast.info('Announcement Bar ' + (enabled ? 'enabled' : 'disabled'));
+  updateSplitPreview();
 }
 
 function populateActiveTheme(store) {

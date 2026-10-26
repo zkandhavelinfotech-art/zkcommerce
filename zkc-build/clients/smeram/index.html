@@ -618,7 +618,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
 <div class="floral-banner-top" aria-hidden="true"></div>
 
 <!-- ANNOUNCEMENT BAR -->
-<div class="ann-bar">
+<div class="ann-bar" id="top-announcement-bar">
   <span>🌿 100% SIDDHA FORMULATION</span>
   <div class="ann-dot"></div>
   <span>🐰 CRUELTY FREE &amp; VEGAN</span>
@@ -1790,6 +1790,7 @@ function handlePlaceOrder(e) {
 
 // Product Quick-View & Expanded Detail Modal
 function openProductDetail(id, selectedSizeIndex = 0) {
+  modalQty = 1;
   const p = catalog.find(x => x.id === id);
   if (!p) return;
 
@@ -2081,9 +2082,23 @@ function buyModalItemNow(productId) {
   openCart();
 }
 
+// Check if announcement bar is disabled by store or page settings
+function checkAnnouncementVisibility() {
+  const ann = document.getElementById('top-announcement-bar') || document.querySelector('.ann-bar');
+  if (!ann) return;
+  const disabled = localStorage.getItem('zk_announcement_disabled') === 'true' || 
+                   localStorage.getItem('zk_announcement_enabled') === 'false';
+  if (disabled) {
+    ann.style.display = 'none';
+  } else {
+    ann.style.display = 'flex';
+  }
+}
+
 // Initialize on page load
 updateCartBadge();
 syncCardSteppers();
+checkAnnouncementVisibility();
 </script>
 
 </body>

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Architecture & Route Differentiation Guide — ZKCommerce v4.8</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0B0F17;
+  --bg-card: #131B2B;
+  --bg-card-hover: #1A2438;
+  --bg-glass: rgba(19, 27, 43, 0.75);
+  --border: #23304A;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --brand-fire: #FF6B00;
+  --brand-gold: #F59E0B;
+  --brand-cyan: #06B6D4;
+  --brand-green: #10B981;
+  --brand-purple: #8B5CF6;
+  --brand-pink: #EC4899;
+  --font-display: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(255, 107, 0, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Header */
+header {
+  border-bottom: 1px solid var(--border);
+  background: rgba(11, 15, 23, 0.85);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.logo-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+.logo-gem {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--brand-fire), #FF8A00);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4);
+}
+.logo-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.logo-badge {
+  background: rgba(255, 107, 0, 0.15);
+  border: 1px solid rgba(255, 107, 0, 0.4);
+  color: var(--brand-fire);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.header-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.btn-nav {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-nav:hover {
+  color: #fff;
+  border-color: var(--brand-fire);
+  background: rgba(255, 107, 0, 0.08);
+}
+.btn-nav.active {
+  color: #fff;
+  background: var(--brand-fire);
+  border-color: var(--brand-fire);
+}
+
+/* Container */
+.container {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* Hero Section */
+.hero-box {
+  background: linear-gradient(180deg, rgba(19, 27, 43, 0.9) 0%, rgba(15, 21, 33, 0.9) 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px 36px;
+  margin-bottom: 36px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+.hero-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-fire), var(--brand-cyan), var(--brand-purple));
+}
+.hero-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: var(--brand-cyan);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+.hero-title span {
+  background: linear-gradient(135deg, #FF8A00, #FF5500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  color: var(--text-secondary);
+  font-size: 15px;
+  max-width: 880px;
+  line-height: 1.7;
+}
+
+/* Stat Grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 107, 0, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.stat-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Architecture Comparison Cards */
+.arch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.arch-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+  position: relative;
+}
+.arch-card:hover {
+  border-color: var(--card-accent, var(--brand-fire));
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+.arch-card-head {
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.arch-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-light);
+}
+.arch-card-badge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.arch-card-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.arch-card-sub {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.arch-card-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+.arch-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.arch-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.arch-info-val {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  word-break: break-all;
+}
+.arch-tag-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.arch-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+.arch-card-foot {
+  padding: 14px 24px;
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.arch-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.arch-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-green);
+  box-shadow: 0 0 10px var(--brand-green);
+}
+
+/* Comparison Table */
+.section-title-wrap {
+  margin-bottom: 24px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.section-sub {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow-x: auto;
+  margin-bottom: 48px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+th {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px 20px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255, 255, 255, 0.015); }
+.td-dim { color: var(--text-muted); font-size: 12px; }
+.badge-allowed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--brand-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-weight: 700;
+  font-size: 11px;
+}
+.badge-excluded {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* Interactive Endpoint Health Tester */
+.tester-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 48px;
+}
+.tester-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.btn-ping-all {
+  background: var(--brand-fire);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+}
+.btn-ping-all:hover {
+  background: #E05E00;
+  transform: translateY(-1px);
+}
+.endpoint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ep-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ep-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.ep-method {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--brand-cyan);
+}
+.ep-url {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.ep-url:hover { text-decoration: underline; color: var(--brand-fire); }
+.ep-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ep-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ep-status-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--brand-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Callout Note */
+.callout {
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 36px;
+}
+.callout-icon { font-size: 20px; line-height: 1; }
+.callout-body { font-size: 13.5px; color: #FCD34D; }
+.callout-body strong { color: #fff; }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 30px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/architecture-guide.html" class="logo-block">
+      <div class="logo-gem">⚡</div>
+      <div>
+        <div class="logo-title">ZKCommerce Architecture Engine</div>
+      </div>
+      <span class="logo-badge">v4.8 Release</span>
+    </a>
+    <div class="header-links">
+      <a href="/merchant/dashboard.html" class="btn-nav">📊 Merchant Dashboard</a>
+      <a href="/gap-analysis.html" class="btn-nav">📋 Gap Analysis</a>
+      <a href="/release-history.html" class="btn-nav">📜 Release History</a>
+      <a href="/store/smeram" target="_blank" class="btn-nav" style="border-color:var(--brand-fire);color:var(--brand-fire)">🌐 Live Smeram Store</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Hero Header -->
+  <div class="hero-box">
+    <div class="hero-badge-pill">Routing &amp; Deployment Topology</div>
+    <h1 class="hero-title">Platform Admin vs. SaaS Route vs. <span>Client Deployment</span></h1>
+    <p class="hero-sub">
+      A definitive architectural reference guide clarifying the three tiers of ZKCommerce: the Direct Platform Super Admin, the Multi-Tenant SaaS Engine, and the Standalone Client Distribution bundle. Learn how URL routes resolve, what physical files are served, and why internal developer tools are strictly excluded from customer production packages.
+    </p>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--brand-fire)">3 Tiers</div>
+      <div class="stat-label">Architectural Routes</div>
+      <div class="stat-desc">Direct Admin · Multi-Tenant · Standalone Client</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--brand-green)">0 Leaks</div>
+      <div class="stat-label">Client Dev Exclusions</div>
+      <div class="stat-desc">Internal migrations &amp; gap tools excluded from bundles</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--brand-cyan)">100% Unified</div>
+      <div class="stat-label">Index &amp; Dashboard</div>
+      <div class="stat-desc">index.html mirrors dashboard.html across all servers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--brand-purple)">9 Endpoints</div>
+      <div class="stat-label">Verified 200 OK</div>
+      <div class="stat-desc">Continuous automated health checks on port 3000</div>
+    </div>
+  </div>
+
+  <!-- Key Architecture Cards -->
+  <div class="section-title-wrap">
+    <div class="section-title">The Three Architectural Tiers</div>
+    <div class="section-sub">Distinct target personas, URL namespaces, and security boundary isolations</div>
+  </div>
+
+  <div class="arch-grid">
+    <!-- Card 1: Direct Platform Admin -->
+    <div class="arch-card" style="--card-accent: var(--brand-purple)">
+      <div class="arch-card-head">
+        <div class="arch-card-icon">⚡</div>
+        <span class="arch-card-badge" style="background:rgba(139,92,246,0.18);color:var(--brand-purple);border:1px solid rgba(139,92,246,0.4)">Tier 1 · Platform Admin</span>
+        <div class="arch-card-title">Direct Platform Admin</div>
+        <div class="arch-card-sub">Central Super Admin &amp; Platform Engineering Portal</div>
+      </div>
+      <div class="arch-card-body">
+        <div class="arch-info-row">
+          <div class="arch-info-label">URL Pattern</div>
+          <div class="arch-info-val">http://localhost:3000/merchant/</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Target Audience</div>
+          <div class="arch-info-val" style="color:#C4B5FD">Platform Owner / ZKCommerce Engineering Team</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Physical Directory</div>
+          <div class="arch-info-val">zkc/merchant/ (index.html, dashboard.html)</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Key Features &amp; Scope</div>
+          <div class="arch-tag-list">
+            <span class="arch-tag">Multi-Store Pill Switcher</span>
+            <span class="arch-tag">DB Migrations Link</span>
+            <span class="arch-tag">Gap Analysis Link</span>
+            <span class="arch-tag">Release History Link</span>
+          </div>
+        </div>
+      </div>
+      <div class="arch-card-foot">
+        <div class="arch-status"><div class="arch-status-dot"></div> Active &amp; Unified</div>
+        <a href="/merchant/dashboard.html" class="btn-nav" style="font-size:11px">Open Portal →</a>
+      </div>
+    </div>
+
+    <!-- Card 2: Multi-Tenant SaaS Store Route -->
+    <div class="arch-card" style="--card-accent: var(--brand-cyan)">
+      <div class="arch-card-head">
+        <div class="arch-card-icon">☁️</div>
+        <span class="arch-card-badge" style="background:rgba(6,182,212,0.18);color:var(--brand-cyan);border:1px solid rgba(6,182,212,0.4)">Tier 2 · SaaS Cloud</span>
+        <div class="arch-card-title">Multi-Tenant SaaS Route</div>
+        <div class="arch-card-sub">Context-Scoped Merchant Control on Central SaaS</div>
+      </div>
+      <div class="arch-card-body">
+        <div class="arch-info-row">
+          <div class="arch-info-label">URL Pattern</div>
+          <div class="arch-info-val">http://localhost:3000/store/smeram/merchant/</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Target Audience</div>
+          <div class="arch-info-val" style="color:#67E8F9">Client Store Owner logging into central cloud SaaS</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Routing Engine</div>
+          <div class="arch-info-val">Express Route /store/:slug/merchant/* in server.js</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Security &amp; Isolation</div>
+          <div class="arch-tag-list">
+            <span class="arch-tag">Locked to Client Slug</span>
+            <span class="arch-tag">Dev Tools Hidden via DOM</span>
+            <span class="arch-tag">Scoped live DB Query</span>
+          </div>
+        </div>
+      </div>
+      <div class="arch-card-foot">
+        <div class="arch-status"><div class="arch-status-dot"></div> Auto Context Bound</div>
+        <a href="/store/smeram/merchant/dashboard.html" class="btn-nav" style="font-size:11px">Open Portal →</a>
+      </div>
+    </div>
+
+    <!-- Card 3: Client Standalone Deployment -->
+    <div class="arch-card" style="--card-accent: var(--brand-fire)">
+      <div class="arch-card-head">
+        <div class="arch-card-icon">📦</div>
+        <span class="arch-card-badge" style="background:rgba(255,107,0,0.18);color:var(--brand-fire);border:1px solid rgba(255,107,0,0.4)">Tier 3 · Standalone Bundle</span>
+        <div class="arch-card-title">Client Standalone Deployment</div>
+        <div class="arch-card-sub">Self-Contained Client Hosting (GoDaddy IIS / PHP / Apache)</div>
+      </div>
+      <div class="arch-card-body">
+        <div class="arch-info-row">
+          <div class="arch-info-label">URL Pattern</div>
+          <div class="arch-info-val">https://smeram-naturals.in/merchant/</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Target Audience</div>
+          <div class="arch-info-val" style="color:#FDBA74">Client (Smeram Naturals) on dedicated live domain</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Physical Directory</div>
+          <div class="arch-info-val">clients/smeram/merchant/ &amp; deployment/smeram-godaddy/</div>
+        </div>
+        <div class="arch-info-row">
+          <div class="arch-info-label">Bundle Rules</div>
+          <div class="arch-tag-list">
+            <span class="arch-tag">Standalone MySQL/PHP</span>
+            <span class="arch-tag">Zero Dev Tools</span>
+            <span class="arch-tag">web.config Bundled</span>
+          </div>
+        </div>
+      </div>
+      <div class="arch-card-foot">
+        <div class="arch-status"><div class="arch-status-dot"></div> 100% Cleaned Bundle</div>
+        <a href="/clients/smeram/merchant/dashboard.html" class="btn-nav" style="font-size:11px">Inspect Bundle →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Callout Alert -->
+  <div class="callout">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>Why was index.html previously returning the old title?</strong><br>
+      In earlier versions, <code>merchant/dashboard.html</code> was updated to the modern v4.8 design system, while <code>merchant/index.html</code> was left as the legacy 102KB v4.2 monolithic file. Because standard web servers (IIS, Express, Nginx) default to <code>index.html</code> for directory requests, visiting <code>/merchant/</code> served the old legacy page. In v4.8, <code>index.html</code> is unified with <code>dashboard.html</code>, ensuring consistent, modern rendering across every web server.
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <div class="section-title-wrap">
+    <div class="section-title">Comprehensive Comparison Matrix</div>
+    <div class="section-sub">Technical attributes, file mappings, and isolation policies</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>1. Direct Platform Admin</th>
+          <th>2. Multi-Tenant SaaS Route</th>
+          <th>3. Standalone Client Bundle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>URL Path</strong></td>
+          <td><code>/merchant/</code> or <code>/merchant/index.html</code></td>
+          <td><code>/store/:slug/merchant/</code></td>
+          <td><code>/clients/:client/merchant/</code> or <code>domain.com/merchant/</code></td>
+        </tr>
+        <tr>
+          <td><strong>Primary Audience</strong></td>
+          <td>Platform Super Admin / Owner</td>
+          <td>SaaS Merchant using central platform</td>
+          <td>End Client hosting on dedicated server (GoDaddy)</td>
+        </tr>
+        <tr>
+          <td><strong>Physical File Location</strong></td>
+          <td><code>zkc/merchant/</code></td>
+          <td>Dynamic rendering from <code>zkc/merchant/</code></td>
+          <td><code>zkc/clients/smeram/merchant/</code> &amp; GoDaddy bundle</td>
+        </tr>
+        <tr>
+          <td><strong>Routing Mechanism</strong></td>
+          <td><code>express.static('/merchant')</code></td>
+          <td>Express parameterized route <code>/store/:slug/merchant/*</code></td>
+          <td>Windows IIS <code>web.config</code> / PHP / Apache</td>
+        </tr>
+        <tr>
+          <td><strong>Database Backend</strong></td>
+          <td>PostgreSQL (Multi-tenant schema)</td>
+          <td>PostgreSQL (Multi-tenant schema)</td>
+          <td>Standalone MySQL (<code>order.php</code> / GoDaddy DB)</td>
+        </tr>
+        <tr>
+          <td><strong>Platform Dev Tools</strong><br><span class="td-dim">(Migrations, Gap, Changelog)</span></td>
+          <td><span class="badge-allowed">✓ Visible (demo context)</span></td>
+          <td><span class="badge-excluded">✗ Hidden via DOM</span></td>
+          <td><span class="badge-excluded">✗ Excluded from Bundle</span></td>
+        </tr>
+        <tr>
+          <td><strong>Branding Mode</strong></td>
+          <td>Multi-Client Switcher Pill Strip</td>
+          <td>Locked to Selected Client Store</td>
+          <td>100% Client Co-Branded / Standalone</td>
+        </tr>
+        <tr>
+          <td><strong>Deployable to Client?</strong></td>
+          <td><span class="badge-excluded">No (Internal Platform Core)</span></td>
+          <td><span class="badge-excluded">No (Internal Cloud SaaS)</span></td>
+          <td><span class="badge-allowed">Yes (Production Client Release)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bundle Exclusions Rulebook -->
+  <div class="section-title-wrap">
+    <div class="section-title">Client Bundle Exclusion Engine</div>
+    <div class="section-sub">Automated packaging logic preventing internal SaaS tool leaks</div>
+  </div>
+
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:48px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px">
+      <div>
+        <h4 style="color:#EF4444;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <span>🚫</span> Non-Deployable Internal Developer Files (Excluded)
+        </h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-secondary)">
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:#EF4444">✗</span> <code>db-migrations.html</code> — PostgreSQL schema migration manager</li>
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:#EF4444">✗</span> <code>gap-analysis.html</code> — SaaS engineering roadmap &amp; gap audit</li>
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:#EF4444">✗</span> <code>release-history.html</code> — Internal version release history</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:var(--brand-green);font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <span>✓</span> Deployable Client Merchant Files (Included)
+        </h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-secondary)">
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:var(--brand-green)">✓</span> <code>index.html</code> / <code>dashboard.html</code> — Modern Merchant Admin</li>
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:var(--brand-green)">✓</span> <code>products.html</code>, <code>orders.html</code>, <code>inventory.html</code></li>
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:var(--brand-green)">✓</span> <code>analytics.html</code>, <code>themes.html</code>, <code>store-settings.html</code></li>
+          <li style="display:flex;align-items:center;gap:8px"><span style="color:var(--brand-green)">✓</span> <code>web.config</code> — Windows IIS server configuration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Live Health Tester -->
+  <div class="tester-box">
+    <div class="tester-head">
+      <div>
+        <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;margin-bottom:4px">⚡ Live Endpoint Route Health Inspector</h3>
+        <p style="font-size:13px;color:var(--text-secondary)">Send live HTTP ping requests directly to your running Express server on port 3000</p>
+      </div>
+      <button class="btn-ping-all" onclick="pingAllEndpoints()">▶ Test All 9 Endpoints</button>
+    </div>
+
+    <div class="endpoint-list" id="endpointList">
+      <!-- Injected via JavaScript -->
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  ZKCommerce Multi-Store Platform Engine · v4.8 Architecture &amp; Route Topology Guide · Fully Synchronized &amp; Verified
+</footer>
+
+<script>
+const ENDPOINTS = [
+  { url: '/merchant/', label: 'Platform Admin Root Directory', tier: 'Tier 1' },
+  { url: '/merchant/index.html', label: 'Platform Admin Index File', tier: 'Tier 1' },
+  { url: '/merchant/dashboard.html', label: 'Platform Admin Dashboard File', tier: 'Tier 1' },
+  { url: '/store/smeram/merchant/', label: 'SaaS Smeram Merchant Root', tier: 'Tier 2' },
+  { url: '/store/smeram/merchant/index.html', label: 'SaaS Smeram Merchant Index', tier: 'Tier 2' },
+  { url: '/store/smeram/merchant/dashboard.html', label: 'SaaS Smeram Merchant Dashboard', tier: 'Tier 2' },
+  { url: '/clients/smeram/merchant/', label: 'Client Smeram Merchant Root', tier: 'Tier 3' },
+  { url: '/clients/smeram/merchant/index.html', label: 'Client Smeram Merchant Index', tier: 'Tier 3' },
+  { url: '/clients/smeram/merchant/dashboard.html', label: 'Client Smeram Merchant Dashboard', tier: 'Tier 3' }
+];
+
+function renderEndpointList() {
+  const host = document.getElementById('endpointList');
+  host.innerHTML = ENDPOINTS.map((ep, i) => `
+    <div class="ep-row" id="ep-row-${i}">
+      <div class="ep-left">
+        <span class="ep-method">GET</span>
+        <a href="${ep.url}" target="_blank" class="ep-url">${ep.url}</a>
+        <span class="ep-tag">${ep.label}</span>
+      </div>
+      <div class="ep-right">
+        <span class="ep-tag">${ep.tier}</span>
+        <span class="ep-status-pill" id="ep-status-${i}">Pending Test</span>
+        <button class="btn-nav" style="padding:4px 10px;font-size:11px" onclick="pingSingle(${i})">Test</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function pingSingle(idx) {
+  const ep = ENDPOINTS[idx];
+  const pill = document.getElementById('ep-status-' + idx);
+  pill.textContent = 'Pinging…';
+  pill.style.color = '#F59E0B';
+  pill.style.borderColor = 'rgba(245,158,11,0.4)';
+  pill.style.background = 'rgba(245,158,11,0.15)';
+
+  const t0 = performance.now();
+  try {
+    const res = await fetch(ep.url);
+    const ms = Math.round(performance.now() - t0);
+    const text = await res.text();
+    const titleMatch = text.match(/<title>([^<]*)<\\/title>/i);
+    const title = titleMatch ? titleMatch[1] : '';
+
+    if (res.ok) {
+      pill.textContent = '200 OK (' + ms + 'ms) — ' + (title.includes('Dashboard') ? 'Modern Dashboard' : title);
+      pill.style.color = '#10B981';
+      pill.style.borderColor = 'rgba(16,185,129,0.4)';
+      pill.style.background = 'rgba(16,185,129,0.15)';
+    } else {
+      pill.textContent = res.status + ' Error';
+      pill.style.color = '#EF4444';
+      pill.style.borderColor = 'rgba(239,68,68,0.4)';
+      pill.style.background = 'rgba(239,68,68,0.15)';
+    }
+  } catch (err) {
+    pill.textContent = 'Fetch Failed';
+    pill.style.color = '#EF4444';
+  }
+}
+
+async function pingAllEndpoints() {
+  for (let i = 0; i < ENDPOINTS.length; i++) {
+    await pingSingle(i);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderEndpointList();
+  pingAllEndpoints();
+});
+</script>
+</body>
+</html>

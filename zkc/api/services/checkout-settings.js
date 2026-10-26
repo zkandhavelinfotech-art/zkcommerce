@@ -5,7 +5,8 @@ function checkoutSettings(themeConfig) {
   const razorpay = c.razorpay !== false;
   // At least one payment method must stay available.
   const cod = c.cod !== false || !razorpay;
-  return { show_coupon: c.show_coupon !== false, cod, razorpay };
+  const show_shipping_field = c.show_shipping_field !== false && c.show_shipping !== false;
+  return { show_coupon: c.show_coupon !== false, cod, razorpay, show_shipping_field };
 }
 
 const PAYMENT_LABELS = {

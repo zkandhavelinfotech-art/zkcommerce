@@ -168,7 +168,10 @@ body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-
           <div class="zk-page-title">Content Pages</div>
           <div class="zk-page-sub">Manage legal policies, About Us, Contact, FAQ, and custom pages for your store (Shopify / WordPress model)</div>
         </div>
-        <div style="display:flex;gap:10px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" id="btn-toggle-ann" onclick="toggleAnnouncementBar()" title="Click to enable or disable top announcement bar on storefront">
+            <span id="ann-status-ico">📢</span> Announcement Bar: <strong id="ann-status-lbl" style="color:#16A34A">Visible</strong>
+          </button>
           <button class="btn btn-secondary btn-sm" onclick="scaffoldDefaultLegalPages()" id="scaffold-btn">⚡ Generate Standard Policies</button>
           <button class="btn btn-primary btn-sm" onclick="openAddPageModal()">+ Add Page</button>
         </div>
@@ -562,7 +565,43 @@ function escapeHtml(str) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', initPages);
+function updateAnnouncementBarUI() {
+  const isEnabled = localStorage.getItem('zk_announcement_enabled') !== 'false';
+  const lbl = document.getElementById('ann-status-lbl');
+  const ico = document.getElementById('ann-status-ico');
+  if (lbl) {
+    lbl.textContent = isEnabled ? 'Visible' : 'Disabled';
+    lbl.style.color = isEnabled ? '#16A34A' : '#EF4444';
+  }
+  if (ico) {
+    ico.textContent = isEnabled ? '📢' : '🚫';
+  }
+}
+
+function toggleAnnouncementBar() {
+  const currentlyEnabled = localStorage.getItem('zk_announcement_enabled') !== 'false';
+  const newStatus = !currentlyEnabled;
+  localStorage.setItem('zk_announcement_enabled', String(newStatus));
+  localStorage.setItem('zk_announcement_disabled', String(!newStatus));
+  updateAnnouncementBarUI();
+
+  // Also persist to store settings via API if logged in
+  var token = auth && auth.token;
+  if (token && !token.startsWith('demo_token')) {
+    fetch('/api/stores/' + (STORE_ID || 2) + '/checkout-settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ announcement_enabled: newStatus })
+    }).catch(function(){});
+  }
+
+  toast.info('Announcement Bar ' + (newStatus ? 'enabled (visible on storefront)' : 'disabled (hidden on storefront)'));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initPages();
+  updateAnnouncementBarUI();
+});
 </script>
 </body>
 </html>

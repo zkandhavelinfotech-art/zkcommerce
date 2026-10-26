@@ -81,8 +81,33 @@ body{background:var(--zk-chalk);overflow-x:hidden}
       <div class="field-group" style="grid-column:1/-1"><label class="field-label">Store description</label><textarea class="field" rows="3">Premium handloom sarees and ethnic wear from Tamil Nadu. Authentic Kanjivaram silk, cotton sarees and kurtas.</textarea></div>
       <div class="field-group"><label class="field-label">GSTIN</label><input type="text" class="field" value="33AABCU9603R1ZX"></div>
       <div class="field-group"><label class="field-label">Currency</label><select class="field"><option>INR (₹)</option></select></div>
+      
+      <!-- Storefront & Cart Display Preferences -->
+      <div class="field-group" style="grid-column:1/-1;background:var(--zk-pale);padding:16px;border-radius:10px;border:1px solid var(--zk-border);margin-top:8px">
+        <div style="font-weight:700;font-size:14px;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+          <span>⚙️</span> Storefront &amp; Cart Display Settings
+        </div>
+        
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" id="toggle-announcement-bar" checked style="margin-top:3px;accent-color:var(--zk-fire);width:16px;height:16px">
+            <div>
+              <span style="font-weight:600;font-size:13px;display:block">📢 Announcement Bar Visibility</span>
+              <span style="font-size:12px;color:var(--zk-muted)">Display top announcement bar on storefront pages. Uncheck if you want to disable/hide the announcement bar.</span>
+            </div>
+          </label>
+          
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" id="toggle-shipping-fee-field" checked style="margin-top:3px;accent-color:var(--zk-fire);width:16px;height:16px">
+            <div>
+              <span style="font-weight:600;font-size:13px;display:block">🚚 Cart "Inclusive of GST and Free Shipping" Display</span>
+              <span style="font-size:12px;color:var(--zk-muted)">Show the configured "Inclusive of GST &amp; Free Shipping" badge/dropdown in customer cart. Uncheck if you don't want to display this field in customer checkout.</span>
+            </div>
+          </label>
+        </div>
+      </div>
     </div>
-    <button class="btn btn-primary" onclick="toast.success('Store settings saved!')">Save changes</button>
+    <button class="btn btn-primary" onclick="saveStorefrontSettings()">Save changes</button>
   </div>
 </div>
 
@@ -210,7 +235,52 @@ function getVal(id) {
   return el ? el.value.trim() : '';
 }
 
-document.addEventListener('DOMContentLoaded', loadStoreSettings);
+function saveStorefrontSettings() {
+  const annEnabled = document.getElementById('toggle-announcement-bar').checked;
+  const shippingFieldEnabled = document.getElementById('toggle-shipping-fee-field').checked;
+
+  localStorage.setItem('zk_announcement_enabled', String(annEnabled));
+  localStorage.setItem('zk_announcement_disabled', String(!annEnabled));
+  localStorage.setItem('zk_show_shipping_field', String(shippingFieldEnabled));
+
+  // Also trigger store save if available
+  if (typeof saveSettings === 'function') {
+    saveSettings();
+  }
+
+  // Update DB theme_config via API if logged in
+  var user = auth && auth.user;
+  var token = auth && auth.token;
+  if (user && token && !token.startsWith('demo_token')) {
+    var slug = user.store_slug || localStorage.getItem('zk_store_slug') || 'smeram';
+    fetch('/api/stores/' + (user.store_id || 2) + '/checkout-settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        announcement_enabled: annEnabled,
+        show_shipping_field: shippingFieldEnabled
+      })
+    }).catch(function(){});
+  }
+
+  toast.success('Storefront & Cart preferences saved!');
+}
+
+function initDisplayToggles() {
+  const annEl = document.getElementById('toggle-announcement-bar');
+  const shipEl = document.getElementById('toggle-shipping-fee-field');
+  if (annEl) {
+    annEl.checked = localStorage.getItem('zk_announcement_enabled') !== 'false';
+  }
+  if (shipEl) {
+    shipEl.checked = localStorage.getItem('zk_show_shipping_field') !== 'false';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadStoreSettings();
+  initDisplayToggles();
+});
 </script>
 </body>
 </html>
