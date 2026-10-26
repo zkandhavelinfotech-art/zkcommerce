@@ -55,3 +55,6 @@ uploads/temp/
 *.bak
 
 # zkc-build/ is generated from zkc/ by `npm run release:sync` — commit it, never edit it by hand.
+
+deployment/smeram-godaddy/
+deployment/*.zip

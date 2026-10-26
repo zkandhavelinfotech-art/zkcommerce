@@ -1328,6 +1328,14 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
     fs.writeFileSync(path.join(exportDir, 'packaging.php'), generatePackagingPhp(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'shipments.php'), generateShipmentsPhp(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages, extra), version, env), 'utf8');
+    // Bundled Merchant admin, auth, and shared design assets (accessible at /merchant/ and /auth/)
+    for (const folder of ['merchant', 'auth', 'assets']) {
+      const src = path.join(REPO_ROOT, folder);
+      if (fs.existsSync(src)) {
+        try { fs.cpSync(src, path.join(exportDir, folder), { recursive: true }); }
+        catch (e) { console.warn(`[deploy] Could not copy ${folder} to PHP export:`, e.message); }
+      }
+    }
     fs.writeFileSync(path.join(exportDir, 'web.config'), generateWebConfig(), 'utf8');
     fs.writeFileSync(path.join(exportDir, '.htaccess'), generatePhpHtaccess(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), generatePhpReadme(store, env, version, db.name, zipName, assets), 'utf8');

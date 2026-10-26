@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payouts — ZKCommerce</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/design-system.css"><style>body{background:var(--zk-chalk);overflow-x:hidden}@media(max-width:1080px){.zk-main{margin-left:0!important}}</style></head><body><div style="display:flex;min-height:100vh"><aside class="zk-sidebar" id="sidebar"><div class="zk-sidebar-logo"><div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce</div><nav class="zk-sidebar-nav"><div class="zk-sidebar-section-label">Main</div><a href="merchant/dashboard.html" class="zk-sidebar-link "><span class="sl-icon">📊</span>Dashboard</a><a href="merchant/analytics.html" class="zk-sidebar-link "><span class="sl-icon">📈</span>Analytics</a><div class="zk-sidebar-section-label">Catalogue</div><a href="merchant/products.html" class="zk-sidebar-link "><span class="sl-icon">🛍️</span>Products</a><a href="merchant/inventory.html" class="zk-sidebar-link "><span class="sl-icon">🏭</span>Inventory</a><div class="zk-sidebar-section-label">Orders</div><a href="merchant/orders.html" class="zk-sidebar-link "><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a><a href="merchant/shipping-label.html" class="zk-sidebar-link "><span class="sl-icon">🚚</span>Shipping</a><div class="zk-sidebar-section-label">Finance</div><a href="merchant/gst-report.html" class="zk-sidebar-link "><span class="sl-icon">🧾</span>GST reports</a><div class="zk-sidebar-section-label">Marketing</div><a href="merchant/loyalty.html" class="zk-sidebar-link "><span class="sl-icon">⭐</span>Loyalty</a><a href="merchant/campaigns.html" class="zk-sidebar-link "><span class="sl-icon">📣</span>Campaigns</a><a href="merchant/reviews.html" class="zk-sidebar-link "><span class="sl-icon">💬</span>Reviews</a><a href="merchant/coupons.html" class="zk-sidebar-link "><span class="sl-icon">🎟</span>Coupons</a><a href="merchant/returns.html" class="zk-sidebar-link "><span class="sl-icon">↩️</span>Returns<span class="sl-badge">3</span></a><a href="merchant/payouts.html" class="zk-sidebar-link active"><span class="sl-icon">💰</span>Payouts</a><div class="zk-sidebar-section-label">Team</div><a href="merchant/staff.html" class="zk-sidebar-link "><span class="sl-icon">👥</span>Staff</a><div class="zk-sidebar-section-label">Settings</div><a href="merchant/store-settings.html" class="zk-sidebar-link "><span class="sl-icon">⚙️</span>Settings</a></nav><div class="zk-sidebar-footer"><a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View store</a><a href="setup.html" style="font-size:12px;color:rgba(255,107,0,.6);font-weight:700;margin-bottom:8px;display:block">🧙 Setup wizard</a><a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a></div></aside><div class="zk-main" style="margin-left:240px"><div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100"><div style="font-family:var(--font-display);font-size:16px;font-weight:800">Payouts</div><div style="display:flex;align-items:center;gap:14px"><a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire)">🌐 View store</a><div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">R</div></div></div><div class="zk-page">
+<div class="zk-page-header flex-between"><div><div class="zk-page-title">Payouts & Settlements</div><div class="zk-page-sub">Earnings, settlement schedule and bank account</div></div><button class="btn btn-secondary btn-sm" onclick="toast.info('Statement downloaded')">↓ Statement</button></div>
+<div class="alert alert-success" style="margin-bottom:20px">💰 Next payout: <strong>₹2,84,320</strong> on <strong>22 July 2026</strong> (Tuesday) · T+2 settlement</div>
+<div class="zk-stat-grid" style="margin-bottom:20px">
+  <div class="zk-stat-card"><div class="zk-stat-label">Revenue (July)</div><div class="zk-stat-value fire-text">₹4,82,360</div><div class="zk-stat-change up">↑ 18.4%</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Settled so far</div><div class="zk-stat-value" style="color:#16A34A">₹1,98,040</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Next payout</div><div class="zk-stat-value" style="color:#4F46E5">₹2,84,320</div><div class="zk-stat-change" style="color:var(--zk-muted)">22 Jul 2026</div></div>
+  <div class="zk-stat-card"><div class="zk-stat-label">Platform fee</div><div class="zk-stat-value" style="color:#16A34A">₹0</div><div class="zk-stat-change up">0% always free</div></div>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+  <div class="zk-table-wrap"><div style="padding:14px 20px;border-bottom:1px solid var(--zk-border);font-size:14px;font-weight:800">Payout history</div>
+  <table class="zk-table"><thead><tr><th>Date</th><th>Period</th><th>Orders</th><th>Amount</th><th>Status</th><th>UTR</th></tr></thead><tbody>
+    <tr><td>22 Jul 2026</td><td>Jul 15–21</td><td>84</td><td class="col-primary">₹2,84,320</td><td><span class="status status-processing">Upcoming</span></td><td style="color:var(--zk-dim)">—</td></tr>
+    <tr><td>15 Jul 2026</td><td>Jul 12–14</td><td>48</td><td class="col-primary">₹98,420</td><td><span class="status status-delivered">Settled</span></td><td style="font-size:11px;font-family:monospace;color:var(--zk-dim)">UTR123456</td></tr>
+    <tr><td>12 Jul 2026</td><td>Jul 9–11</td><td>52</td><td class="col-primary">₹1,04,800</td><td><span class="status status-delivered">Settled</span></td><td style="font-size:11px;font-family:monospace;color:var(--zk-dim)">UTR123455</td></tr>
+  </tbody></table></div>
+  <div class="card"><h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">🏦 Bank account</h3><div style="padding:14px;background:var(--zk-pale);border-radius:10px;border:1px solid #C7D2FE;margin-bottom:12px"><div style="font-size:11px;font-weight:800;color:var(--zk-indigo);margin-bottom:6px">PRIMARY</div><div style="font-size:14px;font-weight:800">HDFC Bank</div><div style="font-size:13px;color:var(--zk-muted);margin-top:2px">•••• 4821 · IFSC: HDFC0001234</div><div style="font-size:12px;color:var(--zk-muted)">Rajan Kumar — Current A/C</div></div><button class="btn btn-secondary btn-sm btn-full" onclick="toast.info('Contact support to change bank account')">Change bank account</button><div style="margin-top:14px;border-top:1px solid var(--zk-border);padding-top:12px;font-size:12px;color:var(--zk-muted);line-height:1.8">Prepaid: T+2 days<br>COD: T+2 after delivery<br>Refunds: deducted from next payout</div></div>
+</div>
+</div></div></div><script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+
+async function loadPayouts() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/payouts', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await r.json();
+    var tbody = document.getElementById('payouts-tbody');
+    if (tbody && data.payouts && data.payouts.length) {
+      tbody.innerHTML = data.payouts.map(function(p) {
+        var ds = p.period ? new Date(p.period).toLocaleDateString('en-IN') : '—';
+        return '<tr>'
+          + '<td>' + ds + '</td>'
+          + '<td>' + (p.order_count || 0) + ' orders</td>'
+          + '<td class="col-primary">' + fmt.inr(p.amount) + '</td>'
+          + '<td><span class="status status-delivered">Settled</span></td>'
+          + '<td style="font-size:11px;font-family:monospace;color:var(--zk-dim)">' + (p.utr || '—') + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+    if (data.pending_payout) {
+      setEl('next-payout', fmt.inr(data.pending_payout.amount));
+    }
+  } catch(e) { console.warn('Payouts load error:', e); }
+}
+
+function setEl(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; }
+document.addEventListener('DOMContentLoaded', loadPayouts);
+</script>
+</body></html>

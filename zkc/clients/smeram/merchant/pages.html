@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Store Pages — ZKCommerce Client Admin</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-body); }
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+
+.page-row:hover td { background: rgba(255,107,0,0.02); }
+.page-slug-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+  font-size: 11.5px;
+  background: var(--zk-chalk);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--zk-border);
+  color: var(--zk-muted);
+}
+.page-type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  border: 1px solid var(--zk-border);
+  animation: modalIn .18s ease-out;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-head {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--zk-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+.modal-foot {
+  padding: 14px 24px;
+  border-top: 1px solid var(--zk-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--zk-chalk);
+}
+.editor-textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--zk-border);
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  background: #fff;
+}
+.editor-textarea:focus {
+  border-color: var(--zk-fire);
+  box-shadow: 0 0 0 3px rgba(255,107,0,0.12);
+}
+</style>
+</head>
+<body>
+<div style="display:flex;min-height:100vh">
+
+  <!-- Sidebar -->
+  <aside class="zk-sidebar" id="sidebar">
+    <div class="zk-sidebar-logo">
+      <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+    </div>
+    <nav class="zk-sidebar-nav">
+      <div class="zk-sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+      <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
+      <div class="zk-sidebar-section-label">Catalogue</div>
+      <a href="products.html" class="zk-sidebar-link"><span class="sl-icon">🛍️</span>Products</a>
+      <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+      <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+
+      <div class="zk-sidebar-section-label">Online Store</div>
+      <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+      <a href="pages.html" class="zk-sidebar-link active"><span class="sl-icon">📄</span>Pages</a>
+
+      <div class="zk-sidebar-section-label">Orders</div>
+      <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge" id="side-order-badge">12</span></a>
+      <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
+      <div class="zk-sidebar-section-label">Settings</div>
+      <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
+    </nav>
+    <div class="zk-sidebar-footer">
+      <a href="../storefront/home.html" target="_blank" id="side-view-store-link" style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px;display:block">🌐 View storefront</a>
+      <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
+      <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="zk-main" style="margin-left:240px;flex:1">
+
+    <!-- Topbar -->
+    <div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Online Store · Content Pages</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="../store-builder/" class="btn btn-secondary btn-sm" style="font-weight:700">🎨 StoreBuilder</a>
+        <a href="../storefront/home.html" target="_blank" id="top-view-store-link" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="zk-page">
+      <div class="zk-page-header flex-between" style="margin-bottom:24px">
+        <div>
+          <div class="zk-page-title">Content Pages</div>
+          <div class="zk-page-sub">Manage legal policies, About Us, Contact, FAQ, and custom pages for your store (Shopify / WordPress model)</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary btn-sm" onclick="scaffoldDefaultLegalPages()" id="scaffold-btn">⚡ Generate Standard Policies</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddPageModal()">+ Add Page</button>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="zk-stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Total Content Pages</div>
+          <div class="zk-stat-value fire-text" id="stat-total-pages">—</div>
+          <div class="zk-stat-change">Published or draft store pages</div>
+        </div>
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Published Live</div>
+          <div class="zk-stat-value" id="stat-published-pages" style="color:#16A34A">—</div>
+          <div class="zk-stat-change">Visible to customers in footer links</div>
+        </div>
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Draft / Internal</div>
+          <div class="zk-stat-value" id="stat-draft-pages" style="color:var(--zk-muted)">—</div>
+          <div class="zk-stat-change">Hidden until published</div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <input type="search" class="field" placeholder="🔍 Search pages by title or slug…" style="max-width:300px" id="page-search" oninput="filterPages()">
+        <select class="field" style="width:auto" id="page-status-filter" onchange="filterPages()">
+          <option value="">All Statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+      </div>
+
+      <!-- Pages Table -->
+      <div class="zk-table-wrap">
+        <table class="zk-table">
+          <thead>
+            <tr>
+              <th style="width:35%">Title &amp; Excerpt</th>
+              <th style="width:25%">URL Handle</th>
+              <th style="width:12%">Status</th>
+              <th style="width:10%">Order</th>
+              <th style="width:18%;text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pages-tbody">
+            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--zk-muted)">Loading store pages…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ADD / EDIT PAGE MODAL                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="pageModal" onclick="if(event.target===this)closePageModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:800" id="modal-title">Add New Page</div>
+        <div style="font-size:12px;color:var(--zk-muted)" id="modal-subtitle">Create a published or draft page for your store</div>
+      </div>
+      <button onclick="closePageModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--zk-muted)">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="page-id">
+
+      <div class="field-group">
+        <label class="field-label">Page Title *</label>
+        <input type="text" class="field" id="page-title-input" placeholder="e.g. About Us / Return Policy" oninput="autoGenerateSlug(this.value)" style="font-weight:700">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">URL Slug (Handle) *</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;color:var(--zk-muted);font-family:monospace">/pages/</span>
+          <input type="text" class="field" id="page-slug-input" placeholder="about-us" style="font-family:monospace;font-size:12.5px;flex:1">
+        </div>
+        <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Letters, numbers, and dashes only.</div>
+      </div>
+
+      <div class="field-group">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <label class="field-label" style="margin-bottom:0">Page Content (Body) *</label>
+          <span style="font-size:11px;color:var(--zk-muted)">HTML or plain text supported</span>
+        </div>
+        <textarea class="editor-textarea" id="page-content-input" placeholder="Write page content, paragraph headings, contact details, or policy clauses here..."></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field-group">
+          <label class="field-label">Publication Status</label>
+          <select class="field" id="page-status-input">
+            <option value="published">Published (Live on Store)</option>
+            <option value="draft">Draft (Hidden)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Sort Order</label>
+          <input type="number" class="field" id="page-order-input" value="0" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary btn-sm" onclick="closePageModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="save-page-btn" onclick="savePage()">Save Page</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : (window.ZK ? ZK.api : '/api');
+var STORE_ID = null;
+var ALL_PAGES = [];
+
+async function initPages() {
+  var token = auth.token;
+  if (!token) {
+    window.location.href = '../auth/login.html';
+    return;
+  }
+
+  // Load store ID from profile or stores list
+  try {
+    var r = await fetch(API_BASE + '/stores', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.stores && d.stores.length) {
+      STORE_ID = d.stores[0].id;
+      if (document.getElementById('side-view-store-link')) {
+        document.getElementById('side-view-store-link').href = '../storefront/home.html?store=' + d.stores[0].slug;
+      }
+      if (document.getElementById('top-view-store-link')) {
+        document.getElementById('top-view-store-link').href = '../storefront/home.html?store=' + d.stores[0].slug;
+      }
+    } else {
+      STORE_ID = 2; // Default fallback to Smeram Naturals
+    }
+  } catch(e) {
+    STORE_ID = 2;
+  }
+
+  loadStorePages();
+}
+
+async function loadStorePages() {
+  if (!STORE_ID) return;
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/pages', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    ALL_PAGES = d.pages || [];
+    renderPagesTable(ALL_PAGES);
+    updateStats(ALL_PAGES);
+  } catch(e) {
+    console.error('Failed to load store pages:', e);
+    toast.error('Failed to load store pages from server');
+  }
+}
+
+function updateStats(pages) {
+  var total = pages.length;
+  var published = pages.filter(function(p){ return p.status === 'published'; }).length;
+  var draft = pages.filter(function(p){ return p.status === 'draft'; }).length;
+
+  document.getElementById('stat-total-pages').textContent = total;
+  document.getElementById('stat-published-pages').textContent = published;
+  document.getElementById('stat-draft-pages').textContent = draft;
+}
+
+function renderPagesTable(pages) {
+  var tbody = document.getElementById('pages-tbody');
+  if (!tbody) return;
+
+  if (!pages.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:48px 20px;color:var(--zk-muted)">'
+      + '<div style="font-size:32px;margin-bottom:10px">📄</div>'
+      + '<div style="font-weight:700;font-size:15px;color:var(--zk-text);margin-bottom:6px">No content pages yet</div>'
+      + '<div style="font-size:13px;max-width:400px;margin:0 auto 16px">Create policies, About Us, or generate standard legal templates with 1-click.</div>'
+      + '<button class="btn btn-primary btn-sm" onclick="scaffoldDefaultLegalPages()">⚡ Generate Standard Legal Policies</button>'
+      + '</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pages.map(function(p) {
+    var bodyText = '';
+    if (p.content) {
+      if (typeof p.content === 'object') {
+        bodyText = p.content.body || p.content.text || p.content.summary || JSON.stringify(p.content);
+      } else {
+        bodyText = String(p.content);
+      }
+    }
+    var snippet = bodyText.replace(/<[^>]*>/g, '').trim().substring(0, 90);
+    if (snippet.length === 90) snippet += '…';
+
+    var statusBadge = p.status === 'published'
+      ? '<span class="status status-delivered">Published</span>'
+      : '<span class="status status-processing">Draft</span>';
+
+    return '<tr class="page-row" id="row-page-' + p.id + '">'
+      + '<td>'
+      +   '<div style="font-weight:700;font-size:14px;color:var(--zk-text)">' + escapeHtml(p.title) + '</div>'
+      +   (snippet ? '<div style="font-size:12px;color:var(--zk-muted);margin-top:3px">' + escapeHtml(snippet) + '</div>' : '')
+      + '</td>'
+      + '<td><span class="page-slug-badge">/pages/' + escapeHtml(p.slug) + '</span></td>'
+      + '<td>' + statusBadge + '</td>'
+      + '<td style="font-size:13px;font-weight:600;color:var(--zk-muted)">' + (p.sort_order || 0) + '</td>'
+      + '<td style="text-align:right">'
+      +   '<div style="display:inline-flex;gap:6px">'
+      +     '<button class="btn btn-secondary btn-sm" onclick="openEditPageModal(' + p.id + ')">✏️ Edit</button>'
+      +     '<button class="btn btn-ghost btn-sm" onclick="deletePage(' + p.id + ',\'' + escapeHtml(p.title).replace(/'/g, "\\'") + '\')" style="color:#DC2626">🗑️</button>'
+      +   '</div>'
+      + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function filterPages() {
+  var q = (document.getElementById('page-search').value || '').toLowerCase().trim();
+  var st = document.getElementById('page-status-filter').value;
+
+  var filtered = ALL_PAGES.filter(function(p) {
+    var matchQ = !q || p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q);
+    var matchSt = !st || p.status === st;
+    return matchQ && matchSt;
+  });
+
+  renderPagesTable(filtered);
+}
+
+function autoGenerateSlug(title) {
+  var idField = document.getElementById('page-id').value;
+  // Only auto-slug for new pages
+  if (idField) return;
+  var slug = (title || '').toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  document.getElementById('page-slug-input').value = slug;
+}
+
+function openAddPageModal() {
+  document.getElementById('modal-title').textContent = 'Add New Page';
+  document.getElementById('modal-subtitle').textContent = 'Create a custom content or policy page';
+  document.getElementById('page-id').value = '';
+  document.getElementById('page-title-input').value = '';
+  document.getElementById('page-slug-input').value = '';
+  document.getElementById('page-content-input').value = '';
+  document.getElementById('page-status-input').value = 'published';
+  document.getElementById('page-order-input').value = '0';
+  document.getElementById('pageModal').classList.add('open');
+  document.getElementById('page-title-input').focus();
+}
+
+function openEditPageModal(id) {
+  var page = ALL_PAGES.find(function(p){ return p.id === id; });
+  if (!page) return;
+
+  document.getElementById('modal-title').textContent = 'Edit Page — ' + page.title;
+  document.getElementById('modal-subtitle').textContent = 'Update content, slug, or visibility';
+  document.getElementById('page-id').value = page.id;
+  document.getElementById('page-title-input').value = page.title;
+  document.getElementById('page-slug-input').value = page.slug;
+
+  var bodyVal = '';
+  if (page.content) {
+    if (typeof page.content === 'object') bodyVal = page.content.body || page.content.text || JSON.stringify(page.content, null, 2);
+    else bodyVal = String(page.content);
+  }
+  document.getElementById('page-content-input').value = bodyVal;
+  document.getElementById('page-status-input').value = page.status || 'published';
+  document.getElementById('page-order-input').value = page.sort_order || 0;
+
+  document.getElementById('pageModal').classList.add('open');
+}
+
+function closePageModal() {
+  document.getElementById('pageModal').classList.remove('open');
+}
+
+async function savePage() {
+  var id = document.getElementById('page-id').value;
+  var title = document.getElementById('page-title-input').value.trim();
+  var slug = document.getElementById('page-slug-input').value.trim().toLowerCase();
+  var body = document.getElementById('page-content-input').value.trim();
+  var status = document.getElementById('page-status-input').value;
+  var sortOrder = parseInt(document.getElementById('page-order-input').value) || 0;
+
+  if (!title) { toast.error('Page title is required'); return; }
+  if (!slug || !/^[a-z0-9-]+$/i.test(slug)) { toast.error('Valid slug (letters, numbers, dashes) is required'); return; }
+
+  var token = auth.token;
+  if (!token) return;
+
+  var btn = document.getElementById('save-page-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  var payload = {
+    title: title,
+    slug: slug,
+    content: { body: body },
+    status: status,
+    sort_order: sortOrder
+  };
+
+  try {
+    var url = id
+      ? API_BASE + '/stores/' + STORE_ID + '/pages/' + id
+      : API_BASE + '/stores/' + STORE_ID + '/pages';
+    var method = id ? 'PUT' : 'POST';
+
+    var r = await fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    var d = await r.json();
+
+    if (d.page) {
+      toast.success(id ? 'Page updated successfully!' : 'Page created successfully!');
+      closePageModal();
+      loadStorePages();
+    } else {
+      toast.error(d.error || 'Failed to save page');
+    }
+  } catch(e) {
+    toast.error('Network error saving page');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Page';
+  }
+}
+
+async function deletePage(id, title) {
+  if (!confirm('Are you sure you want to delete "' + title + '"? This action cannot be undone.')) return;
+  var token = auth.token;
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/pages/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.deleted) {
+      toast.success('Page deleted');
+      loadStorePages();
+    } else {
+      toast.error(d.error || 'Delete failed');
+    }
+  } catch(e) {
+    toast.error('Server error deleting page');
+  }
+}
+
+async function scaffoldDefaultLegalPages() {
+  var token = auth.token;
+  var btn = document.getElementById('scaffold-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⚡ Generating…'; }
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/scaffold-pages', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.pages) {
+      toast.success(d.message || 'Standard legal policies generated successfully!');
+      loadStorePages();
+    } else {
+      toast.error(d.error || 'Failed to scaffold pages');
+    }
+  } catch(e) {
+    toast.error('Server error generating pages');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate Standard Policies'; }
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, function(m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initPages);
+</script>
+</body>
+</html>

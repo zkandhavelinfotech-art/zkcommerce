@@ -62,6 +62,23 @@ function buildBundle() {
   fs.writeFileSync(destHtmlPath, html, 'utf8');
   console.log(`✅ Generated standalone root index.html (${html.length} bytes)`);
 
+  // 3. Copy Merchant Admin Portal and Auth
+  const srcMerchantDir = path.join(__dirname, '../../merchant');
+  const destMerchantDir = path.join(bundleDir, 'merchant');
+  fs.mkdirSync(destMerchantDir, { recursive: true });
+  fs.cpSync(srcMerchantDir, destMerchantDir, { recursive: true });
+  console.log(`✅ Copied merchant portal to ${destMerchantDir}`);
+
+  const srcAuthDir = path.join(__dirname, '../../auth');
+  const destAuthDir = path.join(bundleDir, 'auth');
+  fs.mkdirSync(destAuthDir, { recursive: true });
+  fs.cpSync(srcAuthDir, destAuthDir, { recursive: true });
+
+  const srcFullAssets = path.join(__dirname, '../../assets');
+  const destFullAssets = path.join(bundleDir, 'assets');
+  fs.cpSync(srcFullAssets, destFullAssets, { recursive: true });
+  console.log(`✅ Bundled design system assets into ${destFullAssets}`);
+
   // 3. Create web.config for GoDaddy Windows IIS
   const webConfigContent = `<?xml version="1.0" encoding="UTF-8"?>
 <configuration>

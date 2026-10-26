@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blog — ZKCommerce v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+</head>
+<body class="app-body">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Blog &amp; SEO</h1>
+      <p class="page-sub">Write content. Drive organic traffic. Rank on Google.</p>
+    </div>
+    <button class="btn btn-primary" onclick="newPost()">+ New Post</button>
+  </div>
+  <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border-color:#C7D2FE">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:28px">&#128640;</div>
+      <div><div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#4F46E5">v5.0 Feature — Q4 2026</div>
+      <div style="font-size:12px;color:#6B7280">Blog module is part of the v5.0 release. The database table is ready. UI and API routes are being built.</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr><th>Title</th><th>Status</th><th>Published</th><th>SEO Title</th><th>Actions</th></tr></thead>
+      <tbody id="blog-tbody"><tr><td colspan="5" style="text-align:center;padding:40px;color:var(--zk-muted)">No posts yet. Write your first blog post to drive SEO traffic to your store.</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : 'http://localhost:3000/api';
+async function loadPosts() {
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) return;
+  try {
+    var r = await fetch(API_BASE + '/blog/posts', { headers: { 'Authorization': 'Bearer ' + token }});
+    var d = await r.json();
+    var tbody = document.getElementById('blog-tbody');
+    if (!tbody || !d.posts || !d.posts.length) return;
+    tbody.innerHTML = d.posts.map(function(p) {
+      return '<tr><td class="col-primary">' + p.title + '</td>'
+        + '<td><span class="status status-' + (p.status==='published'?'delivered':'processing') + '">' + p.status + '</span></td>'
+        + '<td>' + (p.published_at ? fmt.date(p.published_at) : '—') + '</td>'
+        + '<td class="fd">' + (p.seo_title || '—') + '</td>'
+        + '<td><div style="display:flex;gap:6px">'
+        + '<button class="btn btn-secondary btn-sm" onclick="editPost(' + p.id + ')">Edit</button>'
+        + '<button class="btn btn-secondary btn-sm" onclick="deletePost(' + p.id + ')" style="color:#DC2626">Delete</button>'
+        + '</div></td></tr>';
+    }).join('');
+  } catch(e) { toast.info('Blog API available in v5.0'); }
+}
+function newPost() {
+  var title = prompt('Post title:');
+  if (!title) return;
+  var content = prompt('Content (or leave blank for now):') || '';
+  var token = auth.token;
+  if (!token || token.startsWith('demo_token')) { toast.info('Login with real account to create posts'); return; }
+  fetch(API_BASE + '/blog/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ title: title, content: content, status: 'draft' })
+  }).then(function(r){ return r.json(); }).then(function(d) {
+    if (d.post) { toast.success('Post created!'); loadPosts(); }
+    else toast.error(d.error || 'Failed to create post');
+  }).catch(function(){ toast.info('Blog API available in v5.0'); });
+}
+async function deletePost(id) {
+  if (!confirm('Delete this post?')) return;
+  var token = auth.token;
+  await fetch(API_BASE + '/blog/posts/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }});
+  toast.success('Post deleted'); loadPosts();
+}
+document.addEventListener('DOMContentLoaded', loadPosts);
+</script>
+</body>
+</html>

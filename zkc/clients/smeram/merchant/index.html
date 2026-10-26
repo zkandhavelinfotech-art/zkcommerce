@@ -1,0 +1,1734 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Merchant Dashboard · ZKCommerce</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --navy: #0e1726;
+      --sidebar: #101c30;
+      --sidebar-hover: #182944;
+      --primary: #1976d2;
+      --primary-hover: #145ea8;
+      --success: #0d8a56;
+      --warning: #b76e00;
+      --danger: #d32f2f;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+    /* Sidebar */
+    aside {
+      width: 250px;
+      background: var(--sidebar);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-right: 1px solid #1e2e48;
+    }
+    .brand {
+      padding: 22px 20px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #1a2a44;
+    }
+    .brand span { color: #5ea8ff; }
+    .nav {
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 0;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .nav-item:hover {
+      background: var(--sidebar-hover);
+      color: #fff;
+    }
+    .nav-item.active {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+    .nav-icon { width: 18px; text-align: center; }
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid #1a2a44;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar-footer a { color: #94a3b8; text-decoration: none; }
+    .sidebar-footer a:hover { color: #fff; }
+
+    /* Main Area */
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow-x: hidden;
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .store-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    select, input, button {
+      font: inherit;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 12px;
+      background: #fff;
+      color: inherit;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+    }
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline {
+      background: #fff;
+      color: var(--text);
+    }
+    .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+
+    /* Content Area */
+    .content {
+      padding: 28px;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: -0.4px;
+    }
+    .page-sub {
+      color: var(--muted);
+      margin: 0 0 24px;
+      font-size: 14px;
+    }
+
+    /* Cards & Grids */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 8px;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .stat-value.blue { color: var(--primary); }
+    .stat-value.green { color: var(--success); }
+    .stat-value.amber { color: var(--warning); }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .card-head h2 { font-size: 17px; margin: 0; font-weight: 700; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      padding: 11px 12px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    tr:hover td { background: #fafbfc; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .badge-confirmed { background: #e0f2fe; color: #0284c7; }
+    .badge-processing { background: #fef3c7; color: #b45309; }
+    .badge-shipped { background: #dcfce7; color: #15803d; }
+    .badge-delivered { background: #d1fae5; color: #065f46; }
+    .badge-cancelled { background: #fee2e2; color: #b91c1c; }
+    .badge-paid { background: #ecfdf5; color: #047857; }
+    .badge-unpaid { background: #fff7ed; color: #c2410c; }
+
+    .toolbar-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    /* Modals & Alerts */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      display: none;
+    }
+    .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; display: block; }
+    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+
+    .legal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .legal-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #fafbfc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .legal-title { font-weight: 600; font-size: 14px; }
+    .legal-slug { font-size: 12px; color: var(--muted); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group select { width: 100%; }
+
+    @media (max-width: 768px) {
+      aside { width: 68px; }
+      .brand span, .nav-item span, .sidebar-footer { display: none; }
+      .brand { justify-content: center; padding: 18px 0; }
+      .nav-item { justify-content: center; padding: 12px 0; }
+      .content { padding: 16px; }
+      header { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="brand">
+      <div style="width:24px;height:24px;border-radius:6px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:900;">ZK</div>
+      <span>ZKCommerce</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="overview"><span class="nav-icon">📊</span><span>Overview</span></button>
+      <div class="nav-group-label" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;padding:12px 14px 4px">Catalogue &amp; content</div>
+      <button class="nav-item" data-view="products"><span class="nav-icon">🛍️</span><span>Products</span></button>
+      <button class="nav-item" data-view="categories"><span class="nav-icon">🗂️</span><span>Categories</span></button>
+      <button class="nav-item" data-view="pages"><span class="nav-icon">📄</span><span>Pages</span></button>
+      <button class="nav-item" data-view="theme"><span class="nav-icon">🎨</span><span>Theme &amp; design</span></button>
+      <div class="nav-group-label" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;padding:12px 14px 4px">Sales</div>
+      <button class="nav-item" data-view="orders"><span class="nav-icon">📦</span><span>Orders & Fulfillment</span></button>
+      <button class="nav-item" data-view="packaging"><span class="nav-icon">📮</span><span>Packaging & Labels</span></button>
+      <button class="nav-item" data-view="shipments" id="navShipments" style="display:none"><span class="nav-icon">🚚</span><span>Shipments (Ekart)</span></button>
+      <button class="nav-item" data-view="invoices"><span class="nav-icon">🧾</span><span>Invoices & GST</span></button>
+      <button class="nav-item" data-view="customers"><span class="nav-icon">👥</span><span>Customers</span></button>
+      <button class="nav-item" data-view="coupons"><span class="nav-icon">🏷️</span><span>Coupons</span></button>
+      <button class="nav-item" data-view="shipping"><span class="nav-icon">🚚</span><span>Shipping Rates</span></button>
+      <button class="nav-item" data-view="inbox"><span class="nav-icon">💬</span><span>Inbox</span></button>
+      <button class="nav-item" data-view="inventory"><span class="nav-icon">📦</span><span>Inventory <span id="invLowBadge" class="badge badge-cancelled" style="display:none;margin-left:4px"></span></span></button>
+      <button class="nav-item" data-view="whatsapp"><span class="nav-icon">🟢</span><span>WhatsApp Messages</span></button>
+      <button class="nav-item" data-view="checkout"><span class="nav-icon">🛒</span><span>Checkout & Payments</span></button>
+      <button class="nav-item" data-view="deploy"><span class="nav-icon">🚀</span><span>Deploy & Hosting</span></button>
+      <button class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span>Settings & Legal</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="../store-builder/" target="_blank">🎨 Store Builder ↗</a>
+      <a href="javascript:logout()">Log out</a>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <div class="app-main">
+    <header>
+      <div class="header-left">
+        <label style="font-size:13px;font-weight:600;color:var(--muted)">Store:</label>
+        <select id="storeSelect" style="min-width:210px;font-weight:600"></select>
+        <span class="store-badge" id="storeStatusBadge">Live</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline btn-sm" id="btnViewStore">👁️ View Storefront</button>
+        <a class="btn-outline btn-sm" href="../store-builder/" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">🎨 Edit Theme</a>
+        <button class="btn-outline btn-sm" id="btnRefresh">🔄 Refresh</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div id="alertBox" class="alert"></div>
+
+      <!-- VIEW: OVERVIEW -->
+      <section id="view-overview" class="view-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <h1 class="page-title" id="overviewStoreName">Store Dashboard</h1>
+            <p class="page-sub">Real-time orders, revenue, customer inquiries, and fulfillment operations.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-outline btn-sm" onclick="switchView('packaging')">📮 Today's packaging labels</button>
+            <button class="btn-primary btn-sm" id="btnScaffoldPagesHeader">⚡ Scaffold Legal Pages</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value green" id="statRevenue">₹0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value blue" id="statOrders">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending Fulfillment</div>
+            <div class="stat-value amber" id="statPending">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Unread Inquiries</div>
+            <div class="stat-value" id="statInbox">0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Recent Orders</h2>
+            <button class="btn-outline btn-sm" onclick="switchView('orders')">View All Orders →</button>
+          </div>
+          <div class="table-wrap">
+            <table id="recentOrdersTable">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted)">Loading recent orders…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: ORDERS & FULFILLMENT -->
+      <section id="view-orders" class="view-panel" style="display:none">
+        <h1 class="page-title">Orders & Fulfillment</h1>
+        <p class="page-sub">Manage incoming orders, update courier tracking numbers, and download GST tax invoices.</p>
+
+        <div class="card">
+          <div class="toolbar-row">
+            <select id="orderStatusFilter">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending payment</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="text" id="orderSearchInput" placeholder="Search order #, customer, phone…" style="min-width:250px">
+            <button class="btn-outline" id="btnSearchOrders">Search</button>
+            <button class="btn-primary" id="btnOrdersToPackaging" style="margin-left:auto">📮 Print packaging labels</button>
+          </div>
+
+          <div class="table-wrap">
+            <table id="ordersTable">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer & Phone</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Courier & AWB Tracking</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="8" style="text-align:center;color:var(--muted)">Loading orders…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: INVOICES & GST -->
+      <section id="view-invoices" class="view-panel" style="display:none">
+        <h1 class="page-title">Invoices & GST Tax Filing</h1>
+        <p class="page-sub">Compliant Indian GST Tax Invoices and monthly sales tax breakdowns.</p>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Tax Invoice Archive</h2>
+            <input type="text" id="invoiceSearchInput" placeholder="Search invoice or order #…" style="max-width:260px">
+          </div>
+          <div class="table-wrap">
+            <table id="invoicesTable">
+              <thead>
+                <tr>
+                  <th>Invoice Number</th>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Issued Date</th>
+                  <th>Gross Total</th>
+                  <th>PDF Download</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading invoices…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: CUSTOMERS -->
+      <section id="view-customers" class="view-panel" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <h1 class="page-title">Customers CRM</h1>
+            <p class="page-sub">Customer purchase history and order analytics aggregated from store orders.</p>
+          </div>
+          <button class="btn-outline btn-sm" id="btnExportCustomers">📥 Export CSV</button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table id="customersTable">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Email & Phone</th>
+                  <th>Orders Count</th>
+                  <th>Lifetime Spend</th>
+                  <th>Last Order</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="5" style="text-align:center;color:var(--muted)">Loading customer database…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: COUPONS -->
+      <section id="view-coupons" class="view-panel" style="display:none">
+        <h1 class="page-title">Discount Coupons</h1>
+        <p class="page-sub">Create promo codes, percentage/fixed discounts, and minimum order rules.</p>
+
+        <div class="card">
+          <h2 style="font-size:16px;margin:0 0 16px">Create New Coupon</h2>
+          <form id="couponForm">
+            <div class="form-grid">
+              <div class="form-group"><label>Coupon Code</label><input name="code" required placeholder="FESTIVE20" style="text-transform:uppercase"></div>
+              <div class="form-group"><label>Discount Type</label><select name="discount_type"><option value="percent">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
+              <div class="form-group"><label>Discount Value</label><input name="discount_value" type="number" min="1" step="0.5" required placeholder="20"></div>
+              <div class="form-group"><label>Min. Order (₹)</label><input name="minimum_order" type="number" min="0" value="0"></div>
+              <div class="form-group"><label>Usage Limit</label><input name="usage_limit" type="number" min="1" placeholder="Unlimited"></div>
+            </div>
+            <button class="btn-primary" type="submit">Save Coupon</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Active Coupons</h2></div>
+          <div class="table-wrap">
+            <table id="couponsTable">
+              <thead><tr><th>Code</th><th>Offer</th><th>Min Order</th><th>Usage</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading coupons…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: SHIPPING RATES -->
+      <section id="view-shipping" class="view-panel" style="display:none">
+        <h1 class="page-title">Shipping & Delivery Rates</h1>
+        <p class="page-sub">Configure flat rates, free shipping thresholds, and pincode prefix rules.</p>
+
+        <div class="card" id="ekartCard">
+          <h2 style="font-size:16px;margin:0 0 6px">Ekart shipping</h2>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Optional. When on, the <b>Shipments (Ekart)</b> page lets you enter or scan AWBs, print barcode shipping labels and send tracking links on WhatsApp.</p>
+          <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer;max-width:680px"><input type="checkbox" id="ekEnabled"><span><b>Enable Ekart shipping</b><br><small style="color:var(--muted)">Off by default — turn on when you start shipping with Ekart.</small></span></label>
+          <div id="ekFields" style="margin-top:12px">
+            <div class="form-grid">
+              <div class="form-group"><label>How AWBs are created</label>
+                <select id="ekMode"><option value="manual">Manual — book on the Ekart portal, enter / scan the AWB here</option><option value="api">Ekart API — book automatically (needs API access)</option></select></div>
+              <div class="form-group"><label>Courier name on labels</label><input id="ekCourier" placeholder="Ekart"></div>
+              <div class="form-group" style="grid-column:1/-1"><label>Tracking link ({awb} is replaced)</label><input id="ekTrack" placeholder="https://ekartlogistics.com/shipmenttrack/{awb}"></div>
+            </div>
+            <details id="ekApiBox" style="margin:4px 0 10px"><summary style="cursor:pointer;font-size:13px;font-weight:700">Ekart API access (for later)</summary>
+              <div class="form-grid" style="margin-top:10px">
+                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="From Ekart"></div>
+                <div class="form-group"><label>Client ID</label><input id="ekApiClient"></div>
+                <div class="form-group"><label>Merchant code</label><input id="ekApiMerchant"></div>
+                <div class="form-group"><label>API key</label><input id="ekApiKey" type="password" placeholder="Leave blank to keep the saved key"></div>
+              </div>
+            </details>
+          </div>
+          <div id="ekStatus" style="font-size:13px;font-weight:600;margin:8px 0;min-height:18px"></div>
+          <button class="btn-primary" id="btnSaveEkart">Save Ekart settings</button>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
+          <form id="shippingRateForm">
+            <div class="form-grid">
+              <div class="form-group"><label>Rate Name</label><input name="name" required placeholder="Standard Delivery"></div>
+              <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0" required></div>
+              <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0" placeholder="Optional (e.g. 499)"></div>
+              <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix" placeholder="All (or e.g. 600 for Chennai)"></div>
+              <div class="form-group"><label>Estimated Days</label><input name="estimated_days" placeholder="2–4 business days"></div>
+            </div>
+            <button class="btn-primary" type="submit">Save Shipping Rate</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Configured Shipping Rates</h2></div>
+          <div class="table-wrap">
+            <table id="shippingRatesTable">
+              <thead><tr><th>Rate Name</th><th>Fee</th><th>Free Threshold</th><th>Pincode Prefix</th><th>Est. Delivery</th><th>Action</th></tr></thead>
+              <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading shipping rates…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: INBOX -->
+      <section id="view-inbox" class="view-panel" style="display:none">
+        <h1 class="page-title">Customer Inquiries & Restock Requests</h1>
+        <p class="page-sub">Messages submitted through your storefront contact form and back-in-stock alerts.</p>
+        <div class="card" id="inboxContainer">
+          <div style="text-align:center;color:var(--muted)">Loading messages…</div>
+        </div>
+      </section>
+
+      <!-- VIEW: PACKAGING & LABELS (merchant/packaging.html embedded) -->
+      <section id="view-packaging" class="view-panel" style="display:none">
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Packaging & Delivery Labels</h1>
+            <p class="page-sub" style="margin:0">Pick a date range, tick the addresses to print, then print labels (A4 or 4×6 thermal), download the Ekart CSV, or mark orders as packed.</p>
+          </div>
+          <a class="btn-outline btn-sm" id="packagingNewTab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe id="packagingFrame" title="Packaging and delivery labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+
+      <section id="view-shipments" class="view-panel" style="display:none">
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Shipments & Ekart Labels</h1>
+            <p class="page-sub" style="margin:0">Enter or scan the AWB from the Ekart portal, print barcode labels, then mark orders shipped / delivered — the customer gets the tracking link on WhatsApp.</p>
+          </div>
+          <a class="btn-outline btn-sm" id="shipmentsNewTab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe id="shipmentsFrame" title="Shipments and Ekart labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+
+      <!-- VIEWS: CATALOGUE & CONTENT (Store Builder editors, embedded; saved changes go live at once) -->
+      <section id="view-products" class="view-panel cms-view" data-workspace="products" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Products</h1><p class="page-sub" style="margin:0">Add and edit products, sizes, prices, stock and photos. Saved changes appear in the live shop straight away.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Products" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+      <section id="view-categories" class="view-panel cms-view" data-workspace="categories" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Categories</h1><p class="page-sub" style="margin:0">Create, rename, re-image or remove categories. They show in the Shop menu and on category pages at once.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Categories" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+      <section id="view-pages" class="view-panel cms-view" data-workspace="pages" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Pages</h1><p class="page-sub" style="margin:0">About, Contact, policies and any other page. Saved pages go live at once.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Pages" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+      <section id="view-theme" class="view-panel cms-view" data-workspace="theme" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Theme &amp; design</h1><p class="page-sub" style="margin:0">Change the theme, colours, header menu and sections. Design changes are a draft until you click <b>Publish</b>, so shoppers never see half-finished work.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Theme and design" style="width:100%;height:calc(100vh - 190px);min-height:680px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+
+      <!-- VIEW: WHATSAPP ORDER MESSAGES -->
+      <section id="view-whatsapp" class="view-panel" style="display:none">
+        <h1 class="page-title">WhatsApp Order Messages</h1>
+        <p class="page-sub">No WhatsApp Business API needed: after checkout the shopper's WhatsApp opens with the order typed out to your customer-care number, and the Orders / Packaging pages have one-click buttons to message customers. With an official provider (Gupshup, Meta Cloud API, ZKWAConnect) the same messages are sent automatically.</p>
+        <div class="card">
+          <div class="form-grid">
+            <div class="form-group"><label>Customer-care WhatsApp number</label><input id="waCareNumber" placeholder="+91 75399 72026"></div>
+            <div class="form-group"><label>Shown as</label><input id="waCareLabel" placeholder="Smeram Customer Care"></div>
+          </div>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0"><input type="checkbox" id="waEnabled"> <b>Use WhatsApp order messages</b></label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0 12px"><input type="checkbox" id="waHandoff"> After an order is placed / paid, open the shopper's WhatsApp to send the order to customer care</label>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">Fields — click to insert into the message you are editing</div>
+          <div id="waChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px"></div>
+          <div class="form-grid" style="align-items:start">
+            <div class="form-group"><label>Message to customer care (new order)</label><textarea id="waCareTpl" rows="11" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
+            <div class="form-group"><label>Message to the customer (order confirmation)</label><textarea id="waCustomerTpl" rows="11" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
+          </div>
+          <div class="form-grid" style="align-items:start">
+            <div class="form-group"><label>Low-stock alert (to customer care)</label><textarea id="waLowTpl" rows="6" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
+            <div class="form-group"><label>Shipped update (to the customer)</label><textarea id="waShippedTpl" rows="6" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
+            <div class="form-group"><label>Delivered update (to the customer)</label><textarea id="waDeliveredTpl" rows="6" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin:4px 0 6px">Preview (sample order) — <span id="waPreviewWhich">customer care</span></div>
+          <pre id="waPreview" style="white-space:pre-wrap;background:#ecfdf5;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font:13px/1.45 system-ui,sans-serif;margin:0 0 12px"></pre>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn-primary" id="btnSaveWa">Save WhatsApp messages</button>
+            <button class="btn-outline" id="btnResetWa">Reset templates to default</button>
+            <span id="waStatus" style="font-size:13px;font-weight:600"></span>
+          </div>
+        </div>
+
+        <!-- Automatic sender (v4.6) -->
+        <div class="card">
+          <div class="card-head"><div><h2>WhatsApp sender</h2>
+            <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">One provider is active. ZKWAConnect is your own official Meta Cloud API (no middle-man fee); Gupshup is a paid provider. Messages that cannot be sent automatically wait in the outbox below for a one-click send.</p></div></div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px" id="sndProviders">
+            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider" value="zkwaconnect"><span><b>ZKWAConnect</b><br><small style="color:var(--muted)">Official Cloud API · recommended</small></span></label>
+            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider" value="gupshup"><span><b>Gupshup</b><br><small style="color:var(--muted)">Paid per message</small></span></label>
+            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider" value="none"><span><b>One-click only</b><br><small style="color:var(--muted)">Nothing sent automatically</small></span></label>
+          </div>
+          <div class="form-grid" id="sndZkwa">
+            <div class="form-group"><label>ZKWAConnect URL</label><input id="sndZkwaUrl" placeholder="https://app.zkwaconnect.in"></div>
+            <div class="form-group"><label>API key (ZKWAConnect → Developer → API keys)</label><input id="sndZkwaKey" type="password" placeholder="zk_live_…"></div>
+            <div class="form-group"><label>Phone number id (optional)</label><input id="sndZkwaPhone" placeholder="Uses the first connected number"></div>
+          </div>
+          <div class="form-grid" id="sndGupshup">
+            <div class="form-group"><label>Gupshup app name</label><input id="sndGsApp"></div>
+            <div class="form-group"><label>Source number</label><input id="sndGsSource" placeholder="917539972026"></div>
+            <div class="form-group"><label>API key</label><input id="sndGsKey" type="password" placeholder="••••••••"></div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0">Meta-approved templates — WhatsApp needs one for messages to customers who have not written to you in the last 24 h. Fields fill {{1}}, {{2}}… in order, separated by |</div>
+          <div class="table-wrap"><table id="sndTemplates"><thead><tr><th>Message</th><th>Send automatically</th><th>Template name</th><th>Language</th><th>Fields for {{1}}|{{2}}|…</th></tr></thead><tbody></tbody></table></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px">
+            <button class="btn-primary" id="btnSaveSender">Save sender</button>
+            <input id="sndTestTo" placeholder="+91 number to test" style="max-width:200px">
+            <button class="btn-outline" id="btnTestSender">Send test</button>
+            <span id="sndStatus" style="font-size:13px;font-weight:600"></span>
+          </div>
+        </div>
+
+        <!-- Outbox -->
+        <div class="card">
+          <div class="card-head"><div><h2>Message outbox</h2><p style="margin:4px 0 0;font-size:13px;color:var(--muted)" id="outboxSummary">Every WhatsApp message the store sent or still needs to send.</p></div>
+            <div style="display:flex;gap:6px"><select id="outboxFilter"><option value="">All</option><option value="pending">Waiting (one-click)</option><option value="failed">Failed</option><option value="sent">Sent</option></select><button class="btn-outline btn-sm" id="btnReloadOutbox">Refresh</button></div></div>
+          <div class="table-wrap"><table id="outboxTable"><thead><tr><th>When</th><th>Type</th><th>To</th><th>Message</th><th>Status</th><th></th></tr></thead><tbody><tr><td colspan="6" style="color:var(--muted)">Loading…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- VIEW: INVENTORY (v4.6) -->
+      <section id="view-inventory" class="view-panel" style="display:none">
+        <h1 class="page-title">Inventory</h1>
+        <p class="page-sub">Stock for every product and size. Orders take stock automatically and cancellations return it; when an item falls to the low-stock level, customer care gets a WhatsApp alert.</p>
+        <div class="card">
+          <div class="toolbar-row" style="align-items:end">
+            <div class="form-group" style="margin:0"><label>Low-stock level (store default)</label><input id="invThreshold" type="number" min="0" style="max-width:140px"></div>
+            <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="invAlerts"> WhatsApp alert when stock reaches this level</label>
+            <button class="btn-primary btn-sm" id="btnSaveInvSettings">Save</button>
+            <label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-left:auto"><input type="checkbox" id="invLowOnly"> Show low stock only</label>
+            <span id="invStatus" style="font-size:13px;font-weight:600"></span>
+          </div>
+          <div class="table-wrap"><table id="inventoryTable"><thead><tr><th>Product</th><th>Size</th><th>SKU</th><th>Stock</th><th>Status</th><th>Set stock</th><th></th></tr></thead><tbody><tr><td colspan="7" style="color:var(--muted)">Loading…</td></tr></tbody></table></div>
+          <div id="invHistory" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+      <!-- VIEW: CHECKOUT & PAYMENTS (theme_config.checkout) -->
+      <section id="view-checkout" class="view-panel" style="display:none">
+        <h1 class="page-title">Checkout & Payments</h1>
+        <p class="page-sub">What shoppers see in the cart. Saved as a draft; the live store changes when you publish.</p>
+        <div class="card">
+          <div style="display:grid;gap:10px;max-width:680px">
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCoupon"><span><b>Show discount code box</b><br><small style="color:var(--muted)">Shoppers can enter a coupon in the cart.</small></span></label>
+            <div style="font-size:12px;font-weight:700;color:var(--muted)">Payment methods offered</div>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)" id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately, paid on delivery.</small></span></label>
+          </div>
+          <div id="coStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-outline" id="btnSaveCheckout">Save as draft</button>
+            <button class="btn-primary" id="btnPublishCheckout">Save & publish to live store</button>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-top:10px">“Publish” also publishes any other unpublished design changes from the Store Builder. GoDaddy PHP sites pick up these options in the next package build.</p>
+        </div>
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:4px">Shop display</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Applies to the live store straight away. Each product can override the offer setting in the Store Builder product details.</p>
+          <div style="display:grid;gap:10px;max-width:680px">
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP strike-through, “% OFF” badges and offer tags such as “Special Introductory Offer”.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The product grid on the home page and its menu, tab and footer links. Other sections are switched in Store Builder → Settings.</small></span></label>
+          </div>
+          <div id="dsStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
+          <button class="btn-primary" id="btnSaveDisplay">Save display settings</button>
+        </div>
+      </section>
+
+      <!-- VIEW: DEPLOY & HOSTING -->
+      <section id="view-deploy" class="view-panel" style="display:none">
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Deploy & Hosting</h1>
+            <p class="page-sub" style="margin:0">Package versions per environment, downloads and database migrations. Build, FTP upload and settings live in the Deployment Portal.</p>
+          </div>
+          <a class="btn-primary btn-sm" id="btnOpenPortal" target="_blank" rel="noopener" style="text-decoration:none">🚀 Open Deployment Portal ↗</a>
+        </div>
+        <div class="card">
+          <div class="toolbar-row" style="margin-bottom:12px">
+            <label style="font-size:12px;font-weight:700;color:var(--muted)">Save downloads to
+              <select id="depDlTarget" style="margin-left:6px">
+                <option value="browser">This device's Downloads folder</option>
+                <option value="project">PC project folder (deployment\&lt;client&gt;\downloads)</option>
+                <option value="both">Both</option>
+              </select>
+            </label>
+            <span id="depSchema" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+          <div class="table-wrap">
+            <table id="deployTable">
+              <thead><tr><th>Environment</th><th>Latest package</th><th>Previous builds</th><th>Database</th><th>FTP</th><th>Razorpay keys</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+            </table>
+          </div>
+          <div id="depStatus" style="font-size:13px;font-weight:600;margin-top:10px;min-height:18px"></div>
+        </div>
+      </section>
+
+      <!-- VIEW: SETTINGS & LEGAL -->
+      <section id="view-settings" class="view-panel" style="display:none">
+        <h1 class="page-title">Store Settings & Legal Policy Pages</h1>
+        <p class="page-sub">Statutory Indian eCommerce compliance, WhatsApp order alert setup, and store credentials.</p>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2>Standard Statutory & Legal Pages</h2>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Mandatory for Razorpay merchant KYC approval and Indian Consumer Protection (E-Commerce) Rules.</p>
+            </div>
+            <button class="btn-primary btn-sm" id="btnScaffoldPages">⚡ Scaffold / Restore All 6 Default Pages</button>
+          </div>
+          <div class="legal-grid" id="legalPagesList">
+            <div style="color:var(--muted)">Checking store pages…</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h2>WhatsApp Order Notification Settings</h2>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Receive instant alerts whenever a customer places an order or completes payment. Message text, customer-care number and fields: <a href="#" onclick="switchView('whatsapp');return false">WhatsApp Messages →</a></p>
+            </div>
+          </div>
+          <div class="form-grid" style="align-items:end">
+            <div class="form-group" style="flex:1">
+              <label>Merchant Notification WhatsApp Number</label>
+              <input type="text" id="settingsWhatsappInput" placeholder="+91 98765 43210">
+            </div>
+            <div style="margin-bottom:14px">
+              <button class="btn-success btn-sm" id="btnTestWhatsapp">📱 Send Test WhatsApp Alert</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('zk_token');
+    const api = '/api';
+    let stores = [];
+    let currentStore = null;
+    let currentStoreId = '';
+
+    async function req(path, options = {}) {
+      const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(options.headers || {}) };
+      const res = await fetch(api + path, { ...options, headers });
+      if (options.download) {
+        if (!res.ok) throw Error('Download failed');
+        return res.blob();
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw Error(data.error || 'Request failed');
+      return data;
+    }
+
+    function notify(text, error = false) {
+      const b = document.getElementById('alertBox');
+      b.className = 'alert ' + (error ? 'alert-error' : 'alert-success');
+      b.textContent = text;
+      b.style.display = 'block';
+      setTimeout(() => { b.style.display = 'none'; }, 5000);
+    }
+
+    function money(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+
+    async function init() {
+      if (!token) { location.href = '../auth/login.html'; return; }
+      try {
+        const data = await req('/stores');
+        stores = data.stores || [];
+        const s = document.getElementById('storeSelect');
+        s.replaceChildren(...stores.map(x => new Option(x.store_name + ' (' + x.slug + ')', x.id)));
+        if (!stores.length) { notify('Please create a store in Store Builder setup first.', true); return; }
+        currentStoreId = s.value;
+        currentStore = stores.find(x => String(x.id) === String(currentStoreId));
+        updateStoreHeader();
+        await loadDashboard();
+      } catch (e) { notify(e.message, true); }
+    }
+
+    function updateStoreHeader() {
+      if (!currentStore) return;
+      document.getElementById('overviewStoreName').textContent = currentStore.store_name;
+      const badge = document.getElementById('storeStatusBadge');
+      badge.textContent = currentStore.status || 'live';
+      document.getElementById('btnViewStore').onclick = () => {
+        window.open('/store/' + currentStore.slug, '_blank');
+      };
+      if (currentStore.whatsapp_number) {
+        document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;
+      }
+    }
+
+    async function loadDashboard() {
+      if (!currentStoreId) return;
+      await Promise.all([
+        loadMetrics(),
+        loadOrders(),
+        loadInvoices(),
+        loadCustomers(),
+        loadCoupons(),
+        loadShippingRates(),
+        loadInbox(),
+        loadLegalPages(),
+        loadWhatsAppSettings(),
+        loadCheckoutSettings(),
+        loadDisplaySettings(),
+        loadEkartSettings(),
+        loadSender(),
+        loadOutbox(),
+        loadInventory()
+      ]);
+      // Views that load on demand refresh for the newly selected store when they are visible.
+      if (document.getElementById('view-packaging').style.display === 'block') loadPackagingFrame();
+      document.querySelectorAll('.cms-view').forEach(v => { if (v.style.display === 'block') loadCmsFrame(v); });
+      if (document.getElementById('view-deploy').style.display === 'block') loadDeploy();
+    }
+
+    async function loadMetrics() {
+      try {
+        const data = await req('/orders/metrics?store_id=' + currentStoreId);
+        const m = data.metrics || {};
+        document.getElementById('statRevenue').textContent = money(m.total_revenue);
+        document.getElementById('statOrders').textContent = m.total_orders || 0;
+        document.getElementById('statPending').textContent = m.pending_fulfillment || 0;
+        document.getElementById('statInbox').textContent = (data.unread?.unread_contact || 0) + (data.unread?.unread_notify || 0);
+
+        renderRecentOrders(data.recent_orders || []);
+      } catch (e) { console.warn('Metrics load error:', e.message); }
+    }
+
+    function renderRecentOrders(orders) {
+      const tbody = document.querySelector('#recentOrdersTable tbody');
+      if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No orders received yet. Place a test order on your storefront!</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td><strong>${o.order_number}</strong></td>
+          <td>${o.customer_name || 'Guest'}</td>
+          <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          <td>${money(o.total_amount)}</td>
+          <td><span class="badge badge-${o.payment_status === 'paid' ? 'paid' : 'unpaid'}">${o.payment_method?.toUpperCase()} · ${o.payment_status}</span></td>
+          <td><span class="badge badge-${o.status}">${o.status}</span></td>
+          <td><button class="btn-outline btn-sm" onclick="downloadInvoice('${o.id}', '${o.order_number}')">PDF Invoice</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadOrders() {
+      try {
+        const status = document.getElementById('orderStatusFilter').value;
+        const search = document.getElementById('orderSearchInput').value.trim();
+        const data = await req('/orders?store_id=' + currentStoreId + '&status=' + encodeURIComponent(status) + '&search=' + encodeURIComponent(search));
+        const tbody = document.querySelector('#ordersTable tbody');
+        const orders = data.orders || [];
+        if (!orders.length) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No orders match the current filter.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td><strong>${o.order_number}</strong></td>
+            <td>
+              <div>${o.customer_name || 'Guest'}</div>
+              <small style="color:var(--muted)">${o.customer_phone || ''} ${o.customer_email ? '· ' + o.customer_email : ''}</small>
+            </td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+            <td><strong>${money(o.total_amount)}</strong></td>
+            <td><span class="badge badge-${o.payment_status === 'paid' ? 'paid' : 'unpaid'}">${o.payment_method?.toUpperCase()}</span></td>
+            <td>
+              <select id="status-${o.id}" style="font-size:12px;padding:4px 8px">
+                ${['pending','confirmed','processing','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <div style="display:flex;gap:4px">
+                <input id="courier-${o.id}" value="${o.courier || ''}" placeholder="Courier" style="width:100px;font-size:12px;padding:4px 6px">
+                <input id="track-${o.id}" value="${o.tracking_number || ''}" placeholder="AWB / Track #" style="width:120px;font-size:12px;padding:4px 6px">
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn-primary btn-sm" onclick="saveOrderFulfillment('${o.id}')">Save</button>
+                <button class="btn-outline btn-sm" onclick="downloadInvoice('${o.id}', '${o.order_number}')">Invoice</button>
+                ${o.whatsapp && o.whatsapp.customer_url ? `<a class="btn-outline btn-sm" style="text-decoration:none" target="_blank" rel="noopener" href="${escAttr(o.whatsapp.customer_url)}" title="Message the customer (template)">📱 WA</a>` : (o.customer_phone ? `<button class="btn-outline btn-sm" onclick="openWhatsAppChat('${o.customer_phone}', '${o.order_number}', '${o.status}')">📱 WA</button>` : '')}${o.whatsapp && o.whatsapp.care_url ? `<a class="btn-outline btn-sm" style="text-decoration:none" target="_blank" rel="noopener" href="${escAttr(o.whatsapp.care_url)}" title="Forward the order to customer care">↪ Care</a>` : ''}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) { notify(e.message, true); }
+    }
+
+    async function saveOrderFulfillment(orderId) {
+      const status = document.getElementById('status-' + orderId).value;
+      const courier = document.getElementById('courier-' + orderId).value.trim();
+      const tracking_number = document.getElementById('track-' + orderId).value.trim();
+      try {
+        await req('/orders/' + orderId + '/status', {
+          method: 'PUT',
+          body: JSON.stringify({ store_id: currentStoreId, status, courier, tracking_number })
+        });
+        notify('Order updated. ' + (status === 'shipped' ? 'WhatsApp shipment tracking notification sent!' : ''));
+        loadOrders();
+        loadMetrics();
+      } catch (e) { notify(e.message, true); }
+    }
+
+    function openWhatsAppChat(phone, orderNumber, status) {
+      const text = `Hello! Regarding your order #${orderNumber} on ${currentStore?.store_name}: your order status is currently "${status}". Please let us know if you have any questions!`;
+      const clean = String(phone).replace(/\D/g, '');
+      const num = clean.length === 10 ? '91' + clean : clean;
+      window.open(`https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    async function downloadInvoice(orderId, orderNumber) {
+      try {
+        // Trigger invoice issuance
+        const invRes = await req('/invoices/' + orderId, { method: 'POST', body: JSON.stringify({ store_id: currentStoreId }) });
+        const blob = await req('/invoices/' + invRes.invoice.id + '/pdf?store_id=' + currentStoreId, { download: true });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (invRes.invoice.invoice_number || orderNumber) + '.pdf';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 20000);
+      } catch (e) { notify(e.message, true); }
+    }
+
+    async function loadInvoices() {
+      try {
+        const q = document.getElementById('invoiceSearchInput').value.trim();
+        const data = await req('/invoices?store_id=' + currentStoreId + '&q=' + encodeURIComponent(q));
+        const tbody = document.querySelector('#invoicesTable tbody');
+        const invoices = data.invoices || [];
+        if (!invoices.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No invoices generated yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = invoices.map(i => `
+          <tr>
+            <td><strong>${i.invoice_number}</strong></td>
+            <td>${i.order_number}</td>
+            <td>${i.customer_name || i.customer_email || 'Customer'}</td>
+            <td>${new Date(i.issued_at).toLocaleDateString()}</td>
+            <td>${money(i.total_amount)}</td>
+            <td><button class="btn-outline btn-sm" onclick="downloadInvoiceById('${i.id}', '${i.invoice_number}')">Download PDF</button></td>
+          </tr>
+        `).join('');
+      } catch (e) { console.warn('Invoices error:', e.message); }
+    }
+
+    async function downloadInvoiceById(invId, number) {
+      try {
+        const blob = await req('/invoices/' + invId + '/pdf?store_id=' + currentStoreId, { download: true });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = number + '.pdf';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 20000);
+      } catch (e) { notify(e.message, true); }
+    }
+
+    async function loadCustomers() {
+      try {
+        const data = await req('/customers?store_id=' + currentStoreId);
+        const tbody = document.querySelector('#customersTable tbody');
+        const custs = data.customers || [];
+        if (!custs.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No customer records yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = custs.map(c => `
+          <tr>
+            <td><strong>${c.name || 'Customer'}</strong></td>
+            <td>${[c.email, c.phone].filter(Boolean).join(' · ')}</td>
+            <td>${c.order_count}</td>
+            <td><strong>${money(c.total_spent)}</strong></td>
+            <td>${c.last_order ? new Date(c.last_order).toLocaleDateString() : '—'}</td>
+          </tr>
+        `).join('');
+      } catch (e) { console.warn('Customers error:', e.message); }
+    }
+
+    async function loadCoupons() {
+      try {
+        const data = await req('/coupons?store_id=' + currentStoreId);
+        const tbody = document.querySelector('#couponsTable tbody');
+        const coupons = data.coupons || [];
+        if (!coupons.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No coupons created yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = coupons.map(c => `
+          <tr>
+            <td><strong>${c.code}</strong></td>
+            <td>${c.discount_type === 'percent' ? c.discount_value + '%' : money(c.discount_value)}</td>
+            <td>${money(c.minimum_order)}</td>
+            <td>${c.used_count} / ${c.usage_limit || '∞'}</td>
+            <td><span class="badge badge-${c.active ? 'shipped' : 'cancelled'}">${c.active ? 'Active' : 'Paused'}</span></td>
+            <td><button class="btn-outline btn-sm" onclick="deleteCoupon('${c.id}')">Delete</button></td>
+          </tr>
+        `).join('');
+      } catch (e) { console.warn('Coupons error:', e.message); }
+    }
+
+    async function deleteCoupon(id) {
+      if (!confirm('Delete this coupon?')) return;
+      try {
+        await req('/coupons/' + id + '?store_id=' + currentStoreId, { method: 'DELETE' });
+        notify('Coupon deleted');
+        loadCoupons();
+      } catch (e) { notify(e.message, true); }
+    }
+
+    async function loadShippingRates() {
+      try {
+        const data = await req('/shipping/rates?store_id=' + currentStoreId);
+        const tbody = document.querySelector('#shippingRatesTable tbody');
+        const rates = data.rates || [];
+        if (!rates.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No custom shipping rates yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rates.map(r => `
+          <tr>
+            <td><strong>${r.name}</strong></td>
+            <td>${money(r.rate)}</td>
+            <td>${r.free_above ? money(r.free_above) : 'None'}</td>
+            <td>${r.postal_prefix || 'All India'}</td>
+            <td>${r.estimated_days || 'Standard'}</td>
+            <td><button class="btn-outline btn-sm" onclick="deleteRate('${r.id}')">Delete</button></td>
+          </tr>
+        `).join('');
+      } catch (e) { console.warn('Shipping error:', e.message); }
+    }
+
+    async function deleteRate(id) {
+      if (!confirm('Delete this rate?')) return;
+      try {
+        await req('/shipping/rates/' + id + '?store_id=' + currentStoreId, { method: 'DELETE' });
+        notify('Shipping rate removed');
+        loadShippingRates();
+      } catch (e) { notify(e.message, true); }
+    }
+
+    async function loadInbox() {
+      try {
+        const data = await req('/notify/' + currentStoreId + '/messages');
+        const box = document.getElementById('inboxContainer');
+        const msgs = data.contact_messages || [];
+        if (!msgs.length) {
+          box.innerHTML = '<div style="text-align:center;color:var(--muted);padding:24px">No customer messages or inquiries yet.</div>';
+          return;
+        }
+        box.innerHTML = msgs.map(m => `
+          <div style="border-bottom:1px solid var(--border);padding:14px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <strong>${m.name} · <span style="font-weight:normal;color:var(--muted)">${m.email || m.phone}</span></strong>
+              <small style="color:var(--muted)">${new Date(m.created_at).toLocaleString()}</small>
+            </div>
+            <p style="margin:0 0 8px;font-size:14px">${m.message}</p>
+            <span class="badge badge-${m.inbox_status === 'resolved' ? 'delivered' : 'processing'}">${m.inbox_status}</span>
+          </div>
+        `).join('');
+      } catch (e) { console.warn('Inbox error:', e.message); }
+    }
+
+    async function loadLegalPages() {
+      try {
+        const data = await req('/stores/' + currentStoreId + '/pages');
+        const pages = data.pages || [];
+        const required = [
+          { title: 'About Us', slug: 'about-us' },
+          { title: 'Contact Us', slug: 'contact-us' },
+          { title: 'Privacy Policy', slug: 'privacy-policy' },
+          { title: 'Terms of Service', slug: 'terms-of-service' },
+          { title: 'Refund Policy', slug: 'refund-policy' },
+          { title: 'Shipping Policy', slug: 'shipping-policy' }
+        ];
+        const host = document.getElementById('legalPagesList');
+        host.innerHTML = required.map(r => {
+          const match = pages.find(p => p.slug === r.slug);
+          const hasIt = Boolean(match);
+          return `
+            <div class="legal-card">
+              <div>
+                <div class="legal-title">${r.title}</div>
+                <div class="legal-slug">/page/${r.slug}</div>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span class="badge ${hasIt ? 'badge-delivered' : 'badge-cancelled'}">${hasIt ? 'Active' : 'Missing'}</span>
+                ${hasIt ? `<a href="/store/${currentStore.slug}/page/${r.slug}" target="_blank" class="btn-outline btn-sm" style="text-decoration:none">View ↗</a>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) { console.warn('Legal pages error:', e.message); }
+    }
+
+    async function scaffoldPages() {
+      try {
+        const res = await req('/stores/' + currentStoreId + '/scaffold-pages', { method: 'POST' });
+        notify('Standard legal & policy pages generated successfully! (' + res.created_count + ' created)');
+        loadLegalPages();
+      } catch (e) { notify(e.message, true); }
+    }
+
+    async function testWhatsappAlert() {
+      const phone = document.getElementById('settingsWhatsappInput').value.trim();
+      if (!phone) { notify('Please enter a WhatsApp phone number', true); return; }
+      try {
+        const res = await req('/notify/' + currentStoreId + '/whatsapp-test', {
+          method: 'POST',
+          body: JSON.stringify({ phone })
+        });
+        notify('WhatsApp notification dispatched! ' + (res.result?.directUrl ? 'Check console or click the direct WhatsApp link.' : ''));
+        if (res.result?.directUrl) {
+          window.open(res.result.directUrl, '_blank');
+        }
+      } catch (e) { notify(e.message, true); }
+    }
+
+    const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const escAttr = escHtml;
+
+    // ── Packaging & labels: merchant/packaging.html in an iframe, loaded when first opened ──
+    let packagingStoreLoaded = null, shipmentsStoreLoaded = null;
+    // Catalogue & content views embed the Store Builder editors for the selected store (reloaded when the store changes).
+    function loadCmsFrame(view) {
+      if (!currentStoreId) return;
+      const frame = view.querySelector('.cms-frame');
+      if (frame.dataset.store === String(currentStoreId)) return;
+      const url = '../store-builder/?store_id=' + encodeURIComponent(currentStoreId) + '&workspace=' + view.dataset.workspace;
+      frame.src = url + '&embed=1';
+      view.querySelector('.cms-newtab').href = url;
+      frame.dataset.store = String(currentStoreId);
+    }
+    function loadShipmentsFrame() {
+      if (!currentStoreId || shipmentsStoreLoaded === currentStoreId) return;
+      const url = 'shipments.html?store_id=' + encodeURIComponent(currentStoreId);
+      document.getElementById('shipmentsFrame').src = url + '&embed=1';
+      document.getElementById('shipmentsNewTab').href = url;
+      shipmentsStoreLoaded = currentStoreId;
+    }
+    // ── Ekart shipping (optional; off by default) ──
+    function ekartShowFields() {
+      const on = document.getElementById('ekEnabled').checked;
+      document.getElementById('ekFields').style.display = on ? '' : 'none';
+      document.getElementById('navShipments').style.display = on ? '' : 'none';
+    }
+    async function loadEkartSettings() {
+      try {
+        const { settings: s } = await req('/shipments/settings?store_id=' + currentStoreId);
+        document.getElementById('ekEnabled').checked = !!s.enabled;
+        document.getElementById('ekMode').value = s.mode;
+        document.getElementById('ekCourier').value = s.courier_name || '';
+        document.getElementById('ekTrack').value = s.tracking_url_template || '';
+        document.getElementById('ekApiBase').value = s.api.base_url || '';
+        document.getElementById('ekApiClient').value = s.api.client_id || '';
+        document.getElementById('ekApiMerchant').value = s.api.merchant_code || '';
+        document.getElementById('ekApiKey').value = '';
+        document.getElementById('ekApiKey').placeholder = s.api.has_api_key ? 'Saved — leave blank to keep' : 'From Ekart';
+        document.getElementById('ekStatus').textContent = '';
+        shipmentsStoreLoaded = null;
+        ekartShowFields();
+        if (!s.enabled && document.getElementById('view-shipments').style.display === 'block') switchView('shipping');
+      } catch (e) { console.warn('Ekart settings:', e.message); }
+    }
+    async function saveEkartSettings() {
+      const st = document.getElementById('ekStatus'), key = document.getElementById('ekApiKey').value.trim();
+      try {
+        await req('/shipments/settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
+          enabled: document.getElementById('ekEnabled').checked,
+          mode: document.getElementById('ekMode').value,
+          courier_name: document.getElementById('ekCourier').value,
+          tracking_url_template: document.getElementById('ekTrack').value,
+          api: { base_url: document.getElementById('ekApiBase').value, client_id: document.getElementById('ekApiClient').value, merchant_code: document.getElementById('ekApiMerchant').value, ...(key ? { api_key: key } : {}) }
+        }) });
+        await loadEkartSettings();
+        st.style.color = '#15803d';
+        st.textContent = document.getElementById('ekEnabled').checked ? '✅ Saved — open Shipments (Ekart) in the menu.' : '✅ Saved — Ekart shipping is off.';
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+    function loadPackagingFrame() {
+      if (!currentStoreId || packagingStoreLoaded === currentStoreId) return;
+      const url = 'packaging.html?store_id=' + encodeURIComponent(currentStoreId);
+      document.getElementById('packagingFrame').src = url + '&embed=1';
+      document.getElementById('packagingNewTab').href = url;
+      packagingStoreLoaded = currentStoreId;
+    }
+
+    // ── WhatsApp order messages ──
+    let waDefaults = null, waLastFocus = null;
+    const waSample = () => ({ order_id: 'ZK1792938487215', customer_name: 'Priya Nair', customer_phone: '+91 98765 43210', customer_email: 'priya@example.com', products: '1. Smeram Naturals Hair Oil (100 ml) × 2 — ₹598', product_names: 'Smeram Naturals Hair Oil', item_count: '2', total: '₹598', payment_method: 'Paid online (Razorpay)', payment_status: 'paid', address: '12 Lake View Road, Chennai, Tamil Nadu, 600041', city: 'Chennai', pincode: '600041', order_date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), order_time: '10:42 am', tracking_number: 'EK123456789', courier: 'Ekart', tracking_url: 'https://ekartlogistics.com/shipmenttrack/EK123456789', product_name: 'Smeram Naturals Hair Oil', variant: '(100 ml)', stock_left: '48', threshold: '50', store_name: currentStore ? currentStore.store_name : '' });
+    function waRenderPreview() {
+      const el = waLastFocus || document.getElementById('waCareTpl'), sample = waSample();
+      document.getElementById('waPreviewWhich').textContent = ({ waCustomerTpl: 'customer', waLowTpl: 'low-stock alert', waShippedTpl: 'shipped update', waDeliveredTpl: 'delivered update' })[el.id] || 'customer care';
+      document.getElementById('waPreview').textContent = el.value.replace(/\{([a-z_]+)\}/g, (m, k) => sample[k] !== undefined ? sample[k] : m);
+    }
+    async function loadWhatsAppSettings() {
+      try {
+        const d = await req('/orders/whatsapp-settings?store_id=' + currentStoreId);
+        const s = d.settings;
+        waDefaults = d.defaults;
+        document.getElementById('waCareNumber').value = s.care_number ? '+' + s.care_number : '';
+        document.getElementById('waCareLabel').value = s.care_label || '';
+        document.getElementById('waEnabled').checked = !!s.enabled;
+        document.getElementById('waHandoff').checked = !!s.customer_handoff;
+        document.getElementById('waCareTpl').value = s.care_template || '';
+        document.getElementById('waCustomerTpl').value = s.customer_template || '';
+        document.getElementById('waLowTpl').value = s.low_stock_template || '';
+        document.getElementById('waShippedTpl').value = s.shipped_template || '';
+        document.getElementById('waDeliveredTpl').value = s.delivered_template || '';
+        document.getElementById('waChips').innerHTML = d.placeholders.map(p => `<button type="button" class="btn-outline btn-sm" data-ph="${escAttr(p.key)}" title="${escAttr(p.label)}">{${escHtml(p.key)}}</button>`).join('');
+        document.querySelectorAll('#waChips [data-ph]').forEach(b => b.onclick = () => {
+          const el = waLastFocus || document.getElementById('waCareTpl'), tok = '{' + b.dataset.ph + '}', at = el.selectionStart ?? el.value.length;
+          el.value = el.value.slice(0, at) + tok + el.value.slice(el.selectionEnd ?? at);
+          el.focus(); el.selectionStart = el.selectionEnd = at + tok.length; waRenderPreview();
+        });
+        waRenderPreview();
+      } catch (e) { console.warn('WhatsApp settings:', e.message); }
+    }
+    async function saveWhatsAppSettings() {
+      const st = document.getElementById('waStatus');
+      try {
+        const r = await req('/orders/whatsapp-settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
+          enabled: document.getElementById('waEnabled').checked,
+          customer_handoff: document.getElementById('waHandoff').checked,
+          care_number: document.getElementById('waCareNumber').value.trim(),
+          care_label: document.getElementById('waCareLabel').value.trim(),
+          care_template: document.getElementById('waCareTpl').value,
+          customer_template: document.getElementById('waCustomerTpl').value,
+          low_stock_template: document.getElementById('waLowTpl').value,
+          shipped_template: document.getElementById('waShippedTpl').value,
+          delivered_template: document.getElementById('waDeliveredTpl').value
+        }) });
+        document.getElementById('waCareNumber').value = r.settings.care_number ? '+' + r.settings.care_number : '';
+        st.style.color = '#15803d';
+        st.textContent = '✅ Saved — live on the Node store now; rebuild the PHP package for GoDaddy.';
+        loadOrders();
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+
+    // ── Checkout & payments (theme_config.checkout, published with the store) ──
+    let checkoutThemeConfig = null, razorpayInfo = {};
+    async function loadDisplaySettings() {
+      try {
+        const d = await req('/stores/' + currentStoreId + '/display');
+        const v = d.live || d.display;
+        document.getElementById('dsShowOffers').checked = v.show_offers;
+        document.getElementById('dsAllProducts').checked = v.show_all_products;
+        document.getElementById('dsStatus').textContent = '';
+      } catch (e) { console.warn('Display settings:', e.message); }
+    }
+    async function saveDisplaySettings() {
+      const st = document.getElementById('dsStatus');
+      try {
+        const d = await req('/stores/' + currentStoreId + '/display', { method: 'PUT', body: JSON.stringify({
+          show_offers: document.getElementById('dsShowOffers').checked,
+          show_all_products: document.getElementById('dsAllProducts').checked
+        }) });
+        st.style.color = '#166534';
+        st.textContent = d.live ? 'Saved — the live store is updated.' : 'Saved. The store is not published yet; it applies when you publish.';
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = e.message; }
+    }
+    async function loadCheckoutSettings() {
+      try {
+        const d = await req('/stores/' + currentStoreId + '/builder');
+        checkoutThemeConfig = d.store.theme_config || {};
+        razorpayInfo = d.payments || {};
+        const c = checkoutThemeConfig.checkout || {};
+        document.getElementById('coShowCoupon').checked = c.show_coupon !== false;
+        document.getElementById('coRazorpay').checked = c.razorpay !== false;
+        document.getElementById('coCod').checked = c.cod !== false || c.razorpay === false;
+        document.getElementById('coRzpStatus').innerHTML = 'UPI, cards, netbanking, wallets. ' + (razorpayInfo.razorpay_configured
+          ? `Razorpay keys on this server: <b>${escHtml((razorpayInfo.razorpay_mode || 'test').toUpperCase())}</b>.`
+          : '<b style="color:#b91c1c">Razorpay keys are not configured on this server.</b>');
+        validateCheckout();
+      } catch (e) { console.warn('Checkout settings:', e.message); }
+    }
+    function validateCheckout() {
+      const rzp = document.getElementById('coRazorpay').checked, cod = document.getElementById('coCod').checked, st = document.getElementById('coStatus');
+      let ok = true;
+      if (!rzp && !cod) { st.style.color = '#b91c1c'; st.textContent = 'Keep at least one payment method on.'; ok = false; }
+      else if (!cod && !razorpayInfo.razorpay_configured) { st.style.color = '#b91c1c'; st.textContent = 'Razorpay is not configured, so turning off Cash on delivery would block all orders.'; ok = false; }
+      else { st.style.color = 'var(--muted)'; st.textContent = !cod ? 'Shoppers will only see “Pay online via Razorpay”.' : !rzp ? 'Shoppers will only see “Cash on delivery”.' : 'Shoppers can choose Cash on delivery or Razorpay.'; }
+      document.getElementById('btnSaveCheckout').disabled = document.getElementById('btnPublishCheckout').disabled = !ok;
+      return ok;
+    }
+    async function saveCheckout(publish) {
+      if (!validateCheckout() || !checkoutThemeConfig) return;
+      if (publish && !confirm('Publish now? This also publishes any other unpublished changes made in the Store Builder.')) return;
+      const st = document.getElementById('coStatus');
+      try {
+        // Re-read the draft right before saving so changes made in the Store Builder meanwhile are kept.
+        const fresh = await req('/stores/' + currentStoreId + '/builder');
+        const theme_config = { ...(fresh.store.theme_config || {}), checkout: {
+          show_coupon: document.getElementById('coShowCoupon').checked,
+          razorpay: document.getElementById('coRazorpay').checked,
+          cod: document.getElementById('coCod').checked
+        } };
+        await req('/stores/' + currentStoreId + '/draft', { method: 'PUT', body: JSON.stringify({ theme_config }) });
+        if (publish) await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });
+        checkoutThemeConfig = theme_config;
+        st.style.color = '#15803d';
+        st.textContent = publish ? '✅ Saved and published — the live store uses these options now.' : '✅ Saved as draft — publish to apply to the live store.';
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+
+    // ── Deploy & hosting: versions per environment, downloads, migrations ──
+    const ENV_LABELS = { production: '🚀 Production', stage: '🧱 Stage', preview: '👁 Preview', development: '🧪 Dev' };
+    const dlTarget = () => { try { return localStorage.getItem('zk_dl_target') || 'browser'; } catch (_) { return 'browser'; } };
+    async function downloadPackageFile(zipName) {
+      const st = document.getElementById('depStatus'), target = dlTarget(), done = [];
+      try {
+        if (target === 'project' || target === 'both') {
+          const r = await req('/stores/' + currentStoreId + '/deployment-zip/save', { method: 'POST', body: JSON.stringify({ file: zipName }) });
+          done.push('saved to ' + r.saved_path);
+        }
+        if (target === 'browser' || target === 'both') {
+          const url = api + '/stores/' + currentStoreId + '/deployment-zip?file=' + encodeURIComponent(zipName) + '&token=' + encodeURIComponent(token);
+          const head = await fetch(url, { method: 'HEAD' });
+          if (!head.ok) throw Error(head.status === 404 ? zipName + ' is no longer on disk. Build it again in the Deployment Portal.' : 'Download failed (HTTP ' + head.status + ')');
+          const a = document.createElement('a'); a.href = url; a.download = zipName; document.body.appendChild(a); a.click(); a.remove();
+          done.push("sent to this device's Downloads folder");
+        }
+        st.style.color = '#15803d'; st.textContent = '✅ ' + zipName + ' ' + done.join(' and ');
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+    async function loadDeploy() {
+      const tbody = document.querySelector('#deployTable tbody');
+      document.getElementById('btnOpenPortal').href = '../store-builder/?store_id=' + encodeURIComponent(currentStoreId) + '#publish';
+      document.getElementById('depDlTarget').value = dlTarget();
+      try {
+        const d = await req('/stores/' + currentStoreId + '/deployment-settings');
+        document.getElementById('depSchema').textContent = d.schema ? `Latest DB schema: ${d.schema.latest} (${d.schema.migrations.length} migrations)` : '';
+        // Buttons are labelled with the ZIP file name; a file no longer on disk is shown disabled.
+        const dlBtn = (file, label, primary) => {
+          if (!file || !file.zip_name) return '';
+          const text = label || ('⬇ ' + escHtml(file.zip_name));
+          return file.zip_exists === false
+            ? `<button class="btn-outline btn-sm" disabled title="${escAttr(file.zip_name)} is no longer on disk — build it again in the Deployment Portal" style="opacity:.55;cursor:not-allowed">${text} (missing)</button>`
+            : `<button class="${primary ? 'btn-primary' : 'btn-outline'} btn-sm" data-dl="${escAttr(file.zip_name)}" title="Download ${escAttr(file.zip_name)}" style="white-space:nowrap">${text}</button>`;
+        };
+        tbody.innerHTML = ['production', 'stage', 'preview', 'development'].map(env => {
+          const e = d.environments[env] || {}, last = e.last_package, older = (e.builds || []).filter(b => !last || b.zip_name !== last.zip_name).slice(0, 3);
+          const when = t => t ? new Date(t).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+          return `<tr${env === d.active_env ? ' style="background:#f0fdf4"' : ''}>
+            <td><b>${ENV_LABELS[env]}</b>${env === d.active_env ? '<br><small style="color:var(--muted)">last used</small>' : ''}</td>
+            <td>${last ? `<b>v${escHtml(last.version)}</b> · ${escHtml(String(last.technology).toUpperCase())}<br><small style="color:var(--muted)">${escHtml(when(last.built_at))}</small>` : '<span style="color:var(--muted)">Not built yet</span>'}</td>
+            <td>${older.length ? older.map(b => dlBtn(b, 'v' + escHtml(b.version))).join(' ') : '<span style="color:var(--muted)">—</span>'}</td>
+            <td>${e.db ? `✅ ${escHtml(e.db.name || '')}` : '<span style="color:var(--muted)">not saved</span>'}${e.last_migration ? `<br><small style="color:var(--muted)">Last DB migration:</small><br>${dlBtn(e.last_migration)}` : ''}</td>
+            <td>${e.ftp ? (e.ftp_tested_at ? '✅ tested' : '⚠ saved, not tested') + `<br><small style="color:var(--muted)">${escHtml(e.ftp.host)}${escHtml(e.ftp.path || '')}</small>` : '<span style="color:var(--muted)">not saved</span>'}</td>
+            <td>${e.payments && e.payments.key_id ? (/^rzp_live_/.test(e.payments.key_id) ? '✅ LIVE' : '⚠ TEST') : '<span style="color:var(--muted)">server keys</span>'}</td>
+            <td>${last ? dlBtn(last, null, true) : '<span style="color:var(--muted)">Build a package in the Deployment Portal</span>'}</td>
+          </tr>`;
+        }).join('');
+        tbody.querySelectorAll('[data-dl]').forEach(b => b.onclick = () => downloadPackageFile(b.dataset.dl));
+      } catch (e) { tbody.innerHTML = `<tr><td colspan="7" style="color:#b91c1c">${escHtml(e.message)}</td></tr>`; }
+    }
+
+    // ── WhatsApp sender (ZKWAConnect / Gupshup / one-click) ──
+    let senderKinds = {};
+    function showSenderFields() {
+      const p = (document.querySelector('input[name=sndProvider]:checked') || {}).value;
+      document.getElementById('sndZkwa').style.display = p === 'zkwaconnect' ? '' : 'none';
+      document.getElementById('sndGupshup').style.display = p === 'gupshup' ? '' : 'none';
+    }
+    async function loadSender() {
+      try {
+        const { sender: s } = await req('/whatsapp/sender?store_id=' + currentStoreId);
+        senderKinds = s.kinds || {};
+        const radio = document.querySelector('input[name=sndProvider][value="' + s.provider + '"]');
+        if (radio) radio.checked = true;
+        document.getElementById('sndZkwaUrl').value = s.zkwaconnect.base_url || '';
+        document.getElementById('sndZkwaPhone').value = s.zkwaconnect.phone_number_id || '';
+        document.getElementById('sndZkwaKey').value = '';
+        document.getElementById('sndZkwaKey').placeholder = s.zkwaconnect.has_key ? 'Saved — leave blank to keep' : 'zk_live_…';
+        document.getElementById('sndGsApp').value = s.gupshup.app_name || '';
+        document.getElementById('sndGsSource').value = s.gupshup.source_number || '';
+        document.getElementById('sndGsKey').value = '';
+        document.getElementById('sndGsKey').placeholder = s.gupshup.uses_env_key ? 'Using the key from the server .env' : s.gupshup.has_key ? 'Saved — leave blank to keep' : '••••••••';
+        document.querySelector('#sndTemplates tbody').innerHTML = Object.entries(senderKinds).map(([k, label]) => {
+          const t = s.templates[k] || {};
+          return `<tr data-kind="${escAttr(k)}"><td>${escHtml(label)}</td><td><input type="checkbox" data-f="auto" ${s.auto[k] !== false ? 'checked' : ''}></td>
+            <td><input data-f="name" value="${escAttr(t.name || '')}" placeholder="e.g. order_confirmed" style="min-width:150px"></td>
+            <td><input data-f="language" value="${escAttr(t.language || 'en')}" style="width:60px"></td>
+            <td><input data-f="variables" value="${escAttr(t.variables || '')}" placeholder="{customer_name}|{order_id}|{total}" style="min-width:230px"></td></tr>`;
+        }).join('');
+        showSenderFields();
+      } catch (e) { console.warn('Sender settings:', e.message); }
+    }
+    async function saveSender() {
+      const st = document.getElementById('sndStatus');
+      const templates = {}, auto = {};
+      document.querySelectorAll('#sndTemplates tbody tr').forEach(tr => {
+        const g = f => tr.querySelector('[data-f=' + f + ']');
+        templates[tr.dataset.kind] = { name: g('name').value.trim(), language: g('language').value.trim(), variables: g('variables').value };
+        auto[tr.dataset.kind] = g('auto').checked;
+      });
+      try {
+        await req('/whatsapp/sender?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
+          provider: (document.querySelector('input[name=sndProvider]:checked') || {}).value,
+          zkwaconnect: { base_url: document.getElementById('sndZkwaUrl').value.trim(), api_key: document.getElementById('sndZkwaKey').value.trim(), phone_number_id: document.getElementById('sndZkwaPhone').value.trim() },
+          gupshup: { app_name: document.getElementById('sndGsApp').value.trim(), source_number: document.getElementById('sndGsSource').value.trim(), api_key: document.getElementById('sndGsKey').value.trim() },
+          templates, auto
+        }) });
+        st.style.color = '#15803d'; st.textContent = '✅ Sender saved';
+        loadSender();
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+    async function testSender() {
+      const st = document.getElementById('sndStatus');
+      st.style.color = 'var(--muted)'; st.textContent = 'Sending…';
+      try {
+        const r = await req('/whatsapp/sender/test?store_id=' + currentStoreId, { method: 'POST', body: JSON.stringify({ to: document.getElementById('sndTestTo').value.trim() }) });
+        if (r.status === 'sent') { st.style.color = '#15803d'; st.textContent = '✅ Sent — check that phone'; }
+        else { st.style.color = '#b45309'; st.innerHTML = '⚠ Not sent automatically: ' + escHtml(r.error || r.status) + (r.wa_link ? ` · <a href="${escAttr(r.wa_link)}" target="_blank" rel="noopener">send it by hand</a>` : ''); }
+        loadOutbox();
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+
+    // ── Outbox ──
+    async function loadOutbox() {
+      const tbody = document.querySelector('#outboxTable tbody');
+      try {
+        const status = document.getElementById('outboxFilter').value;
+        const d = await req('/whatsapp/outbox?store_id=' + currentStoreId + (status ? '&status=' + status : ''));
+        document.getElementById('outboxSummary').textContent = `${d.counts.total} messages · ${d.counts.waiting} waiting for a one-click send`;
+        if (!d.messages.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted)">No messages yet.</td></tr>'; return; }
+        const badge = { sent: 'badge-delivered', pending: 'badge-processing', failed: 'badge-cancelled' };
+        tbody.innerHTML = d.messages.map(m => `<tr>
+          <td><small>${escHtml(new Date(m.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }))}</small></td>
+          <td>${escHtml(senderKinds[m.kind] || m.kind)}</td><td>+${escHtml(m.to_phone)}</td>
+          <td style="max-width:320px"><small style="white-space:pre-wrap">${escHtml(m.message.slice(0, 160))}${m.message.length > 160 ? '…' : ''}</small>${m.error ? `<br><small style="color:#b91c1c">${escHtml(m.error)}</small>` : ''}</td>
+          <td><span class="badge ${badge[m.status] || ''}">${escHtml(m.status)}</span></td>
+          <td style="white-space:nowrap">${m.status !== 'sent' ? `<a class="btn-success btn-sm" style="text-decoration:none" target="_blank" rel="noopener" href="${escAttr(m.wa_link)}">Send now</a> <button class="btn-outline btn-sm" data-mark-sent="${m.id}">Mark sent</button>` : ''}</td></tr>`).join('');
+        tbody.querySelectorAll('[data-mark-sent]').forEach(b => b.onclick = async () => { await req('/whatsapp/outbox/' + b.dataset.markSent + '/sent?store_id=' + currentStoreId, { method: 'POST', body: '{}' }); loadOutbox(); });
+      } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="color:#b91c1c">${escHtml(e.message)}</td></tr>`; }
+    }
+
+    // ── Inventory ──
+    let inventoryData = null;
+    async function loadInventory() {
+      try {
+        inventoryData = await req('/inventory?store_id=' + currentStoreId);
+        document.getElementById('invThreshold').value = inventoryData.settings.low_stock_threshold;
+        document.getElementById('invAlerts').checked = inventoryData.settings.alerts_enabled;
+        const badge = document.getElementById('invLowBadge');
+        badge.textContent = inventoryData.low_count; badge.style.display = inventoryData.low_count ? '' : 'none';
+        renderInventory();
+      } catch (e) { document.querySelector('#inventoryTable tbody').innerHTML = `<tr><td colspan="7" style="color:#b91c1c">${escHtml(e.message)}</td></tr>`; }
+    }
+    function renderInventory() {
+      const lowOnly = document.getElementById('invLowOnly').checked;
+      const items = inventoryData.items.filter(i => !lowOnly || (i.active && i.low));
+      const tbody = document.querySelector('#inventoryTable tbody');
+      if (!items.length) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--muted)">${lowOnly ? 'Nothing is low on stock 🎉' : 'No products yet.'}</td></tr>`; return; }
+      tbody.innerHTML = items.map((i, n) => {
+        const status = !i.active ? '<span class="badge">inactive</span>' : i.quantity < 0 ? '<span class="badge badge-cancelled">Oversold</span>' : i.quantity === 0 ? '<span class="badge badge-cancelled">Out of stock</span>' : i.low ? `<span class="badge badge-processing">LOW (≤ ${i.threshold})</span>` : '<span class="badge badge-delivered">OK</span>';
+        return `<tr><td><strong>${escHtml(i.name)}</strong><br><small style="color:var(--muted)">${escHtml(i.category_name || '')}</small></td>
+          <td>${escHtml(i.variant || i.size || '—')}</td><td>${escHtml(i.sku || '')}</td><td><strong>${i.quantity}</strong></td><td>${status}</td>
+          <td style="white-space:nowrap"><input type="number" min="0" value="${i.quantity < 0 ? 0 : i.quantity}" data-stock="${n}" style="width:80px"> <button class="btn-primary btn-sm" data-save-stock="${n}">Save</button></td>
+          <td><button class="btn-outline btn-sm" data-history="${i.product_id}">History</button></td></tr>`;
+      }).join('');
+      tbody.querySelectorAll('[data-save-stock]').forEach(b => b.onclick = async () => {
+        const i = items[Number(b.dataset.saveStock)], qty = tbody.querySelector('[data-stock="' + b.dataset.saveStock + '"]').value;
+        const st = document.getElementById('invStatus');
+        try { await req('/inventory/' + i.product_id + '/stock?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({ variant_id: i.variant_id, quantity: Number(qty) }) }); st.style.color = '#15803d'; st.textContent = `✅ ${i.name}${i.variant ? ' (' + i.variant + ')' : ''}: stock set to ${qty}`; loadInventory(); }
+        catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+      });
+      tbody.querySelectorAll('[data-history]').forEach(b => b.onclick = () => showStockHistory(Number(b.dataset.history)));
+    }
+    async function showStockHistory(productId) {
+      const host = document.getElementById('invHistory');
+      try {
+        const { movements } = await req('/inventory/movements?store_id=' + currentStoreId + '&product_id=' + productId);
+        const label = { sale: 'Sold', cancel: 'Returned to stock (cancelled)', adjust: 'Adjusted', restock: 'Restocked', initial: 'Opening stock' };
+        host.innerHTML = `<h3 style="font-size:14px;margin:6px 0">Stock history — ${escHtml((movements[0] || {}).product_name || '')}</h3>` + (movements.length
+          ? '<div class="table-wrap"><table><thead><tr><th>When</th><th>Change</th><th>Stock after</th><th>Why</th><th>Order</th></tr></thead><tbody>' + movements.map(m => `<tr><td><small>${escHtml(new Date(m.created_at).toLocaleString('en-IN'))}</small></td><td><strong style="color:${m.change < 0 ? '#b91c1c' : '#15803d'}">${m.change > 0 ? '+' : ''}${m.change}</strong>${m.variant_id ? ' <small>(size)</small>' : ''}</td><td>${m.quantity_after}</td><td>${escHtml(label[m.reason] || m.reason)}${m.note ? ' · ' + escHtml(m.note) : ''}</td><td>${escHtml(m.order_number || '')}</td></tr>`).join('') + '</tbody></table></div>'
+          : '<p style="color:var(--muted)">No stock changes recorded yet.</p>');
+        host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) { host.textContent = e.message; }
+    }
+    async function saveInventorySettings() {
+      const st = document.getElementById('invStatus');
+      try { await req('/inventory/settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({ low_stock_threshold: Number(document.getElementById('invThreshold').value), alerts_enabled: document.getElementById('invAlerts').checked }) }); st.style.color = '#15803d'; st.textContent = '✅ Saved'; loadInventory(); }
+      catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
+
+    function switchView(viewName) {
+      document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
+      const target = document.getElementById('view-' + viewName);
+      if (target) target.style.display = 'block';
+      if (viewName === 'packaging') loadPackagingFrame();
+      if (viewName === 'shipments') loadShipmentsFrame();
+      if (target && target.classList.contains('cms-view')) loadCmsFrame(target);
+      if (viewName === 'deploy') loadDeploy();
+    }
+
+    // Event listeners
+    document.querySelectorAll('.nav-item').forEach(b => {
+      b.onclick = () => switchView(b.dataset.view);
+    });
+
+    document.getElementById('storeSelect').onchange = e => {
+      currentStoreId = e.target.value;
+      currentStore = stores.find(x => String(x.id) === String(currentStoreId));
+      updateStoreHeader();
+      loadDashboard();
+    };
+
+    document.getElementById('btnRefresh').onclick = loadDashboard;
+    document.getElementById('btnScaffoldPages').onclick = scaffoldPages;
+    document.getElementById('btnScaffoldPagesHeader').onclick = scaffoldPages;
+    document.getElementById('btnTestWhatsapp').onclick = testWhatsappAlert;
+    document.getElementById('btnSearchOrders').onclick = loadOrders;
+    document.getElementById('btnOrdersToPackaging').onclick = () => switchView('packaging');
+    document.getElementById('btnSaveWa').onclick = saveWhatsAppSettings;
+    document.querySelectorAll('input[name=sndProvider]').forEach(r => r.onchange = showSenderFields);
+    document.getElementById('btnSaveSender').onclick = saveSender;
+    document.getElementById('btnTestSender').onclick = testSender;
+    document.getElementById('outboxFilter').onchange = loadOutbox;
+    document.getElementById('btnReloadOutbox').onclick = loadOutbox;
+    document.getElementById('btnSaveInvSettings').onclick = saveInventorySettings;
+    document.getElementById('invLowOnly').onchange = renderInventory;
+    document.getElementById('btnResetWa').onclick = () => { if (!waDefaults) return; document.getElementById('waCareTpl').value = waDefaults.care_template; document.getElementById('waCustomerTpl').value = waDefaults.customer_template; document.getElementById('waLowTpl').value = waDefaults.low_stock_template || ''; document.getElementById('waShippedTpl').value = waDefaults.shipped_template || ''; document.getElementById('waDeliveredTpl').value = waDefaults.delivered_template || ''; waRenderPreview(); };
+    ['waCareTpl', 'waCustomerTpl', 'waLowTpl', 'waShippedTpl', 'waDeliveredTpl'].forEach(id => { const el = document.getElementById(id); el.onfocus = () => { waLastFocus = el; waRenderPreview(); }; el.oninput = waRenderPreview; });
+    ['coShowCoupon', 'coRazorpay', 'coCod'].forEach(id => document.getElementById(id).onchange = validateCheckout);
+    document.getElementById('btnSaveCheckout').onclick = () => saveCheckout(false);
+    document.getElementById('btnSaveDisplay').onclick = saveDisplaySettings;
+    document.getElementById('btnSaveEkart').onclick = saveEkartSettings;
+    document.getElementById('ekEnabled').onchange = ekartShowFields;
+    document.getElementById('btnPublishCheckout').onclick = () => saveCheckout(true);
+    document.getElementById('depDlTarget').onchange = e => { try { localStorage.setItem('zk_dl_target', e.target.value); } catch (_) {} };
+    document.getElementById('orderStatusFilter').onchange = loadOrders;
+    document.getElementById('orderSearchInput').onkeydown = e => { if (e.key === 'Enter') loadOrders(); };
+    document.getElementById('invoiceSearchInput').onkeydown = e => { if (e.key === 'Enter') loadInvoices(); };
+
+    document.getElementById('couponForm').onsubmit = async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const body = Object.fromEntries(f);
+      body.store_id = Number(currentStoreId);
+      body.discount_value = Number(body.discount_value);
+      body.minimum_order = Number(body.minimum_order || 0);
+      body.usage_limit = body.usage_limit ? Number(body.usage_limit) : null;
+      body.active = true;
+      try {
+        await req('/coupons', { method: 'POST', body: JSON.stringify(body) });
+        notify('Coupon saved!');
+        e.target.reset();
+        loadCoupons();
+      } catch (err) { notify(err.message, true); }
+    };
+
+    document.getElementById('shippingRateForm').onsubmit = async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const body = Object.fromEntries(f);
+      body.store_id = Number(currentStoreId);
+      body.rate = Number(body.rate);
+      body.free_above = body.free_above ? Number(body.free_above) : null;
+      try {
+        await req('/shipping/rates', { method: 'POST', body: JSON.stringify(body) });
+        notify('Shipping rate added!');
+        e.target.reset();
+        loadShippingRates();
+      } catch (err) { notify(err.message, true); }
+    };
+
+    document.getElementById('btnExportCustomers').onclick = async () => {
+      try {
+        const blob = await req('/customers/export.csv?store_id=' + currentStoreId, { download: true });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'customers-' + currentStore.slug + '.csv';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 20000);
+      } catch (e) { notify(e.message, true); }
+    };
+
+    function logout() {
+      localStorage.removeItem('zk_token');
+      location.href = '../auth/login.html';
+    }
+
+    init();
+  </script>
+</body>
+</html>
+

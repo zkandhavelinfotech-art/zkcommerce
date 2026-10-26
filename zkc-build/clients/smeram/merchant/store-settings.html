@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Store Settings — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href='../assets/css/design-system.css">
+</head>
+<body>
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+</style>
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo">
+    <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+  </div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="products.html" class="zk-sidebar-link"><span class="sl-icon">🛍️</span>Products</a>
+    <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+    <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+
+    <div class="zk-sidebar-section-label">Online Store</div>
+    <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+    <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
+
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge">12</span></a>
+    <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="store-settings.html" class="zk-sidebar-link active"><span class="sl-icon">⚙️</span>Store settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View storefront</a>
+    <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+  </div>
+</aside>
+<div class="zk-main" style="margin-left:240px">
+<div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Store Settings</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+  </div>
+</div>
+<div class="zk-page">
+
+<div class="zk-page-header"><div class="zk-page-title">Store settings</div><div class="zk-page-sub">Manage your store profile, payments and preferences</div></div>
+<div style="display:grid;grid-template-columns:220px 1fr;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;background:var(--zk-pale);border-color:var(--zk-indigo);color:var(--zk-indigo)">🏪 Store profile</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Payments section')">💳 Payments</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Shipping section')">🚚 Shipping</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('GST section')">🧾 GST / Tax</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Themes section')">🎨 Themes</button>
+    <button class="btn btn-secondary btn-sm" style="justify-content:flex-start" onclick="toast.info('Notifications')">🔔 Notifications</button>
+  </div>
+  <div class="card">
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;margin-bottom:20px">Store profile</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="field-group"><label class="field-label">Store name</label><input type="text" class="field" value="Rajan Textiles"></div>
+      <div class="field-group"><label class="field-label">Store URL</label><input type="text" class="field" value="rajanTextiles.zkcommerce.in"></div>
+      <div class="field-group"><label class="field-label">WhatsApp number</label><input type="tel" class="field" value="+91 98765 43210"></div>
+      <div class="field-group"><label class="field-label">Email</label><input type="email" class="field" value="rajan@rajanTextiles.in"></div>
+      <div class="field-group" style="grid-column:1/-1"><label class="field-label">Store description</label><textarea class="field" rows="3">Premium handloom sarees and ethnic wear from Tamil Nadu. Authentic Kanjivaram silk, cotton sarees and kurtas.</textarea></div>
+      <div class="field-group"><label class="field-label">GSTIN</label><input type="text" class="field" value="33AABCU9603R1ZX"></div>
+      <div class="field-group"><label class="field-label">Currency</label><select class="field"><option>INR (₹)</option></select></div>
+    </div>
+    <button class="btn btn-primary" onclick="toast.success('Store settings saved!')">Save changes</button>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+
+async function loadStoreSettings() {
+  var user  = auth.user;
+  var token = auth.token;
+  if (!user || !token || token.startsWith('demo_token')) {
+    // Prefill with demo data
+    setVal('store-name', 'Rajan Textiles (Demo)');
+    setVal('store-gstin', '33AABCU9603R1ZX');
+    return;
+  }
+  try {
+    // Try to load by store_slug, or fallback to user store_id
+    var slug = user.store_slug || localStorage.getItem('zk_store_slug');
+    var url = slug
+      ? API_BASE + '/storefront/' + slug
+      : API_BASE + '/stores/' + user.store_id;
+
+    var r = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    var store = d.store || d;
+
+    if (store && store.name) {
+      setVal('store-name',      store.name);
+      setVal('store-tagline',   store.tagline || '');
+      setVal('store-desc',      store.description || '');
+      setVal('store-gstin',     store.gstin || '');
+      setVal('store-whatsapp',  store.whatsapp || '');
+      setVal('store-domain',    store.domain || '');
+      setVal('store-address',   store.address || '');
+
+      // Show store URL
+      var storeUrl = getStoreURL(store.slug || slug);
+      var urlEl = document.getElementById('store-preview-url');
+      if (urlEl) { urlEl.textContent = storeUrl; urlEl.href = storeUrl; }
+    }
+  } catch(e) { console.warn('Store settings load error:', e.message); }
+}
+
+async function saveStoreSettings() {
+  var btn   = event.currentTarget;
+  var token = auth.token;
+  var user  = auth.user;
+
+  if (!token || token.startsWith('demo_token')) {
+    toast.info('Login with a real account to save settings');
+    return;
+  }
+  if (!user || !user.store_id) {
+    toast.error('No store found. Please complete store setup first.');
+    return;
+  }
+
+  btnLoading(btn, true);
+  var payload = {
+    name:        getVal('store-name'),
+    tagline:     getVal('store-tagline'),
+    description: getVal('store-desc'),
+    gstin:       getVal('store-gstin'),
+    whatsapp:    getVal('store-whatsapp'),
+    domain:      getVal('store-domain'),
+    address:     getVal('store-address'),
+  };
+
+  if (!payload.name) { toast.error('Store name cannot be empty'); btnLoading(btn, false); return; }
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + user.store_id, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body:    JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.store || d.id) {
+      toast.success('Store settings saved!');
+      // Update cached user
+      var updated = Object.assign({}, user, { store_name: payload.name });
+      auth.save(token, updated);
+    } else {
+      toast.error(d.error || d.message || 'Save failed');
+    }
+  } catch(e) {
+    toast.error('Server error — is npm run dev running?');
+  }
+  btnLoading(btn, false);
+}
+
+function getStoreURL(slug) {
+  if (!slug) return '#';
+  var host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
+    return '../storefront/home.html?store=' + slug;
+  }
+  if (host.endsWith('.vercel.app')) {
+    return window.location.origin + '/storefront/home.html?store=' + slug;
+  }
+  return 'https://' + slug + '.zkcommerce.in';
+}
+
+function openStorefront() {
+  var user = auth.user;
+  var slug = user ? (user.store_slug || localStorage.getItem('zk_store_slug')) : null;
+  if (!slug) { toast.error('No store URL yet. Save settings first.'); return; }
+  window.open(getStoreURL(slug), '_blank');
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') el.value = val;
+  else el.textContent = val;
+}
+function getVal(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+document.addEventListener('DOMContentLoaded', loadStoreSettings);
+</script>
+</body>
+</html>

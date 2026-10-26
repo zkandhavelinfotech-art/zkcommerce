@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instagram Shop — ZKCommerce</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+</head>
+<body class="app-body">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div class="page-header">
+    <div><h1 class="page-title">Instagram &amp; Facebook Shop</h1>
+      <p class="page-sub">Sync your products to Meta Shops. Sell directly on Instagram and Facebook.</p></div>
+    <button class="btn btn-primary" onclick="syncProducts()">Sync products now</button>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;border:1px solid #C7D2FE;background:linear-gradient(135deg,#EEF2FF,#F5F3FF)">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="font-size:36px">&#128247;</div>
+      <div>
+        <div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:#4F46E5" id="meta-status">Checking connection...</div>
+        <div style="font-size:12px;color:#6B7280;margin-top:3px" id="meta-note">Configure META_APP_ID, META_APP_SECRET, META_CATALOGUE_ID in Railway Variables</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div class="card">
+      <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:12px">Setup steps</h3>
+      <div style="font-size:12px;line-height:2;color:#374151">
+        <div>1. Create Meta Business account at <a href="https://business.facebook.com" target="_blank" style="color:#4F46E5">business.facebook.com</a></div>
+        <div>2. Create a Facebook App at <a href="https://developers.facebook.com" target="_blank" style="color:#4F46E5">developers.facebook.com</a></div>
+        <div>3. Create a Product Catalogue in Commerce Manager</div>
+        <div>4. Add META_APP_ID, META_APP_SECRET, META_CATALOGUE_ID to Railway Variables</div>
+        <div>5. Get a long-lived access token from Meta Business Manager</div>
+        <div>6. Add META_ACCESS_TOKEN to Railway Variables</div>
+        <div>7. Click "Sync products now" above</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:12px">Sync status</h3>
+      <div class="stat-card" style="margin-bottom:10px"><div id="meta-synced" class="stat-number" style="color:var(--zk-fire)">0</div><div class="stat-label">Products synced</div></div>
+      <div style="font-size:11px;color:#6B7280" id="meta-last-sync">Never synced</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-family:var(--font-display);font-weight:800;margin-bottom:12px">Products queued for sync</div>
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Meta status</th></tr></thead>
+      <tbody id="meta-tbody"><tr><td colspan="4" style="text-align:center;padding:30px;color:var(--zk-muted)">Click "Sync products now" to queue products for Instagram/Facebook Shop.</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+async function loadMetaStatus(){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  try{
+    var r=await fetch(API_BASE+'/meta/status',{headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+    setEl('meta-status', d.configured?'Connected to Meta Catalogue':'Not configured — see setup steps');
+    setEl('meta-note',   d.note||'');
+    setEl('meta-synced', d.synced_products||0);
+  }catch(e){}
+}
+async function syncProducts(){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')){toast.info('Login with real account');return;}
+  var btn=event.currentTarget; btnLoading(btn,true);
+  try{
+    var r=await fetch(API_BASE+'/meta/sync',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({})
+    });
+    var d=await r.json();
+    toast.success((d.products_queued||0)+' products queued for Instagram Shop sync');
+    if(d.catalogue_preview&&d.catalogue_preview.length){
+      var tbody=document.getElementById('meta-tbody');
+      if(tbody){
+        tbody.innerHTML=d.catalogue_preview.map(function(p){
+          return '<tr><td class="col-primary">'+p.title+'</td>'
+            +'<td>'+p.price+'</td>'
+            +'<td>'+p.availability+'</td>'
+            +'<td><span class="status status-processing">'+d.status+'</span></td></tr>';
+        }).join('');
+      }
+    }
+    setEl('meta-last-sync','Last sync: just now');
+    loadMetaStatus();
+  }catch(e){toast.error('Sync failed: '+e.message);}
+  btnLoading(btn,false);
+}
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',loadMetaStatus);
+</script>
+</body>
+</html>

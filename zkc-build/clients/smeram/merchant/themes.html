@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Themes &amp; Store Customizer — ZKCommerce Client Admin</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-body); }
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+
+/* Current Theme Spotlight Card */
+.active-theme-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--zk-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+@media(max-width: 900px) {
+  .active-theme-card { grid-template-columns: 1fr; }
+}
+.theme-preview-box {
+  background: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  min-height: 280px;
+}
+.theme-preview-frame {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.15);
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+.theme-frame-bar {
+  background: #F3F4F6;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.theme-frame-dot { width: 8px; height: 8px; border-radius: 50%; background: #D1D5DB; }
+.theme-frame-body {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: #FAFAFA;
+}
+
+.theme-meta-panel {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.theme-color-swatches {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+.color-swatch-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  position: relative;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.color-swatch-chip:hover { transform: scale(1.1); }
+
+/* Theme Library Grid */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+.theme-library-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1.5px solid var(--zk-border);
+  overflow: hidden;
+  transition: all .2s ease;
+  display: flex;
+  flex-direction: column;
+}
+.theme-library-card:hover {
+  border-color: var(--zk-fire);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(255,107,0,0.08);
+}
+.theme-lib-header {
+  height: 140px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
+  position: relative;
+}
+.theme-lib-body {
+  padding: 18px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+</style>
+</head>
+<body>
+<div style="display:flex;min-height:100vh">
+
+  <!-- Sidebar -->
+  <aside class="zk-sidebar" id="sidebar">
+    <div class="zk-sidebar-logo">
+      <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+    </div>
+    <nav class="zk-sidebar-nav">
+      <div class="zk-sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+      <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
+      <div class="zk-sidebar-section-label">Catalogue</div>
+      <a href="products.html" class="zk-sidebar-link"><span class="sl-icon">🛍️</span>Products</a>
+      <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+      <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+
+      <div class="zk-sidebar-section-label">Online Store</div>
+      <a href="themes.html" class="zk-sidebar-link active"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+      <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
+
+      <div class="zk-sidebar-section-label">Orders</div>
+      <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders<span class="sl-badge" id="side-order-badge">12</span></a>
+      <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
+      <div class="zk-sidebar-section-label">Settings</div>
+      <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
+    </nav>
+    <div class="zk-sidebar-footer">
+      <a href="../storefront/home.html" target="_blank" id="side-view-store-link" style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px;display:block">🌐 View storefront</a>
+      <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
+      <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="zk-main" style="margin-left:240px;flex:1">
+
+    <!-- Topbar -->
+    <div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Online Store · Themes &amp; Customizer</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="../store-builder/" class="btn btn-secondary btn-sm" style="font-weight:700">🎨 StoreBuilder</a>
+        <a href="../storefront/home.html" target="_blank" id="top-view-store-link" style="font-size:12px;font-weight:700;color:var(--zk-fire);display:flex;align-items:center;gap:5px">🌐 View store</a>
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer">M</div>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="zk-page">
+      <div class="zk-page-header flex-between" style="margin-bottom:24px">
+        <div>
+          <div class="zk-page-title">Themes &amp; Visual Customizer</div>
+          <div class="zk-page-sub">Manage your active storefront theme, typography, color palette, and launch the live StoreBuilder (Shopify / WordPress model)</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a href="../storefront/home.html" target="_blank" id="preview-btn" class="btn btn-secondary btn-sm">👁️ Preview Store</a>
+          <a href="../store-builder/" class="btn btn-primary btn-sm" style="font-weight:800">🎨 Customize in StoreBuilder</a>
+        </div>
+      </div>
+
+      <!-- Active Theme Spotlight -->
+      <div class="active-theme-card">
+        <!-- Visual Mockup -->
+        <div class="theme-preview-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:12px">
+            <span style="font-weight:700;display:flex;align-items:center;gap:5px"><span style="color:#22C55E">●</span> Live Storefront</span>
+            <span style="color:rgba(255,255,255,0.6)" id="active-theme-engine">ZKCommerce Engine v4.1</span>
+          </div>
+          <div class="theme-preview-frame">
+            <div class="theme-frame-bar">
+              <span class="theme-frame-dot" style="background:#EF4444"></span>
+              <span class="theme-frame-dot" style="background:#F59E0B"></span>
+              <span class="theme-frame-dot" style="background:#10B981"></span>
+              <span style="font-size:10px;color:#9CA3AF;margin-left:6px;font-family:monospace" id="active-theme-url">smeram.zkcommerce.in</span>
+            </div>
+            <div class="theme-frame-body" id="active-theme-mockup-body">
+              <div style="font-size:24px;margin-bottom:8px">🌿</div>
+              <div style="font-family:var(--font-display);font-weight:800;font-size:15px;color:#111827" id="active-theme-hero-title">Smeram Naturals</div>
+              <div style="font-size:11px;color:#6B7280;margin-top:4px" id="active-theme-hero-tagline">100% Herbal &amp; Cold Pressed Hair Oil</div>
+              <div style="margin-top:12px;padding:5px 14px;border-radius:6px;background:var(--zk-fire);color:#fff;font-size:11px;font-weight:700" id="active-theme-cta-btn">Shop now</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <a href="../storefront/home.html" target="_blank" style="color:rgba(255,255,255,0.8);font-size:11.5px;text-decoration:none;font-weight:600">Open full desktop preview ↗</a>
+          </div>
+        </div>
+
+        <!-- Meta Details & Actions -->
+        <div class="theme-meta-panel">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span class="badge badge-green" style="font-weight:800">Current Active Theme</span>
+              <span style="font-size:12px;color:var(--zk-muted)" id="active-theme-date">Last updated recently</span>
+            </div>
+            <h2 style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--zk-text);margin:0 0 6px" id="active-theme-name">Smeram Naturals Botanical Luxe</h2>
+            <div style="font-size:13px;color:var(--zk-muted);line-height:1.5" id="active-theme-desc">Custom tailored organic botanical palette optimized for ayurvedic hair oils, herbal cosmetics, and wellness products with trust badges.</div>
+
+            <!-- Palette swatches -->
+            <div style="margin-top:18px">
+              <div style="font-size:12px;font-weight:700;color:var(--zk-text)">Active Theme Palette</div>
+              <div class="theme-color-swatches">
+                <div>
+                  <div class="color-swatch-chip" id="swatch-primary" style="background:#ED6375" title="Primary Color"></div>
+                  <div style="font-size:10px;color:var(--zk-muted);text-align:center;margin-top:3px">Primary</div>
+                </div>
+                <div>
+                  <div class="color-swatch-chip" id="swatch-accent" style="background:#A3B545" title="Accent Color"></div>
+                  <div style="font-size:10px;color:var(--zk-muted);text-align:center;margin-top:3px">Accent</div>
+                </div>
+                <div>
+                  <div class="color-swatch-chip" id="swatch-bg" style="background:#FFFFFF;border:1px solid #CBD5E1" title="Background"></div>
+                  <div style="font-size:10px;color:var(--zk-muted);text-align:center;margin-top:3px">Background</div>
+                </div>
+                <div>
+                  <div class="color-swatch-chip" id="swatch-surface" style="background:#F9FAFB;border:1px solid #CBD5E1" title="Surface / Card"></div>
+                  <div style="font-size:10px;color:var(--zk-muted);text-align:center;margin-top:3px">Surface</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom CTA Buttons -->
+          <div style="display:flex;gap:10px;padding-top:20px;border-top:1px solid var(--zk-border);flex-wrap:wrap">
+            <a href="../store-builder/" class="btn btn-primary" style="font-weight:800;display:flex;align-items:center;gap:6px">
+              <span>🎨</span> Customize in StoreBuilder
+            </a>
+            <button class="btn btn-secondary" onclick="openPublishModal()" style="font-weight:700;display:flex;align-items:center;gap:6px">
+              <span>🚀</span> Publish Multi-Cloud Build
+            </button>
+            <a href="../storefront/home.html" target="_blank" class="btn btn-ghost" style="color:var(--zk-muted)">
+              <span>🌐</span> View Live
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- WordPress / Shopify Model Visual Store Customizer -->
+      <div class="card" style="margin-bottom:32px;border-top:4px solid var(--zk-fire);box-shadow:0 8px 30px rgba(0,0,0,0.06)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-green" style="font-size:11px;font-weight:800">Shopify / WordPress Model</span>
+              <span style="font-size:12px;color:var(--zk-muted)">Self-Sufficient Client CMS · Standalone Database Sync</span>
+            </div>
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:800;margin:6px 0 2px">🎨 Storefront Customizer &amp; Header Styling Engine</h3>
+            <div style="font-size:13px;color:var(--zk-muted)">Edit header menu typography, hover colors, submenu styling, announcement bar, and hero content with instant database reflection.</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-secondary btn-sm" onclick="toggleLivePreviewModal()" style="font-weight:700">👁️ Live Split Preview</button>
+            <button class="btn btn-primary btn-sm" onclick="saveVisualCustomizer()" id="customizer-save-btn" style="font-weight:800;padding:8px 20px">💾 Save &amp; Publish Live</button>
+          </div>
+        </div>
+
+        <!-- Customizer Category Tabs -->
+        <div style="display:flex;gap:10px;border-bottom:1px solid var(--zk-border);padding-bottom:12px;margin-bottom:20px">
+          <button type="button" class="btn btn-sm btn-primary" id="tab-btn-header" onclick="switchCustomizerTab('header')">Header &amp; Menu Styling</button>
+          <button type="button" class="btn btn-sm btn-secondary" id="tab-btn-brand" onclick="switchCustomizerTab('brand')">Brand Palette</button>
+          <button type="button" class="btn btn-sm btn-secondary" id="tab-btn-hero" onclick="switchCustomizerTab('hero')">Hero &amp; Announcement</button>
+        </div>
+
+        <!-- Tab 1: Header & Menu Colours -->
+        <div id="tab-panel-header" class="customizer-tab-panel">
+          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span>🧭</span> Header Menu &amp; Submenu Colors (Real-Time CSS Injected)
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px">
+            <div class="field-group">
+              <label class="field-label">Menu Font Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-link-color" value="#111827" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-link-color','menu-link-hex')">
+                <input type="text" id="menu-link-hex" value="#111827" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-link-hex','menu-link-color')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Top-level navigation link text</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Menu Hover Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-link-hover" value="#FF6B00" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-link-hover','menu-link-hover-hex')">
+                <input type="text" id="menu-link-hover-hex" value="#FF6B00" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-link-hover-hex','menu-link-hover')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Hover accent on menu links</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Submenu Font Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-sub-color" value="#374151" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-sub-color','menu-sub-hex')">
+                <input type="text" id="menu-sub-hex" value="#374151" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-sub-hex','menu-sub-color')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Shop category &amp; dropdown text</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Submenu Hover Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-sub-hover" value="#FF6B00" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-sub-hover','menu-sub-hover-hex')">
+                <input type="text" id="menu-sub-hover-hex" value="#FF6B00" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-sub-hover-hex','menu-sub-hover')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Hover highlight on dropdown items</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Submenu Background</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-sub-bg" value="#FFFFFF" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-sub-bg','menu-sub-bg-hex')">
+                <input type="text" id="menu-sub-bg-hex" value="#FFFFFF" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-sub-bg-hex','menu-sub-bg')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Dropdown container background</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Header Background Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-nav-bg" value="#FFFFFF" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-nav-bg','menu-nav-bg-hex')">
+                <input type="text" id="menu-nav-bg-hex" value="#FFFFFF" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-nav-bg-hex','menu-nav-bg')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Top bar navigation background</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Brand Palette -->
+        <div id="tab-panel-brand" class="customizer-tab-panel" style="display:none">
+          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span>🎨</span> Core Brand Palette
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px">
+            <div class="field-group">
+              <label class="field-label">Primary Brand Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="quick-primary-color" value="#ED6375" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('quick-primary-color','quick-primary-hex')">
+                <input type="text" id="quick-primary-hex" value="#ED6375" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('quick-primary-hex','quick-primary-color')">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Accent / Highlights</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="quick-accent-color" value="#A3B545" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('quick-accent-color','quick-accent-hex')">
+                <input type="text" id="quick-accent-hex" value="#A3B545" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('quick-accent-hex','quick-accent-color')">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Store Tagline</label>
+              <input type="text" id="quick-tagline" value="Thoughtfully made essentials" class="field" placeholder="Store tagline">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Button CTA Text</label>
+              <input type="text" id="quick-cta-text" value="Shop now" class="field" placeholder="Shop now">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Hero & Announcement -->
+        <div id="tab-panel-hero" class="customizer-tab-panel" style="display:none">
+          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span>📢</span> Announcement Bar &amp; Hero Content
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:16px">
+            <div class="field-group">
+              <label class="field-label">Announcement Message</label>
+              <input type="text" id="ann-text" value="Free shipping on all orders over ₹499 · 100% Herbal &amp; Natural" class="field" placeholder="Top announcement banner text">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Announcement Background</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="ann-bg-color" value="#1688E8" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('ann-bg-color','ann-bg-hex')">
+                <input type="text" id="ann-bg-hex" value="#1688E8" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('ann-bg-hex','ann-bg-color')">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Main Headline</label>
+              <input type="text" id="hero-headline" value="100% Herbal &amp; Cold Pressed Hair Oil" class="field" placeholder="Hero banner main headline">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Subtext Description</label>
+              <input type="text" id="hero-subtext" value="Formulated with 24 pure botanical extracts to strengthen roots and stop hair fall naturally." class="field" placeholder="Hero subtext">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Theme Preset Library -->
+      <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h3 style="font-family:var(--font-display);font-size:18px;font-weight:800;margin:0 0 4px">🎨 Theme Preset Library</h3>
+          <div style="font-size:13px;color:var(--zk-muted)">Choose from pre-designed high-converting eCommerce theme presets (Shopify / WordPress model)</div>
+        </div>
+        <div style="font-size:12px;color:var(--zk-muted)">10 Themes Available</div>
+      </div>
+
+      <div class="theme-grid" id="theme-presets-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : (window.ZK ? ZK.api : '/api');
+var STORE_ID = null;
+var CURRENT_STORE = null;
+
+var THEME_PRESETS = [
+  {
+    id: "smeram-naturals",
+    name: "Smeram Naturals",
+    category: "Organic Herbal & Ayurvedic",
+    gradient: "linear-gradient(135deg, #064E3B 0%, #047857 100%)",
+    primary: "#ED6375",
+    accent: "#A3B545",
+    bg: "#FFFFFF",
+    desc: "Warm earth tones, botanical accents, and trust badges crafted specifically for natural oils and hair remedies."
+  },
+  {
+    id: "miliro-chic",
+    name: "Miliro Chic",
+    category: "Fashion & Lifestyle",
+    gradient: "linear-gradient(135deg, #831843 0%, #BE185D 100%)",
+    primary: "#E11D48",
+    accent: "#F43F5E",
+    bg: "#FFFFFF",
+    desc: "Vibrant high-fashion aesthetic with sleek typography, dynamic product cards, and flash deal highlights."
+  },
+  {
+    id: "dark-navy",
+    name: "Dark Navy Elite",
+    category: "Luxury & Electronics",
+    gradient: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+    primary: "#38BDF8",
+    accent: "#818CF8",
+    bg: "#0B0F19",
+    desc: "Ultra-sleek dark mode with glowing accents, neon borders, and futuristic high-ticket electronics layout."
+  },
+  {
+    id: "minimalist-studio",
+    name: "Minimalist Studio",
+    category: "Architecture & Decor",
+    gradient: "linear-gradient(135deg, #18181B 0%, #27272A 100%)",
+    primary: "#18181B",
+    accent: "#71717A",
+    bg: "#FAFAFA",
+    desc: "Clean Swiss typography, generous whitespace, monochrome accents, and editorial photography."
+  },
+  {
+    id: "botanical-luxe",
+    name: "Botanical Luxe",
+    category: "Wellness & Spa",
+    gradient: "linear-gradient(135deg, #065F46 0%, #10B981 100%)",
+    primary: "#059669",
+    accent: "#F59E0B",
+    bg: "#F0FDF4",
+    desc: "Emerald greenery, gold foil accents, and serene typography for premium skin clinics and wellness teas."
+  },
+  {
+    id: "artisan-market",
+    name: "Artisan Craft",
+    category: "Handmade & Pottery",
+    gradient: "linear-gradient(135deg, #7C2D12 0%, #C2410C 100%)",
+    primary: "#EA580C",
+    accent: "#D97706",
+    bg: "#FFFBEB",
+    desc: "Warm terracotta, textured canvas, organic borders, and storytelling sections for authentic handcrafted goods."
+  },
+  {
+    id: "midnight-glow",
+    name: "Midnight Glow",
+    category: "Gaming & Wearables",
+    gradient: "linear-gradient(135deg, #4C1D95 0%, #7C3AED 100%)",
+    primary: "#8B5CF6",
+    accent: "#06B6D4",
+    bg: "#09090B",
+    desc: "Deep cosmic purple with cyan highlights, glassmorphic badges, and high-energy product showcases."
+  },
+  {
+    id: "tech-modern",
+    name: "Tech Modern",
+    category: "Smart Gadgets & SaaS",
+    gradient: "linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)",
+    primary: "#2563EB",
+    accent: "#60A5FA",
+    bg: "#FFFFFF",
+    desc: "Clean enterprise blue, crisp sans-serif headings, feature specification grids, and trust badges."
+  },
+  {
+    id: "playful-pastel",
+    name: "Playful Pastel",
+    category: "Kids, Confectionery & Gifts",
+    gradient: "linear-gradient(135deg, #DB2777 0%, #F472B6 100%)",
+    primary: "#EC4899",
+    accent: "#FBBF24",
+    bg: "#FFF1F2",
+    desc: "Fun rounded cards, pastel bubbles, joyful micro-interactions, and festive gift bundling blocks."
+  },
+  {
+    id: "heritage-silk",
+    name: "Heritage Silk",
+    category: "Sarees & Traditional Silk",
+    gradient: "linear-gradient(135deg, #881337 0%, #9F1239 100%)",
+    primary: "#BE123C",
+    accent: "#EAB308",
+    bg: "#FFFDF5",
+    desc: "Regal crimson and antique gold accents for Kanjivaram sarees, traditional weaves, and bridal couture."
+  }
+];
+
+async function initThemes() {
+  var token = auth.token;
+  if (!token) {
+    window.location.href = '../auth/login.html';
+    return;
+  }
+
+  try {
+    var r = await fetch(API_BASE + '/stores', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var d = await r.json();
+    if (d.stores && d.stores.length) {
+      CURRENT_STORE = d.stores[0];
+      STORE_ID = CURRENT_STORE.id;
+      populateActiveTheme(CURRENT_STORE);
+    }
+  } catch(e) {
+    console.warn('Init theme error:', e);
+  }
+
+  renderThemeLibrary();
+}
+
+function switchCustomizerTab(tab) {
+  document.querySelectorAll('.customizer-tab-panel').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('tab-btn-header').className = 'btn btn-sm btn-secondary';
+  document.getElementById('tab-btn-brand').className = 'btn btn-sm btn-secondary';
+  document.getElementById('tab-btn-hero').className = 'btn btn-sm btn-secondary';
+
+  document.getElementById('tab-panel-' + tab).style.display = 'block';
+  document.getElementById('tab-btn-' + tab).className = 'btn btn-sm btn-primary';
+}
+
+function syncColorInput(sourceId, targetId) {
+  var src = document.getElementById(sourceId);
+  var tgt = document.getElementById(targetId);
+  if (src && tgt) {
+    tgt.value = src.value;
+  }
+}
+
+function toggleLivePreviewModal() {
+  var modal = document.getElementById('livePreviewModal');
+  if (!modal) return;
+  if (modal.style.display === 'none' || !modal.style.display) {
+    modal.style.display = 'flex';
+    reloadPreviewIframe();
+  } else {
+    modal.style.display = 'none';
+  }
+}
+
+function reloadPreviewIframe() {
+  var iframe = document.getElementById('storePreviewIframe');
+  if (iframe) {
+    iframe.src = '/storefront/home.html?t=' + Date.now();
+  }
+}
+
+async function saveVisualCustomizer() {
+  var token = auth.token;
+  if (!token) return;
+
+  var btn = document.getElementById('customizer-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  var primary = document.getElementById('quick-primary-hex').value;
+  var accent  = document.getElementById('quick-accent-hex').value;
+  var ctaText = document.getElementById('quick-cta-text').value;
+  var tagline = document.getElementById('quick-tagline').value;
+
+  // Header Menu Colors
+  var linkColor = document.getElementById('menu-link-hex').value;
+  var linkHover = document.getElementById('menu-link-hover-hex').value;
+  var subColor  = document.getElementById('menu-sub-hex').value;
+  var subHover  = document.getElementById('menu-sub-hover-hex').value;
+  var subBg     = document.getElementById('menu-sub-bg-hex').value;
+  var navBg     = document.getElementById('menu-nav-bg-hex').value;
+
+  // Announcement & Hero
+  var annText   = document.getElementById('ann-text') ? document.getElementById('ann-text').value : '';
+  var annBg     = document.getElementById('ann-bg-hex') ? document.getElementById('ann-bg-hex').value : '#1688E8';
+  var heroH1    = document.getElementById('hero-headline') ? document.getElementById('hero-headline').value : '';
+  var heroSub   = document.getElementById('hero-subtext') ? document.getElementById('hero-subtext').value : '';
+
+  var currentConfig = (CURRENT_STORE && CURRENT_STORE.theme_config) ? CURRENT_STORE.theme_config : {
+    themeId: 'botanical',
+    palette: {},
+    sections: {},
+    fields: {}
+  };
+
+  if (!currentConfig.palette) currentConfig.palette = {};
+  currentConfig.palette.primary = primary;
+  currentConfig.palette.accent = accent;
+
+  if (!currentConfig.sections) currentConfig.sections = {};
+  if (!currentConfig.sections.nav) currentConfig.sections.nav = {};
+  currentConfig.sections.nav.link_color = linkColor;
+  currentConfig.sections.nav.link_hover_color = linkHover;
+  currentConfig.sections.nav.sub_color = subColor;
+  currentConfig.sections.nav.sub_hover_color = subHover;
+  currentConfig.sections.nav.sub_bg = subBg;
+  currentConfig.sections.nav.background = navBg;
+
+  if (!currentConfig.sections.announcement) currentConfig.sections.announcement = {};
+  if (annText) currentConfig.sections.announcement.text = annText;
+  currentConfig.sections.announcement.background = annBg;
+
+  if (!currentConfig.sections.hero) currentConfig.sections.hero = {};
+  if (heroH1) currentConfig.sections.hero.heading = heroH1;
+  if (heroSub) currentConfig.sections.hero.description = heroSub;
+  if (ctaText) currentConfig.sections.hero.button = ctaText;
+
+  if (!currentConfig.fields) currentConfig.fields = {};
+  currentConfig.fields.hero_cta = ctaText;
+  currentConfig.fields.nav_bg = navBg;
+
+  var payload = {
+    theme_config: currentConfig,
+    store_fields: {
+      primary_colour: primary,
+      accent_colour: accent,
+      hero_cta_text: ctaText,
+      tagline: tagline,
+      hero_headline: heroH1 || undefined,
+      hero_subtext: heroSub || undefined
+    }
+  };
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/draft', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    var d = await r.json();
+
+    // Also auto-publish so it reflects immediately on customer live site
+    await fetch(API_BASE + '/stores/' + STORE_ID + '/publish', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (d.store) {
+      toast.success('Live Storefront & Header styling updated and published directly to database!');
+      CURRENT_STORE = d.store;
+      populateActiveTheme(d.store);
+      reloadPreviewIframe();
+    } else {
+      toast.error(d.error || 'Failed to update store');
+    }
+  } catch(e) {
+    toast.error('Network error saving customizer: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save & Publish Live';
+  }
+}
+
+function populateActiveTheme(store) {
+  var primary = store.primary_colour || '#ED6375';
+  var accent  = store.accent_colour || '#A3B545';
+  var bg      = store.bg_colour || '#FFFFFF';
+
+  document.getElementById('active-theme-hero-title').textContent = store.store_name || 'My Store';
+  document.getElementById('active-theme-hero-tagline').textContent = store.tagline || 'Everyday Essentials';
+  document.getElementById('active-theme-url').textContent = (store.slug || 'store') + '.zkcommerce.in';
+  document.getElementById('active-theme-cta-btn').style.background = primary;
+
+  document.getElementById('swatch-primary').style.background = primary;
+  document.getElementById('swatch-accent').style.background = accent;
+  document.getElementById('swatch-bg').style.background = bg;
+
+  // Quick customizer fields
+  document.getElementById('quick-primary-color').value = primary;
+  document.getElementById('quick-primary-hex').value = primary;
+  document.getElementById('quick-accent-color').value = accent;
+  document.getElementById('quick-accent-hex').value = accent;
+  document.getElementById('quick-cta-text').value = store.hero_cta_text || 'Shop now';
+  document.getElementById('quick-tagline').value = store.tagline || 'Thoughtfully made essentials';
+}
+
+function renderThemeLibrary() {
+  var grid = document.getElementById('theme-presets-grid');
+  if (!grid) return;
+
+  grid.innerHTML = THEME_PRESETS.map(function(t) {
+    return '<div class="theme-library-card">'
+      + '<div class="theme-lib-header" style="background:' + t.gradient + '">'
+      +   '<span class="badge" style="background:rgba(255,255,255,0.2);color:#fff;backdrop-filter:blur(4px);width:fit-content">' + t.category + '</span>'
+      +   '<div>'
+      +     '<div style="font-family:var(--font-display);font-size:18px;font-weight:800">' + t.name + '</div>'
+      +     '<div style="display:flex;gap:6px;margin-top:8px">'
+      +       '<span style="width:14px;height:14px;border-radius:50%;background:' + t.primary + ';border:1px solid #fff"></span>'
+      +       '<span style="width:14px;height:14px;border-radius:50%;background:' + t.accent + ';border:1px solid #fff"></span>'
+      +       '<span style="width:14px;height:14px;border-radius:50%;background:' + t.bg + ';border:1px solid #fff"></span>'
+      +     '</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="theme-lib-body">'
+      +   '<div style="font-size:12.5px;color:var(--zk-muted);line-height:1.5;margin-bottom:16px">' + t.desc + '</div>'
+      +   '<div style="display:flex;gap:8px">'
+      +     '<button class="btn btn-secondary btn-sm" style="flex:1" onclick="applyThemePreset(\'' + t.id + '\')">Apply Theme</button>'
+      +     '<a href="../store-builder/" class="btn btn-primary btn-sm" style="font-weight:700">🎨 Customize</a>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function syncColorInput(textId, pickerId) {
+  var val = document.getElementById(textId).value;
+  if (/^#[0-9A-F]{6}$/i.test(val)) {
+    document.getElementById(pickerId).value = val;
+  }
+}
+
+document.getElementById('quick-primary-color').addEventListener('input', function(e) {
+  document.getElementById('quick-primary-hex').value = e.target.value;
+});
+document.getElementById('quick-accent-color').addEventListener('input', function(e) {
+  document.getElementById('quick-accent-hex').value = e.target.value;
+});
+
+async function saveQuickCustomizer() {
+  var token = auth.token;
+  if (!token) return;
+
+  var btn = document.getElementById('quick-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  var primary = document.getElementById('quick-primary-hex').value;
+  var accent  = document.getElementById('quick-accent-hex').value;
+  var ctaText = document.getElementById('quick-cta-text').value;
+  var tagline = document.getElementById('quick-tagline').value;
+
+  var currentConfig = (CURRENT_STORE && CURRENT_STORE.theme_config) ? CURRENT_STORE.theme_config : {
+    themeId: 'botanical',
+    palette: { primary: primary, accent: accent, bg: '#FFFFFF' },
+    fields: { hero_h1: CURRENT_STORE ? CURRENT_STORE.store_name : 'Smeram Naturals', hero_cta: ctaText }
+  };
+
+  if (!currentConfig.palette) currentConfig.palette = {};
+  currentConfig.palette.primary = primary;
+  currentConfig.palette.accent = accent;
+  if (!currentConfig.fields) currentConfig.fields = {};
+  currentConfig.fields.hero_cta = ctaText;
+
+  var payload = {
+    theme_config: currentConfig,
+    store_fields: {
+      primary_colour: primary,
+      accent_colour: accent,
+      hero_cta_text: ctaText,
+      tagline: tagline
+    }
+  };
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/draft', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.store) {
+      toast.success('Brand colors updated successfully!');
+      populateActiveTheme(d.store);
+    } else {
+      toast.error(d.error || 'Failed to update colors');
+    }
+  } catch(e) {
+    toast.error('Network error updating theme');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Brand Colors';
+  }
+}
+
+async function applyThemePreset(presetId) {
+  var preset = THEME_PRESETS.find(function(p){ return p.id === presetId; });
+  if (!preset) return;
+
+  if (!confirm('Apply the "' + preset.name + '" theme preset to your store?')) return;
+
+  var token = auth.token;
+  if (!token) return;
+
+  var newConfig = {
+    themeId: preset.id,
+    palette: {
+      primary: preset.primary,
+      accent: preset.accent,
+      bg: preset.bg,
+      surface: preset.bg === '#FFFFFF' ? '#F9FAFB' : '#111827'
+    },
+    fields: {
+      hero_h1: CURRENT_STORE ? CURRENT_STORE.store_name : preset.name,
+      hero_cta: 'Shop now',
+      hero_desc: preset.desc
+    }
+  };
+
+  var payload = {
+    theme_config: newConfig,
+    store_fields: {
+      primary_colour: preset.primary,
+      accent_colour: preset.accent,
+      bg_colour: preset.bg
+    }
+  };
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/draft', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.store) {
+      toast.success('Applied "' + preset.name + '" theme successfully!');
+      CURRENT_STORE = d.store;
+      populateActiveTheme(d.store);
+    } else {
+      toast.error(d.error || 'Failed to apply preset');
+    }
+  } catch(e) {
+    toast.error('Network error applying preset');
+  }
+}
+
+function openPublishModal() {
+  window.location.href = '../store-builder/#publish';
+}
+
+document.addEventListener('DOMContentLoaded', initThemes);
+</script>
+</body>
+</html>

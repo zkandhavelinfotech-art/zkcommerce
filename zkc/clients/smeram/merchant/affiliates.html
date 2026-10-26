@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Affiliates — ZKCommerce</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+</head>
+<body class="app-body">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div class="page-header">
+    <div><h1 class="page-title">Affiliates &amp; Influencers</h1>
+      <p class="page-sub">Give influencers a unique link. Pay commission on sales they drive.</p></div>
+    <button class="btn btn-primary" onclick="addAffiliate()">+ Add Affiliate</button>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+    <div class="stat-card"><div id="aff-total" class="stat-number" style="color:var(--zk-fire)">0</div><div class="stat-label">Total affiliates</div></div>
+    <div class="stat-card"><div id="aff-sales" class="stat-number">₹0</div><div class="stat-label">Total sales</div></div>
+    <div class="stat-card"><div id="aff-comm" class="stat-number">₹0</div><div class="stat-label">Commission paid</div></div>
+    <div class="stat-card"><div id="aff-rate" class="stat-number">10%</div><div class="stat-label">Avg commission</div></div>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Ref code</th><th>Orders</th><th>Sales</th><th>Commission %</th><th>Earned</th><th>Actions</th></tr></thead>
+      <tbody id="aff-tbody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--zk-muted)">No affiliates yet. Add your first influencer!</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE=(typeof ZK!=='undefined'&&ZK.api)?ZK.api:'http://localhost:3000/api';
+async function loadAffiliates(){
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')) return;
+  try{
+    var r=await fetch(API_BASE+'/affiliates',{headers:{'Authorization':'Bearer '+token}});
+    var d=await r.json();
+    var tbody=document.getElementById('aff-tbody');
+    if(!tbody||!d.affiliates||!d.affiliates.length) return;
+    var totalSales=0,totalComm=0;
+    tbody.innerHTML=d.affiliates.map(function(a){
+      totalSales+=parseFloat(a.total_sales||0);
+      var comm=(parseFloat(a.total_sales||0)*(a.commission_pct/100));
+      totalComm+=comm;
+      return '<tr><td class="col-primary">'+a.name+'</td>'
+        +'<td><code style="background:var(--zk-surface);padding:2px 8px;border-radius:4px;font-size:11px">'+a.ref_code+'</code></td>'
+        +'<td>'+fmt.inr(a.total_sales)+'</td>'
+        +'<td>'+a.commission_pct+'%</td>'
+        +'<td>'+fmt.inr(comm)+'</td>'
+        +'<td><button class="btn btn-secondary btn-sm" onclick="copyLink(''+a.ref_code+'')">Copy link</button></td></tr>';
+    }).join('');
+    setEl('aff-total',d.affiliates.length);
+    setEl('aff-sales',fmt.inrCompact(totalSales));
+    setEl('aff-comm',fmt.inrCompact(totalComm));
+  }catch(e){console.warn('Affiliates:',e.message);}
+}
+async function addAffiliate(){
+  var name=prompt('Affiliate name (influencer/partner):');
+  if(!name) return;
+  var commission=prompt('Commission % (e.g. 10):','10');
+  var email=prompt('Email (optional):') || '';
+  var token=auth.token;
+  if(!token||token.startsWith('demo_token')){toast.info('Login with real account');return;}
+  try{
+    var r=await fetch(API_BASE+'/affiliates',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({name:name,email:email,commission_pct:parseFloat(commission)||10})
+    });
+    var d=await r.json();
+    if(d.affiliate){toast.success('Affiliate "'+d.affiliate.name+'" added! Ref: '+d.affiliate.ref_code);loadAffiliates();}
+    else toast.error(d.error||'Failed');
+  }catch(e){toast.error('Server error');}
+}
+function copyLink(ref){
+  var base=window.location.origin+'/storefront/home.html';
+  var user=auth.user;
+  if(user&&user.store_slug) base+='?store='+user.store_slug+'&ref='+ref;
+  else base+='?ref='+ref;
+  navigator.clipboard.writeText(base).then(function(){toast.success('Affiliate link copied!');});
+}
+function setEl(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+document.addEventListener('DOMContentLoaded',loadAffiliates);
+</script>
+</body>
+</html>

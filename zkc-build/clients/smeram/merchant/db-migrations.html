@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Database Migrations &amp; Version Manager — ZKCommerce</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-body); }
+@media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+
+.version-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  display: inline-block;
+}
+.batch-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--zk-muted);
+  background: var(--zk-chalk);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--zk-border);
+}
+.sql-box {
+  background: #0F172A;
+  color: #E2E8F0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 8px;
+  display: none;
+  overflow-x: auto;
+  border: 1px solid #334155;
+}
+.target-col-tag {
+  display: inline-block;
+  font-size: 11px;
+  background: #F1F5F9;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.pulse-green {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22C55E;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  margin-right: 6px;
+}
+.pulse-amber {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F59E0B;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  margin-right: 6px;
+}
+</style>
+</head>
+<body>
+<div style="display:flex;min-height:100vh">
+
+  <!-- Sidebar -->
+  <aside class="zk-sidebar" id="sidebar">
+    <div class="zk-sidebar-logo">
+      <div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce
+    </div>
+    <nav class="zk-sidebar-nav">
+      <div class="zk-sidebar-section-label">Main</div>
+      <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+      <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+
+      <div class="zk-sidebar-section-label">Catalogue</div>
+      <a href="products.html" class="zk-sidebar-link"><span class="sl-icon">🛍️</span>Products</a>
+      <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+      <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+
+      <div class="zk-sidebar-section-label">Online Store</div>
+      <a href="themes.html" class="zk-sidebar-link"><span class="sl-icon">🎨</span>Themes &amp; Customizer</a>
+      <a href="pages.html" class="zk-sidebar-link"><span class="sl-icon">📄</span>Pages</a>
+
+      <div class="zk-sidebar-section-label">Orders</div>
+      <a href="orders.html" class="zk-sidebar-link"><span class="sl-icon">📦</span>Orders</a>
+      <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping labels</a>
+
+      <div class="zk-sidebar-section-label">Settings &amp; Database</div>
+      <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
+      <a href="db-migrations.html" class="zk-sidebar-link active"><span class="sl-icon">🗄️</span>Database Migrations</a>
+    </nav>
+    <div class="zk-sidebar-footer">
+      <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View storefront</a>
+      <a href="../store-builder/" target="_blank" style="font-size:12px;color:rgba(255,107,0,.8);font-weight:700;margin-bottom:8px;display:block">🎨 Open StoreBuilder</a>
+      <a href="../release-history.html" target="_blank" style="font-size:12px;color:#94A3B8;margin-bottom:8px;display:block">📜 Release Changelog</a>
+      <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)" onclick="auth.logout();return false;">Sign out</a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="zk-main" style="margin-left:240px;flex:1">
+
+    <!-- Topbar -->
+    <div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="font-size:20px;background:none;border:none;cursor:pointer;color:var(--zk-muted);display:none" class="sidebar-toggle">☰</button>
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Database Migration &amp; Schema Inspector</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="top-db-badge" style="display:flex;align-items:center;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:#F0FDF4;color:#166534;border:1px solid #BBF7D0">
+          <span class="pulse-green"></span> Checking DB…
+        </span>
+        <button class="btn btn-secondary btn-sm" onclick="loadStatus()">🔄 Refresh Status</button>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="zk-page">
+      <div class="zk-page-header flex-between" style="margin-bottom:24px">
+        <div>
+          <div class="zk-page-title">Database Version Migrations</div>
+          <div class="zk-page-sub">Audit existing schema versions, track pending migrations, and upgrade step-by-step from the last completed version.</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary btn-sm" onclick="runNextStep()" id="btn-step" style="font-weight:700">
+            ▶ Migrate Next Step (One-by-One)
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="runMigrateAll()" id="btn-all" style="font-weight:800">
+            ⚡ Migrate All Pending
+          </button>
+        </div>
+      </div>
+
+      <!-- Overview Stats Grid -->
+      <div class="zk-stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Last Migrated Version</div>
+          <div class="zk-stat-value fire-text" id="stat-last-version" style="font-size:20px">—</div>
+          <div class="zk-stat-change" id="stat-last-date">Checking status…</div>
+        </div>
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Next Pending Version</div>
+          <div class="zk-stat-value" id="stat-next-version" style="font-size:20px;color:#D97706">—</div>
+          <div class="zk-stat-change">Next in queue to migrate</div>
+        </div>
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Applied Migrations</div>
+          <div class="zk-stat-value" id="stat-applied-count" style="color:#16A34A">—</div>
+          <div class="zk-stat-change">Successfully executed in database</div>
+        </div>
+        <div class="zk-stat-card">
+          <div class="zk-stat-label">Pending Migrations</div>
+          <div class="zk-stat-value" id="stat-pending-count" style="color:#DC2626">—</div>
+          <div class="zk-stat-change" id="stat-status-text">Pending schema upgrades</div>
+        </div>
+      </div>
+
+      <!-- Execution Log Banner (if message) -->
+      <div id="exec-banner" style="display:none;padding:14px 20px;border-radius:12px;margin-bottom:20px;font-size:13.5px;font-weight:600"></div>
+
+      <!-- Migrations Table -->
+      <div class="zk-table-wrap">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--zk-border);display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:800;font-size:14px">Schema Migration Registry &amp; Version History</div>
+          <div style="font-size:12px;color:var(--zk-muted)">Auto-tracked in table <code>zkc_pg_migrations</code></div>
+        </div>
+        <table class="zk-table">
+          <thead>
+            <tr>
+              <th style="width:10%">Version</th>
+              <th style="width:28%">Migration Name &amp; Description</th>
+              <th style="width:20%">Target Columns Added</th>
+              <th style="width:12%">Status</th>
+              <th style="width:14%">Execution Details</th>
+              <th style="width:16%;text-align:right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="migrations-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--zk-muted)">Connecting to database and inspecting migrations…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : (window.ZK ? ZK.api : '/api');
+var CURRENT_STATUS = null;
+
+async function loadStatus() {
+  try {
+    var r = await fetch(API_BASE + '/migrations/status');
+    var d = await r.json();
+    if (d.success) {
+      CURRENT_STATUS = d;
+      renderStatus(d);
+    } else {
+      showBanner('Error loading migration status: ' + (d.error || 'Server error'), 'error');
+    }
+  } catch(e) {
+    showBanner('Cannot connect to database API. Make sure dev server is running on port 3000.', 'error');
+  }
+}
+
+function renderStatus(data) {
+  var s = data.summary;
+  var db = data.database;
+
+  // Topbar DB badge
+  var dbBadge = document.getElementById('top-db-badge');
+  if (dbBadge) {
+    dbBadge.innerHTML = '<span class="pulse-green"></span> ' + escapeHtml(db.name) + ' (' + escapeHtml(db.engine) + ')';
+  }
+
+  // Stats
+  document.getElementById('stat-last-version').textContent = s.last_migrated_version || 'None';
+  document.getElementById('stat-last-date').textContent = s.last_migrated_at ? new Date(s.last_migrated_at).toLocaleString() : 'Fresh DB';
+  document.getElementById('stat-next-version').textContent = s.next_pending_version || 'None (All Done)';
+  document.getElementById('stat-applied-count').textContent = s.applied_count + ' / ' + s.total_migrations;
+  document.getElementById('stat-pending-count').textContent = s.pending_count;
+  document.getElementById('stat-status-text').textContent = s.is_up_to_date ? 'Schema is fully up-to-date' : s.pending_count + ' migration(s) awaiting execution';
+
+  // Action buttons
+  var btnStep = document.getElementById('btn-step');
+  var btnAll = document.getElementById('btn-all');
+  if (s.is_up_to_date) {
+    btnStep.disabled = true;
+    btnStep.innerHTML = '✔ Database Up-to-Date';
+    btnAll.disabled = true;
+    btnAll.innerHTML = '✔ All Applied';
+  } else {
+    btnStep.disabled = false;
+    btnStep.innerHTML = '▶ Migrate Next Step (' + (data.next_pending ? data.next_pending.version : 'Next') + ')';
+    btnAll.disabled = false;
+    btnAll.innerHTML = '⚡ Migrate All (' + s.pending_count + ' pending)';
+  }
+
+  // Table
+  var tbody = document.getElementById('migrations-tbody');
+  tbody.innerHTML = data.migrations.map(function(m) {
+    var isApplied = m.status === 'applied';
+    var statusBadge = isApplied
+      ? '<span class="status status-delivered">✅ APPLIED</span>'
+      : '<span class="status status-processing">⏳ PENDING</span>';
+
+    var colsHtml = (m.target_columns || []).map(function(c){
+      return '<span class="target-col-tag">+' + escapeHtml(c) + '</span>';
+    }).join('');
+
+    var execDetails = isApplied
+      ? '<div style="font-size:12px;font-weight:600;color:var(--zk-text)">' + (m.applied_at ? new Date(m.applied_at).toLocaleString() : 'Applied') + '</div>'
+        + '<div style="font-size:11px;color:var(--zk-muted);display:flex;gap:6px;margin-top:2px">'
+        + '<span class="batch-pill">Batch #' + (m.batch || 1) + '</span>'
+        + (m.execution_time_ms ? '<span>' + m.execution_time_ms + 'ms</span>' : '')
+        + '</div>'
+      : '<span style="font-size:12px;color:var(--zk-muted)">Not Yet Migrated</span>';
+
+    var actionBtn = isApplied
+      ? '<button class="btn btn-ghost btn-sm" disabled style="color:#16A34A;font-weight:700">✓ Done</button>'
+      : '<button class="btn btn-primary btn-sm" onclick="runSpecific(\'' + m.id + '\')">▶ Run Step</button>';
+
+    var rowId = 'sql-row-' + m.id;
+
+    return '<tr id="row-' + m.id + '">'
+      + '<td><span class="version-pill">' + escapeHtml(m.version) + '</span></td>'
+      + '<td>'
+      +   '<div style="font-weight:700;font-size:13.5px;color:var(--zk-text)">' + escapeHtml(m.name) + '</div>'
+      +   '<div style="font-size:12px;color:var(--zk-muted);margin-top:3px">' + escapeHtml(m.description) + '</div>'
+      +   '<button onclick="toggleSql(\'' + rowId + '\')" style="background:none;border:none;color:var(--zk-fire);font-size:11px;font-weight:700;cursor:pointer;padding:0;margin-top:4px">View SQL Definition ▾</button>'
+      +   '<div class="sql-box" id="' + rowId + '">' + escapeHtml(m.sql_preview || '') + '</div>'
+      + '</td>'
+      + '<td>' + (colsHtml || '<span style="font-size:11px;color:var(--zk-muted)">Schema tables</span>') + '</td>'
+      + '<td>' + statusBadge + '</td>'
+      + '<td>' + execDetails + '</td>'
+      + '<td style="text-align:right">' + actionBtn + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function toggleSql(id) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+async function runNextStep() {
+  var btn = document.getElementById('btn-step');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Executing step…';
+
+  try {
+    var r = await fetch(API_BASE + '/migrations/step', { method: 'POST' });
+    var d = await r.json();
+    if (d.success) {
+      showBanner('✔ ' + d.message, 'success');
+      loadStatus();
+    } else {
+      showBanner('❌ ' + (d.error || 'Failed to migrate step'), 'error');
+    }
+  } catch(e) {
+    showBanner('❌ Server network error executing migration', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function runMigrateAll() {
+  if (!confirm('Run all remaining pending migrations in sequence?')) return;
+  var btn = document.getElementById('btn-all');
+  btn.disabled = true;
+  btn.innerHTML = '⚡ Migrating all…';
+
+  try {
+    var r = await fetch(API_BASE + '/migrations/all', { method: 'POST' });
+    var d = await r.json();
+    if (d.success) {
+      showBanner('✔ ' + d.message, 'success');
+      loadStatus();
+    } else {
+      showBanner('❌ ' + (d.error || 'Failed to migrate'), 'error');
+    }
+  } catch(e) {
+    showBanner('❌ Server network error', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function runSpecific(id) {
+  if (!confirm('Execute migration step ' + id + '?')) return;
+  try {
+    var r = await fetch(API_BASE + '/migrations/run/' + id, { method: 'POST' });
+    var d = await r.json();
+    if (d.success) {
+      showBanner('✔ ' + d.message, 'success');
+      loadStatus();
+    } else {
+      showBanner('❌ ' + (d.error || 'Failed'), 'error');
+    }
+  } catch(e) {
+    showBanner('❌ Error executing step', 'error');
+  }
+}
+
+function showBanner(msg, type) {
+  var b = document.getElementById('exec-banner');
+  b.style.display = 'block';
+  b.textContent = msg;
+  if (type === 'success') {
+    b.style.background = '#F0FDF4';
+    b.style.color = '#166534';
+    b.style.border = '1px solid #BBF7D0';
+  } else {
+    b.style.background = '#FEF2F2';
+    b.style.color = '#991B1B';
+    b.style.border = '1px solid #FECACA';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, function(m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+  });
+}
+
+document.addEventListener('DOMContentLoaded', loadStatus);
+</script>
+</body>
+</html>

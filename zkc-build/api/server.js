@@ -1,4 +1,4 @@
-﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ZKCommerce v4.4.0 â€” Main API Server
 // ZKandavel Infotech Pvt Ltd Â· Smart Commerce. Limitless Growth.
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -12,6 +12,7 @@ const { renderStore } = require('./store-renderer');
 // Tracked schema migrations (api/services/pg-migrations.js) run once at start-up.
 require('./services/pg-migrations').ready().catch(e => console.error('[ZKCommerce] Database migration failed:', e.message));
 const path = require('path');
+const fs   = require('fs');
 
 const app  = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -143,6 +144,17 @@ async function serveStore(req, res, identifier, subpath = '/', basePathOverride 
   res.type('html').send(renderStore(snapshot, { page, product, collection, template, showContact: !page, basePath }));
 }
 
+// Store-specific and client-specific merchant admin access
+app.get(['/store/:slug/merchant*', '/clients/:client/merchant*'], (req, res) => {
+  let subpath = req.path.replace(/^\/(store|clients)\/[^/]+\/merchant\/?/, '');
+  if (!subpath || subpath === '/') subpath = 'index.html';
+  const target = path.join(__dirname, '..', 'merchant', subpath);
+  if (fs.existsSync(target) && fs.statSync(target).isFile()) {
+    return res.sendFile(target);
+  }
+  res.sendFile(path.join(__dirname, '..', 'merchant', 'index.html'));
+});
+
 // Direct path-based store access: /store/:slug and /store/:slug/*
 app.get('/store/:slug*', async (req, res, next) => {
   try {
@@ -156,7 +168,7 @@ app.get('/store/:slug*', async (req, res, next) => {
 // Resolve wildcard subdomains, custom domains, or ?store=... query
 app.get('*', async (req,res,next) => {
   try {
-    if (req.path.startsWith('/api/') || req.path.startsWith('/store/')) return next();
+    if (req.path.startsWith('/api/') || req.path.startsWith('/store/') || req.path.startsWith('/merchant') || req.path.startsWith('/auth') || req.path.startsWith('/assets') || req.path.startsWith('/admin') || req.path.startsWith('/clients') || req.path.startsWith('/store-builder')) return next();
     if (req.query.store) {
       return await serveStore(req, res, req.query.store, req.path);
     }
