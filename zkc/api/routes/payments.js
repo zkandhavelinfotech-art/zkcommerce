@@ -37,6 +37,13 @@ async function afterPaid(order) {
   return { whatsappHandoffUrl };
 }
 
+// Razorpay SDK errors carry { statusCode, error: { description } } and no message.
+function rzpError(e) {
+  const d = e && e.error && (e.error.description || e.error.code);
+  if (d) return 'Razorpay: ' + d + (e.statusCode === 401 ? ' (check the Razorpay key id / secret)' : '');
+  return (e && e.message) || 'Razorpay request failed';
+}
+
 function safeEqualHex(actual, expected) {
   if (!/^[a-f0-9]{64}$/i.test(String(actual || '')) || !/^[a-f0-9]{64}$/i.test(String(expected || ''))) return false;
   return crypto.timingSafeEqual(Buffer.from(actual, 'hex'), Buffer.from(expected, 'hex'));
@@ -61,10 +68,10 @@ router.post('/razorpay/order', async (req, res) => {
     res.json({ razorpay_order_id: rzpOrder.id, amount: rzpOrder.amount, currency: 'INR', key: process.env.RAZORPAY_KEY_ID });
   } catch (e) {
     try {
-      const { rows } = await pool.query("UPDATE orders SET payment_status='failed',payment_failure=$1,updated_at=NOW() WHERE id=$2 AND payment_status='processing' AND payment_method='razorpay' RETURNING store_id,coupon_code", [String(e.message).slice(0,500), orderId]);
+      const { rows } = await pool.query("UPDATE orders SET payment_status='failed',payment_failure=$1,updated_at=NOW() WHERE id=$2 AND payment_status='processing' AND payment_method='razorpay' RETURNING store_id,coupon_code", [rzpError(e).slice(0,500), orderId]);
       if (rows[0]?.coupon_code) await pool.query('UPDATE coupons SET used_count=GREATEST(0,used_count-1) WHERE store_id=$1 AND upper(code)=upper($2)', [rows[0].store_id, rows[0].coupon_code]);
     } catch (_) {}
-    res.status(503).json({ error: e.message });
+    res.status(503).json({ error: rzpError(e) });
   }
 });
 
@@ -90,7 +97,7 @@ router.post('/razorpay/verify', async (req, res) => {
     }
     const { whatsappHandoffUrl } = await afterPaid(rows[0]);
     res.json({ message: 'Payment verified', order_id: Number(order_id), whatsapp_handoff_url: whatsappHandoffUrl });
-  } catch (e) { res.status(503).json({ error: e.message }); }
+  } catch (e) { res.status(503).json({ error: rzpError(e) }); }
 });
 
 // Release a coupon reservation once after a failed attempt so a customer can retry.
