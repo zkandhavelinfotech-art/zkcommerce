@@ -29,6 +29,7 @@ app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
 app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
 app.get(['/release-history.html', '/release_history.html', '/changelog'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-history.html')));
+app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => res.sendFile(path.join(__dirname, '..', 'db-migrations.html')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets'), { fallthrough: true, maxAge: '7d' }));
 
 // â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -44,6 +45,7 @@ app.get(['/health', '/api/health'], async (req, res) => {
 
 // â”€â”€ Route modules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/auth',        require('./routes/auth'));
+app.use('/api/migrations',  require('./routes/migrations'));
 app.use('/api/stores',      require('./routes/stores'));
 app.use('/api/products',    require('./routes/products'));
 app.use('/api/categories',  require('./routes/categories'));
@@ -225,4 +227,6 @@ server.on('error', error => {
 });
 
 module.exports = app;
+
+
 

@@ -1,38 +1,40 @@
-{
-  "name": "zkcommerce",
-  "version": "4.4.0",
-  "description": "ZKCommerce — Smart Commerce. Limitless Growth. by ZKandavel Infotech Pvt Ltd",
-  "main": "api/server.js",
-  "scripts": {
-    "start": "node api/server.js --env=production",
-    "dev": "nodemon api/server.js --env=development",
-    "start:stage": "node api/server.js --env=stage",
-    "start:preview": "node api/server.js --env=preview",
-    "db:migrate": "node deployment/scripts/neon-migrate.js",
-    "publish:build": "node deployment/scripts/build-godaddy-bundle.js",
-    "publish:ftp": "node deployment/scripts/ftp-publish-smeram.js",
-    "health:dev": "curl http://localhost:3000/health"
-  },
-  "dependencies": {
-    "basic-ftp": "^5.0.5",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
-    "pg": "^8.11.3",
-    "razorpay": "^2.9.2",
-    "uuid": "^9.0.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "author": "ZKandavel Infotech Pvt Ltd",
-  "license": "MIT"
+﻿{
+    "name":  "zkcommerce",
+    "version":  "4.4.0",
+    "description":  "ZKCommerce â€” Smart Commerce. Limitless Growth. by ZKandavel Infotech Pvt Ltd",
+    "main":  "api/server.js",
+    "scripts":  {
+                    "start":  "node api/server.js --env=production",
+                    "dev":  "nodemon api/server.js --env=development",
+                    "start:stage":  "node api/server.js --env=stage",
+                    "start:preview":  "node api/server.js --env=preview",
+                    "publish:build":  "node deployment/scripts/build-godaddy-bundle.js",
+                    "publish:ftp":  "node deployment/scripts/ftp-publish-smeram.js",
+                    "health:dev":  "curl http://localhost:3000/health",
+                    "db:status":  "node scripts/db-migrate.js status",
+                    "db:step":  "node scripts/db-migrate.js step",
+                    "db:migrate":  "node scripts/db-migrate.js up"
+                },
+    "dependencies":  {
+                         "basic-ftp":  "^5.0.5",
+                         "bcryptjs":  "^2.4.3",
+                         "cors":  "^2.8.5",
+                         "dotenv":  "^16.3.1",
+                         "express":  "^4.18.2",
+                         "express-rate-limit":  "^7.1.5",
+                         "helmet":  "^7.1.0",
+                         "jsonwebtoken":  "^9.0.2",
+                         "multer":  "^1.4.5-lts.1",
+                         "pg":  "^8.11.3",
+                         "razorpay":  "^2.9.2",
+                         "uuid":  "^9.0.1"
+                     },
+    "devDependencies":  {
+                            "nodemon":  "^3.0.2"
+                        },
+    "engines":  {
+                    "node":  "\u003e=20.0.0"
+                },
+    "author":  "ZKandavel Infotech Pvt Ltd",
+    "license":  "MIT"
 }
