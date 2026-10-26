@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Release History &amp; Changelog — ZKCommerce v4.1</title>
+<title>Release History &amp; Changelog â€” ZKCommerce v4.1</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -465,17 +465,17 @@ body {
   <!-- Top Navigation -->
   <header class="top-nav">
     <a href="index.html" class="brand">
-      <div class="brand-gem">⚡</div>
+      <div class="brand-gem">âš¡</div>
       <div>
         <div class="brand-name">ZKCommerce</div>
       </div>
-      <span class="brand-badge">v4.1 Stable</span>
+      <span class="brand-badge">v4.7.1 Stable</span>
     </a>
     <nav class="nav-links">
-      <a href="merchant/dashboard.html" class="nav-btn nav-btn-ghost">📊 Merchant Portal</a>
-      <a href="store-builder/" class="nav-btn nav-btn-ghost">🎨 StoreBuilder</a>
+      <a href="merchant/dashboard.html" class="nav-btn nav-btn-ghost">ðŸ“Š Merchant Portal</a>
+      <a href="store-builder/" class="nav-btn nav-btn-ghost">ðŸŽ¨ StoreBuilder</a>
       <a href="https://github.com/zkandhavelinfotech-art/zkcommerce" target="_blank" class="nav-btn nav-btn-primary">
-        <span>GitHub Repo</span> ↗
+        <span>GitHub Repo</span> â†—
       </a>
     </nav>
   </header>
@@ -491,15 +491,15 @@ body {
   <!-- Metrics Grid -->
   <section class="stats-grid">
     <div class="stat-card">
-      <div class="stat-num" style="color:var(--zk-fire)">10</div>
-      <div class="stat-label">Releases Pushed (Oct 25-26)</div>
+      <div class="stat-num" style="color:var(--zk-fire)">14</div>
+      <div class="stat-label">Releases Pushed (v4.0 - v4.7.1)</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" style="color:var(--zk-green)">65+</div>
+      <div class="stat-num" style="color:var(--zk-green)">90+</div>
       <div class="stat-label">Files Updated &amp; Created</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" style="color:var(--zk-blue)">5,160+</div>
+      <div class="stat-num" style="color:var(--zk-blue)">9,200+</div>
       <div class="stat-label">Lines of Code Added</div>
     </div>
     <div class="stat-card">
@@ -511,7 +511,7 @@ body {
   <!-- Filter & Search Toolbar -->
   <section class="filter-bar">
     <div class="search-box">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon">ðŸ”</span>
       <input type="text" class="search-input" id="searchReleases" placeholder="Search commits, features, or files..." oninput="filterReleases()">
     </div>
     <div class="tags-group">
@@ -520,11 +520,252 @@ body {
       <button class="filter-tag" onclick="setCategory('builder', this)">StoreBuilder CMS</button>
       <button class="filter-tag" onclick="setCategory('product', this)">Stock &amp; Quantity</button>
       <button class="filter-tag" onclick="setCategory('deploy', this)">Multi-Cloud Deploy</button>
+      <button class="filter-tag" onclick="setCategory('database', this)">DB Migrations</button>
+      <button class="filter-tag" onclick="setCategory('logistics', this)">Logistics &amp; WhatsApp</button>
     </div>
   </section>
 
   <!-- Timeline Section -->
   <main class="timeline" id="timelineList">
+
+    <!-- Release 0A: v4.7.1 - Commit 4c65d5a / ae61737 -->
+    <article class="release-card" data-category="database merchant deploy">
+      <div class="card-top">
+        <div class="version-badge-group">
+          <span class="version-pill" style="background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE;">v4.7.1-STABLE</span>
+          <span class="tag-badge tag-feature">Database Engine</span>
+          <span class="tag-badge" style="background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)">Migration Tracking</span>
+          <span class="tag-badge" style="background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3)">Gap Audit</span>
+        </div>
+        <div class="release-meta">
+          <span>🕒 Oct 26, 2026 · 10:45:00</span>
+          <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/4c65d5a" target="_blank" class="commit-link">commit 4c65d5a</a>
+        </div>
+      </div>
+      <h2 class="release-heading">Universal Database Migration Engine, Step-by-Step One-by-One CLI, and Live Status Dashboard</h2>
+      <p class="release-desc">
+        Delivered robust database migration tracking for PostgreSQL and MySQL. Added 7 extended metadata columns, automated detection of connected DB and last completed version, one-by-one step migration from last done, interactive web dashboard, and Product Gap Analysis system.
+      </p>
+
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon">🗄️</span>
+          <span><strong>Migration Tracking Schema Upgrade:</strong> Enhanced <code>zkc_pg_migrations</code> with <code>version VARCHAR(50)</code>, <code>migration_name</code>, <code>status</code> ('applied'/'pending'), <code>batch INT</code>, <code>execution_time_ms</code>, <code>sql_preview</code>, and <code>error_message</code> with backward-compatible auto-backfill.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">⚡</span>
+          <span><strong>One-by-One Step Runner (<code>npm run db:step</code>):</strong> Allows developers to run exactly one pending migration from the last completed version, safely commits within an isolated transaction, increments the batch counter, and logs execution timing.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📊</span>
+          <span><strong>Live Status CLI (<code>npm run db:status</code>):</strong> Outputs connected database name, engine, last completed version with timestamp, pending count, and an ASCII table detailing versions, names, batches, and runtimes.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🖥️</span>
+          <span><strong>Interactive Web Dashboard (<code>merchant/db-migrations.html</code>):</strong> Live web interface displaying real-time DB metrics, "Migrate Next Step (1-by-1)" button, "Migrate All Pending" button, expandable SQL statements viewer, and direct link from the merchant sidebar.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🔌</span>
+          <span><strong>REST API Endpoints:</strong> Mounted <code>/api/migrations/status</code>, <code>/api/migrations/step</code>, <code>/api/migrations/all</code>, and <code>/api/migrations/run/:id</code> in <code>server.js</code>.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📋</span>
+          <span><strong>Product Gap Analysis Dashboard (<code>gap-analysis.html</code>):</strong> Comprehensive audit dashboard featuring Executive Summary Matrix, Detailed Domain Breakdown (Deployments, Migrations, Merchant Admin, Docs), and Prioritized Action Roadmap.</span>
+        </li>
+      </ul>
+
+      <div class="code-box">
+        <button class="code-copy-btn" onclick="copySnippet(this)">Copy SQL</button>
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS version VARCHAR(50);
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS migration_name VARCHAR(150);
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'applied';
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS batch INT DEFAULT 1;
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS execution_time_ms INT DEFAULT 0;
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS sql_preview TEXT;
+ALTER TABLE zkc_pg_migrations ADD COLUMN IF NOT EXISTS error_message TEXT;
+      </div>
+
+      <div class="files-pills">
+        <span class="file-pill">api/services/db-migrator.js</span>
+        <span class="file-pill">api/routes/migrations.js</span>
+        <span class="file-pill">scripts/db-migrate.js</span>
+        <span class="file-pill">merchant/db-migrations.html</span>
+        <span class="file-pill">gap-analysis.html</span>
+        <span class="file-pill">merchant/gap-analysis.html</span>
+        <span class="file-pill">package.json</span>
+      </div>
+    </article>
+
+    <!-- Release 0B: v4.7.0 - Commits ae477cb, 5325f59, b71080b -->
+    <article class="release-card" data-category="builder merchant">
+      <div class="card-top">
+        <div class="version-badge-group">
+          <span class="version-pill" style="background:#FFFBEB;color:#B45309;border-color:#FDE68A;">v4.7.0</span>
+          <span class="tag-badge tag-feature">Storefront CMS</span>
+          <span class="tag-badge" style="background:rgba(245,158,11,0.15);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)">Smeram Theme</span>
+          <span class="tag-badge" style="background:rgba(236,72,153,0.15);color:#F472B6;border:1px solid rgba(236,72,153,0.3)">Navigation</span>
+        </div>
+        <div class="release-meta">
+          <span>🕒 Oct 26, 2026 · 07:45:00</span>
+          <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/ae477cb" target="_blank" class="commit-link">commit ae477cb</a>
+        </div>
+      </div>
+      <h2 class="release-heading">Smeram Herbal Hair Oil Theme, Header Menu Builder, and Hidden Direct-Link Products</h2>
+      <p class="release-desc">
+        Storefront overhaul tailored for the Smeram Herbal Hair Oil brand, introducing an interactive header navigation builder with cascading category-to-product shop menus, dedicated company contact page, legal footer policies, and hidden direct-link products.
+      </p>
+
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon">🔒</span>
+          <span><strong>Hidden / Unlisted Products (<code>products.is_unlisted</code>):</strong> Added support for private direct-link products excluded from public catalog search and store listings (ideal for ₹1 Razorpay live checkout tests and VIP promotions).</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🧭</span>
+          <span><strong>Dynamic Header Menu Builder:</strong> Two-tier cascading navigation (About → Why Smeram → Shop [Category → Product] → Contact) with real-time live preview and off-canvas mobile drawer navigation.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🌿</span>
+          <span><strong>Smeram Brand Aesthetic:</strong> High-conversion design with Syne & Plus Jakarta typography, herbal benefits cards, enlarged product imagery, customer reviews grid, and trust badges.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📄</span>
+          <span><strong>Dedicated Contact & Policy Architecture:</strong> Created standalone <code>storefront/contact.html</code> with customer inquiry handler, alongside footer links to Terms of Service, Privacy Policy, Shipping Policy, and Refund Policy.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">💳</span>
+          <span><strong>₹1 Razorpay Live Test Protocol:</strong> Documented complete verification checklist for testing live UPI, card, and NetBanking payments with production Razorpay credentials (<code>RAZORPAY-LIVE-TEST.md</code>).</span>
+        </li>
+      </ul>
+
+      <div class="code-box">
+        <button class="code-copy-btn" onclick="copySnippet(this)">Copy SQL</button>
+ALTER TABLE products ADD COLUMN IF NOT EXISTS is_unlisted BOOLEAN DEFAULT FALSE;
+CREATE INDEX IF NOT EXISTS idx_products_unlisted ON products(is_unlisted);
+      </div>
+
+      <div class="files-pills">
+        <span class="file-pill">api/routes/products.js</span>
+        <span class="file-pill">api/theme-designs.js</span>
+        <span class="file-pill">storefront/contact.html</span>
+        <span class="file-pill">RAZORPAY-LIVE-TEST.md</span>
+        <span class="file-pill">store-builder/index.html</span>
+      </div>
+    </article>
+
+    <!-- Release 0C: v4.6.0 - Commits aba7984, 440bb8e -->
+    <article class="release-card" data-category="merchant product logistics">
+      <div class="card-top">
+        <div class="version-badge-group">
+          <span class="version-pill" style="background:#ECFDF5;color:#047857;border-color:#A7F3D0;">v4.6.0</span>
+          <span class="tag-badge tag-feature">Commerce Core</span>
+          <span class="tag-badge" style="background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3)">Logistics & WhatsApp</span>
+          <span class="tag-badge tag-deploy">Stock Ledger</span>
+        </div>
+        <div class="release-meta">
+          <span>🕒 Oct 26, 2026 · 05:30:00</span>
+          <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/440bb8e" target="_blank" class="commit-link">commit 440bb8e</a>
+        </div>
+      </div>
+      <h2 class="release-heading">Ekart Logistics Shipping API, Stock Movement Ledger, and WhatsApp Order Notifications</h2>
+      <p class="release-desc">
+        End-to-end commerce automation: courier waybill tracking, barcode shipping label generator, atomic inventory movements with low-stock alerts, and automated customer WhatsApp messaging.
+      </p>
+
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon">🚚</span>
+          <span><strong>Ekart & Custom Carrier Logistics API:</strong> Built carrier integration for automated tracking number generation, courier assignment (<code>orders.carrier</code>, <code>tracking_number</code>), and shipment status lifecycle (Manifested → Picked Up → In Transit → Out for Delivery → Delivered).</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🏷️</span>
+          <span><strong>Thermal Shipping Label Generator (<code>merchant/shipping-label.html</code>):</strong> Generates standard 4x6 inch thermal printer-compatible shipping labels with Code-128 barcodes, consignee details, and order manifests.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">💬</span>
+          <span><strong>WhatsApp Notification Outbox:</strong> Automated transactional messaging via WhatsApp for order placement confirmation, tracking links upon dispatch, and delivery confirmation.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📈</span>
+          <span><strong>Inventory Movement Ledger (<code>inventory_logs</code>):</strong> Complete audit trail recording stock adjustments, sales deductions, restocks, and returns with automated low-stock warnings when inventory drops below threshold.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🏷️</span>
+          <span><strong>Per-Product Offer Display Override:</strong> Added <code>products.show_offer</code> switch enabling merchants to selectively highlight discounts and offers per item.</span>
+        </li>
+      </ul>
+
+      <div class="code-box">
+        <button class="code-copy-btn" onclick="copySnippet(this)">Copy SQL</button>
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier VARCHAR(100);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(150);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_label_url TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMP;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMP;
+CREATE TABLE IF NOT EXISTS inventory_logs (
+  id SERIAL PRIMARY KEY,
+  product_id INT REFERENCES products(id),
+  change_qty INT NOT NULL,
+  reason VARCHAR(100),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+      </div>
+
+      <div class="files-pills">
+        <span class="file-pill">merchant/shipping-label.html</span>
+        <span class="file-pill">merchant/inventory.html</span>
+        <span class="file-pill">api/services/ekart-service.js</span>
+        <span class="file-pill">api/services/whatsapp-outbox.js</span>
+        <span class="file-pill">api/routes/orders.js</span>
+      </div>
+    </article>
+
+    <!-- Release 0D: v4.5.0 - Commit abe4197 -->
+    <article class="release-card minor" data-category="deploy">
+      <div class="card-top">
+        <div class="version-badge-group">
+          <span class="version-pill" style="background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE;">v4.5.0</span>
+          <span class="tag-badge tag-deploy">Architecture</span>
+          <span class="tag-badge" style="background:rgba(139,92,246,0.15);color:#C4B5FD;border:1px solid rgba(139,92,246,0.3)">Build System</span>
+        </div>
+        <div class="release-meta">
+          <span>🕒 Oct 26, 2026 · 02:00:00</span>
+          <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/abe4197" target="_blank" class="commit-link">commit abe4197</a>
+        </div>
+      </div>
+      <h2 class="release-heading">Codebase Unification (zkc/ Source, zkc-build/ Generated) and Automated Sync Guard</h2>
+      <p class="release-desc">
+        Unified fragmented Dev and Stage directory trees into a single canonical repository structure. Established <code>zkc/</code> as the sole development source and <code>zkc-build/</code> as verified automated build distribution.
+      </p>
+
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon">🎯</span>
+          <span><strong>Canonical Source of Truth:</strong> Consolidated all source code under <code>zkc/</code> to prevent duplicate work, diverging files, or mismatched bug fixes across environments.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🛡️</span>
+          <span><strong>Automated Sync Guard (<code>npm run release:sync</code>):</strong> Built automated synchronization script and pre-commit Git hook preventing any commit if <code>zkc-build/</code> is out of date with <code>zkc/</code>.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📦</span>
+          <span><strong>Multi-Cloud Deployment Alignment:</strong> Standardized environment variables, package manifests, and Docker builds across Railway, Vercel, and GoDaddy hosting.</span>
+        </li>
+      </ul>
+
+      <div class="code-box">
+        <button class="code-copy-btn" onclick="copySnippet(this)">Command</button>
+npm run release:sync
+git status
+      </div>
+
+      <div class="files-pills">
+        <span class="file-pill">scripts/release-sync.js</span>
+        <span class="file-pill">.git/hooks/pre-commit</span>
+        <span class="file-pill">package.json</span>
+        <span class="file-pill">zkc-build/</span>
+      </div>
+    </article>
 
     <!-- Release 1: Commit 76ed999 -->
     <article class="release-card" data-category="merchant product deploy">
@@ -535,7 +776,7 @@ body {
           <span class="tag-badge tag-deploy">Multi-Cloud</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 26, 2026 · 00:08:17</span>
+          <span>ðŸ•’ Oct 26, 2026 Â· 00:08:17</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/76ed999" target="_blank" class="commit-link">commit 76ed999</a>
         </div>
       </div>
@@ -546,23 +787,23 @@ body {
 
       <ul class="feature-list">
         <li class="feature-item">
-          <span class="feature-icon">📦</span>
+          <span class="feature-icon">ðŸ“¦</span>
           <span><strong>Stock Quantity (Units) Integration:</strong> Added <code>quantity INT DEFAULT 100</code> to DB schemas, REST APIs (<code>/api/products</code>), StoreBuilder product table, and Merchant product forms with atomic inventory synchronization.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">🏷️</span>
+          <span class="feature-icon">ðŸ·ï¸</span>
           <span><strong>Dedicated Categories &amp; Collections Manager (<code>merchant/categories.html</code>):</strong> Photo upload, collection URL handle, active product count badges, and storefront hero card assignment.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">📄</span>
+          <span class="feature-icon">ðŸ“„</span>
           <span><strong>Content Pages &amp; Legal Policies Manager (<code>merchant/pages.html</code>):</strong> Shopify/WordPress-style pages system with 1-click legal policy generator for Terms, Privacy, Refund, and Shipping policies.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">🎨</span>
+          <span class="feature-icon">ðŸŽ¨</span>
           <span><strong>Themes &amp; Visual Customizer (<code>merchant/themes.html</code>):</strong> Active theme spotlight, color swatches, 10-theme preset library, and direct 1-click launch into the StoreBuilder editor.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">🚀</span>
+          <span class="feature-icon">ðŸš€</span>
           <span><strong>Standalone Multi-Cloud Bundle:</strong> Bundles the Merchant Admin, StoreBuilder, and auth into self-hosted exported packages (GoDaddy cPanel, Railway, Vercel) with standalone Express API.</span>
         </li>
       </ul>
@@ -592,7 +833,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-deploy">Publish Portal</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 18:37:28</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 18:37:28</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/cb0e1e7" target="_blank" class="commit-link">commit cb0e1e7</a>
         </div>
       </div>
@@ -603,15 +844,15 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
 
       <ul class="feature-list">
         <li class="feature-item">
-          <span class="feature-icon">⚡</span>
+          <span class="feature-icon">âš¡</span>
           <span><strong>Publish Modal in StoreBuilder:</strong> Select hosting provider, configure database credentials (MySQL / PostgreSQL), and trigger instant export.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">💾</span>
+          <span class="feature-icon">ðŸ’¾</span>
           <span><strong>Dual SQL Generator:</strong> Creates both <code>schema-mysql.sql</code> (for phpMyAdmin) and <code>schema-postgres.sql</code> populated with active store catalog data.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">📦</span>
+          <span class="feature-icon">ðŸ“¦</span>
           <span><strong>Instant ZIP Packaging:</strong> Generates complete ready-to-deploy archive at <code>deployment/published/:slug-deployment.zip</code>.</span>
         </li>
       </ul>
@@ -631,7 +872,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-feature">StoreBuilder</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 17:07:53</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 17:07:53</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/68b5579" target="_blank" class="commit-link">commit 68b5579</a>
         </div>
       </div>
@@ -642,11 +883,11 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
 
       <ul class="feature-list">
         <li class="feature-item">
-          <span class="feature-icon">📸</span>
+          <span class="feature-icon">ðŸ“¸</span>
           <span><strong>Direct Category Image Uploader:</strong> Integrated file upload modal connecting to <code>POST /api/upload/:id</code>.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">🔄</span>
+          <span class="feature-icon">ðŸ”„</span>
           <span><strong>Instant Canvas Sync:</strong> Replaced images reflect immediately in the live StoreBuilder canvas without page reload.</span>
         </li>
       </ul>
@@ -666,7 +907,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-fix">Bugfix</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 16:14:35</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 16:14:35</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/0c36902" target="_blank" class="commit-link">commit 0c36902</a>
         </div>
       </div>
@@ -677,15 +918,15 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
 
       <ul class="feature-list">
         <li class="feature-item">
-          <span class="feature-icon">🖱️</span>
+          <span class="feature-icon">ðŸ–±ï¸</span>
           <span><strong>Full Page Scrolling:</strong> Unlocked smooth mouse and keyboard scrolling throughout the entire storefront preview canvas.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">🎯</span>
+          <span class="feature-icon">ðŸŽ¯</span>
           <span><strong>Click-to-Select Binding:</strong> Clicking any section on the canvas highlights it with an outline and opens its corresponding controls.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">⚓</span>
+          <span class="feature-icon">âš“</span>
           <span><strong>Scroll Position Lock:</strong> Preserves exact viewport position when changing colors, headlines, or product cards.</span>
         </li>
       </ul>
@@ -704,7 +945,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-feature">Product UI</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 14:49:57</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 14:49:57</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/8b5dec4" target="_blank" class="commit-link">commit 8b5dec4</a>
         </div>
       </div>
@@ -715,19 +956,19 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
 
       <ul class="feature-list">
         <li class="feature-item">
-          <span class="feature-icon">📐</span>
+          <span class="feature-icon">ðŸ“</span>
           <span><strong>Expanded Writing Workspace:</strong> Increased height and width of the Description textarea for formulations and ingredients.</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">🏷️</span>
+          <span class="feature-icon">ðŸ·ï¸</span>
           <span><strong>Additional Note Parameter:</strong> Renders trust badges below pricing (e.g. <em>"Inclusive of GST and free shipping."</em>).</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">📋</span>
+          <span class="feature-icon">ðŸ“‹</span>
           <span><strong>User Instructions Parameter:</strong> Dedicated application steps (e.g. scalp massage ritual for Smeram Herbal Hair Oil).</span>
         </li>
         <li class="feature-item">
-          <span class="feature-icon">⭐</span>
+          <span class="feature-icon">â­</span>
           <span><strong>Key Benefits Parameter:</strong> Highlight bullet points on product pages and quick-view popups.</span>
         </li>
       </ul>
@@ -747,7 +988,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-feature">CMS Architecture</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 13:38:41</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 13:38:41</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/3a74277" target="_blank" class="commit-link">commit 3a74277</a>
         </div>
       </div>
@@ -770,7 +1011,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-feature">Backend Schema</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 13:18:51</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 13:18:51</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/6623b93" target="_blank" class="commit-link">commit 6623b93</a>
         </div>
       </div>
@@ -793,7 +1034,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
           <span class="tag-badge tag-deploy">Build &amp; Core</span>
         </div>
         <div class="release-meta">
-          <span>🕒 Oct 25, 2026 · 12:30:46</span>
+          <span>ðŸ•’ Oct 25, 2026 Â· 12:30:46</span>
           <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/b223890" target="_blank" class="commit-link">commits b223890, f0304e9</a>
         </div>
       </div>
@@ -813,7 +1054,7 @@ UPDATE products SET quantity = 100 WHERE quantity IS NULL;
 
   <!-- Footer -->
   <footer class="site-footer">
-    <p>ZKCommerce v4.1 · Enterprise eCommerce Engine · Maintained by ZK Software Team</p>
+    <p>ZKCommerce v4.1 Â· Enterprise eCommerce Engine Â· Maintained by ZK Software Team</p>
     <p style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3)">Synced with Git repository origin/main</p>
   </footer>
 
@@ -856,3 +1097,4 @@ function copySnippet(btn) {
 
 </body>
 </html>
+
