@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Release History &amp; Gap Analysis Comparison Report — ZKCommerce v4.8.0</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/design-system.css">
+<style>
+:root {
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --zk-bg: #0B0F19;
+  --zk-card-bg: #111827;
+  --zk-card-border: rgba(255, 255, 255, 0.08);
+  --zk-card-hover: rgba(255, 255, 255, 0.15);
+  --zk-fire: #FF6B00;
+  --zk-fire-glow: rgba(255, 107, 0, 0.25);
+  --zk-green: #10B981;
+  --zk-amber: #F59E0B;
+  --zk-red: #EF4444;
+  --zk-blue: #3B82F6;
+  --zk-purple: #8B5CF6;
+  --zk-text-light: #F9FAFB;
+  --zk-text-dim: #9CA3AF;
+  --zk-text-muted: #6B7280;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--zk-bg);
+  color: var(--zk-text-light);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.ambient-glow {
+  position: fixed;
+  width: 550px;
+  height: 550px;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.14;
+}
+.glow-1 { top: -120px; left: -100px; background: #FF6B00; }
+.glow-2 { top: 35%; right: -140px; background: #3B82F6; }
+.glow-3 { bottom: -100px; left: 25%; background: #10B981; }
+
+.app-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 36px 24px 100px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Nav */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--zk-card-border);
+  border-radius: 16px;
+  margin-bottom: 36px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #fff;
+}
+.brand-gem {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8A3D 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 4px 14px var(--zk-fire-glow);
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.brand-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--zk-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nav-btn {
+  padding: 8px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  color: var(--zk-text-dim);
+  border: 1px solid transparent;
+}
+.nav-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--zk-card-border);
+}
+.nav-btn.primary {
+  background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3);
+}
+.nav-btn.primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: 36px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--zk-fire);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+.page-title span {
+  background: linear-gradient(135deg, #FF8A3D 0%, #FF6B00 50%, #F59E0B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-desc {
+  font-size: 15px;
+  color: var(--zk-text-dim);
+  max-width: 900px;
+  line-height: 1.6;
+}
+
+/* Quick Navigation Anchor Bar */
+.quick-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--zk-card-border);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.quick-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--zk-text-dim);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.quick-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* KPI Banner */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.kpi-card {
+  background: var(--zk-card-bg);
+  border: 1px solid var(--zk-card-border);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.kpi-card.green::after { background: var(--zk-green); }
+.kpi-card.blue::after { background: var(--zk-blue); }
+.kpi-card.fire::after { background: var(--zk-fire); }
+.kpi-card.amber::after { background: var(--zk-amber); }
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--zk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.kpi-sub {
+  font-size: 12px;
+  color: var(--zk-text-dim);
+}
+
+/* Section Styling */
+.report-section {
+  margin-bottom: 48px;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--zk-card-border);
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--zk-text-dim);
+  border: 1px solid var(--zk-card-border);
+}
+
+/* Tables */
+.table-container {
+  background: var(--zk-card-bg);
+  border: 1px solid var(--zk-card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+.report-table th {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px 18px;
+  font-weight: 700;
+  color: var(--zk-text-muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--zk-card-border);
+}
+.report-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+.report-table tr:last-child td {
+  border-bottom: none;
+}
+.report-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Badges */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.status-pill.done {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.status-pill.partial {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.status-pill.pending {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.status-pill.done .status-dot { background: #34D399; box-shadow: 0 0 6px rgba(52, 211, 153, 0.8); }
+.status-pill.partial .status-dot { background: #FBBF24; box-shadow: 0 0 6px rgba(251, 191, 36, 0.8); }
+.status-pill.pending .status-dot { background: #F87171; box-shadow: 0 0 6px rgba(248, 113, 113, 0.8); }
+
+.code-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--zk-text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Feature Cards Grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.feature-card {
+  background: var(--zk-card-bg);
+  border: 1px solid var(--zk-card-border);
+  border-radius: 14px;
+  padding: 22px;
+  transition: all 0.2s ease;
+}
+.feature-card:hover {
+  border-color: var(--zk-card-hover);
+  transform: translateY(-2px);
+}
+.fc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.fc-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fc-desc {
+  font-size: 13px;
+  color: var(--zk-text-dim);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.fc-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Roadmap Grid */
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.roadmap-card {
+  background: var(--zk-card-bg);
+  border: 1px solid var(--zk-card-border);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.roadmap-card.p1 { border-top: 3px solid var(--zk-red); }
+.roadmap-card.p2 { border-top: 3px solid var(--zk-amber); }
+.roadmap-card.p3 { border-top: 3px solid var(--zk-blue); }
+
+.rc-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+.p1 .rc-tag { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
+.p2 .rc-tag { background: rgba(245, 158, 11, 0.2); color: #FDE68A; }
+.p3 .rc-tag { background: rgba(59, 130, 246, 0.2); color: #93C5FD; }
+
+.rc-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.rc-desc {
+  font-size: 13px;
+  color: var(--zk-text-dim);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+.rc-meta {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--zk-text-muted);
+}
+
+/* Action Bar */
+.action-bar {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  border-radius: 16px;
+  padding: 24px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+.action-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.action-sub {
+  font-size: 13px;
+  color: var(--zk-text-dim);
+}
+
+@media(max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid { grid-template-columns: 1fr; }
+  .roadmap-grid { grid-template-columns: 1fr; }
+  .action-bar { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient-glow glow-1"></div>
+<div class="ambient-glow glow-2"></div>
+<div class="ambient-glow glow-3"></div>
+
+<div class="app-container">
+
+  <!-- Top Nav -->
+  <header class="top-nav">
+    <a href="dashboard.html" class="brand">
+      <div class="brand-gem">⚡</div>
+      <div>
+        <div class="brand-name">ZKCommerce</div>
+        <div style="font-size:10px; color:var(--zk-text-muted); letter-spacing:0.04em;">RELEASE &amp; GAP AUDIT REPORT</div>
+      </div>
+    </a>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="brand-badge">Platform Baseline: v4.8.0-STABLE</span>
+    </div>
+    <nav class="nav-links">
+      <a href="/release-history.html" class="nav-btn">Release History</a>
+      <a href="/architecture-guide.html" class="nav-btn">Architecture Guide</a>
+      <a href="/gap-analysis.html" class="nav-btn">Gap Analysis</a>
+      <a href="/merchant/db-migrations.html" class="nav-btn">DB Migrations</a>
+      <a href="/merchant/dashboard.html" class="nav-btn primary">Merchant Dashboard</a>
+    </nav>
+  </header>
+
+  <!-- Quick Nav -->
+  <div class="quick-nav">
+    <a href="#lineage-sync" class="quick-link">1. Branch Lineage</a>
+    <a href="#version-audit" class="quick-link">2. Version Audit (v4.0 - v4.8)</a>
+    <a href="#domain-comparison" class="quick-link">3. Domain Gap Audit</a>
+    <a href="#v48-deliverables" class="quick-link">4. Closed in v4.8.0</a>
+    <a href="#pending-gaps" class="quick-link">5. Still Pending</a>
+    <a href="#next-roadmap" class="quick-link">6. Roadmap (v4.9 &amp; v5.0)</a>
+  </div>
+
+  <!-- Header -->
+  <section class="page-header">
+    <div class="eyebrow">📋 Comprehensive Release &amp; Gap Analysis Audit</div>
+    <h1 class="page-title">Release History &amp; <span>Gap Analysis Report</span></h1>
+    <p class="page-desc">
+      A systematic audit comparing version delivery progress from <code>v4.0</code> to <code>v4.8.0-STABLE</code>, verifying branch synchronizations across <code>v4.7</code>, <code>4.8</code>, <code>v4.8</code>, and <code>main</code>, and mapping remaining engineering gaps for future releases.
+    </p>
+  </section>
+
+  <!-- KPI Grid -->
+  <section class="kpi-grid">
+    <div class="kpi-card green">
+      <div class="kpi-label">Branch Sync Status</div>
+      <div class="kpi-value">4 / 4</div>
+      <div class="kpi-sub">v4.8, 4.8, main &amp; v4.7 verified</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Total Releases Pushed</div>
+      <div class="kpi-value">15</div>
+      <div class="kpi-sub">v4.0.0 through v4.8.0-STABLE</div>
+    </div>
+    <div class="kpi-card fire">
+      <div class="kpi-label">Gaps Closed in v4.8</div>
+      <div class="kpi-value">6</div>
+      <div class="kpi-sub">Architecture, Steppers, GST Lock, Toggle</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Remaining Gaps</div>
+      <div class="kpi-value">6</div>
+      <div class="kpi-sub">FTP client, MySQL runner, live courier AWB</div>
+    </div>
+  </section>
+
+  <!-- 1. Branch Lineage & Remote Sync Status -->
+  <section id="lineage-sync" class="report-section">
+    <div class="section-head">
+      <div class="section-title">
+        <span>1.</span> Branch Lineage &amp; Git Remote Synchronization
+      </div>
+      <span class="section-tag">Repository Audit</span>
+    </div>
+
+    <div class="table-container">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Branch</th>
+            <th>Latest Commit Hash</th>
+            <th>Commit Message</th>
+            <th>Status on GitHub (origin)</th>
+            <th>Lineage Relationship</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>v4.8 (Active)</strong></td>
+            <td><code class="code-pill">c2ed460</code></td>
+            <td>docs(audit): update gap-analysis.html baseline to v4.8.0-STABLE...</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Pushed &amp; Up to Date</span></td>
+            <td>Current Working Release Branch</td>
+          </tr>
+          <tr>
+            <td><strong>4.8</strong></td>
+            <td><code class="code-pill">c2ed460</code></td>
+            <td>docs(audit): update gap-analysis.html baseline to v4.8.0-STABLE...</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Pushed &amp; Up to Date</span></td>
+            <td>Fast-Forward Merged with v4.8</td>
+          </tr>
+          <tr>
+            <td><strong>main</strong></td>
+            <td><code class="code-pill">c2ed460</code></td>
+            <td>docs(audit): update gap-analysis.html baseline to v4.8.0-STABLE...</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Pushed &amp; Up to Date</span></td>
+            <td>Fast-Forward Merged with v4.8</td>
+          </tr>
+          <tr>
+            <td><strong>v4.7</strong></td>
+            <td><code class="code-pill">59d0cdf</code></td>
+            <td>docs(changelog): add timeline cards for v4.5, v4.6, v4.7...</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Fully Merged Ancestor</span></td>
+            <td>Ancestor of v4.8 (100% commits in v4.8)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 2. Version-by-Version Deliverables Audit -->
+  <section id="version-audit" class="report-section">
+    <div class="section-head">
+      <div class="section-title">
+        <span>2.</span> Version-by-Version Audit: What Was Delivered vs What Was Planned
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="nav-btn" onclick="exportTableToCSV()" style="background:rgba(255,255,255,0.06);font-size:12px;">↓ Export CSV</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="report-table" id="auditTable">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>Primary Commits</th>
+            <th>Key Deliverables</th>
+            <th>Gaps Closed</th>
+            <th>Remaining Gaps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>v4.0.0 – v4.0.6</strong></td>
+            <td><code>b223890</code> – <code>c416416</code></td>
+            <td>Initial StoreBuilder visual canvas, section editor, product cards, Vercel/Railway static dist build</td>
+            <td>Core visual builder foundation</td>
+            <td>Canvas mouse wheel scroll lock, category image replacement</td>
+          </tr>
+          <tr>
+            <td><strong>v4.0.7</strong></td>
+            <td><code>0c36902</code></td>
+            <td>StoreBuilder canvas mouse wheel scroll down &amp; sidebar element click-to-select sync</td>
+            <td>Fixed canvas scroll locking</td>
+            <td>Category card image replacement modal</td>
+          </tr>
+          <tr>
+            <td><strong>v4.0.8</strong></td>
+            <td><code>68b5579</code></td>
+            <td>Category card image upload &amp; live replacement modal</td>
+            <td>Category image swap</td>
+            <td>Multi-cloud deployment packaging</td>
+          </tr>
+          <tr>
+            <td><strong>v4.0.9</strong></td>
+            <td><code>cb0e1e7</code></td>
+            <td>Multi-Cloud Publish Portal (<code>/publish-portal.html</code>) with ZIP exporter &amp; dual SQL seeds</td>
+            <td>Deployment package generator</td>
+            <td>In-app direct FTP/SFTP upload to GoDaddy host</td>
+          </tr>
+          <tr>
+            <td><strong>v4.1.0-STABLE</strong></td>
+            <td><code>76ed999</code></td>
+            <td>Stock quantity field (<code>quantity INT</code>), legal pages generator, themes preset selector</td>
+            <td>Atomic inventory units</td>
+            <td>Build synchronization between source and dist</td>
+          </tr>
+          <tr>
+            <td><strong>v4.5.0</strong></td>
+            <td><code>abe4197</code></td>
+            <td>Unification of <code>zkc/</code> and <code>zkc-build/</code>, automated release synchronization scripts</td>
+            <td>Build drift eliminated</td>
+            <td>Indian logistics courier integration &amp; WhatsApp outbox</td>
+          </tr>
+          <tr>
+            <td><strong>v4.6.0</strong></td>
+            <td><code>aba7984</code>, <code>440bb8e</code></td>
+            <td>Ekart courier adapter, WhatsApp notification outbox table, inventory movements ledger</td>
+            <td>Indian logistics foundation</td>
+            <td>Live courier API auto-AWB booking &amp; status polling</td>
+          </tr>
+          <tr>
+            <td><strong>v4.7.0</strong></td>
+            <td><code>ae477cb</code>, <code>5325f59</code></td>
+            <td>Smeram Herbal Hair Oil theme, header navigation builder, unlisted direct-link products</td>
+            <td>Brand storefront customization</td>
+            <td>Database migration tracking visibility</td>
+          </tr>
+          <tr>
+            <td><strong>v4.7.1</strong></td>
+            <td><code>4c65d5a</code>, <code>ae61737</code></td>
+            <td>Universal DB migration engine (<code>zkc_pg_migrations</code>), 1-by-1 step runner (<code>db:step</code>), web dashboard</td>
+            <td>Migration tracking &amp; step execution</td>
+            <td>MySQL DDL syntax &amp; dialect runner</td>
+          </tr>
+          <tr>
+            <td><strong>v4.8.0-STABLE</strong></td>
+            <td><code>f7b1c1c</code>, <code>aee30f3</code></td>
+            <td>Three-Tier Architecture Guide, Announcement bar toggle, catalog 4-product fix, quantity steppers, cart GST lock, dual co-branding, analytics redesign</td>
+            <td><strong>6 Major Gaps Closed</strong></td>
+            <td>Direct FTP deploy, MySQL runner, live courier AWB</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. Domain Comparison -->
+  <section id="domain-comparison" class="report-section">
+    <div class="section-head">
+      <div class="section-title">
+        <span>3.</span> Domain Gap Audit: Status in v4.7.1 vs v4.8.0
+      </div>
+      <span class="section-tag">Domain Evolution</span>
+    </div>
+
+    <div class="table-container">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Domain</th>
+            <th>Status in v4.7.1</th>
+            <th>Status in v4.8.0-STABLE</th>
+            <th>Progress &amp; Deliverables Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Domain 1: Multi-Tenant Architecture &amp; Deployments</strong></td>
+            <td><span class="status-pill partial"><span class="status-dot"></span> High Gap</span></td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Architecture Clarified</span></td>
+            <td>Created interactive <code>architecture-guide.html</code> (/architecture) elucidating /merchant vs /clients/:slug vs /store/:slug, security boundaries, and multi-cloud GoDaddy bundling.</td>
+          </tr>
+          <tr>
+            <td><strong>Domain 2: Database Migration Engine</strong></td>
+            <td><span class="status-pill partial"><span class="status-dot"></span> Medium Gap</span></td>
+            <td><span class="status-pill done"><span class="status-dot"></span> PostgreSQL Verified</span></td>
+            <td>All 8 migration steps (v1.0.1 - v1.0.8) verified with one-by-one step runner, CLI status table, and web dashboard. MySQL runner pending.</td>
+          </tr>
+          <tr>
+            <td><strong>Domain 3: Merchant Admin ("Shopify / WordPress Model")</strong></td>
+            <td><span class="status-pill partial"><span class="status-dot"></span> Medium Gap</span></td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Substantially Advanced</span></td>
+            <td>Added announcement bar toggle, product detail quantity steppers [−] [qty] [+], locked GST cart display, dual co-branding in sidebar, unified dashboard, and Chart.js analytics redesign.</td>
+          </tr>
+          <tr>
+            <td><strong>Domain 4: Release History Documentation</strong></td>
+            <td><span class="status-pill pending"><span class="status-dot"></span> 4 Cards Missing</span></td>
+            <td><span class="status-pill done"><span class="status-dot"></span> 100% Closed &amp; Synced</span></td>
+            <td>All 15 releases (v4.0 - v4.8.0) documented with visual timeline cards across both root and merchant release-history.html.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. What Was Delivered & Closed in v4.8.0-STABLE -->
+  <section id="v48-deliverables" class="report-section">
+    <div class="section-head">
+      <div class="section-title">
+        <span>4.</span> Features Delivered &amp; Gaps Closed in v4.8.0-STABLE
+      </div>
+      <span class="section-tag">Commit f7b1c1c &amp; aee30f3</span>
+    </div>
+
+    <div class="cards-grid">
+      <div class="feature-card">
+        <div class="fc-head">
+          <div class="fc-title"><span>🏛️</span> Three-Tier Architecture Guide</div>
+          <span class="status-pill done"><span class="status-dot"></span> Delivered</span>
+        </div>
+        <p class="fc-desc">
+          Created interactive visual guide resolving architectural confusion between <code>/merchant</code>, <code>/clients/:slug/merchant</code>, and <code>/store/:slug/merchant</code> with routing matrices and GoDaddy deployment rules.
+        </p>
+        <div class="fc-files">
+          <span class="code-pill">architecture-guide.html</span>
+          <span class="code-pill">api/server.js (/architecture)</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="fc-head">
+          <div class="fc-title"><span>📢</span> Announcement Bar Visibility Toggle</div>
+          <span class="status-pill done"><span class="status-dot"></span> Delivered</span>
+        </div>
+        <p class="fc-desc">
+          Added merchant toggle in Store Settings, Pages, and Theme Customizer (<code>announcement_bar_enabled</code>) dynamically hiding/showing top promo banner across all storefront renderers.
+        </p>
+        <div class="fc-files">
+          <span class="code-pill">merchant/store-settings.html</span>
+          <span class="code-pill">api/store-renderer.js</span>
+          <span class="code-pill">clients/smeram/index.html</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="fc-head">
+          <div class="fc-title"><span>🛍️</span> Product Catalog Grid &amp; Steppers</div>
+          <span class="status-pill done"><span class="status-dot"></span> Delivered</span>
+        </div>
+        <p class="fc-desc">
+          Restored all 4 products in PostgreSQL Store 2 catalog grid. Added interactive <code>[−] [qty] [+]</code> steppers and post-add "View Cart &amp; Checkout" / "Continue Shopping" flow in modal and quick view.
+        </p>
+        <div class="fc-files">
+          <span class="code-pill">clients/smeram/index.html</span>
+          <span class="code-pill">api/theme-designs.js</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="fc-head">
+          <div class="fc-title"><span>🚚</span> Cart Delivery &amp; Inclusive GST Fee Lock</div>
+          <span class="status-pill done"><span class="status-dot"></span> Delivered</span>
+        </div>
+        <p class="fc-desc">
+          Replaced generic "No shipping fee configured" dropdown with read-only <code>✓ Inclusive of GST and free shipping</code> badge, plus merchant toggle <code>show_shipping_field</code> in Store Settings.
+        </p>
+        <div class="fc-files">
+          <span class="code-pill">api/store-renderer.js</span>
+          <span class="code-pill">api/services/checkout-settings.js</span>
+          <span class="code-pill">merchant/store-settings.html</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="fc-head">
+          <div class="fc-title"><span>🤝</span> Dual Co-Branding &amp; Sidebar Navigation</div>
+          <span class="status-pill done"><span class="status-dot"></span> Delivered</span>
+        </div>
+        <p class="fc-desc">
+          Promoted both ZKCommerce platform and client brand (Smeram Natural) seamlessly in the merchant sidebar, unified <code>index.html</code> redirection, and fixed nested navigation links.
+        </p>
+        <div class="fc-files">
+          <span class="code-pill">merchant/dashboard.html</span>
+          <span class="code-pill">merchant/index.html</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="fc-head">
+          <div class="fc-title"><span>📈</span> Merchant Analytics Overhaul (Chart.js)</div>
+          <span class="status-pill done"><span class="status-dot"></span> Delivered</span>
+        </div>
+        <p class="fc-desc">
+          Rebuilt analytics dashboard with Chart.js interactive charts, real-time revenue KPIs, date filters (7D/30D/90D/1Y), top products breakdown, and instant CSV export.
+        </p>
+        <div class="fc-files">
+          <span class="code-pill">merchant/analytics.html</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. What is Still Pending -->
+  <section id="pending-gaps" class="report-section">
+    <div class="section-head">
+      <div class="section-title">
+        <span>5.</span> Remaining Platform Gaps (Prioritized by Severity)
+      </div>
+      <span class="section-tag">Open Backlog</span>
+    </div>
+
+    <div class="table-container">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Domain</th>
+            <th>Identified Gap &amp; Remaining Work</th>
+            <th>Current Limitation</th>
+            <th>Target Release</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status-pill pending">High (P1)</span></td>
+            <td>Multi-Cloud Deployments</td>
+            <td><strong>In-App Direct FTP/SFTP Deployment Engine</strong></td>
+            <td>Merchants receive downloadable ZIP or files; cannot push directly to GoDaddy cPanel host from the UI.</td>
+            <td><code>v4.9.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill pending">High (P1)</span></td>
+            <td>Database Engine</td>
+            <td><strong>MySQL Migration Runner Adapter (<code>db-migrator.js</code>)</strong></td>
+            <td>Migrator hardcodes PostgreSQL (<code>pg</code>); merchants on cPanel MySQL need <code>mysql2</code> connection adapter and DDL.</td>
+            <td><code>v4.9.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill pending">High (P1)</span></td>
+            <td>Database Engine</td>
+            <td><strong>Migration Rollback Step (<code>npm run db:rollback</code>)</strong></td>
+            <td>System only supports forward step (<code>db:step</code>); lacks down-step rollback to undo last batch.</td>
+            <td><code>v4.9.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill partial">Medium (P2)</span></td>
+            <td>Indian Logistics</td>
+            <td><strong>Automated Courier API Booking (Delhivery / Shiprocket)</strong></td>
+            <td>Fulfillment status transitions and AWB numbers are entered manually; lacks live API booking and label PDF.</td>
+            <td><code>v4.9.0 / v5.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill partial">Medium (P2)</span></td>
+            <td>Payments &amp; Fraud</td>
+            <td><strong>COD Verification via WhatsApp / SMS OTP</strong></td>
+            <td>Cash On Delivery orders placed without verification, creating potential Return-To-Origin (RTO) risks.</td>
+            <td><code>v4.9.0 / v5.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill partial">Medium (P2)</span></td>
+            <td>Merchant Admin</td>
+            <td><strong>Embedded In-Frame Theme Customizer (Shopify Model)</strong></td>
+            <td>StoreBuilder is a separate tool on <code>/store-builder/</code>; needs embedded WYSIWYG section preview in merchant admin.</td>
+            <td><code>v5.0.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill" style="background:rgba(59,130,246,0.15);color:#93C5FD;border:1px solid rgba(59,130,246,0.3)">Strategic (P3)</span></td>
+            <td>Marketing &amp; Sales</td>
+            <td><strong>Abandoned Cart WhatsApp Auto-Recovery</strong></td>
+            <td>Abandoned carts recorded in DB but lack automated cron trigger to send WhatsApp recovery discounts.</td>
+            <td><code>v5.0.0</code></td>
+          </tr>
+          <tr>
+            <td><span class="status-pill" style="background:rgba(59,130,246,0.15);color:#93C5FD;border:1px solid rgba(59,130,246,0.3)">Strategic (P3)</span></td>
+            <td>Accounting &amp; Tax</td>
+            <td><strong>Tally &amp; Zoho Books GSTR-1 / GSTR-3B Tax Export</strong></td>
+            <td>Invoices downloaded individually as PDFs; lacks statutory bulk Indian GST JSON/Excel export.</td>
+            <td><code>v5.0.0</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 6. Next Roadmap Release Plan -->
+  <section id="next-roadmap" class="report-section">
+    <div class="section-head">
+      <div class="section-title">
+        <span>6.</span> Proposed Next Roadmap Release Plan
+      </div>
+      <span class="section-tag">Release Engineering</span>
+    </div>
+
+    <div class="roadmap-grid">
+      <!-- Roadmap Card 1: v4.9.0 -->
+      <div class="roadmap-card p1">
+        <div>
+          <span class="rc-tag">RELEASE v4.9.0 · IMMEDIATE SPRINT</span>
+          <h4 class="rc-title">Direct Host Deployments &amp; MySQL Engine</h4>
+          <p class="rc-desc">
+            1. In-app direct FTP/SFTP deployment engine (<code>basic-ftp</code>) allowing one-click publishing to GoDaddy cPanel.<br>
+            2. MySQL dialect runner in <code>api/services/db-migrator.js</code>.<br>
+            3. Database rollback step runner (<code>npm run db:rollback</code>).
+          </p>
+        </div>
+        <div class="rc-meta">
+          <span>Target: <code>api/routes/publish.js</code> &amp; <code>db-migrator.js</code></span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--zk-text-light)">Est: 5-7 Hours</span>
+        </div>
+      </div>
+
+      <!-- Roadmap Card 2: v4.9.5 -->
+      <div class="roadmap-card p2">
+        <div>
+          <span class="rc-tag">RELEASE v4.9.5 · COMMERCE OPERATIONS</span>
+          <h4 class="rc-title">Live Courier Booking &amp; COD Verification</h4>
+          <p class="rc-desc">
+            1. Connect live Delhivery / Shiprocket courier API for automated AWB generation and shipping label PDF print.<br>
+            2. WhatsApp / SMS OTP verification for COD orders to cut RTO.<br>
+            3. Automated tracking link push via WhatsApp outbox.
+          </p>
+        </div>
+        <div class="rc-meta">
+          <span>Target: <code>api/services/shipping.js</code> &amp; <code>orders.js</code></span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--zk-text-light)">Est: 8-10 Hours</span>
+        </div>
+      </div>
+
+      <!-- Roadmap Card 3: v5.0.0 -->
+      <div class="roadmap-card p3">
+        <div>
+          <span class="rc-tag">RELEASE v5.0.0 · ENTERPRISE MILESTONE</span>
+          <h4 class="rc-title">Embedded Theme Customizer &amp; ERP Sync</h4>
+          <p class="rc-desc">
+            1. Embedded in-frame visual section customizer inside <code>merchant/themes.html</code> (Shopify / WordPress Gutenberg model).<br>
+            2. Abandoned cart WhatsApp auto-recovery cron runner.<br>
+            3. Statutory Tally &amp; Zoho Books GSTR-1 Indian tax export.
+          </p>
+        </div>
+        <div class="rc-meta">
+          <span>Target: <code>merchant/themes.html</code> &amp; ERP Export</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--zk-text-light)">Est: Q1 2027</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Action Bar -->
+  <footer class="action-bar">
+    <div>
+      <div class="action-title">Report Stored &amp; Ready in Branch v4.8</div>
+      <div class="action-sub">
+        Stored at <code>release-gap-comparison.html</code> and accessible via <code>http://localhost:3000/release-gap-comparison</code>.
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <a href="/release-history.html" class="nav-btn" style="background:rgba(255,255,255,0.08);color:#fff;">View Release History</a>
+      <a href="/architecture-guide.html" class="nav-btn" style="background:rgba(255,255,255,0.08);color:#fff;">Architecture Guide</a>
+      <a href="/merchant/dashboard.html" class="nav-btn primary">Open Merchant Dashboard</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+function exportTableToCSV() {
+  const table = document.getElementById('auditTable');
+  let csv = [];
+  for (let row of table.rows) {
+    let cols = [];
+    for (let cell of row.cells) {
+      let data = cell.innerText.replace(/"/g, '""').trim();
+      cols.push('"' + data + '"');
+    }
+    csv.push(cols.join(','));
+  }
+  const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.setAttribute('href', url);
+  a.setAttribute('download', 'zkcommerce-version-gap-audit.csv');
+  a.click();
+}
+</script>
+
+</body>
+</html>

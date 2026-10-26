@@ -33,6 +33,7 @@ app.get(['/release-history.html', '/release_history.html', '/changelog'], (req, 
 app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => res.sendFile(path.join(__dirname, '..', 'db-migrations.html')));
 app.get(['/gap-analysis.html', '/gap-analysis', '/audit'], (req, res) => res.sendFile(path.join(__dirname, '..', 'gap-analysis.html')));
 app.get(['/architecture-guide.html', '/architecture-guide', '/architecture', '/architecture-routes.html'], (req, res) => res.sendFile(path.join(__dirname, '..', 'architecture-guide.html')));
+app.get(['/release-gap-comparison.html', '/release-gap-comparison', '/comparison-report', '/comparison-report.html'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-gap-comparison.html')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets'), { fallthrough: true, maxAge: '7d' }));
 
 // â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
