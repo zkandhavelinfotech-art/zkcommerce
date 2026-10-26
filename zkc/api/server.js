@@ -30,6 +30,7 @@ app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
 app.get(['/release-history.html', '/release_history.html', '/changelog'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-history.html')));
 app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => res.sendFile(path.join(__dirname, '..', 'db-migrations.html')));
+app.get(['/gap-analysis.html', '/gap-analysis', '/audit'], (req, res) => res.sendFile(path.join(__dirname, '..', 'gap-analysis.html')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets'), { fallthrough: true, maxAge: '7d' }));
 
 // â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -46,6 +47,10 @@ app.get(['/health', '/api/health'], async (req, res) => {
 // â”€â”€ Route modules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/auth',        require('./routes/auth'));
 app.use('/api/migrations',  require('./routes/migrations'));
+// Catalogue changes (products, categories, pages, stock) go live at once; theme edits still wait for Publish.
+const { liveCatalog } = require('./services/live-catalog');
+app.use(['/api/products', '/api/categories', '/api/inventory'], liveCatalog);
+app.use('/api/stores', (req, res, next) => (/^\/\d+\/(pages|scaffold-pages)(\/|$)/.test(req.path) ? liveCatalog(req, res, next) : next()));
 app.use('/api/stores',      require('./routes/stores'));
 app.use('/api/products',    require('./routes/products'));
 app.use('/api/categories',  require('./routes/categories'));
@@ -227,6 +232,7 @@ server.on('error', error => {
 });
 
 module.exports = app;
+
 
 
 

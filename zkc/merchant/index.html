@@ -355,6 +355,12 @@
     </div>
     <nav class="nav">
       <button class="nav-item active" data-view="overview"><span class="nav-icon">📊</span><span>Overview</span></button>
+      <div class="nav-group-label" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;padding:12px 14px 4px">Catalogue &amp; content</div>
+      <button class="nav-item" data-view="products"><span class="nav-icon">🛍️</span><span>Products</span></button>
+      <button class="nav-item" data-view="categories"><span class="nav-icon">🗂️</span><span>Categories</span></button>
+      <button class="nav-item" data-view="pages"><span class="nav-icon">📄</span><span>Pages</span></button>
+      <button class="nav-item" data-view="theme"><span class="nav-icon">🎨</span><span>Theme &amp; design</span></button>
+      <div class="nav-group-label" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.55;padding:12px 14px 4px">Sales</div>
       <button class="nav-item" data-view="orders"><span class="nav-icon">📦</span><span>Orders & Fulfillment</span></button>
       <button class="nav-item" data-view="packaging"><span class="nav-icon">📮</span><span>Packaging & Labels</span></button>
       <button class="nav-item" data-view="shipments" id="navShipments" style="display:none"><span class="nav-icon">🚚</span><span>Shipments (Ekart)</span></button>
@@ -662,6 +668,24 @@
         <iframe id="shipmentsFrame" title="Shipments and Ekart labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
 
+      <!-- VIEWS: CATALOGUE & CONTENT (Store Builder editors, embedded; saved changes go live at once) -->
+      <section id="view-products" class="view-panel cms-view" data-workspace="products" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Products</h1><p class="page-sub" style="margin:0">Add and edit products, sizes, prices, stock and photos. Saved changes appear in the live shop straight away.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Products" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+      <section id="view-categories" class="view-panel cms-view" data-workspace="categories" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Categories</h1><p class="page-sub" style="margin:0">Create, rename, re-image or remove categories. They show in the Shop menu and on category pages at once.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Categories" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+      <section id="view-pages" class="view-panel cms-view" data-workspace="pages" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Pages</h1><p class="page-sub" style="margin:0">About, Contact, policies and any other page. Saved pages go live at once.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Pages" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+      <section id="view-theme" class="view-panel cms-view" data-workspace="theme" style="display:none">
+        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Theme &amp; design</h1><p class="page-sub" style="margin:0">Change the theme, colours, header menu and sections. Design changes are a draft until you click <b>Publish</b>, so shoppers never see half-finished work.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
+        <iframe class="cms-frame" title="Theme and design" style="width:100%;height:calc(100vh - 190px);min-height:680px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+
       <!-- VIEW: WHATSAPP ORDER MESSAGES -->
       <section id="view-whatsapp" class="view-panel" style="display:none">
         <h1 class="page-title">WhatsApp Order Messages</h1>
@@ -925,6 +949,7 @@
       ]);
       // Views that load on demand refresh for the newly selected store when they are visible.
       if (document.getElementById('view-packaging').style.display === 'block') loadPackagingFrame();
+      document.querySelectorAll('.cms-view').forEach(v => { if (v.style.display === 'block') loadCmsFrame(v); });
       if (document.getElementById('view-deploy').style.display === 'block') loadDeploy();
     }
 
@@ -1240,6 +1265,16 @@
 
     // ── Packaging & labels: merchant/packaging.html in an iframe, loaded when first opened ──
     let packagingStoreLoaded = null, shipmentsStoreLoaded = null;
+    // Catalogue & content views embed the Store Builder editors for the selected store (reloaded when the store changes).
+    function loadCmsFrame(view) {
+      if (!currentStoreId) return;
+      const frame = view.querySelector('.cms-frame');
+      if (frame.dataset.store === String(currentStoreId)) return;
+      const url = '../store-builder/?store_id=' + encodeURIComponent(currentStoreId) + '&workspace=' + view.dataset.workspace;
+      frame.src = url + '&embed=1';
+      view.querySelector('.cms-newtab').href = url;
+      frame.dataset.store = String(currentStoreId);
+    }
     function loadShipmentsFrame() {
       if (!currentStoreId || shipmentsStoreLoaded === currentStoreId) return;
       const url = 'shipments.html?store_id=' + encodeURIComponent(currentStoreId);
@@ -1600,6 +1635,7 @@
       if (target) target.style.display = 'block';
       if (viewName === 'packaging') loadPackagingFrame();
       if (viewName === 'shipments') loadShipmentsFrame();
+      if (target && target.classList.contains('cms-view')) loadCmsFrame(target);
       if (viewName === 'deploy') loadDeploy();
     }
 

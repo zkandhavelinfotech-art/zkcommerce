@@ -203,7 +203,18 @@ function renderDesign(name, ctx) {
       }).filter(Boolean);
     }
     const link = wa(`Hello ${storeName}, I have an enquiry about your products`);
-    return `<nav data-zkc-section="navigation" style="${bg ? `background:${safeColor(bg, '#fff')};` : ''}"><div class="nav-inner"><a href="${storeUrl('/')}" class="brand-logo-wrap">${wordmark()}</a><button type="button" class="nav-burger" aria-label="Menu" aria-expanded="false" onclick="zkNavToggle(this)">☰</button><ul class="nav-links${menu.length ? ' menu-mode' : ''}">${links.join('')}</ul><div class="nav-right">${link ? `<a href="${link}" target="_blank" rel="noopener" class="whatsapp-btn-top">💬 <span>WhatsApp</span></a>` : ''}${fields.nav_cart_show === false ? '' : `<button class="cart-btn" type="button" onclick="openCheckout(event)">🛒 Cart <span class="cart-badge" id="cart">0</span></button>`}</div></div></nav>`;
+    // Menu colours (Store Builder → Header → Menu colours), scoped to this header.
+    const c = (v, d) => (v ? safeColor(v, d) : '');
+    const mc = { text: c(s.link_color), hover: c(s.link_hover_color), sub: c(s.sub_color), subHover: c(s.sub_hover_color), subBg: c(s.sub_bg, '#ffffff') };
+    const N = 'nav[data-zkc-section="navigation"]';
+    const menuCss = [
+      mc.text && `${N} .nav-links>li>a,${N} .nav-drop{color:${mc.text}}`,
+      mc.hover && `${N} .nav-links>li>a:hover,${N} .nav-drop:hover,${N} .has-menu.open .nav-drop{color:${mc.hover}}`,
+      mc.sub && `${N} .nav-links .mega .mega-cat,${N} .nav-links .mega .mega-prod{color:${mc.sub}}`,
+      mc.subHover && `${N} .nav-links .mega .mega-cat:hover,${N} .nav-links .mega .mega-prod:hover,${N} .nav-links .mega .mega-more:hover{color:${mc.subHover}}`,
+      mc.subBg && `${N} .mega-inner{background:${mc.subBg}}`
+    ].filter(Boolean).join('');
+    return `${menuCss ? `<style>${menuCss}</style>` : ''}<nav data-zkc-section="navigation" style="${bg ? `background:${safeColor(bg, '#fff')};` : ''}"><div class="nav-inner"><a href="${storeUrl('/')}" class="brand-logo-wrap">${wordmark()}</a><button type="button" class="nav-burger" aria-label="Menu" aria-expanded="false" onclick="zkNavToggle(this)">☰</button><ul class="nav-links${menu.length ? ' menu-mode' : ''}">${links.join('')}</ul><div class="nav-right">${link ? `<a href="${link}" target="_blank" rel="noopener" class="whatsapp-btn-top">💬 <span>WhatsApp</span></a>` : ''}${fields.nav_cart_show === false ? '' : `<button class="cart-btn" type="button" onclick="openCheckout(event)">🛒 Cart <span class="cart-badge" id="cart">0</span></button>`}</div></div></nav>`;
   };
   const footerAbove = () => {
     if (!isVisible('footer_above')) return '';
