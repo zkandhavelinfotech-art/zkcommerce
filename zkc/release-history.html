@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -469,13 +469,13 @@ body {
       <div>
         <div class="brand-name">ZKCommerce</div>
       </div>
-      <span class="brand-badge">v4.7.1 Stable</span>
+      <span class="brand-badge">v4.8.0 Stable</span>
     </a>
     <nav class="nav-links">
-      <a href="merchant/dashboard.html" class="nav-btn nav-btn-ghost">ðŸ“Š Merchant Portal</a>
-      <a href="store-builder/" class="nav-btn nav-btn-ghost">ðŸŽ¨ StoreBuilder</a>
+      <a href="merchant/dashboard.html" class="nav-btn nav-btn-ghost">📊 Merchant Portal</a>
+      <a href="store-builder/" class="nav-btn nav-btn-ghost">🎨 StoreBuilder</a>
       <a href="https://github.com/zkandhavelinfotech-art/zkcommerce" target="_blank" class="nav-btn nav-btn-primary">
-        <span>GitHub Repo</span> â†—
+        <span>GitHub Repo</span> ↗
       </a>
     </nav>
   </header>
@@ -491,8 +491,8 @@ body {
   <!-- Metrics Grid -->
   <section class="stats-grid">
     <div class="stat-card">
-      <div class="stat-num" style="color:var(--zk-fire)">14</div>
-      <div class="stat-label">Releases Pushed (v4.0 - v4.7.1)</div>
+      <div class="stat-num" style="color:var(--zk-fire)">15</div>
+      <div class="stat-label">Releases Pushed (v4.0 - v4.8.0)</div>
     </div>
     <div class="stat-card">
       <div class="stat-num" style="color:var(--zk-green)">90+</div>
@@ -527,6 +527,87 @@ body {
 
   <!-- Timeline Section -->
   <main class="timeline" id="timelineList">
+
+    <!-- Release 00: v4.8.0-STABLE - Commits f7b1c1c, 5524ef8, b42467d, b44d230, 3f6fef5 -->
+    <article class="release-card" data-category="merchant builder deploy product">
+      <div class="card-top">
+        <div class="version-badge-group">
+          <span class="version-pill" style="background:#ECFDF5;color:#047857;border-color:#A7F3D0;">v4.8.0-STABLE</span>
+          <span class="tag-badge tag-feature">Architecture &amp; UX</span>
+          <span class="tag-badge" style="background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3)">Multi-Tenant Routing</span>
+          <span class="tag-badge" style="background:rgba(245,158,11,0.15);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)">Cart &amp; Checkout</span>
+        </div>
+        <div class="release-meta">
+          <span>🕒 Oct 26, 2026 · 14:15:00</span>
+          <a href="https://github.com/zkandhavelinfotech-art/zkcommerce/commit/f7b1c1c" target="_blank" class="commit-link">commit f7b1c1c</a>
+        </div>
+      </div>
+      <h2 class="release-heading">Interactive Architecture Guide, Announcement Bar Toggle, All Products Catalog Visibility, and Cart GST &amp; Free Shipping Display</h2>
+      <p class="release-desc">
+        Comprehensive platform release establishing the Three-Tier Architecture Guide (/merchant vs /clients/:slug vs /store/:slug), merchant-level announcement bar controls, full product catalog visibility fix with +/- quantity steppers, cart GST &amp; shipping fee lock, dual co-branding in merchant sidebar, and complete analytics redesign with Chart.js.
+      </p>
+
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon">🏛️</span>
+          <span><strong>Interactive Three-Tier Architecture Guide (<code>architecture-guide.html</code>):</strong> Comprehensive interactive visual guide elucidating the differences, use cases, security boundaries, and GoDaddy/Vercel/Railway multi-cloud deployment paradigms across <code>/merchant</code>, <code>/clients/:slug/merchant</code>, and <code>/store/:slug/merchant</code>.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📢</span>
+          <span><strong>Announcement Bar Merchant Toggle:</strong> Added direct merchant controls in Store Settings, Pages, and Theme Customizer (<code>announcement_bar_enabled</code>), dynamically wired into storefront rendering engine to cleanly hide or show promotional banners on demand.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🛍️</span>
+          <span><strong>Product Catalog Visibility &amp; Quantity Steppers:</strong> Resolved PostgreSQL Store 2 product section visibility restoring full catalog display (Hair Oil, Ortho Pain Oil, Ayurgold Face Pack, Health Mix with Nuts). Added interactive <code>[−] [qty] [+]</code> steppers and post-add "View Cart &amp; Checkout" / "Continue Shopping" actions in both product detail modal and quick view.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🚚</span>
+          <span><strong>Cart Delivery &amp; Inclusive GST Fee Lock:</strong> Replaced generic "No shipping fee configured" with read-only/locked <code>✓ Inclusive of GST and free shipping</code> badge in cart drawer, accompanied by a merchant toggle (<code>show_shipping_field</code>) in Store Settings allowing stores to completely hide shipping display if desired.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🤝</span>
+          <span><strong>Merchant Dual Co-Branding &amp; Sidebar Navigation:</strong> Promoted both ZKCommerce platform and client brand (Smeram Natural) seamlessly in the merchant sidebar with unified <code>index.html</code> redirection, fixed character encoding mojibake, and resolved nested navigation links.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">📈</span>
+          <span><strong>Merchant Analytics Dashboard Redesign (<code>analytics.html</code>):</strong> Rebuilt with modern Chart.js interactive charts, real-time KPI metrics (Revenue, Orders, Conversion Rate, AOV), dynamic date filtering (7D/30D/90D/1Y), top products breakdown, and instant CSV export.</span>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon">🎨</span>
+          <span><strong>Visual Header Menu &amp; Submenu Styling Engine:</strong> Interactive theme customizer controls for header menu/submenu background colors, hover states, text colors, and live split preview with standalone PostgreSQL publisher.</span>
+        </li>
+      </ul>
+
+      <div class="code-box">
+        <button class="code-copy-btn" onclick="copySnippet(this)">Copy SQL</button>
+-- Update Store 2 Theme Config for Sections & Announcement Bar
+UPDATE stores
+SET published_snapshot = jsonb_set(
+  jsonb_set(
+    published_snapshot,
+    '{theme_config,sections,products,visible}',
+    'true'::jsonb
+  ),
+  '{theme_config,announcement_bar_enabled}',
+  'true'::jsonb
+)
+WHERE id = 2;
+      </div>
+
+      <div class="files-pills">
+        <span class="file-pill">architecture-guide.html</span>
+        <span class="file-pill">api/server.js</span>
+        <span class="file-pill">api/store-renderer.js</span>
+        <span class="file-pill">api/theme-designs.js</span>
+        <span class="file-pill">api/services/checkout-settings.js</span>
+        <span class="file-pill">merchant/store-settings.html</span>
+        <span class="file-pill">merchant/analytics.html</span>
+        <span class="file-pill">merchant/dashboard.html</span>
+        <span class="file-pill">merchant/index.html</span>
+        <span class="file-pill">clients/smeram/index.html</span>
+        <span class="file-pill">release-history.html</span>
+      </div>
+    </article>
 
     <!-- Release 0A: v4.7.1 - Commit 4c65d5a / ae61737 -->
     <article class="release-card" data-category="database merchant deploy">
