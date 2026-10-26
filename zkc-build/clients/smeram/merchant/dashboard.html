@@ -622,9 +622,11 @@ body {
 
       <div class="zk-sidebar-section-label">Operations &amp; System</div>
       <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Store settings</a>
-      <a href="/db-migrations.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">🔄</span>DB Migrations</a>
-      <a href="/gap-analysis.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">📋</span>Gap Analysis</a>
-      <a href="/release-history.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">📜</span>Release History</a>
+      <div id="platform-owner-tools" style="display:none">
+        <a href="/db-migrations.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">🔄</span>DB Migrations</a>
+        <a href="/gap-analysis.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">📋</span>Gap Analysis</a>
+        <a href="/release-history.html" target="_blank" class="zk-sidebar-link"><span class="sl-icon">📜</span>Release History</a>
+      </div>
     </nav>
 
     <div class="zk-sidebar-footer">
@@ -1319,6 +1321,12 @@ function applyClientBranding(slug) {
   document.querySelectorAll('.client-switch-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.client === c.slug);
   });
+
+  // Developer platform tools (DB Migrations, Gap Analysis, Release History) are hidden for client stores
+  const devTools = document.getElementById('platform-owner-tools');
+  if (devTools) {
+    devTools.style.display = (c.slug === 'demo') ? 'block' : 'none';
+  }
 }
 
 function switchClientContext(slug) {

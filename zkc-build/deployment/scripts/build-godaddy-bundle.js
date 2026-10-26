@@ -62,12 +62,16 @@ function buildBundle() {
   fs.writeFileSync(destHtmlPath, html, 'utf8');
   console.log(`✅ Generated standalone root index.html (${html.length} bytes)`);
 
-  // 3. Copy Merchant Admin Portal and Auth
+  // 3. Copy Merchant Admin Portal and Auth (excluding internal SaaS platform developer tools)
   const srcMerchantDir = path.join(__dirname, '../../merchant');
   const destMerchantDir = path.join(bundleDir, 'merchant');
   fs.mkdirSync(destMerchantDir, { recursive: true });
-  fs.cpSync(srcMerchantDir, destMerchantDir, { recursive: true });
-  console.log(`✅ Copied merchant portal to ${destMerchantDir}`);
+  const EXCLUDED_DEV_FILES = ['db-migrations.html', 'gap-analysis.html', 'release-history.html'];
+  fs.cpSync(srcMerchantDir, destMerchantDir, {
+    recursive: true,
+    filter: (src) => !EXCLUDED_DEV_FILES.some(f => src.endsWith(f))
+  });
+  console.log(`✅ Copied merchant portal to ${destMerchantDir} (internal dev tools excluded)`);
 
   const srcAuthDir = path.join(__dirname, '../../auth');
   const destAuthDir = path.join(bundleDir, 'auth');
