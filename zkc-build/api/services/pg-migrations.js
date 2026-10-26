@@ -66,6 +66,17 @@ const MIGRATIONS = [
     id: '004_product_display',
     description: 'Per-product offer display override (NULL = follow the store setting)',
     sql: ['ALTER TABLE products ADD COLUMN IF NOT EXISTS show_offer BOOLEAN']
+  },
+  {
+    id: '005_shipping',
+    description: 'Ekart shipping settings, tracking link and shipped/delivered times on orders',
+    sql: [
+      'ALTER TABLE stores ADD COLUMN IF NOT EXISTS shipping_settings JSONB',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_url TEXT',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ',
+      'CREATE INDEX IF NOT EXISTS idx_orders_store_tracking ON orders(store_id, tracking_number)'
+    ]
   }
 ];
 

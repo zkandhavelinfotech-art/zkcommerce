@@ -78,7 +78,9 @@ We will share tracking details once it ships.`,
 Only *{stock_left}* left (alert level {threshold}).
 Restock soon to avoid missing orders.`,
   shipped_template: `🚚 Hello {customer_name}, your {store_name} order *{order_id}* has shipped with {courier}.
-Track it here: {tracking_url}`
+Track it here: {tracking_url}`,
+  delivered_template: `✅ Hello {customer_name}, your {store_name} order *{order_id}* has been delivered.
+Thank you for shopping with us! Reply here if anything is not right.`
 };
 
 function cleanPhone(phone) {
@@ -119,7 +121,7 @@ async function loadSettings(storeId) {
 async function saveSettings(storeId, body) {
   await ensureColumn();
   const next = {};
-  for (const k of ['care_template', 'customer_template', 'low_stock_template', 'shipped_template', 'care_label']) if (body[k] !== undefined) next[k] = String(body[k]).slice(0, 3000);
+  for (const k of ['care_template', 'customer_template', 'low_stock_template', 'shipped_template', 'delivered_template', 'care_label']) if (body[k] !== undefined) next[k] = String(body[k]).slice(0, 3000);
   for (const k of ['enabled', 'customer_handoff']) if (body[k] !== undefined) next[k] = !!body[k];
   if (body.care_number !== undefined) {
     const p = cleanPhone(body.care_number);

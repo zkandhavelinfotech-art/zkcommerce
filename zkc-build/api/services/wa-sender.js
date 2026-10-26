@@ -17,7 +17,8 @@ const KINDS = {
   order_confirmation: 'Order confirmation to the customer',
   care_alert: 'New order alert to customer care',
   low_stock: 'Low-stock alert to the merchant',
-  order_shipped: 'Shipped / tracking update to the customer'
+  order_shipped: 'Shipped / tracking update to the customer',
+  order_delivered: 'Delivered update to the customer'
 };
 
 function defaults() {
@@ -26,7 +27,7 @@ function defaults() {
     zkwaconnect: { base_url: '', api_key: '', phone_number_id: '' },
     gupshup: { app_name: '', source_number: '', api_key: '' },
     templates: Object.fromEntries(Object.keys(KINDS).map(k => [k, { name: '', language: 'en', variables: '' }])),
-    auto: { order_confirmation: true, care_alert: true, low_stock: true, order_shipped: true }
+    auto: { order_confirmation: true, care_alert: true, low_stock: true, order_shipped: true, order_delivered: true }
   };
 }
 
@@ -160,6 +161,17 @@ async function notifyOrderConfirmed(storeId, order, store) {
   } catch (e) { console.warn('[WhatsApp] order notification error:', e.message); return []; }
 }
 
+/** Order marked shipped or delivered: tell the customer (tracking link in the shipped message). Never throws. */
+async function notifyShipment(storeId, order, store, stage) {
+  try {
+    const wa = await orderMessages.loadSettings(storeId);
+    if (!wa || !wa.enabled || !order.customer_phone) return [];
+    const kind = stage === 'delivered' ? 'order_delivered' : 'order_shipped';
+    const tpl = stage === 'delivered' ? wa.delivered_template : wa.shipped_template;
+    return [await send(storeId, { kind, to: order.customer_phone, text: orderMessages.render(tpl, order, store), order, store, orderId: order.id })];
+  } catch (e) { console.warn('[WhatsApp] shipment update error:', e.message); return []; }
+}
+
 /** Stock fell to/below the threshold: alert the merchant's customer-care number. Never throws. */
 async function notifyLowStock(storeId, crossings) {
   if (!crossings || !crossings.length) return [];
@@ -189,4 +201,4 @@ async function markSent(storeId, id) {
   return rowCount > 0;
 }
 
-module.exports = { PROVIDERS, KINDS, loadSender, publicSender, saveSender, send, notifyOrderConfirmed, notifyLowStock, outbox, markSent };
+module.exports = { PROVIDERS, KINDS, loadSender, publicSender, saveSender, send, notifyOrderConfirmed, notifyShipment, notifyLowStock, outbox, markSent };

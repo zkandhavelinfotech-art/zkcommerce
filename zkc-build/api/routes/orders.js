@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const pool   = require('../db');
 const auth   = require('../middleware/auth');
-const whatsapp = require('../services/whatsapp');
+const shipping = require('../services/shipping');
 const orderMessages = require('../services/order-messages');
 const inventory = require('../services/inventory');
 const waSender = require('../services/wa-sender');
@@ -164,14 +164,19 @@ router.put('/:id/status', auth, async (req, res) => {
 
     // Status change and stock move together: cancelling returns stock, un-cancelling a paid/COD order takes it again.
     const client = await pool.connect();
-    let rows, lowStock = [];
+    let rows, prev, lowStock = [];
     try {
       await client.query('BEGIN');
-      const { rows: [prev] } = await client.query('SELECT status FROM orders WHERE id=$1 AND store_id=$2 FOR UPDATE', [req.params.id, store.id]);
+      ({ rows: [prev] } = await client.query('SELECT status FROM orders WHERE id=$1 AND store_id=$2 FOR UPDATE', [req.params.id, store.id]));
+      if (!prev) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Order not found' }); }
+      const awb = tracking_number ? shipping.cleanAwb(tracking_number) : null;
+      const ship = awb ? await shipping.settingsFor(store.id, client) : null;
       ({ rows } = await client.query(
-        `UPDATE orders SET status=$3, tracking_number=COALESCE($4, tracking_number), courier=COALESCE($5, courier), updated_at=NOW()
+        `UPDATE orders SET status=$3::text, tracking_number=COALESCE($4, tracking_number), courier=COALESCE($5, courier), tracking_url=COALESCE($6, tracking_url),
+           shipped_at=CASE WHEN $3::text IN ('shipped','delivered') THEN COALESCE(shipped_at, NOW()) ELSE shipped_at END,
+           delivered_at=CASE WHEN $3::text='delivered' THEN COALESCE(delivered_at, NOW()) ELSE delivered_at END, updated_at=NOW()
          WHERE id=$1 AND store_id=$2 RETURNING *`,
-        [req.params.id, store.id, status, tracking_number || null, courier || null]
+        [req.params.id, store.id, status, awb, awb ? (courier || ship.courier_name) : (courier || null), awb ? shipping.trackingUrl(ship, awb) : null]
       ));
       if (rows.length && (status === 'cancelled' || status === 'returned')) await inventory.restockForOrder(client, rows[0].id);
       // Only orders coming back from cancelled/returned take stock again (older orders predate stock tracking).
@@ -183,17 +188,15 @@ router.put('/:id/status', auth, async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Order not found' });
     waSender.notifyLowStock(store.id, lowStock);
 
-    // If marked shipped, notify customer on WhatsApp
-    if (status === 'shipped') {
-      try {
-        await whatsapp.sendOrderTrackingNotification({ order: rows[0], store });
-      } catch (waErr) {
-        console.warn('[Orders Status WhatsApp] Warning:', waErr.message);
-      }
+    // Shipped / delivered: WhatsApp the customer once, when the status actually changes.
+    let whatsappResult = [];
+    if ((status === 'shipped' || status === 'delivered') && prev.status !== status) {
+      const { rows: [shop] } = await pool.query('SELECT store_name FROM stores WHERE id=$1', [store.id]);
+      whatsappResult = await waSender.notifyShipment(store.id, rows[0], shop, status);
     }
 
-    res.json({ order: rows[0], message: `Order updated to ${status}` });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    res.json({ order: rows[0], whatsapp: whatsappResult, message: `Order updated to ${status}` });
+  } catch (e) { res.status(e.status || 500).json({ error: e.message }); }
 });
 
 router.get('/:id/invoice', auth, async (req, res) => {

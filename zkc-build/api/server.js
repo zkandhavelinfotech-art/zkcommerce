@@ -70,6 +70,7 @@ app.use('/api/upload',      require('./routes/upload'));
 app.use('/api/notify',      require('./routes/notify'));
 app.use('/api/inventory',   require('./routes/inventory'));
 app.use('/api/whatsapp',    require('./routes/whatsapp'));
+app.use('/api/shipments',   require('./routes/shipments'));
 
 async function serveStore(req, res, identifier, subpath = '/', basePathOverride = null) {
   const cleanId = String(identifier || '').toLowerCase().trim().replace(/^www\./, '');

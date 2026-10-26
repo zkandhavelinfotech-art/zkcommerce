@@ -357,6 +357,7 @@
       <button class="nav-item active" data-view="overview"><span class="nav-icon">📊</span><span>Overview</span></button>
       <button class="nav-item" data-view="orders"><span class="nav-icon">📦</span><span>Orders & Fulfillment</span></button>
       <button class="nav-item" data-view="packaging"><span class="nav-icon">📮</span><span>Packaging & Labels</span></button>
+      <button class="nav-item" data-view="shipments" id="navShipments" style="display:none"><span class="nav-icon">🚚</span><span>Shipments (Ekart)</span></button>
       <button class="nav-item" data-view="invoices"><span class="nav-icon">🧾</span><span>Invoices & GST</span></button>
       <button class="nav-item" data-view="customers"><span class="nav-icon">👥</span><span>Customers</span></button>
       <button class="nav-item" data-view="coupons"><span class="nav-icon">🏷️</span><span>Coupons</span></button>
@@ -580,6 +581,30 @@
         <h1 class="page-title">Shipping & Delivery Rates</h1>
         <p class="page-sub">Configure flat rates, free shipping thresholds, and pincode prefix rules.</p>
 
+        <div class="card" id="ekartCard">
+          <h2 style="font-size:16px;margin:0 0 6px">Ekart shipping</h2>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Optional. When on, the <b>Shipments (Ekart)</b> page lets you enter or scan AWBs, print barcode shipping labels and send tracking links on WhatsApp.</p>
+          <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer;max-width:680px"><input type="checkbox" id="ekEnabled"><span><b>Enable Ekart shipping</b><br><small style="color:var(--muted)">Off by default — turn on when you start shipping with Ekart.</small></span></label>
+          <div id="ekFields" style="margin-top:12px">
+            <div class="form-grid">
+              <div class="form-group"><label>How AWBs are created</label>
+                <select id="ekMode"><option value="manual">Manual — book on the Ekart portal, enter / scan the AWB here</option><option value="api">Ekart API — book automatically (needs API access)</option></select></div>
+              <div class="form-group"><label>Courier name on labels</label><input id="ekCourier" placeholder="Ekart"></div>
+              <div class="form-group" style="grid-column:1/-1"><label>Tracking link ({awb} is replaced)</label><input id="ekTrack" placeholder="https://ekartlogistics.com/shipmenttrack/{awb}"></div>
+            </div>
+            <details id="ekApiBox" style="margin:4px 0 10px"><summary style="cursor:pointer;font-size:13px;font-weight:700">Ekart API access (for later)</summary>
+              <div class="form-grid" style="margin-top:10px">
+                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="From Ekart"></div>
+                <div class="form-group"><label>Client ID</label><input id="ekApiClient"></div>
+                <div class="form-group"><label>Merchant code</label><input id="ekApiMerchant"></div>
+                <div class="form-group"><label>API key</label><input id="ekApiKey" type="password" placeholder="Leave blank to keep the saved key"></div>
+              </div>
+            </details>
+          </div>
+          <div id="ekStatus" style="font-size:13px;font-weight:600;margin:8px 0;min-height:18px"></div>
+          <button class="btn-primary" id="btnSaveEkart">Save Ekart settings</button>
+        </div>
+
         <div class="card">
           <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
           <form id="shippingRateForm">
@@ -626,6 +651,17 @@
         <iframe id="packagingFrame" title="Packaging and delivery labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
 
+      <section id="view-shipments" class="view-panel" style="display:none">
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Shipments & Ekart Labels</h1>
+            <p class="page-sub" style="margin:0">Enter or scan the AWB from the Ekart portal, print barcode labels, then mark orders shipped / delivered — the customer gets the tracking link on WhatsApp.</p>
+          </div>
+          <a class="btn-outline btn-sm" id="shipmentsNewTab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe id="shipmentsFrame" title="Shipments and Ekart labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+      </section>
+
       <!-- VIEW: WHATSAPP ORDER MESSAGES -->
       <section id="view-whatsapp" class="view-panel" style="display:none">
         <h1 class="page-title">WhatsApp Order Messages</h1>
@@ -646,6 +682,7 @@
           <div class="form-grid" style="align-items:start">
             <div class="form-group"><label>Low-stock alert (to customer care)</label><textarea id="waLowTpl" rows="6" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
             <div class="form-group"><label>Shipped update (to the customer)</label><textarea id="waShippedTpl" rows="6" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
+            <div class="form-group"><label>Delivered update (to the customer)</label><textarea id="waDeliveredTpl" rows="6" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace"></textarea></div>
           </div>
           <div style="font-size:12px;font-weight:700;color:var(--muted);margin:4px 0 6px">Preview (sample order) — <span id="waPreviewWhich">customer care</span></div>
           <pre id="waPreview" style="white-space:pre-wrap;background:#ecfdf5;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font:13px/1.45 system-ui,sans-serif;margin:0 0 12px"></pre>
@@ -881,6 +918,7 @@
         loadWhatsAppSettings(),
         loadCheckoutSettings(),
         loadDisplaySettings(),
+        loadEkartSettings(),
         loadSender(),
         loadOutbox(),
         loadInventory()
@@ -1201,7 +1239,53 @@
     const escAttr = escHtml;
 
     // ── Packaging & labels: merchant/packaging.html in an iframe, loaded when first opened ──
-    let packagingStoreLoaded = null;
+    let packagingStoreLoaded = null, shipmentsStoreLoaded = null;
+    function loadShipmentsFrame() {
+      if (!currentStoreId || shipmentsStoreLoaded === currentStoreId) return;
+      const url = 'shipments.html?store_id=' + encodeURIComponent(currentStoreId);
+      document.getElementById('shipmentsFrame').src = url + '&embed=1';
+      document.getElementById('shipmentsNewTab').href = url;
+      shipmentsStoreLoaded = currentStoreId;
+    }
+    // ── Ekart shipping (optional; off by default) ──
+    function ekartShowFields() {
+      const on = document.getElementById('ekEnabled').checked;
+      document.getElementById('ekFields').style.display = on ? '' : 'none';
+      document.getElementById('navShipments').style.display = on ? '' : 'none';
+    }
+    async function loadEkartSettings() {
+      try {
+        const { settings: s } = await req('/shipments/settings?store_id=' + currentStoreId);
+        document.getElementById('ekEnabled').checked = !!s.enabled;
+        document.getElementById('ekMode').value = s.mode;
+        document.getElementById('ekCourier').value = s.courier_name || '';
+        document.getElementById('ekTrack').value = s.tracking_url_template || '';
+        document.getElementById('ekApiBase').value = s.api.base_url || '';
+        document.getElementById('ekApiClient').value = s.api.client_id || '';
+        document.getElementById('ekApiMerchant').value = s.api.merchant_code || '';
+        document.getElementById('ekApiKey').value = '';
+        document.getElementById('ekApiKey').placeholder = s.api.has_api_key ? 'Saved — leave blank to keep' : 'From Ekart';
+        document.getElementById('ekStatus').textContent = '';
+        shipmentsStoreLoaded = null;
+        ekartShowFields();
+        if (!s.enabled && document.getElementById('view-shipments').style.display === 'block') switchView('shipping');
+      } catch (e) { console.warn('Ekart settings:', e.message); }
+    }
+    async function saveEkartSettings() {
+      const st = document.getElementById('ekStatus'), key = document.getElementById('ekApiKey').value.trim();
+      try {
+        await req('/shipments/settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
+          enabled: document.getElementById('ekEnabled').checked,
+          mode: document.getElementById('ekMode').value,
+          courier_name: document.getElementById('ekCourier').value,
+          tracking_url_template: document.getElementById('ekTrack').value,
+          api: { base_url: document.getElementById('ekApiBase').value, client_id: document.getElementById('ekApiClient').value, merchant_code: document.getElementById('ekApiMerchant').value, ...(key ? { api_key: key } : {}) }
+        }) });
+        await loadEkartSettings();
+        st.style.color = '#15803d';
+        st.textContent = document.getElementById('ekEnabled').checked ? '✅ Saved — open Shipments (Ekart) in the menu.' : '✅ Saved — Ekart shipping is off.';
+      } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
+    }
     function loadPackagingFrame() {
       if (!currentStoreId || packagingStoreLoaded === currentStoreId) return;
       const url = 'packaging.html?store_id=' + encodeURIComponent(currentStoreId);
@@ -1215,7 +1299,7 @@
     const waSample = () => ({ order_id: 'ZK1792938487215', customer_name: 'Priya Nair', customer_phone: '+91 98765 43210', customer_email: 'priya@example.com', products: '1. Smeram Naturals Hair Oil (100 ml) × 2 — ₹598', product_names: 'Smeram Naturals Hair Oil', item_count: '2', total: '₹598', payment_method: 'Paid online (Razorpay)', payment_status: 'paid', address: '12 Lake View Road, Chennai, Tamil Nadu, 600041', city: 'Chennai', pincode: '600041', order_date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), order_time: '10:42 am', tracking_number: 'EK123456789', courier: 'Ekart', tracking_url: 'https://ekartlogistics.com/shipmenttrack/EK123456789', product_name: 'Smeram Naturals Hair Oil', variant: '(100 ml)', stock_left: '48', threshold: '50', store_name: currentStore ? currentStore.store_name : '' });
     function waRenderPreview() {
       const el = waLastFocus || document.getElementById('waCareTpl'), sample = waSample();
-      document.getElementById('waPreviewWhich').textContent = ({ waCustomerTpl: 'customer', waLowTpl: 'low-stock alert', waShippedTpl: 'shipped update' })[el.id] || 'customer care';
+      document.getElementById('waPreviewWhich').textContent = ({ waCustomerTpl: 'customer', waLowTpl: 'low-stock alert', waShippedTpl: 'shipped update', waDeliveredTpl: 'delivered update' })[el.id] || 'customer care';
       document.getElementById('waPreview').textContent = el.value.replace(/\{([a-z_]+)\}/g, (m, k) => sample[k] !== undefined ? sample[k] : m);
     }
     async function loadWhatsAppSettings() {
@@ -1231,6 +1315,7 @@
         document.getElementById('waCustomerTpl').value = s.customer_template || '';
         document.getElementById('waLowTpl').value = s.low_stock_template || '';
         document.getElementById('waShippedTpl').value = s.shipped_template || '';
+        document.getElementById('waDeliveredTpl').value = s.delivered_template || '';
         document.getElementById('waChips').innerHTML = d.placeholders.map(p => `<button type="button" class="btn-outline btn-sm" data-ph="${escAttr(p.key)}" title="${escAttr(p.label)}">{${escHtml(p.key)}}</button>`).join('');
         document.querySelectorAll('#waChips [data-ph]').forEach(b => b.onclick = () => {
           const el = waLastFocus || document.getElementById('waCareTpl'), tok = '{' + b.dataset.ph + '}', at = el.selectionStart ?? el.value.length;
@@ -1251,7 +1336,8 @@
           care_template: document.getElementById('waCareTpl').value,
           customer_template: document.getElementById('waCustomerTpl').value,
           low_stock_template: document.getElementById('waLowTpl').value,
-          shipped_template: document.getElementById('waShippedTpl').value
+          shipped_template: document.getElementById('waShippedTpl').value,
+          delivered_template: document.getElementById('waDeliveredTpl').value
         }) });
         document.getElementById('waCareNumber').value = r.settings.care_number ? '+' + r.settings.care_number : '';
         st.style.color = '#15803d';
@@ -1513,6 +1599,7 @@
       const target = document.getElementById('view-' + viewName);
       if (target) target.style.display = 'block';
       if (viewName === 'packaging') loadPackagingFrame();
+      if (viewName === 'shipments') loadShipmentsFrame();
       if (viewName === 'deploy') loadDeploy();
     }
 
@@ -1542,11 +1629,13 @@
     document.getElementById('btnReloadOutbox').onclick = loadOutbox;
     document.getElementById('btnSaveInvSettings').onclick = saveInventorySettings;
     document.getElementById('invLowOnly').onchange = renderInventory;
-    document.getElementById('btnResetWa').onclick = () => { if (!waDefaults) return; document.getElementById('waCareTpl').value = waDefaults.care_template; document.getElementById('waCustomerTpl').value = waDefaults.customer_template; document.getElementById('waLowTpl').value = waDefaults.low_stock_template || ''; document.getElementById('waShippedTpl').value = waDefaults.shipped_template || ''; waRenderPreview(); };
-    ['waCareTpl', 'waCustomerTpl', 'waLowTpl', 'waShippedTpl'].forEach(id => { const el = document.getElementById(id); el.onfocus = () => { waLastFocus = el; waRenderPreview(); }; el.oninput = waRenderPreview; });
+    document.getElementById('btnResetWa').onclick = () => { if (!waDefaults) return; document.getElementById('waCareTpl').value = waDefaults.care_template; document.getElementById('waCustomerTpl').value = waDefaults.customer_template; document.getElementById('waLowTpl').value = waDefaults.low_stock_template || ''; document.getElementById('waShippedTpl').value = waDefaults.shipped_template || ''; document.getElementById('waDeliveredTpl').value = waDefaults.delivered_template || ''; waRenderPreview(); };
+    ['waCareTpl', 'waCustomerTpl', 'waLowTpl', 'waShippedTpl', 'waDeliveredTpl'].forEach(id => { const el = document.getElementById(id); el.onfocus = () => { waLastFocus = el; waRenderPreview(); }; el.oninput = waRenderPreview; });
     ['coShowCoupon', 'coRazorpay', 'coCod'].forEach(id => document.getElementById(id).onchange = validateCheckout);
     document.getElementById('btnSaveCheckout').onclick = () => saveCheckout(false);
     document.getElementById('btnSaveDisplay').onclick = saveDisplaySettings;
+    document.getElementById('btnSaveEkart').onclick = saveEkartSettings;
+    document.getElementById('ekEnabled').onchange = ekartShowFields;
     document.getElementById('btnPublishCheckout').onclick = () => saveCheckout(true);
     document.getElementById('depDlTarget').onchange = e => { try { localStorage.setItem('zk_dl_target', e.target.value); } catch (_) {} };
     document.getElementById('orderStatusFilter').onchange = loadOrders;
