@@ -453,6 +453,144 @@ async function initThemes() {
   renderThemeLibrary();
 }
 
+function switchCustomizerTab(tab) {
+  document.querySelectorAll('.customizer-tab-panel').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('tab-btn-header').className = 'btn btn-sm btn-secondary';
+  document.getElementById('tab-btn-brand').className = 'btn btn-sm btn-secondary';
+  document.getElementById('tab-btn-hero').className = 'btn btn-sm btn-secondary';
+
+  document.getElementById('tab-panel-' + tab).style.display = 'block';
+  document.getElementById('tab-btn-' + tab).className = 'btn btn-sm btn-primary';
+}
+
+function syncColorInput(sourceId, targetId) {
+  var src = document.getElementById(sourceId);
+  var tgt = document.getElementById(targetId);
+  if (src && tgt) {
+    tgt.value = src.value;
+  }
+}
+
+function toggleLivePreviewModal() {
+  var modal = document.getElementById('livePreviewModal');
+  if (!modal) return;
+  if (modal.style.display === 'none' || !modal.style.display) {
+    modal.style.display = 'flex';
+    reloadPreviewIframe();
+  } else {
+    modal.style.display = 'none';
+  }
+}
+
+function reloadPreviewIframe() {
+  var iframe = document.getElementById('storePreviewIframe');
+  if (iframe) {
+    iframe.src = '/storefront/home.html?t=' + Date.now();
+  }
+}
+
+async function saveVisualCustomizer() {
+  var token = auth.token;
+  if (!token) return;
+
+  var btn = document.getElementById('customizer-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  var primary = document.getElementById('quick-primary-hex').value;
+  var accent  = document.getElementById('quick-accent-hex').value;
+  var ctaText = document.getElementById('quick-cta-text').value;
+  var tagline = document.getElementById('quick-tagline').value;
+
+  // Header Menu Colors
+  var linkColor = document.getElementById('menu-link-hex').value;
+  var linkHover = document.getElementById('menu-link-hover-hex').value;
+  var subColor  = document.getElementById('menu-sub-hex').value;
+  var subHover  = document.getElementById('menu-sub-hover-hex').value;
+  var subBg     = document.getElementById('menu-sub-bg-hex').value;
+  var navBg     = document.getElementById('menu-nav-bg-hex').value;
+
+  // Announcement & Hero
+  var annText   = document.getElementById('ann-text') ? document.getElementById('ann-text').value : '';
+  var annBg     = document.getElementById('ann-bg-hex') ? document.getElementById('ann-bg-hex').value : '#1688E8';
+  var heroH1    = document.getElementById('hero-headline') ? document.getElementById('hero-headline').value : '';
+  var heroSub   = document.getElementById('hero-subtext') ? document.getElementById('hero-subtext').value : '';
+
+  var currentConfig = (CURRENT_STORE && CURRENT_STORE.theme_config) ? CURRENT_STORE.theme_config : {
+    themeId: 'botanical',
+    palette: {},
+    sections: {},
+    fields: {}
+  };
+
+  if (!currentConfig.palette) currentConfig.palette = {};
+  currentConfig.palette.primary = primary;
+  currentConfig.palette.accent = accent;
+
+  if (!currentConfig.sections) currentConfig.sections = {};
+  if (!currentConfig.sections.nav) currentConfig.sections.nav = {};
+  currentConfig.sections.nav.link_color = linkColor;
+  currentConfig.sections.nav.link_hover_color = linkHover;
+  currentConfig.sections.nav.sub_color = subColor;
+  currentConfig.sections.nav.sub_hover_color = subHover;
+  currentConfig.sections.nav.sub_bg = subBg;
+  currentConfig.sections.nav.background = navBg;
+
+  if (!currentConfig.sections.announcement) currentConfig.sections.announcement = {};
+  if (annText) currentConfig.sections.announcement.text = annText;
+  currentConfig.sections.announcement.background = annBg;
+
+  if (!currentConfig.sections.hero) currentConfig.sections.hero = {};
+  if (heroH1) currentConfig.sections.hero.heading = heroH1;
+  if (heroSub) currentConfig.sections.hero.description = heroSub;
+  if (ctaText) currentConfig.sections.hero.button = ctaText;
+
+  if (!currentConfig.fields) currentConfig.fields = {};
+  currentConfig.fields.hero_cta = ctaText;
+  currentConfig.fields.nav_bg = navBg;
+
+  var payload = {
+    theme_config: currentConfig,
+    store_fields: {
+      primary_colour: primary,
+      accent_colour: accent,
+      hero_cta_text: ctaText,
+      tagline: tagline,
+      hero_headline: heroH1 || undefined,
+      hero_subtext: heroSub || undefined
+    }
+  };
+
+  try {
+    var r = await fetch(API_BASE + '/stores/' + STORE_ID + '/draft', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    var d = await r.json();
+
+    // Also auto-publish so it reflects immediately on customer live site
+    await fetch(API_BASE + '/stores/' + STORE_ID + '/publish', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (d.store) {
+      toast.success('Live Storefront & Header styling updated and published directly to database!');
+      CURRENT_STORE = d.store;
+      populateActiveTheme(d.store);
+      reloadPreviewIframe();
+    } else {
+      toast.error(d.error || 'Failed to update store');
+    }
+  } catch(e) {
+    toast.error('Network error saving customizer: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save & Publish Live';
+  }
+}
+
 function populateActiveTheme(store) {
   var primary = store.primary_colour || '#ED6375';
   var accent  = store.accent_colour || '#A3B545';

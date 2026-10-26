@@ -206,7 +206,7 @@ function renderDesign(name, ctx) {
     // Menu colours (Store Builder → Header → Menu colours), scoped to this header.
     const c = (v, d) => (v ? safeColor(v, d) : '');
     const mc = { text: c(s.link_color), hover: c(s.link_hover_color), sub: c(s.sub_color), subHover: c(s.sub_hover_color), subBg: c(s.sub_bg, '#ffffff') };
-    const N = 'nav[data-zkc-section="navigation"]';
+    const N = 'nav[data-zkc-section="navigation"], header[data-zkc-section="navigation"]';
     const menuCss = [
       mc.text && `${N} .nav-links>li>a,${N} .nav-drop{color:${mc.text}}`,
       mc.hover && `${N} .nav-links>li>a:hover,${N} .nav-drop:hover,${N} .has-menu.open .nav-drop{color:${mc.hover}}`,
