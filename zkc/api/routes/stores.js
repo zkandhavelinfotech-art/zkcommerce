@@ -402,6 +402,27 @@ router.post('/:id/deployment-package', auth, async (req, res) => {
   } catch (e) { sendError(res, e); }
 });
 
+// POST /api/stores/:id/api-package — build dedicated standalone PHP API + Swagger + DB tester package
+router.post('/:id/api-package', auth, async (req, res) => {
+  try {
+    const { execSync } = require('child_process');
+    const scriptPath = path.join(__dirname, '../../deployment/scripts/build-api-bundle.js');
+    execSync(`node "${scriptPath}"`, { stdio: 'pipe' });
+    const version = '1.0.12';
+    const zipName = `smeram-api-v${version}.zip`;
+    res.json({
+      success: true,
+      package: {
+        zip_name: zipName,
+        version: version,
+        swagger_url: 'swagger.html',
+        test_db_url: 'test-db.php',
+        message: 'Standalone API & Swagger package v' + version + ' ready for download'
+      }
+    });
+  } catch (e) { sendError(res, e); }
+});
+
 // Find a built ZIP for this store: a recorded package, or an older version still on disk.
 // Returns { zip_path, zip_name } | { error, status } | null (nothing built yet and no file asked for).
 function resolvePackage(loaded, file) {

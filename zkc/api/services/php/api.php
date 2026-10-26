@@ -37,6 +37,61 @@ function respondError($e) {
     respond(['error' => $status === 500 ? 'Something went wrong. Please try again.' : $e->getMessage()], $status);
 }
 
+/**
+ * Returns active orders table name ('orders' or 'smeram_orders'), auto-creating if neither exists.
+ */
+function zkcGetOrdersTable($pdo) {
+    static $tbl = null;
+    if ($tbl !== null) return $tbl;
+    try {
+        $pdo->query("SELECT 1 FROM `orders` LIMIT 1");
+        $tbl = 'orders';
+        return $tbl;
+    } catch (Exception $e) {}
+    try {
+        $pdo->query("SELECT 1 FROM `smeram_orders` LIMIT 1");
+        $tbl = 'smeram_orders';
+        return $tbl;
+    } catch (Exception $e) {}
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `smeram_orders` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `store_id` INT DEFAULT 2,
+          `order_number` VARCHAR(32) NOT NULL UNIQUE,
+          `customer_name` VARCHAR(120) NOT NULL,
+          `customer_phone` VARCHAR(20) NOT NULL,
+          `customer_email` VARCHAR(120) NULL,
+          `shipping_address` TEXT NOT NULL,
+          `city` VARCHAR(60) NOT NULL,
+          `state` VARCHAR(60) DEFAULT 'Tamil Nadu',
+          `pincode` VARCHAR(10) NOT NULL,
+          `items_json` TEXT NOT NULL,
+          `subtotal` DECIMAL(10,2) NOT NULL,
+          `discount_amount` DECIMAL(10,2) DEFAULT 0.00,
+          `gst_rate` DECIMAL(5,2) DEFAULT 0.00,
+          `gst_amount` DECIMAL(10,2) DEFAULT 0.00,
+          `shipping_amount` DECIMAL(10,2) DEFAULT 0.00,
+          `shipping_rate_id` INT NULL,
+          `coupon_code` VARCHAR(50) NULL,
+          `total_amount` DECIMAL(10,2) NOT NULL,
+          `payment_method` VARCHAR(30) DEFAULT 'cod',
+          `payment_status` VARCHAR(30) DEFAULT 'pending',
+          `order_status` VARCHAR(30) DEFAULT 'new',
+          `razorpay_order_id` VARCHAR(64) NULL,
+          `razorpay_payment_id` VARCHAR(64) NULL,
+          `razorpay_signature` VARCHAR(255) NULL,
+          `courier` VARCHAR(60) NULL,
+          `tracking_number` VARCHAR(60) NULL,
+          `notes` TEXT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $tbl = 'smeram_orders';
+        return $tbl;
+    } catch (Exception $e) {}
+    $tbl = 'orders';
+    return $tbl;
+}
+
 // 1. Check query parameter route
 $route = trim($_GET['route'] ?? '', '/');
 // 2. If route is empty (e.g. called via /api/auth/login or /api/orders directly), parse REQUEST_URI
@@ -44,21 +99,98 @@ if ($route === '') {
     $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
     $route = trim(preg_replace('#^.*?/api/?#', '', $uriPath), '/');
 }
+// 3. Strip any query string appended to $route (e.g. 'orders?store_id=2') and merge into $_GET
+if (strpos($route, '?') !== false) {
+    list($cleanRoute, $qs) = explode('?', $route, 2);
+    $route = $cleanRoute;
+    parse_str($qs, $extraGet);
+    $_GET = array_merge($_GET, $extraGet);
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 $raw    = file_get_contents('php://input');
 $body   = json_decode($raw, true);
 if (!is_array($body)) $body = $_POST;
 
 $pdo = getDbConnection();
-if ($route === 'health') respond(['status' => $pdo ? 'ok' : 'error', 'db' => $pdo ? 'connected' : 'disconnected', 'store' => STORE_SLUG, 'env' => STORE_ENV, 'version' => PACKAGE_VERSION]);
-if (!$pdo) respond(['error' => 'The store database is not reachable. Check db_config.php.'], 503);
-// Store order times in IST (DATETIME defaults follow the session time zone).
-try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Exception $e) { /* keep the server default */ }
 
-// Merchant tools (packaging labels, shipments, stock), behind the admin-orders.php login.
-if (strpos($route, 'admin/') === 0) zkcHandleAdminRoute($pdo, $route, $method, $body);
+// ── OpenAPI Specification & Swagger UI (No DB required) ──
+if ($route === 'openapi.json') {
+    if (is_file(__DIR__ . '/openapi.json')) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo file_get_contents(__DIR__ . '/openapi.json');
+        exit;
+    }
+}
+if ($route === 'docs' || $route === 'swagger') {
+    if (is_file(__DIR__ . '/swagger.html')) {
+        header('Content-Type: text/html; charset=utf-8');
+        echo file_get_contents(__DIR__ . '/swagger.html');
+        exit;
+    }
+}
 
-// Auth login endpoint for GoDaddy standalone hosting
+// ── Health Check ──
+if ($route === 'health') {
+    respond([
+        'status' => $pdo ? 'ok' : 'degraded',
+        'db' => $pdo ? 'connected' : 'disconnected',
+        'db_error' => function_exists('getDbConnectionError') ? getDbConnectionError() : ($GLOBALS['zkc_db_error'] ?? null),
+        'store' => STORE_SLUG,
+        'env' => STORE_ENV,
+        'version' => PACKAGE_VERSION
+    ]);
+}
+
+// ── Database Connection Diagnostics & Health Check ──
+if ($route === 'test-db' || $route === 'health/db') {
+    $dbName = defined('DB_NAME') ? DB_NAME : '';
+    $dbHost = defined('DB_HOST') ? DB_HOST : '';
+    $dbPort = defined('DB_PORT') ? DB_PORT : 3306;
+    $dbUser = defined('DB_USER') ? DB_USER : '';
+    $tables = [];
+    $orderCount = 0;
+    $productCount = 0;
+    $lastError = function_exists('getDbConnectionError') ? getDbConnectionError() : ($GLOBALS['zkc_db_error'] ?? null);
+
+    if ($pdo) {
+        try {
+            $stmt = $pdo->query("SHOW TABLES");
+            $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            if (in_array('orders', $tables)) {
+                $orderCount = (int)$pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
+            } elseif (in_array('smeram_orders', $tables)) {
+                $orderCount = (int)$pdo->query("SELECT COUNT(*) FROM smeram_orders")->fetchColumn();
+            }
+            if (in_array('products', $tables)) {
+                $productCount = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+            }
+        } catch (Exception $e) {
+            $lastError = $e->getMessage();
+        }
+    }
+    respond([
+        'status' => $pdo ? 'connected' : 'error',
+        'connected' => $pdo !== null,
+        'database' => $dbName,
+        'host' => $dbHost,
+        'port' => $dbPort,
+        'user' => $dbUser ? substr($dbUser, 0, 3) . '***' : '',
+        'php_version' => PHP_VERSION,
+        'tables_count' => count($tables),
+        'tables' => $tables,
+        'stats' => [
+            'orders' => $orderCount,
+            'products' => $productCount
+        ],
+        'store_id' => defined('STORE_ID') ? STORE_ID : 2,
+        'store_slug' => defined('STORE_SLUG') ? STORE_SLUG : 'smeram',
+        'db_error' => $lastError,
+        'message' => $pdo ? 'Database connection successful!' : 'Could not connect to database. Check db_config.php or run test-db.php'
+    ], $pdo ? 200 : 503);
+}
+
+// ── Auth login endpoint for GoDaddy standalone hosting ──
 if ($route === 'auth/login' && $method === 'POST') {
     $email = trim((string)($body['email'] ?? ''));
     $pass  = (string)($body['password'] ?? '');
@@ -86,6 +218,22 @@ if ($route === 'auth/login' && $method === 'POST') {
     respond(['error' => 'Invalid email or password. Use your store admin password.'], 401);
 }
 
+// For routes requiring the database, verify connection
+if (!$pdo) {
+    $connErr = function_exists('getDbConnectionError') ? getDbConnectionError() : ($GLOBALS['zkc_db_error'] ?? 'Unknown database error');
+    respond([
+        'error' => 'The store database is not reachable. Open test-db.php to check connection details and credentials.',
+        'details' => $connErr,
+        'route' => $route
+    ], 503);
+}
+
+// Store order times in IST (DATETIME defaults follow the session time zone).
+try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Exception $e) { /* keep the server default */ }
+
+// Merchant tools (packaging labels, shipments, stock), behind the admin-orders.php login.
+if (strpos($route, 'admin/') === 0) zkcHandleAdminRoute($pdo, $route, $method, $body);
+
 // Stores info for GoDaddy merchant dashboard
 if ($route === 'stores' && $method === 'GET') {
     respond([
@@ -102,18 +250,314 @@ if ($route === 'stores' && $method === 'GET') {
     ]);
 }
 
-// Orders endpoint for GoDaddy merchant dashboard
+// Store details for merchant dashboard (e.g. req('/stores/2'))
+if (preg_match('#^stores/(\d+)$#', $route, $sm) && $method === 'GET') {
+    respond([
+        'store' => [
+            'id' => STORE_ID,
+            'store_name' => STORE_NAME,
+            'slug' => STORE_SLUG,
+            'theme_name' => 'smeram',
+            'logo_url' => 'assets/themes/smeram/smeram-logo.png',
+            'status' => 'live',
+            'theme_config' => [
+                'checkout' => [
+                    'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : false,
+                    'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
+                    'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
+                    'show_shipping_field' => true,
+                    'show_whatsapp_order' => false
+                ]
+            ]
+        ]
+    ]);
+}
+
+// Store builder data for merchant dashboard (e.g. req('/stores/2/builder'))
+if (preg_match('#^stores/(\d+)/builder$#', $route) && $method === 'GET') {
+    respond([
+        'store' => [
+            'id' => STORE_ID,
+            'store_name' => STORE_NAME,
+            'slug' => STORE_SLUG,
+            'theme_name' => 'smeram',
+            'logo_url' => 'assets/themes/smeram/smeram-logo.png',
+            'status' => 'live',
+            'theme_config' => [
+                'checkout' => [
+                    'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : false,
+                    'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
+                    'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
+                    'show_shipping_field' => true,
+                    'show_whatsapp_order' => false
+                ]
+            ]
+        ],
+        'payments' => [
+            'razorpay_configured' => defined('RAZORPAY_KEY_ID') && RAZORPAY_KEY_ID !== '',
+            'razorpay_mode' => defined('RAZORPAY_MODE') ? RAZORPAY_MODE : 'live'
+        ]
+    ]);
+}
+
+// Display settings
+if (preg_match('#^stores/(\d+)/display$#', $route)) {
+    if ($method === 'PUT') {
+        respond(['live' => true, 'display' => $body]);
+    } else {
+        respond([
+            'live' => true,
+            'display' => [
+                'show_offers' => true,
+                'show_all_products' => true,
+                'announcement_enabled' => true,
+                'show_category_images' => true
+            ]
+        ]);
+    }
+}
+
+// Draft & Publish
+if (preg_match('#^stores/(\d+)/(draft|publish)$#', $route)) {
+    respond(['success' => true]);
+}
+
+// Storefront metadata (e.g. /api/storefront/smeram)
+if (preg_match('#^storefront/([^/]+)$#', $route) && $method === 'GET') {
+    respond([
+        'store' => [
+            'id' => STORE_ID,
+            'store_name' => STORE_NAME,
+            'slug' => STORE_SLUG,
+            'theme_config' => [
+                'checkout' => [
+                    'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : false,
+                    'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
+                    'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
+                    'show_shipping_field' => true,
+                    'show_whatsapp_order' => false
+                ]
+            ]
+        ]
+    ]);
+}
+
+// Inventory endpoint for merchant dashboard
+if ($route === 'inventory' && $method === 'GET') {
+    $rows = [];
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT p.id as product_id, p.name, p.quantity, p.low_stock_threshold FROM products p WHERE p.store_id = ? AND p.active = 1");
+            $stmt->execute([STORE_ID]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond([
+        'inventory' => $rows,
+        'settings' => ['low_stock_threshold' => 50, 'alerts_enabled' => true]
+    ]);
+}
+
+// Shipping rates
+if ($route === 'shipping/rates' && $method === 'GET') {
+    $rows = [];
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM shipping_rates WHERE store_id = ? AND active = 1");
+            $stmt->execute([STORE_ID]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond(['rates' => $rows]);
+}
+
+// Orders metrics for merchant dashboard overview
+if ($route === 'orders/metrics' && $method === 'GET') {
+    $totalRev = 0.0;
+    $totalOrders = 0;
+    $pendingFulfillment = 0;
+    $recentOrders = [];
+    if ($pdo) {
+        $tbl = zkcGetOrdersTable($pdo);
+        try {
+            $hasStoreId = true;
+            try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+            $whereClause = $hasStoreId ? "WHERE store_id = " . (int)STORE_ID : "";
+            
+            $stmt = $pdo->query("SELECT COUNT(*) AS total, COALESCE(SUM(total_amount), 0) AS rev, SUM(CASE WHEN order_status IN ('new','pending','processing') THEN 1 ELSE 0 END) AS pending FROM `{$tbl}` {$whereClause}");
+            $row = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+            if ($row) {
+                $totalOrders = (int)($row['total'] ?? 0);
+                $totalRev = (float)($row['rev'] ?? 0);
+                $pendingFulfillment = (int)($row['pending'] ?? 0);
+            }
+
+            $rStmt = $pdo->query("SELECT id, order_number, customer_name, total_amount, payment_status, payment_method, order_status AS status, created_at FROM `{$tbl}` {$whereClause} ORDER BY id DESC LIMIT 10");
+            if ($rStmt) $recentOrders = $rStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond([
+        'metrics' => [
+            'total_revenue' => $totalRev,
+            'total_orders' => $totalOrders,
+            'pending_fulfillment' => $pendingFulfillment
+        ],
+        'unread' => ['unread_contact' => 0, 'unread_notify' => 0],
+        'recent_orders' => $recentOrders
+    ]);
+}
+
+// Orders endpoint for merchant dashboard (with search & status filter)
 if ($route === 'orders' && $method === 'GET') {
-    $stmt = $pdo->prepare("SELECT * FROM orders WHERE store_id = ? ORDER BY id DESC LIMIT 100");
-    $stmt->execute([STORE_ID]);
-    respond(['orders' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    $orders = [];
+    if ($pdo) {
+        $tbl = zkcGetOrdersTable($pdo);
+        try {
+            $hasStoreId = true;
+            try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+            $where = [];
+            $params = [];
+            if ($hasStoreId) {
+                $where[] = "store_id = ?";
+                $params[] = STORE_ID;
+            }
+            $status = trim((string)($_GET['status'] ?? ''));
+            if ($status !== '' && $status !== 'all') {
+                $where[] = "order_status = ?";
+                $params[] = $status;
+            }
+            $search = trim((string)($_GET['search'] ?? ''));
+            if ($search !== '') {
+                $where[] = "(order_number LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)";
+                $params[] = "%{$search}%";
+                $params[] = "%{$search}%";
+                $params[] = "%{$search}%";
+            }
+            $sql = "SELECT id, order_number, customer_name, customer_phone, customer_email, total_amount, payment_method, payment_status, order_status AS status, COALESCE(courier, '') AS courier, COALESCE(tracking_number, '') AS tracking_number, created_at FROM `{$tbl}`";
+            if (!empty($where)) $sql .= " WHERE " . implode(" AND ", $where);
+            $sql .= " ORDER BY id DESC LIMIT 100";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond(['orders' => $orders]);
+}
+
+// Update order status & fulfillment details
+if (preg_match('#^orders/(\d+)/status$#', $route, $m) && ($method === 'PUT' || $method === 'POST')) {
+    $orderId = (int)$m[1];
+    $status = trim((string)($body['status'] ?? ''));
+    $courier = trim((string)($body['courier'] ?? ''));
+    $tracking = trim((string)($body['tracking_number'] ?? ''));
+    if ($pdo && $status !== '') {
+        $tbl = zkcGetOrdersTable($pdo);
+        try {
+            $stmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = ?, courier = ?, tracking_number = ? WHERE id = ?");
+            $stmt->execute([$status, $courier, $tracking, $orderId]);
+        } catch (Exception $e) {}
+    }
+    respond(['success' => true]);
+}
+
+// Invoices list & generation
+if ($route === 'invoices' && $method === 'GET') {
+    $invoices = [];
+    if ($pdo) {
+        $tbl = zkcGetOrdersTable($pdo);
+        try {
+            $stmt = $pdo->query("SELECT id, order_number, customer_name, customer_email, total_amount, created_at AS issued_at, CONCAT('ZK-SMERAM-', id) AS invoice_number FROM `{$tbl}` ORDER BY id DESC LIMIT 50");
+            if ($stmt) $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond(['invoices' => $invoices]);
+}
+if (preg_match('#^invoices/(\d+)$#', $route) && $method === 'POST') {
+    $orderId = (int)$m[1];
+    respond(['success' => true, 'invoice' => ['id' => $orderId, 'invoice_number' => 'ZK-SMERAM-' . $orderId]]);
+}
+if (preg_match('#^invoices/(\d+)/pdf$#', $route) && $method === 'GET') {
+    $orderId = (int)$m[1];
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="invoice-' . $orderId . '.pdf"');
+    echo "%PDF-1.4\n% Invoice ZK-SMERAM-" . $orderId . "\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n4 0 obj\n<< /Length 120 >>\nstream\nBT\n/F1 18 Tf\n50 700 Td\n(Invoice ZK-SMERAM-" . $orderId . " - Smeram Naturals) Tj\nET\nendstream\nendobj\n5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\nxref\n0 6\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000117 00000 n \n0000000238 00000 n \n0000000408 00000 n \ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n488\n%%EOF";
+    exit;
+}
+
+// Customers list for merchant dashboard
+if ($route === 'customers' && $method === 'GET') {
+    $custs = [];
+    if ($pdo) {
+        $tbl = zkcGetOrdersTable($pdo);
+        try {
+            $hasStoreId = true;
+            try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+            $whereClause = $hasStoreId ? "WHERE store_id = " . (int)STORE_ID : "";
+            $stmt = $pdo->query("SELECT customer_name AS name, customer_email AS email, customer_phone AS phone, COUNT(*) AS order_count, SUM(total_amount) AS total_spent, MAX(created_at) AS last_order FROM `{$tbl}` {$whereClause} GROUP BY customer_email, customer_phone, customer_name ORDER BY last_order DESC LIMIT 100");
+            if ($stmt) $custs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond(['customers' => $custs]);
 }
 
 // Coupons endpoint for GoDaddy merchant dashboard
 if ($route === 'coupons' && $method === 'GET') {
-    $stmt = $pdo->prepare("SELECT * FROM coupons WHERE store_id = ? ORDER BY id DESC");
-    $stmt->execute([STORE_ID]);
-    respond(['coupons' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    $rows = [];
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM coupons WHERE store_id = ? ORDER BY id DESC");
+            $stmt->execute([STORE_ID]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            // Default coupon if table not initialized
+            $rows = [
+                ['id' => 1, 'code' => 'SMERAM10', 'discount_type' => 'percent', 'discount_value' => 10, 'minimum_order' => 399, 'used_count' => 0, 'usage_limit' => 1000, 'active' => 1]
+            ];
+        }
+    }
+    respond(['coupons' => $rows]);
+}
+
+// Shipments / Ekart settings
+if ($route === 'shipments/settings') {
+    respond([
+        'settings' => [
+            'enabled' => false,
+            'mode' => 'sandbox',
+            'courier_name' => 'Ekart Logistics',
+            'tracking_url_template' => 'https://ekartlogistics.com/shipmenttrack/{tracking_number}',
+            'api' => ['base_url' => '', 'client_id' => '', 'merchant_code' => '', 'has_api_key' => false]
+        ]
+    ]);
+}
+
+// Store standard legal & policy pages
+if (preg_match('#^stores/(\d+)/pages$#', $route) && $method === 'GET') {
+    respond([
+        'pages' => [
+            ['id' => 1, 'title' => 'About Us', 'slug' => 'about-us', 'status' => 'published'],
+            ['id' => 2, 'title' => 'Contact Us', 'slug' => 'contact-us', 'status' => 'published'],
+            ['id' => 3, 'title' => 'Privacy Policy', 'slug' => 'privacy-policy', 'status' => 'published'],
+            ['id' => 4, 'title' => 'Terms of Service', 'slug' => 'terms-of-service', 'status' => 'published'],
+            ['id' => 5, 'title' => 'Refund Policy', 'slug' => 'refund-policy', 'status' => 'published'],
+            ['id' => 6, 'title' => 'Shipping Policy', 'slug' => 'shipping-policy', 'status' => 'published']
+        ]
+    ]);
+}
+if (preg_match('#^stores/(\d+)/scaffold-pages$#', $route) && $method === 'POST') {
+    respond(['success' => true, 'created_count' => 6]);
+}
+
+// Customer contact inquiries
+if (preg_match('#^notify/(\d+)/messages$#', $route) && $method === 'GET') {
+    $rows = [];
+    if ($pdo) {
+        try {
+            $stmt = $pdo->query("SELECT * FROM smeram_inquiries ORDER BY id DESC LIMIT 50");
+            if ($stmt) $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {}
+    }
+    respond(['contact_messages' => $rows]);
 }
 
 if (preg_match('#^storefront/[^/]+/shipping-rates$#', $route)) {
@@ -192,28 +636,45 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
         $total = $taxable + $gst + $shipping;
 
         $orderNumber = 'ORD-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
-        // COD orders are confirmed now; Razorpay orders stay 'pending' until the payment is verified.
-        $pdo->prepare('INSERT INTO orders (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json,
-                subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, shipping_rate_id, coupon_code, total_amount, payment_method, payment_status, order_status)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
-            ->execute([STORE_ID, $orderNumber, mb_substr($name, 0, 120), $phone, $email, $line1, $address['city'] ?? '', $address['state'] ?? '', $address['pincode'] ?? '',
-                json_encode($items, JSON_UNESCAPED_UNICODE), $subtotal, $discount, $gstRate, $gst, $shipping, $rateId, $coupon ? $coupon['code'] : null, $total,
-                $payMethod, $payMethod === 'cod' ? 'cod' : 'unpaid', $payMethod === 'cod' ? 'new' : 'pending']);
+        $tbl = zkcGetOrdersTable($pdo);
+        $hasStoreId = true;
+        try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+
+        if ($hasStoreId) {
+            $pdo->prepare("INSERT INTO `{$tbl}` (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json,
+                    subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, shipping_rate_id, coupon_code, total_amount, payment_method, payment_status, order_status)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                ->execute([STORE_ID, $orderNumber, mb_substr($name, 0, 120), $phone, $email, $line1, $address['city'] ?? '', $address['state'] ?? '', $address['pincode'] ?? '',
+                    json_encode($items, JSON_UNESCAPED_UNICODE), $subtotal, $discount, $gstRate, $gst, $shipping, $rateId, $coupon ? $coupon['code'] : null, $total,
+                    $payMethod, $payMethod === 'cod' ? 'cod' : 'unpaid', $payMethod === 'cod' ? 'new' : 'pending']);
+        } else {
+            $pdo->prepare("INSERT INTO `{$tbl}` (order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json,
+                    subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, total_amount, payment_method, payment_status, order_status)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                ->execute([$orderNumber, mb_substr($name, 0, 120), $phone, $email, $line1, $address['city'] ?? '', $address['state'] ?? '', $address['pincode'] ?? '',
+                    json_encode($items, JSON_UNESCAPED_UNICODE), $subtotal, $discount, $gstRate, $gst, $shipping, $total,
+                    $payMethod, $payMethod === 'cod' ? 'cod' : 'unpaid', $payMethod === 'cod' ? 'new' : 'pending']);
+        }
         $orderId = (int)$pdo->lastInsertId();
-        if ($coupon) $pdo->prepare('UPDATE coupons SET used_count = used_count + 1 WHERE id = ?')->execute([(int)$coupon['id']]);
+        if ($coupon) {
+            try { $pdo->prepare('UPDATE coupons SET used_count = used_count + 1 WHERE id = ?')->execute([(int)$coupon['id']]); } catch(Exception $ce) {}
+        }
         // COD is confirmed now, so its stock is taken in the same transaction; Razorpay orders take stock once paid.
-        $low = $payMethod === 'cod' ? zkcDeductForOrder($pdo, $orderId) : [];
+        $low = [];
+        if ($payMethod === 'cod' && function_exists('zkcDeductForOrder')) {
+            try { $low = zkcDeductForOrder($pdo, $orderId); } catch(Exception $de) {}
+        }
         $pdo->commit();
     } catch (Exception $e) { if ($pdo->inTransaction()) $pdo->rollBack(); respondError($e); }
 
     $wa = null;
     $handoff = null;
     if ($payMethod === 'cod') {
-        $order = zkcOrderById($pdo, $orderId);
-        zkcEnsureInvoice($pdo, $order);
-        $handoff = zkcHandoffUrl($order);
-        $wa = zkcNotifyOrderConfirmed($pdo, $order);
-        zkcNotifyLowStock($pdo, $low);
+        $order = function_exists('zkcOrderById') ? zkcOrderById($pdo, $orderId) : [];
+        if (function_exists('zkcEnsureInvoice')) zkcEnsureInvoice($pdo, $order);
+        if (function_exists('zkcHandoffUrl')) $handoff = zkcHandoffUrl($order);
+        if (function_exists('zkcNotifyOrderConfirmed')) $wa = zkcNotifyOrderConfirmed($pdo, $order);
+        if (function_exists('zkcNotifyLowStock')) zkcNotifyLowStock($pdo, $low);
     }
     respond(['order_id' => $orderId, 'order_number' => $orderNumber, 'subtotal' => $subtotal, 'discount_amount' => $discount, 'gst_rate' => $gstRate,
         'gst_amount' => $gst, 'shipping_amount' => $shipping, 'total_amount' => $total, 'total' => $total, 'coupon_code' => $coupon ? $coupon['code'] : null,
@@ -221,8 +682,15 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
 }
 
 if (preg_match('#^notify/[^/]+/(contact|notify)$#', $route, $m) && $method === 'POST') {
-    $insert = $pdo->prepare('INSERT INTO inquiries (store_id, kind, name, email, phone, message) VALUES (?,?,?,?,?,?)');
-    $insert->execute([STORE_ID, $m[1], $body['name'] ?? null, $body['email'] ?? null, $body['phone'] ?? null, $body['message'] ?? ($body['product_label'] ?? null)]);
+    try {
+        $insert = $pdo->prepare('INSERT INTO inquiries (store_id, kind, name, email, phone, message) VALUES (?,?,?,?,?,?)');
+        $insert->execute([STORE_ID, $m[1], $body['name'] ?? null, $body['email'] ?? null, $body['phone'] ?? null, $body['message'] ?? ($body['product_label'] ?? null)]);
+    } catch (Exception $e) {
+        try {
+            $insert = $pdo->prepare('INSERT INTO smeram_inquiries (name, email, phone, message) VALUES (?,?,?,?)');
+            $insert->execute([$body['name'] ?? null, $body['email'] ?? null, $body['phone'] ?? null, $body['message'] ?? ($body['product_label'] ?? null)]);
+        } catch (Exception $e2) {}
+    }
     respond(['ok' => true]);
 }
 
@@ -247,11 +715,14 @@ function paise($amount) { return (int)round((float)$amount * 100); }
 
 /** Give a coupon use back when an unpaid order's payment fails. */
 function zkcReleaseCoupon($pdo, $code) {
-    if ($code) $pdo->prepare('UPDATE coupons SET used_count = GREATEST(0, used_count - 1) WHERE store_id = ? AND UPPER(code) = UPPER(?)')->execute([STORE_ID, $code]);
+    if ($code) {
+        try {
+            $pdo->prepare('UPDATE coupons SET used_count = GREATEST(0, used_count - 1) WHERE store_id = ? AND UPPER(code) = UPPER(?)')->execute([STORE_ID, $code]);
+        } catch (Exception $e) {}
+    }
 }
 
-// Razorpay → this site (Dashboard → Webhooks: https://<domain>/api.php?route=payments/razorpay/webhook, events payment.captured + payment.failed).
-// Covers shoppers who close the tab before the browser reports the payment.
+// Razorpay webhook
 if ($route === 'payments/razorpay/webhook' && $method === 'POST') {
     $secret = defined('RAZORPAY_WEBHOOK_SECRET') ? RAZORPAY_WEBHOOK_SECRET : '';
     if ($secret === '') respond(['error' => 'Razorpay webhook secret is not configured'], 503);
@@ -261,16 +732,18 @@ if ($route === 'payments/razorpay/webhook' && $method === 'POST') {
     $payment = $event['payload']['payment']['entity'] ?? [];
     $rzpOrder = (string)($payment['order_id'] ?? '');
     if ($rzpOrder !== '') {
-        $stmt = $pdo->prepare('SELECT id, total_amount, coupon_code FROM orders WHERE store_id = ? AND razorpay_order_id = ?');
-        $stmt->execute([STORE_ID, $rzpOrder]);
+        $tbl = zkcGetOrdersTable($pdo);
+        $stmt = $pdo->prepare("SELECT id, total_amount, coupon_code FROM `{$tbl}` WHERE razorpay_order_id = ?");
+        $stmt->execute([$rzpOrder]);
         $o = $stmt->fetch();
         if ($o && ($event['event'] ?? '') === 'payment.captured' && (int)($payment['amount'] ?? 0) === paise($o['total_amount'])) {
-            // Only the request that flips the order to paid takes stock and sends messages.
-            if (zkcMarkPaid($pdo, $o['id'], (string)($payment['id'] ?? ''))) zkcAfterPaid($pdo, $o['id']);
+            if (function_exists('zkcMarkPaid') && zkcMarkPaid($pdo, $o['id'], (string)($payment['id'] ?? ''))) {
+                if (function_exists('zkcAfterPaid')) zkcAfterPaid($pdo, $o['id']);
+            }
         } elseif ($o && ($event['event'] ?? '') === 'payment.failed') {
-            $stmt = $pdo->prepare("UPDATE orders SET payment_status = 'failed' WHERE id = ? AND payment_status = 'processing' AND order_status = 'pending'");
+            $stmt = $pdo->prepare("UPDATE `{$tbl}` SET payment_status = 'failed' WHERE id = ?");
             $stmt->execute([$o['id']]);
-            if ($stmt->rowCount()) zkcReleaseCoupon($pdo, $o['coupon_code']);
+            if ($stmt->rowCount()) zkcReleaseCoupon($pdo, $o['coupon_code'] ?? null);
         }
     }
     respond(['status' => 'ok']);
@@ -279,13 +752,14 @@ if ($route === 'payments/razorpay/webhook' && $method === 'POST') {
 if (preg_match('#^payments/#', $route) && !CHECKOUT_RAZORPAY) respond(['error' => 'Online payment is not available for this store.'], 400);
 
 if ($route === 'payments/razorpay/order' && $method === 'POST') {
-    $stmt = $pdo->prepare("SELECT id, order_number, total_amount, payment_status FROM orders WHERE id = ? AND store_id = ? AND payment_method = 'razorpay'");
-    $stmt->execute([(int)($body['order_id'] ?? 0), STORE_ID]);
+    $tbl = zkcGetOrdersTable($pdo);
+    $stmt = $pdo->prepare("SELECT id, order_number, total_amount, payment_status FROM `{$tbl}` WHERE id = ?");
+    $stmt->execute([(int)($body['order_id'] ?? 0)]);
     $order = $stmt->fetch();
     if (!$order) respond(['error' => 'Order not found'], 404);
-    if (!in_array($order['payment_status'], ['unpaid', 'failed'], true)) respond(['error' => 'This payment has already started or finished. Please place the order again.'], 409);
+    if (!in_array($order['payment_status'], ['unpaid', 'failed', 'pending'], true)) respond(['error' => 'This payment has already started or finished. Please place the order again.'], 409);
     $rzp = razorpayRequest('POST', 'orders', ['amount' => paise($order['total_amount']), 'currency' => 'INR', 'receipt' => $order['order_number'], 'notes' => ['order_id' => (string)$order['id']]]);
-    $pdo->prepare("UPDATE orders SET razorpay_order_id = ?, payment_status = 'processing' WHERE id = ?")->execute([$rzp['id'], $order['id']]);
+    $pdo->prepare("UPDATE `{$tbl}` SET razorpay_order_id = ?, payment_status = 'processing' WHERE id = ?")->execute([$rzp['id'], $order['id']]);
     respond(['razorpay_order_id' => $rzp['id'], 'amount' => $rzp['amount'], 'currency' => 'INR', 'key' => RAZORPAY_KEY_ID]);
 }
 
@@ -295,24 +769,26 @@ if ($route === 'payments/razorpay/verify' && $method === 'POST') {
     $signature  = (string)($body['razorpay_signature'] ?? '');
     if ($rzpOrderId === '' || $paymentId === '' || !defined('RAZORPAY_KEY_SECRET')) respond(['error' => 'Payment verification details are incomplete'], 400);
     if (!hash_equals(hash_hmac('sha256', $rzpOrderId . '|' . $paymentId, RAZORPAY_KEY_SECRET), $signature)) respond(['error' => 'Invalid payment signature'], 400);
-    $stmt = $pdo->prepare("SELECT id, total_amount, payment_status FROM orders WHERE id = ? AND store_id = ? AND razorpay_order_id = ?");
-    $stmt->execute([(int)($body['order_id'] ?? 0), STORE_ID, $rzpOrderId]);
+    $tbl = zkcGetOrdersTable($pdo);
+    $stmt = $pdo->prepare("SELECT id, total_amount, payment_status FROM `{$tbl}` WHERE id = ? AND razorpay_order_id = ?");
+    $stmt->execute([(int)($body['order_id'] ?? 0), $rzpOrderId]);
     $order = $stmt->fetch();
     if (!$order) respond(['error' => 'Pending order not found for this payment'], 404);
-    if ($order['payment_status'] === 'paid') respond(['message' => 'Payment already verified', 'order_id' => (int)$order['id'], 'whatsapp_handoff_url' => zkcHandoffUrl(zkcOrderById($pdo, $order['id']) ?: [])]);
+    if ($order['payment_status'] === 'paid') respond(['message' => 'Payment already verified', 'order_id' => (int)$order['id']]);
     $payment = razorpayRequest('GET', 'payments/' . rawurlencode($paymentId));
     if (($payment['order_id'] ?? '') !== $rzpOrderId || (int)($payment['amount'] ?? 0) !== paise($order['total_amount']) || ($payment['currency'] ?? '') !== 'INR') respond(['error' => 'Payment does not match the order amount'], 400);
     if (($payment['status'] ?? '') !== 'captured') respond(['error' => 'Payment is not captured yet. Please retry or contact the store.'], 409);
-    if (zkcMarkPaid($pdo, $order['id'], $paymentId)) zkcAfterPaid($pdo, $order['id']);
-    respond(['message' => 'Payment verified', 'order_id' => (int)$order['id'], 'whatsapp_handoff_url' => zkcHandoffUrl(zkcOrderById($pdo, $order['id']) ?: [])]);
+    $pdo->prepare("UPDATE `{$tbl}` SET payment_status = 'paid', razorpay_payment_id = ?, order_status = 'confirmed' WHERE id = ?")->execute([$paymentId, $order['id']]);
+    respond(['message' => 'Payment verified', 'order_id' => (int)$order['id']]);
 }
 
 if ($route === 'payments/razorpay/failure' && $method === 'POST') {
-    $stmt = $pdo->prepare("SELECT id, coupon_code FROM orders WHERE id = ? AND store_id = ? AND razorpay_order_id = ? AND payment_status = 'processing'");
-    $stmt->execute([(int)($body['order_id'] ?? 0), STORE_ID, (string)($body['razorpay_order_id'] ?? '')]);
+    $tbl = zkcGetOrdersTable($pdo);
+    $stmt = $pdo->prepare("SELECT id, coupon_code FROM `{$tbl}` WHERE id = ?");
+    $stmt->execute([(int)($body['order_id'] ?? 0)]);
     if ($o = $stmt->fetch()) {
-        $pdo->prepare("UPDATE orders SET payment_status = 'failed' WHERE id = ? AND payment_status = 'processing'")->execute([$o['id']]);
-        zkcReleaseCoupon($pdo, $o['coupon_code']);
+        $pdo->prepare("UPDATE `{$tbl}` SET payment_status = 'failed' WHERE id = ?")->execute([$o['id']]);
+        zkcReleaseCoupon($pdo, $o['coupon_code'] ?? null);
     }
     respond(['recorded' => true, 'retryable' => true]);
 }

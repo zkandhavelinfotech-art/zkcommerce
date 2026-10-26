@@ -979,18 +979,19 @@
     async function req(path, options = {}) {
       const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(options.headers || {}) };
       let res;
+      const parts = path.replace(/^\//, '').split('?');
+      const cleanRoute = parts[0];
+      const qs = parts[1] ? '&' + parts[1] : '';
+      const phpUrl = '../api.php?route=' + encodeURIComponent(cleanRoute) + qs;
+
       try {
         res = await fetch(api + path, { ...options, headers });
       } catch (err) {
         // Fallback to PHP endpoint if Node is not running on GoDaddy
-        const cleanRoute = path.replace(/^\//, '');
-        const phpUrl = '../api.php?route=' + encodeURIComponent(cleanRoute);
         res = await fetch(phpUrl, { ...options, headers }).catch(() => null);
         if (!res) throw err;
       }
       if (!res.ok && res.status === 404) {
-        const cleanRoute = path.replace(/^\//, '');
-        const phpUrl = '../api.php?route=' + encodeURIComponent(cleanRoute);
         const phpRes = await fetch(phpUrl, { ...options, headers }).catch(() => null);
         if (phpRes && phpRes.ok) res = phpRes;
       }
@@ -1147,7 +1148,7 @@
 
     async function loadDashboard() {
       if (!currentStoreId) return;
-      await Promise.all([
+      await Promise.allSettled([
         loadMetrics(),
         loadOrders(),
         loadInvoices(),

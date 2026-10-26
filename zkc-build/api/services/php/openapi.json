@@ -1,0 +1,371 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ZKCommerce Storefront & Merchant PHP API",
+    "version": "1.0.12",
+    "description": "Production REST API for ZKCommerce stores (Smeram Naturals) hosted on PHP + MySQL (GoDaddy/cPanel/Plesk). Supports authentication, storefront catalog, checkout (COD & Razorpay), merchant order management, inventory, and database diagnostics.",
+    "contact": {
+      "name": "ZKandavel Infotech Pvt Ltd",
+      "url": "https://smeram-naturals.in"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Auto-resolved API root (/api or api.php?route=)"
+    },
+    {
+      "url": "https://smeram-naturals.in/api",
+      "description": "Live GoDaddy Production (smeram-naturals.in)"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "tags": [
+    { "name": "Diagnostics", "description": "Database connection and health checks" },
+    { "name": "Auth", "description": "Merchant and admin authentication" },
+    { "name": "Storefront", "description": "Public customer store, checkout, and shipping rates" },
+    { "name": "Payments", "description": "Razorpay order generation, signature verification, and webhooks" },
+    { "name": "Merchant Portal", "description": "Orders, coupons, inventory, and display settings" }
+  ],
+  "paths": {
+    "/test-db": {
+      "get": {
+        "tags": ["Diagnostics"],
+        "summary": "Test MySQL Database Connection",
+        "description": "Tests MySQL connectivity using credentials defined in db_config.php and returns active tables, row counts, and latency.",
+        "responses": {
+          "200": {
+            "description": "Database connected successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "connected",
+                  "connected": true,
+                  "database": "smeram_naturals",
+                  "host": "localhost",
+                  "user": "sme***",
+                  "tables_count": 8,
+                  "tables": { "orders": 14, "products": 6, "coupons": 2 },
+                  "message": "Database connection successful!"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection failed",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "connected": false,
+                  "message": "Could not connect to database. Check db_config.php"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Diagnostics"],
+        "summary": "System Health Check",
+        "description": "Checks API availability, database connection status, and package version.",
+        "responses": {
+          "200": {
+            "description": "API is operational",
+            "content": {
+              "application/json": {
+                "example": { "status": "ok", "db": "connected", "store": "smeram", "env": "production", "version": "1.0.12" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Merchant Login",
+        "description": "Authenticates merchant using store admin password or credentials configured in db_config.php.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "merchant@smeramnaturals.in" },
+                  "password": { "type": "string", "example": "demo1234" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "example": {
+                  "token": "godaddy_session_2_7f9c8b3a",
+                  "user": { "id": 2, "email": "merchant@smeramnaturals.in", "role": "merchant", "store_id": 2, "store_slug": "smeram" }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "example": { "error": "Invalid email or password. Use your store admin password." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stores": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "List Stores",
+        "description": "Returns list of managed stores for merchant dashboard.",
+        "responses": {
+          "200": {
+            "description": "List of stores",
+            "content": {
+              "application/json": {
+                "example": {
+                  "stores": [
+                    { "id": 2, "store_name": "Smeram Naturals", "slug": "smeram", "theme_name": "smeram", "status": "live" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stores/{id}": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "Get Store Details",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 2 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Store configuration and theme settings"
+          }
+        }
+      }
+    },
+    "/storefront/{slug}": {
+      "get": {
+        "tags": ["Storefront"],
+        "summary": "Storefront Metadata",
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" }, "example": "smeram" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Storefront public configuration and checkout flags"
+          }
+        }
+      }
+    },
+    "/storefront/{slug}/checkout": {
+      "post": {
+        "tags": ["Storefront"],
+        "summary": "Place Order / Checkout",
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" }, "example": "smeram" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string", "example": "Karthik Raja" },
+                      "phone": { "type": "string", "example": "9876543210" },
+                      "email": { "type": "string", "example": "karthik@example.com" }
+                    },
+                    "required": ["name", "phone"]
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "line1": { "type": "string", "example": "12 Gandhi Road" },
+                      "city": { "type": "string", "example": "Chennai" },
+                      "state": { "type": "string", "example": "Tamil Nadu" },
+                      "pincode": { "type": "string", "example": "600028" }
+                    },
+                    "required": ["line1", "city", "pincode"]
+                  },
+                  "payment_method": { "type": "string", "enum": ["cod", "razorpay"], "example": "cod" },
+                  "coupon_code": { "type": "string", "example": "SMERAM10" },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "product_id": { "type": "integer", "example": 1 },
+                        "quantity": { "type": "integer", "example": 2 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order registered successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "order_id": 105,
+                  "order_number": "ORD-261026-A1B2C3",
+                  "subtotal": 598,
+                  "discount_amount": 0,
+                  "total_amount": 598,
+                  "next": "confirmed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/razorpay/order": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Create Razorpay Payment Order",
+        "description": "Generates a Razorpay order ID for online payment transactions.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": { "type": "integer", "example": 105 }
+                },
+                "required": ["order_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Razorpay order created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "razorpay_order_id": "order_EK1234567890",
+                  "amount": 59800,
+                  "currency": "INR",
+                  "key": "rzp_live_TrzrN3plJPv1lV"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/razorpay/verify": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Verify Razorpay Payment Signature",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": { "type": "integer", "example": 105 },
+                  "razorpay_order_id": { "type": "string", "example": "order_EK1234567890" },
+                  "razorpay_payment_id": { "type": "string", "example": "pay_EK9876543210" },
+                  "razorpay_signature": { "type": "string", "example": "9efb08...signature" }
+                },
+                "required": ["order_id", "razorpay_order_id", "razorpay_payment_id", "razorpay_signature"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment verified and order marked as paid"
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "List Orders",
+        "description": "Returns recent customer orders for merchant fulfillment.",
+        "responses": {
+          "200": {
+            "description": "Order records array"
+          }
+        }
+      }
+    },
+    "/orders/metrics": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "Order Revenue & Fulfillment Metrics",
+        "responses": {
+          "200": {
+            "description": "Metrics summary (revenue, count, unread count)"
+          }
+        }
+      }
+    },
+    "/coupons": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "List Discount Coupons",
+        "responses": {
+          "200": {
+            "description": "Coupons list"
+          }
+        }
+      }
+    },
+    "/inventory": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "List Inventory Stock",
+        "responses": {
+          "200": {
+            "description": "Product inventory and low stock alert thresholds"
+          }
+        }
+      }
+    },
+    "/shipping/rates": {
+      "get": {
+        "tags": ["Merchant Portal"],
+        "summary": "List Shipping Rates",
+        "responses": {
+          "200": {
+            "description": "Active shipping rates configuration"
+          }
+        }
+      }
+    }
+  }
+}

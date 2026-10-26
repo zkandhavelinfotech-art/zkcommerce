@@ -58,3 +58,7 @@ uploads/temp/
 
 deployment/smeram-godaddy/
 deployment/*.zip
+
+zkc/deployment/smeram-api/
+zkc-build/deployment/smeram-api/
+deployment/smeram-api/

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZKCommerce API Testing Console · Swagger UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    :root {
+      --top-bg: #0f172a;
+      --accent: #0284c7;
+      --success: #10b981;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fafafa;
+      font-family: 'Inter', sans-serif;
+    }
+    .topbar {
+      background: var(--top-bg);
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #0284c7, #10b981);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #f8fafc;
+      transition: all 0.15s ease;
+    }
+    .btn-top:hover {
+      background: #334155;
+      border-color: #64748b;
+    }
+    .btn-top.btn-accent {
+      background: #0284c7;
+      border-color: #0284c7;
+    }
+    .btn-top.btn-accent:hover {
+      background: #0369a1;
+    }
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .swagger-ui .info {
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-title">ZKCommerce API Testing Console</div>
+        <div class="brand-subtitle">Interactive Swagger UI · Smeram Naturals PHP Backend</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a href="test-db.php" class="btn-top btn-accent">🔌 Test DB Connection</a>
+      <a href="openapi.json" target="_blank" class="btn-top">📄 openapi.json</a>
+      <a href="merchant/index.html" class="btn-top">📦 Merchant Portal</a>
+      <a href="index.html" class="btn-top">🛒 Storefront</a>
+    </div>
+  </div>
+
+  <div id="swagger-ui"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      // Determine specification URL: try local openapi.json, then fallback to api.php?route=openapi.json
+      var specUrl = 'openapi.json';
+      
+      const ui = SwaggerUIBundle({
+        url: specUrl,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "BaseLayout",
+        defaultModelsExpandDepth: -1,
+        docExpansion: "list",
+        filter: true,
+        persistAuthorization: true,
+        onComplete: function() {
+          console.log('ZKCommerce Swagger UI ready');
+        }
+      });
+      window.ui = ui;
+    };
+  </script>
+</body>
+</html>

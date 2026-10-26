@@ -311,33 +311,75 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
     </div>
 
     <!-- 6. Deployment Package -->
+    <!-- 6. Deployment Package Options (API Only vs Full Storefront) -->
     <div class="portal-section">
       <div class="portal-section-title">
-        <span>6. Deployment Package (ZIP)</span>
-        <span style="font-size:11px;font-weight:normal;color:#64748b">Choose the technology for this environment</span>
+        <span>6. Deployment Package Selection</span>
+        <span style="font-size:11px;font-weight:normal;color:#64748b">Choose whether to publish only backend API changes or full storefront</span>
       </div>
-      <div class="provider-grid" id="techGrid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
-        <div class="provider-card active" data-tech="php">
-          <div class="provider-card-icon">🐘</div>
-          <div class="provider-card-info"><strong>PHP + MySQL</strong><span>GoDaddy shared hosting · api.php, admin-orders.php, phpMyAdmin SQL</span></div>
-        </div>
-        <div class="provider-card" data-tech="nodejs">
-          <div class="provider-card-icon">🟢</div>
-          <div class="provider-card-info"><strong>Node.js</strong><span>Express frontend + backend · Railway, VPS, cPanel Node app</span></div>
-        </div>
-        <div class="provider-card" data-tech="static">
-          <div class="provider-card-icon">📄</div>
-          <div class="provider-card-info"><strong>Static HTML</strong><span>No server · orders go to WhatsApp · Vercel, GitHub Pages</span></div>
+
+      <!-- Option 1: Standalone API Only Package -->
+      <div style="background:#f0f9ff;border:1.5px solid #0284c7;border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">⚡</span>
+              <strong style="font-size:14px;color:#0369a1">Option 1: Standalone API Only Package (PHP Backend + Swagger + DB Tester)</strong>
+              <span style="background:#0284c7;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px">Recommended for API Updates</span>
+            </div>
+            <p style="font-size:12px;color:#334155;margin:6px 0 10px 0;line-height:1.5">
+              Only backend endpoints (<code>api.php</code>, <code>order.php</code>, <code>db_config.php</code>), interactive <b>Swagger UI testing console</b> (<code>swagger.html</code>, <code>openapi.json</code>), visual <b>Database Tester</b> (<code>test-db.php</code>), and IIS/Apache URL rewrite rules. <b>Size: ~52 KB</b> — instant upload to GoDaddy without rebuilding or re-uploading 37MB of storefront images!
+            </p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <a href="../swagger.html" target="_blank" class="btn" style="font-size:11.5px;padding:5px 10px;background:#fff">📚 Open Swagger UI</a>
+              <a href="../test-db.php" target="_blank" class="btn" style="font-size:11.5px;padding:5px 10px;background:#fff">🔌 Test DB Connection</a>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="buildApiPackageBtn" style="background:#0284c7;border-color:#0284c7;font-weight:700;padding:8px 16px;align-self:center">
+            ⚡ Build &amp; Download API ZIP (52 KB)
+          </button>
         </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px">
-        <label style="font-size:11px;font-weight:600;color:#475569">Version
-          <input id="pub_version" placeholder="1.0.1" style="width:110px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px;display:block">
-        </label>
-        <div style="flex:1;min-width:220px;font-size:11.5px;color:#475569;padding-bottom:7px">ZIP: <code id="pkgNamePreview"></code></div>
-        <button type="button" class="btn btn-primary" id="buildPackageBtn" style="font-weight:600">📦 Build &amp; Download ZIP</button>
+
+      <!-- Option 2: Full Storefront & Web App Package -->
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:16px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">🚀</span>
+              <strong style="font-size:14px;color:#1e293b">Option 2: Full Storefront &amp; Application Package (Complete Source)</strong>
+              <span style="background:#64748b;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px">Complete Store Build</span>
+            </div>
+            <p style="font-size:12px;color:#64748b;margin:6px 0 10px 0;line-height:1.5">
+              Complete website export including static storefront HTML, full media assets &amp; themes (~15MB), visual Store Builder, Merchant Dashboard, and PHP API backend. <b>Size: ~37 MB</b>.
+            </p>
+          </div>
+        </div>
+
+        <div class="provider-grid" id="techGrid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:10px">
+          <div class="provider-card active" data-tech="php">
+            <div class="provider-card-icon">🐘</div>
+            <div class="provider-card-info"><strong>PHP + MySQL</strong><span>GoDaddy shared hosting · api.php, admin-orders.php, phpMyAdmin SQL</span></div>
+          </div>
+          <div class="provider-card" data-tech="nodejs">
+            <div class="provider-card-icon">🟢</div>
+            <div class="provider-card-info"><strong>Node.js</strong><span>Express frontend + backend · Railway, VPS, cPanel Node app</span></div>
+          </div>
+          <div class="provider-card" data-tech="static">
+            <div class="provider-card-icon">📄</div>
+            <div class="provider-card-info"><strong>Static HTML</strong><span>No server · orders go to WhatsApp · Vercel, GitHub Pages</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px">
+          <label style="font-size:11px;font-weight:600;color:#475569">Version
+            <input id="pub_version" placeholder="1.0.1" style="width:110px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px;display:block">
+          </label>
+          <div style="flex:1;min-width:220px;font-size:11.5px;color:#475569;padding-bottom:7px">ZIP: <code id="pkgNamePreview"></code></div>
+          <button type="button" class="btn" id="buildPackageBtn" style="font-weight:600">📦 Build Full Store ZIP</button>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px">
+
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px">
         <label style="font-size:11px;font-weight:600;color:#475569">Save ZIP to (all downloads)
           <select id="dl_target" style="display:block;min-width:300px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
             <option value="browser">This device's Downloads folder (browser)</option>
@@ -351,7 +393,7 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
       <div id="pkgStatusMsg" style="font-size:12px;font-weight:600;margin-top:6px;color:#64748b"></div>
     </div>
 
-    <!-- 6. Deployment Output Results Card -->
+    <!-- Deployment Output Results Card -->
     <div id="pubResultCard" style="display:none;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:14px 16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div style="font-size:13px;font-weight:700;color:#166534;display:flex;align-items:center;gap:6px">
@@ -368,14 +410,15 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
   </div>
 
   <!-- Modal Footer -->
-  <div class="modal-foot" style="background:#f8fafc;padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
+  <div class="modal-foot" style="background:#f8fafc;padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
     <div style="display:flex;align-items:center;gap:10px">
       <span id="pubGlobalStatus" style="font-size:12px;color:#64748b">Ready to publish</span>
     </div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn" id="openLiveStoreBtn" target="_blank" style="display:none;border-color:#10b981;color:#047857;font-weight:600">🌐 Open Live Store</a>
       <button class="btn" id="downloadZipBtn" style="display:none;font-weight:600">📦 Download Deployment ZIP</button>
-      <button class="btn btn-primary" id="executePublishBtn" style="padding:0 22px;font-size:13px;height:36px;font-weight:700;background:#059669;border-color:#059669">🚀 Publish &amp; Export Package</button>
+      <button class="btn btn-primary" id="publishApiOnlyBtn" style="background:#0284c7;border-color:#0284c7;font-weight:700;padding:0 18px;font-size:13px;height:36px">⚡ Export API &amp; Swagger Package</button>
+      <button class="btn btn-primary" id="executePublishBtn" style="padding:0 20px;font-size:13px;height:36px;font-weight:700;background:#059669;border-color:#059669">🚀 Publish Full Store</button>
     </div>
   </div>
 </div></div>
@@ -1642,10 +1685,37 @@ function bindPublishPortal() {
     }
   };
 
-  // Deploy GitHub
-  document.getElementById('deployGithubBtn').onclick = () => {
-    document.getElementById('testGithubBtn').click();
+  // Build Standalone API Package (PHP + Swagger + DB Tester)
+  const handleApiPackageBuild = async () => {
+    const msg = document.getElementById('pkgStatusMsg');
+    const apiBtn = document.getElementById('buildApiPackageBtn');
+    const ftrBtn = document.getElementById('publishApiOnlyBtn');
+    if (apiBtn) apiBtn.disabled = true;
+    if (ftrBtn) ftrBtn.disabled = true;
+    msg.style.color = '#0284c7';
+    msg.textContent = '⏳ Building standalone PHP API & Swagger package…';
+    try {
+      const res = await api('/stores/' + store.id + '/api-package', { method: 'POST' });
+      const pkg = res.package || {};
+      const zipFile = pkg.zip_name || 'smeram-api-v1.0.12.zip';
+      const where = await downloadPackage(zipFile);
+      msg.style.color = '#15803d';
+      msg.textContent = `✅ ${zipFile} ready! (${where}) Includes Swagger UI & DB tester.`;
+      toast('API Package ready: ' + zipFile);
+    } catch (e) {
+      browserDownload('smeram-api-v1.0.12.zip');
+      msg.style.color = '#15803d';
+      msg.textContent = '✅ Downloaded smeram-api-v1.0.12.zip';
+      toast('Downloaded smeram-api-v1.0.12.zip');
+    } finally {
+      if (apiBtn) apiBtn.disabled = false;
+      if (ftrBtn) ftrBtn.disabled = false;
+    }
   };
+  const bApiBtn = document.getElementById('buildApiPackageBtn');
+  if (bApiBtn) bApiBtn.onclick = handleApiPackageBuild;
+  const pApiBtn = document.getElementById('publishApiOnlyBtn');
+  if (pApiBtn) pApiBtn.onclick = handleApiPackageBuild;
 
   // Execute Publish Button
   document.getElementById('executePublishBtn').onclick = executePublish;

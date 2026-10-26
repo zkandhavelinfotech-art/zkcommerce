@@ -2235,44 +2235,76 @@ function handlePlaceOrder(e) {
       })
     };
 
+    function safeParseJson(res) {
+      if (!res) return Promise.resolve({});
+      return res.text().then(function(txt) {
+        try {
+          return txt ? JSON.parse(txt) : {};
+        } catch (_) {
+          return {};
+        }
+      });
+    }
+
     // 1. Post to GoDaddy MySQL order.php
     try {
       fetch('order.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).then(r => r.json()).then(res => {
+      }).then(safeParseJson).then(function(res) {
         console.log('Order saved to MySQL:', res);
-      }).catch(err => {
+      }).catch(function(err) {
         console.log('MySQL save note:', err);
       });
     } catch (_) {}
 
-    // 2. Post to Node / API Storefront if available
+    // 2. Post to Storefront API (try /api then fallback to api.php?route=)
     try {
+      var checkoutPayload = JSON.stringify({
+        customer: { name: name, phone: phone, email: email },
+        address: { line1: address, city: city, state: 'Tamil Nadu', pincode: pincode },
+        payment_method: payMethod === 'razorpay' ? 'razorpay' : 'cod',
+        coupon_code: couponCode || null,
+        items: cart.map(function(c) { return { product_id: c.id, quantity: c.qty }; })
+      });
+
       fetch('/api/storefront/smeram/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer: { name: name, phone: phone, email: email },
-          address: { line1: address, city: city, state: 'Tamil Nadu', pincode: pincode },
-          payment_method: payMethod === 'razorpay' ? 'razorpay' : 'cod',
-          coupon_code: couponCode || null,
-          items: cart.map(c => ({ product_id: c.id, quantity: c.qty }))
-        })
-      }).then(r => r.json()).then(nodeRes => {
-        console.log('Order registered on Node API:', nodeRes);
-        if (nodeRes.order_id && paymentMeta?.paymentId) {
+        body: checkoutPayload
+      }).then(function(r) {
+        if (!r.ok && r.status === 404) {
+          return fetch('api.php?route=storefront/smeram/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: checkoutPayload
+          });
+        }
+        return r;
+      }).then(safeParseJson).then(function(nodeRes) {
+        console.log('Order registered on API:', nodeRes);
+        if (nodeRes && nodeRes.order_id && paymentMeta && paymentMeta.paymentId) {
+          var verifyPayload = JSON.stringify({
+            order_id: nodeRes.order_id,
+            razorpay_order_id: paymentMeta.orderId || ('order_' + nodeRes.order_id),
+            razorpay_payment_id: paymentMeta.paymentId,
+            razorpay_signature: paymentMeta.signature || ''
+          });
           fetch('/api/payments/razorpay/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order_id: nodeRes.order_id,
-              razorpay_order_id: paymentMeta.orderId || ('order_' + nodeRes.order_id),
-              razorpay_payment_id: paymentMeta.paymentId,
-              razorpay_signature: paymentMeta.signature || ''
-            })
-          }).catch(function(){});
+            body: verifyPayload
+          }).then(function(vr) {
+            if (!vr.ok && vr.status === 404) {
+              return fetch('api.php?route=payments/razorpay/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: verifyPayload
+              });
+            }
+            return vr;
+          }).then(safeParseJson).catch(function(){});
         }
       }).catch(function(){});
     } catch (_) {}

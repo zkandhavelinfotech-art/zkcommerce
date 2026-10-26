@@ -254,11 +254,17 @@ async function doLogin(){
       } else if (d.user && d.user.role === 'admin') {
         window.location.href = '../admin/dashboard.html';
       } else {
-        var isSmeram = (d.user && (d.user.email === 'merchant@smeramnaturals.in' || (d.user.store && d.user.store.slug === 'smeram') || d.user.store_slug === 'smeram'));
-        if (isSmeram) {
-          window.location.href = '../clients/smeram/merchant/index.html';
+        var storeIdParam = (d.user && d.user.store_id) ? '?store_id=' + encodeURIComponent(d.user.store_id) : '?store_id=2';
+        var isStandaloneDeployment = !location.pathname.includes('/clients/');
+        if (isStandaloneDeployment) {
+          window.location.href = '../merchant/index.html' + storeIdParam;
         } else {
-          window.location.href = '../merchant/index.html' + (d.user && d.user.store_id ? '?store_id=' + encodeURIComponent(d.user.store_id) : '');
+          var isSmeram = (d.user && (d.user.email === 'merchant@smeramnaturals.in' || (d.user.store && d.user.store.slug === 'smeram') || d.user.store_slug === 'smeram'));
+          if (isSmeram) {
+            window.location.href = '../clients/smeram/merchant/index.html' + storeIdParam;
+          } else {
+            window.location.href = '../merchant/index.html' + storeIdParam;
+          }
         }
       }
     } else if (d && (d.error || d.message)) {

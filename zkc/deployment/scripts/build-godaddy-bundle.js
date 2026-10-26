@@ -70,17 +70,17 @@ function buildBundle() {
   fs.cpSync(srcFullAssets, destFullAssets, { recursive: true });
   console.log(`✅ Bundled design system assets into ${destFullAssets}`);
 
-  // 4. Copy PHP API endpoints
+  // 4. Copy PHP API endpoints, Swagger UI, and OpenAPI specs
   const phpDir = path.join(__dirname, '../../api/services/php');
   if (fs.existsSync(phpDir)) {
-    const phpFiles = fs.readdirSync(phpDir).filter(f => f.endsWith('.php'));
-    phpFiles.forEach(f => {
+    const backendFiles = fs.readdirSync(phpDir).filter(f => f.endsWith('.php') || f === 'swagger.html' || f === 'openapi.json');
+    backendFiles.forEach(f => {
       const targetPath = path.join(bundleDir, f);
       // Don't overwrite existing db_config.php if user already configured credentials
       if (f === 'db_config.php' && fs.existsSync(targetPath)) return;
       fs.copyFileSync(path.join(phpDir, f), targetPath);
     });
-    console.log(`✅ Copied ${phpFiles.length} PHP backend endpoints to ${bundleDir}`);
+    console.log(`✅ Copied ${backendFiles.length} PHP backend endpoints, Swagger UI & OpenAPI specs to ${bundleDir}`);
   }
 
   // 5. Create api/ gateway for /api/* requests on GoDaddy
