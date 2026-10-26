@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Store Builder · Smeram Naturals</title>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get('store_id')) params.set('store_id', '2');
+    window.location.replace('../../../store-builder/?' + params.toString());
+  </script>
+</head>
+<body style="font-family:sans-serif;padding:30px;text-align:center;color:#64748b">
+  <p>Opening Store Builder CMS… <a href="../../../store-builder/?store_id=2" style="color:#ed6375;font-weight:700">Click here if not redirected</a>.</p>
+</body>
+</html>

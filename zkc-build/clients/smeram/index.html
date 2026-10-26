@@ -11,8 +11,15 @@
 <script>
 (function(){
   try{
+    let css = '';
     if(localStorage.getItem('zk_announcement_disabled')==='true'||localStorage.getItem('zk_announcement_enabled')==='false'){
-      document.write('<style id="zk-ann-preload">#top-announcement-bar,.ann-bar{display:none!important}</style>');
+      css += '#top-announcement-bar,.ann-bar{display:none!important}';
+    }
+    if(localStorage.getItem('zk_products_disabled')==='true'){
+      css += '#products,#nav-all{display:none!important}';
+    }
+    if(css){
+      document.write('<style id="zk-section-preload">'+css+'</style>');
     }
   }catch(_){}
 })();
@@ -47,7 +54,7 @@ html{scroll-behavior:smooth}
   --shadow-sm:0 4px 14px rgba(36,24,18,0.06);
   --shadow-md:0 12px 30px rgba(237,99,117,0.14);
 }
-body{font-family:'Inter',sans-serif;color:var(--text);background:var(--white);overflow-x:hidden;line-height:1.55}
+body{font-family:'Inter',sans-serif;color:var(--text);background:#FFF9FA;overflow-x:hidden;line-height:1.55}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;height:auto}
 button,input,select,textarea{font-family:inherit}
@@ -2159,15 +2166,20 @@ async function syncCheckoutSettings() {
   if (chField) chField.style.display = checkout.show_shipping_field === false ? 'none' : 'block';
 }
 
-// Check if announcement bar is disabled by store or page settings
+// Check if announcement bar and products sections are disabled by store or page settings
 async function checkAnnouncementVisibility() {
   const ann = document.getElementById('top-announcement-bar') || document.querySelector('.ann-bar');
-  if (!ann) return;
+  const prodSec = document.getElementById('products');
+  const navAll = document.getElementById('nav-all')?.parentElement;
 
   // Apply immediately from localStorage to prevent visible pop-in
   const cachedDisabled = localStorage.getItem('zk_announcement_disabled') === 'true' || 
                          localStorage.getItem('zk_announcement_enabled') === 'false';
-  if (cachedDisabled) ann.style.display = 'none';
+  if (ann && cachedDisabled) ann.style.display = 'none';
+
+  const cachedProdsDisabled = localStorage.getItem('zk_products_disabled') === 'true';
+  if (prodSec && cachedProdsDisabled) prodSec.style.display = 'none';
+  if (navAll && cachedProdsDisabled) navAll.style.display = 'none';
 
   // Check database API for current store settings
   try {
@@ -2175,18 +2187,34 @@ async function checkAnnouncementVisibility() {
     if (res.ok) {
       const data = await res.json();
       if (data.theme_config) {
-        const secAnn = data.theme_config.sections?.announcement || {};
-        const annFields = data.theme_config.fields || {};
-        const apiEnabled = data.theme_config.announcement_enabled !== false && secAnn.visible !== false && annFields.ann_show !== false;
-        localStorage.setItem('zk_announcement_enabled', String(apiEnabled));
-        localStorage.setItem('zk_announcement_disabled', String(!apiEnabled));
-        ann.style.display = apiEnabled ? 'flex' : 'none';
-        if (secAnn.background || annFields.ann_bg) {
-          ann.style.backgroundColor = secAnn.background || annFields.ann_bg;
+        const cfg = data.theme_config;
+        const secAnn = cfg.sections?.announcement || {};
+        const secProds = cfg.sections?.products || {};
+        const annFields = cfg.fields || {};
+
+        // 1. Announcement Bar
+        const apiAnnEnabled = cfg.announcement_enabled !== false && secAnn.visible !== false && annFields.ann_show !== false;
+        localStorage.setItem('zk_announcement_enabled', String(apiAnnEnabled));
+        localStorage.setItem('zk_announcement_disabled', String(!apiAnnEnabled));
+        if (ann) {
+          ann.style.display = apiAnnEnabled ? 'flex' : 'none';
+          if (secAnn.background || annFields.ann_bg) {
+            ann.style.backgroundColor = secAnn.background || annFields.ann_bg;
+          }
+          if (secAnn.color || annFields.ann_text_c) {
+            ann.style.color = secAnn.color || annFields.ann_text_c;
+          }
         }
-        if (secAnn.color || annFields.ann_text_c) {
-          ann.style.color = secAnn.color || annFields.ann_text_c;
-        }
+
+        // 2. Featured Products on Home Page
+        const apiProdsEnabled = secProds.visible !== false;
+        localStorage.setItem('zk_products_disabled', String(!apiProdsEnabled));
+        if (prodSec) prodSec.style.display = apiProdsEnabled ? 'block' : 'none';
+        if (navAll) navAll.style.display = apiProdsEnabled ? '' : 'none';
+
+        // 3. Theme Colors
+        if (cfg.primary_colour) document.documentElement.style.setProperty('--pink', cfg.primary_colour);
+        if (cfg.bg_colour) document.body.style.backgroundColor = cfg.bg_colour;
         return;
       }
     }
@@ -2194,7 +2222,7 @@ async function checkAnnouncementVisibility() {
 
   const disabled = localStorage.getItem('zk_announcement_disabled') === 'true' || 
                    localStorage.getItem('zk_announcement_enabled') === 'false';
-  ann.style.display = disabled ? 'none' : 'flex';
+  if (ann) ann.style.display = disabled ? 'none' : 'flex';
 }
 
 // Initialize on page load

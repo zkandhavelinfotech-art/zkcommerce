@@ -721,9 +721,10 @@ router.put('/:id/display', auth, async (req, res) => {
     const apply = cfg => {
       cfg = cfg || {};
       if (req.body.show_offers !== undefined) cfg.display = { ...(cfg.display || {}), show_offers: req.body.show_offers !== false };
-      if (req.body.show_all_products !== undefined) {
+      if (req.body.show_all_products !== undefined || req.body.products_enabled !== undefined) {
+        const prodVal = req.body.show_all_products !== undefined ? req.body.show_all_products !== false : req.body.products_enabled !== false;
         cfg.sections = cfg.sections || {};
-        cfg.sections.products = { ...(cfg.sections.products || {}), visible: req.body.show_all_products !== false };
+        cfg.sections.products = { ...(cfg.sections.products || {}), visible: prodVal };
       }
       if (req.body.announcement_enabled !== undefined) {
         cfg.announcement_enabled = req.body.announcement_enabled !== false;

@@ -349,9 +349,16 @@
 
   <!-- Sidebar -->
   <aside>
-    <div class="brand">
-      <div style="width:24px;height:24px;border-radius:6px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:900;">ZK</div>
-      <span>ZKCommerce</span>
+    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:7px">
+        <div style="width:24px;height:24px;border-radius:6px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:900;flex-shrink:0">ZK</div>
+        <span style="font-weight:800;font-size:13px;letter-spacing:-0.2px">ZKCommerce</span>
+      </div>
+      <span style="color:#cbd5e1;font-size:13px;font-weight:300">✕</span>
+      <div id="clientBrandWrap" style="display:flex;align-items:center;gap:6px;min-width:0">
+        <img id="clientBrandLogo" src="../assets/themes/smeram/smeram-logo.png" alt="Smeram Naturals" style="height:26px;max-width:32px;object-fit:contain;border-radius:4px" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+        <span id="clientBrandName" style="font-size:12px;font-weight:700;color:#ed6375;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Smeram Naturals</span>
+      </div>
     </div>
     <nav class="nav">
       <button class="nav-item active" data-view="overview"><span class="nav-icon">📊</span><span>Overview</span></button>
@@ -397,6 +404,7 @@
         <button class="btn-outline btn-sm" id="btnViewStore">👁️ View Storefront</button>
         <a class="btn-primary btn-sm" id="headerStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener" style="background:#ea580c;border-color:#ea580c;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700;box-shadow:0 2px 8px rgba(234,88,12,0.3)">🎨 Store Builder CMS ↗</a>
         <button class="btn-outline btn-sm" id="btnRefresh">🔄 Refresh</button>
+        <button class="btn-outline btn-sm" id="btnLogoff" onclick="logout()" style="color:#e11d48;border-color:#fecdd3;background:#fff1f2;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer">🚪 Log off</button>
       </div>
     </header>
 
@@ -962,6 +970,19 @@
       };
       if (currentStore.whatsapp_number) {
         document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;
+      }
+      const cLogo = document.getElementById('clientBrandLogo');
+      const cName = document.getElementById('clientBrandName');
+      if (cLogo && currentStore.logo_url) cLogo.src = currentStore.logo_url;
+      if (cName) cName.textContent = currentStore.store_name || 'Client Store';
+      if (currentStore.slug === 'smeram') {
+        document.documentElement.style.setProperty('--bg', '#fff5f7');
+        document.documentElement.style.setProperty('--border', '#fce7ec');
+        document.documentElement.style.setProperty('--primary', '#ed6375');
+      } else {
+        document.documentElement.style.setProperty('--bg', '#f5f7fb');
+        document.documentElement.style.setProperty('--border', '#e2e8f0');
+        document.documentElement.style.setProperty('--primary', '#1976d2');
       }
       updateStoreBuilderLinks();
     }
@@ -1790,7 +1811,15 @@
 
     function logout() {
       localStorage.removeItem('zk_token');
-      location.href = '../auth/login.html';
+      localStorage.removeItem('zk_user');
+      const isClient = window.location.pathname.includes('/clients/');
+      if (isClient) {
+        location.href = '../index.html';
+      } else if (currentStore && currentStore.slug === 'smeram') {
+        location.href = '../clients/smeram/index.html';
+      } else {
+        location.href = '../auth/login.html';
+      }
     }
 
     init();

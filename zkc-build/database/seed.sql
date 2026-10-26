@@ -69,10 +69,14 @@ UPDATE stores SET logo_url='/assets/themes/smeram/smeram-logo.png',primary_colou
   hero_headline='Shop by Ayurvedic Category',hero_subtext='Authentic Siddha formulations, Ayurgold face care, orthocare and Vedic health foods.',
   -- Drop section overrides saved by the older design so the new content shows.
   theme_config=(COALESCE(theme_config,'{}'::jsonb) - 'sections' - 'templates' - 'hidden_sections' - 'removed_sections') || jsonb_build_object(
-    'design','smeram','template_id','smeram-natural','style_preset','botanical',
-    'primary_colour','#ED6375','bg_colour','#FFFFFF','accent_colour','#A3B545','logo_url','/assets/themes/smeram/smeram-logo.png',
+    'design','smeram','template_id','smeram-natural','style_preset','smeram',
+    'primary_colour','#ED6375','bg_colour','#FFF5F7','accent_colour','#A3B545','logo_url','/assets/themes/smeram/smeram-logo.png',
+    'announcement_enabled', false,
+    'sections', jsonb_build_object('announcement', jsonb_build_object('visible', false), 'products', jsonb_build_object('visible', false)),
     'section_order',jsonb_build_array('trust','hero','products','why','ingredients','reviews','contact'),
     'fields',jsonb_build_object(
+      'announcement_enabled', false,
+      'ann_show', false,
       'body_font','Inter','hero_font','Playfair Display','nav_logo','/assets/themes/smeram/smeram-logo.png',
       'ann_text','🌿 Smeram Naturals · Sneha-Kalka-Drava Siddha Formulation · Free Shipping Above ₹399 Across India',
       'contact_phone','91-44-75399 72026','contact_email','smeramindustries@gmail.com',

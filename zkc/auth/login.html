@@ -95,23 +95,26 @@ body{font-family:'Inter',sans-serif;background:#0D0D1A;color:#fff;min-height:100
   <div id="email-form">
     <div class="field">
       <label>Email address</label>
-      <input type="email" id="email" placeholder="rajan@shop.com" autocomplete="email">
+      <input type="email" id="email" value="merchant@smeramnaturals.in" placeholder="merchant@smeramnaturals.in" autocomplete="email">
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
+      <input type="password" id="password" value="demo1234" placeholder="Your password" autocomplete="current-password">
     </div>
     <a href="forgot-password.html" class="forgot">Forgot password?</a>
     <button class="btn-primary" onclick="doLogin()">Continue with email →</button>
   </div>
 
-  <div class="demo-logins" id="demo-logins">
-    <div class="demo-title">Local demo accounts · click to sign in</div>
-    <div class="demo-choice"><span>Miliro<small>merchant@miliro.in · demo1234</small></span><button type="button" onclick="demoLogin('merchant@miliro.in')">Sign in</button></div>
-    <div class="demo-choice"><span>Smeram Naturals<small>merchant@smeramnaturals.in · demo1234</small></span><button type="button" onclick="demoLogin('merchant@smeramnaturals.in')">Sign in</button></div>
-    <div class="demo-choice"><span>ZK Demo Market<small>merchant@zkdemo.in · demo1234</small></span><button type="button" onclick="demoLogin('merchant@zkdemo.in')">Sign in</button></div>
-    <div class="demo-choice admin"><span>Product owner admin<small>admin@zkcommerce.in · demo1234</small></span><button type="button" onclick="demoLogin('admin@zkcommerce.in')">Admin sign in</button></div>
-    <div class="demo-footnote">Demo shortcuts appear only on localhost. Run the local database seed first.</div>
+  <div class="demo-logins visible" id="demo-logins">
+    <div class="demo-title" style="color:#831843;display:flex;align-items:center;gap:6px"><span>🌿</span> Smeram Naturals · Client Login</div>
+    <div class="demo-choice" style="background:#fdf2f8;border:1.5px solid #fbcfe8;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span style="font-weight:700;color:#9d174d;font-size:13px;display:block">Smeram Naturals</span>
+        <small style="color:#be185d;font-size:11.5px;font-weight:600">merchant@smeramnaturals.in · demo1234</small>
+      </div>
+      <button type="button" onclick="demoLogin('merchant@smeramnaturals.in')" style="background:#db2777;color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;box-shadow:0 2px 8px rgba(219,39,119,0.3)">Fill &amp; Sign in</button>
+    </div>
+    <div class="demo-footnote" style="color:#9d174d;opacity:0.8">Default credentials configured for Smeram Naturals client merchant portal.</div>
   </div>
   <div class="or">or</div>
 
@@ -218,7 +221,20 @@ async function doLogin(){
     if(d.token){
       localStorage.setItem('zk_token',d.token);
       localStorage.setItem('zk_user',JSON.stringify(d.user||{}));
-      window.location.href=(d.user&&d.user.role==='admin')?'../admin/dashboard.html':(d.user&&d.user.store_id)?'../store-builder/':'../store-builder/setup.html';
+      var params = new URLSearchParams(window.location.search);
+      var redirectUrl = params.get('redirect');
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else if (d.user && d.user.role === 'admin') {
+        window.location.href = '../admin/dashboard.html';
+      } else {
+        var isSmeram = (d.user && (d.user.email === 'merchant@smeramnaturals.in' || (d.user.store && d.user.store.slug === 'smeram') || d.user.store_slug === 'smeram'));
+        if (isSmeram) {
+          window.location.href = '../clients/smeram/merchant/index.html';
+        } else {
+          window.location.href = '../merchant/index.html' + (d.user && d.user.store_id ? '?store_id=' + encodeURIComponent(d.user.store_id) : '');
+        }
+      }
     } else {
       alert(d.error||d.message||'Invalid email or password');
     }
