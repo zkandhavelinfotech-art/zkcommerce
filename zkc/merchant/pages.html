@@ -8,9 +8,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/design-system.css">
+<script>
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('embed') === '1' || window.self !== window.top) {
+    document.documentElement.classList.add('is-embedded');
+  }
+})();
+</script>
 <style>
 body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-body); }
 @media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+.is-embedded aside.zk-sidebar,
+.is-embedded aside#sidebar,
+.is-embedded .sidebar-toggle,
+.is-embedded .zk-main > div:first-child {
+  display: none !important;
+}
+.is-embedded .zk-main {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.is-embedded body {
+  background: #fff !important;
+}
 
 .page-row:hover td { background: rgba(255,107,0,0.02); }
 .page-slug-badge {
@@ -305,16 +327,22 @@ async function initPages() {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     var d = await r.json();
-    if (d.stores && d.stores.length) {
+    var storeIdParam = new URLSearchParams(window.location.search).get('store_id');
+    if (storeIdParam) {
+      STORE_ID = Number(storeIdParam);
+    } else if (d.stores && d.stores.length) {
       STORE_ID = d.stores[0].id;
-      if (document.getElementById('side-view-store-link')) {
-        document.getElementById('side-view-store-link').href = '../storefront/home.html?store=' + d.stores[0].slug;
-      }
-      if (document.getElementById('top-view-store-link')) {
-        document.getElementById('top-view-store-link').href = '../storefront/home.html?store=' + d.stores[0].slug;
-      }
     } else {
       STORE_ID = 2; // Default fallback to Smeram Naturals
+    }
+    if (d.stores && d.stores.length) {
+      var matchedStore = d.stores.find(function(s){ return String(s.id) === String(STORE_ID); }) || d.stores[0];
+      if (document.getElementById('side-view-store-link')) {
+        document.getElementById('side-view-store-link').href = '../storefront/home.html?store=' + matchedStore.slug;
+      }
+      if (document.getElementById('top-view-store-link')) {
+        document.getElementById('top-view-store-link').href = '../storefront/home.html?store=' + matchedStore.slug;
+      }
     }
   } catch(e) {
     STORE_ID = 2;

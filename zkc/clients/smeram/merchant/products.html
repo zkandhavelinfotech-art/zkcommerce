@@ -11,9 +11,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href='../assets/css/design-system.css'>
+<script>
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('embed') === '1' || window.self !== window.top) {
+    document.documentElement.classList.add('is-embedded');
+  }
+})();
+</script>
 <style>
 body{background:var(--zk-chalk);overflow-x:hidden}
 @media(max-width:1080px){.zk-main{margin-left:0!important}.sidebar-toggle{display:flex!important}}
+
+.is-embedded aside.zk-sidebar,
+.is-embedded aside#sidebar,
+.is-embedded .sidebar-toggle,
+.is-embedded .zk-main > div:first-child {
+  display: none !important;
+}
+.is-embedded .zk-main {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.is-embedded body {
+  background: #fff !important;
+}
 
 /* Redesigned Edit Product Modal */
 .modal-overlay {
@@ -733,8 +756,10 @@ async function loadProductsFromAPI() {
   var token = auth.token;
   if (!token || token.startsWith('demo_token')) return;
 
+  var currentStoreId = new URLSearchParams(window.location.search).get('store_id') || localStorage.getItem('zk_store_id') || '';
+  var qUrl = API_BASE + '/products?page=1&limit=50' + (currentStoreId ? '&store_id=' + encodeURIComponent(currentStoreId) : '');
   try {
-    var r = await fetch(API_BASE + '/products?page=1&limit=50', {
+    var r = await fetch(qUrl, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     var d = await r.json();

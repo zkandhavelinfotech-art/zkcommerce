@@ -1265,14 +1265,20 @@
 
     // ── Packaging & labels: merchant/packaging.html in an iframe, loaded when first opened ──
     let packagingStoreLoaded = null, shipmentsStoreLoaded = null;
-    // Catalogue & content views embed the Store Builder editors for the selected store (reloaded when the store changes).
+    // Catalogue & content views embed dedicated merchant view pages for the selected store
     function loadCmsFrame(view) {
       if (!currentStoreId) return;
       const frame = view.querySelector('.cms-frame');
       if (frame.dataset.store === String(currentStoreId)) return;
-      const url = '../store-builder/?store_id=' + encodeURIComponent(currentStoreId) + '&workspace=' + view.dataset.workspace;
+      const ws = view.dataset.workspace;
+      let targetFile = 'products.html';
+      if (ws === 'categories') targetFile = 'categories.html';
+      else if (ws === 'pages') targetFile = 'pages.html';
+      else if (ws === 'theme') targetFile = 'themes.html';
+      const url = targetFile + '?store_id=' + encodeURIComponent(currentStoreId);
       frame.src = url + '&embed=1';
-      view.querySelector('.cms-newtab').href = url;
+      const newTab = view.querySelector('.cms-newtab');
+      if (newTab) newTab.href = url;
       frame.dataset.store = String(currentStoreId);
     }
     function loadShipmentsFrame() {
@@ -1647,6 +1653,9 @@
     document.getElementById('storeSelect').onchange = e => {
       currentStoreId = e.target.value;
       currentStore = stores.find(x => String(x.id) === String(currentStoreId));
+      packagingStoreLoaded = null;
+      shipmentsStoreLoaded = null;
+      document.querySelectorAll('.cms-frame').forEach(f => { f.dataset.store = ''; });
       updateStoreHeader();
       loadDashboard();
     };
