@@ -82,6 +82,27 @@ const MIGRATIONS = [
     id: '006_product_unlisted',
     description: 'Hidden (link-only) products: sold from their own page, left out of listings and search',
     sql: ['ALTER TABLE products ADD COLUMN IF NOT EXISTS unlisted BOOLEAN NOT NULL DEFAULT false']
+  },
+  {
+    id: '007_store_pages_and_categories_meta',
+    description: 'Ensures categories have image_url, sort_order and active, and store_pages have status and sort_order (v1.0.7)',
+    sql: [
+      'ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT',
+      'ALTER TABLE categories ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0',
+      'ALTER TABLE categories ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE',
+      'ALTER TABLE store_pages ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0',
+      "ALTER TABLE store_pages ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'published'"
+    ]
+  },
+  {
+    id: '008_product_sku_and_pricing_meta',
+    description: 'Adds sku, compare_price, cost_price, and gst_rate columns to products table (v1.0.8)',
+    sql: [
+      'ALTER TABLE products ADD COLUMN IF NOT EXISTS sku VARCHAR(100)',
+      'ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_price NUMERIC(12,2)',
+      'ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(12,2)',
+      "ALTER TABLE products ADD COLUMN IF NOT EXISTS gst_rate VARCHAR(10) DEFAULT '12'"
+    ]
   }
 ];
 

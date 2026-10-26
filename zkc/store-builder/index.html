@@ -1035,24 +1035,44 @@ function applyEnvToForm() {
   renderEnvPreview();
 }
 
-// "Database is currently at" options: this environment's builds, newest first, with the schema each shipped.
+// "Database is currently at" options: builds + schema checkpoints (newest first)
 function renderMigrationPicker() {
   const sel = document.getElementById('mig_from');
   const schema = (deploySettings && deploySettings.schema) || { latest: '', migrations: [] };
   const ids = schema.migrations.map(m => m.id);
   const builds = envSettings().builds || [];
   const pendingAfter = s => { const i = ids.indexOf(s); return i < 0 ? ids.length : ids.length - 1 - i; };
-  sel.replaceChildren(
-    new Option(`Fresh / unknown database — all ${ids.length} migrations`, ''),
-    ...builds.map(b => {
+
+  const options = [
+    new Option(`Fresh / unknown database — all ${ids.length} migrations`, '')
+  ];
+
+  if (builds.length) {
+    builds.forEach(b => {
       const n = pendingAfter(b.schema);
-      return new Option(`v${b.version} (${b.technology}, ${new Date(b.built_at).toLocaleDateString()}) — ${n ? n + ' schema change' + (n > 1 ? 's' : '') : 'schema up to date'}`, b.version);
-    })
-  );
-  // The usual case: the previous build is what is live, the newest is what you are about to deploy.
-  sel.value = builds.length > 1 ? builds[1].version : builds.length ? builds[0].version : '';
+      options.push(new Option(`Build v${b.version} (${b.technology}, ${new Date(b.built_at).toLocaleDateString()}) — ${n ? n + ' schema change' + (n > 1 ? 's' : '') : 'schema up to date'}`, b.version));
+    });
+  }
+
+  // Also offer schema version checkpoints so merchants can migrate from specific DB versions (e.g. v1.0.7 to v1.0.8)
+  schema.migrations.forEach((m, idx) => {
+    const isLatest = idx === schema.migrations.length - 1;
+    const pendingCount = schema.migrations.length - 1 - idx;
+    const ver = m.version ? `v${m.version}` : m.id.slice(0, 3);
+    const label = `Database at ${ver} (${m.id}) — ${isLatest ? 'schema up to date' : pendingCount + ' pending migration' + (pendingCount > 1 ? 's' : '')}`;
+    options.push(new Option(label, m.id));
+  });
+
+  sel.replaceChildren(...options);
+
+  // Default selection: previous build if exists, else previous schema checkpoint (v1.0.7), else 1st build or ''
+  const prevBuild = builds.length > 1 ? builds[1].version : null;
+  const prevMigration = ids.length >= 2 ? ids[ids.length - 2] : null;
+  sel.value = prevBuild || prevMigration || (builds.length ? builds[0].version : '');
+
+  const latestVer = schema.latest_version ? `v${schema.latest_version}` : '';
   document.getElementById('schemaInfo').textContent = ids.length
-    ? `Latest schema: ${schema.latest} (${ids.length} migrations). Pick the version your ${selectedEnv} database was last deployed with.`
+    ? `Latest schema: ${latestVer ? latestVer + ' · ' : ''}${schema.latest} (${ids.length} migrations). Pick the version your ${selectedEnv} database was last deployed with.`
     : '';
   const last = envSettings().last_migration;
   document.getElementById('migStatusMsg').textContent = last ? `Last migration: ${last.zip_name}` : '';

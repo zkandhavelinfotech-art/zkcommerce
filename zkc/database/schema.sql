@@ -239,6 +239,9 @@ CREATE INDEX IF NOT EXISTS idx_shipping_rates_store ON store_shipping_rates(stor
 
 CREATE INDEX IF NOT EXISTS idx_products_store ON products(store_id);
 ALTER TABLE products ADD COLUMN IF NOT EXISTS sku VARCHAR(100);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_price NUMERIC(12,2);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(12,2);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS gst_rate VARCHAR(10) DEFAULT '12';
 CREATE INDEX IF NOT EXISTS idx_orders_store   ON orders(store_id);
 CREATE INDEX IF NOT EXISTS idx_stores_domain  ON stores(custom_domain);
 

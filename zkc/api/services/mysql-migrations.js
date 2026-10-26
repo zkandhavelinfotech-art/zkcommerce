@@ -14,6 +14,7 @@ const TABLE_OPTS = 'ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicod
 const MIGRATIONS = [
   {
     id: '001_core_tables',
+    version: '1.0.1',
     description: 'Stores, categories, products, orders and pages',
     steps: [
       `CREATE TABLE IF NOT EXISTS \`stores\` (
@@ -59,6 +60,8 @@ const MIGRATIONS = [
   \`sku\` VARCHAR(100) DEFAULT NULL,
   \`price\` DECIMAL(12,2) NOT NULL,
   \`compare_price\` DECIMAL(12,2) DEFAULT NULL,
+  \`cost_price\` DECIMAL(12,2) DEFAULT NULL,
+  \`gst_rate\` VARCHAR(10) DEFAULT '12',
   \`product_size\` VARCHAR(60) DEFAULT NULL,
   \`offer_text\` VARCHAR(120) DEFAULT NULL,
   \`badge_text\` VARCHAR(60) DEFAULT NULL,
@@ -107,6 +110,7 @@ const MIGRATIONS = [
   },
   {
     id: '002_inquiries',
+    version: '1.0.2',
     description: 'Contact form and restock requests',
     steps: [
       `CREATE TABLE IF NOT EXISTS \`inquiries\` (
@@ -123,6 +127,7 @@ const MIGRATIONS = [
   },
   {
     id: '003_order_tracking',
+    version: '1.0.3',
     description: 'Order updated_at, tracking number and store/date index for the order dashboard',
     steps: [
       { addColumn: { table: 'orders', column: 'updated_at', definition: 'DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP' } },
@@ -132,6 +137,7 @@ const MIGRATIONS = [
   },
   {
     id: '004_razorpay_payments',
+    version: '1.0.4',
     description: 'Razorpay order / payment ids on orders for online payment',
     steps: [
       { addColumn: { table: 'orders', column: 'razorpay_order_id', definition: 'VARCHAR(64) DEFAULT NULL' } },
@@ -141,6 +147,7 @@ const MIGRATIONS = [
   },
   {
     id: '005_product_quantity',
+    version: '1.0.5',
     description: 'Stock quantity per product',
     steps: [
       { addColumn: { table: 'products', column: 'quantity', definition: 'INT DEFAULT 100' } }
@@ -148,6 +155,7 @@ const MIGRATIONS = [
   },
   {
     id: '006_commerce',
+    version: '1.0.6',
     description: 'Sizes and stock, coupons, shipping rates, GST totals, invoices, Ekart tracking and WhatsApp log',
     steps: [
       { addColumn: { table: 'products', column: 'variants', definition: 'LONGTEXT DEFAULT NULL' } },
@@ -241,6 +249,29 @@ const MIGRATIONS = [
 ) ${TABLE_OPTS}`
       // Older orders keep stock_deducted = 0: they predate stock tracking, so cancelling them puts nothing back.
     ]
+  },
+  {
+    id: '007_store_pages_and_categories_meta',
+    version: '1.0.7',
+    description: 'Categories image, sort order and active status, and store pages sort order and status (v1.0.7)',
+    steps: [
+      { addColumn: { table: 'categories', column: 'image_url', definition: 'TEXT DEFAULT NULL' } },
+      { addColumn: { table: 'categories', column: 'sort_order', definition: 'INT DEFAULT 0' } },
+      { addColumn: { table: 'categories', column: 'active', definition: 'TINYINT(1) DEFAULT 1' } },
+      { addColumn: { table: 'store_pages', column: 'sort_order', definition: 'INT DEFAULT 0' } },
+      { addColumn: { table: 'store_pages', column: 'status', definition: "VARCHAR(30) DEFAULT 'published'" } }
+    ]
+  },
+  {
+    id: '008_product_sku_and_pricing_meta',
+    version: '1.0.8',
+    description: 'Product SKU, compare price, cost tracking and GST rate (v1.0.8)',
+    steps: [
+      { addColumn: { table: 'products', column: 'sku', definition: 'VARCHAR(100) DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'compare_price', definition: 'DECIMAL(12,2) DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'cost_price', definition: 'DECIMAL(12,2) DEFAULT NULL' } },
+      { addColumn: { table: 'products', column: 'gst_rate', definition: "VARCHAR(10) DEFAULT '12'" } }
+    ]
   }
 ];
 
@@ -293,6 +324,7 @@ function guardedSql(migrations) {
 }
 
 const latestId = () => MIGRATIONS[MIGRATIONS.length - 1].id;
+const latestVersion = () => MIGRATIONS[MIGRATIONS.length - 1].version || '1.0.8';
 
 // Migrations newer than `fromId` (all of them when fromId is empty or unknown).
 function migrationsAfter(fromId) {
@@ -300,4 +332,4 @@ function migrationsAfter(fromId) {
   return idx < 0 ? MIGRATIONS.slice() : MIGRATIONS.slice(idx + 1);
 }
 
-module.exports = { MIGRATIONS, SCHEMA_TABLE_SQL, compileStep, guardedSql, migrationsAfter, latestId, sqlString };
+module.exports = { MIGRATIONS, SCHEMA_TABLE_SQL, compileStep, guardedSql, migrationsAfter, latestId, latestVersion, sqlString };

@@ -308,7 +308,7 @@ router.get('/:id/deployment-settings', auth, async (req, res) => {
     view.next_versions = {};
     for (const env of deploySettings.ENVIRONMENTS) for (const t of deploySettings.TECHNOLOGIES)
       view.next_versions[`${env}:${t}`] = deploySettings.nextVersion(loaded.settings, env, t);
-    view.schema = { latest: mysqlMigrations.latestId(), migrations: mysqlMigrations.MIGRATIONS.map(m => ({ id: m.id, description: m.description })) };
+    view.schema = { latest: mysqlMigrations.latestId(), latest_version: mysqlMigrations.latestVersion(), migrations: mysqlMigrations.MIGRATIONS.map(m => ({ id: m.id, version: m.version, description: m.description })) };
     // Which ZIPs can still be downloaded (deleted or moved files show as unavailable in the dashboard).
     const onDisk = name => !!name && ['', 'published', 'db-migrations'].some(dir => fs.existsSync(path.join(DEPLOY_ROOT, dir, path.basename(name))));
     for (const e of Object.values(view.environments)) {
@@ -481,17 +481,28 @@ router.post('/:id/db-migration', auth, async (req, res) => {
     const builds = deploySettings.buildHistory(envSettings);
     const fromVersion = String(req.body.from_version || '');
     let fromSchema = '';
+    let fromLabel = fromVersion;
     if (fromVersion) {
       const from = builds.find(b => b.version === fromVersion);
-      if (!from) return res.status(400).json({ error: `No ${env} build v${fromVersion} found` });
-      fromSchema = from.schema;
+      if (from) {
+        fromSchema = from.schema;
+        fromLabel = from.version;
+      } else {
+        const found = mysqlMigrations.MIGRATIONS.find(m => m.id === fromVersion || m.version === fromVersion || m.id.startsWith(fromVersion));
+        if (found) {
+          fromSchema = found.id;
+          fromLabel = found.version || found.id;
+        } else {
+          return res.status(400).json({ error: `No ${env} build or schema checkpoint ${fromVersion} found` });
+        }
+      }
     }
     if (req.body.to_version && !VERSION_RE.test(String(req.body.to_version))) return res.status(400).json({ error: 'Version must look like 1.0.3' });
-    const toVersion = String(req.body.to_version || (builds[0] && builds[0].version) || deploySettings.nextVersion(loaded.settings, env, 'php'));
+    const toVersion = String(req.body.to_version || (builds[0] && builds[0].version) || mysqlMigrations.latestVersion() || '1.0.8');
     const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
     const migration = await exportDbMigration({
       store: rows[0], ...(await loadPackageData(req.params.id)),
-      env, fromVersion, fromSchema, toVersion, includeSeed: req.body.include_seed !== false, whatsapp: await orderMessages.loadSettings(req.params.id), commerce: await packageCommerce(req.params.id)
+      env, fromVersion: fromLabel, fromSchema, toVersion, includeSeed: req.body.include_seed !== false, whatsapp: await orderMessages.loadSettings(req.params.id), commerce: await packageCommerce(req.params.id)
     });
     if (!migration.zip_path) return res.status(500).json({ error: 'Could not create the migration ZIP: ' + migration.zip_error });
     envSettings.last_migration = { from_version: migration.from_version, to_version: toVersion, zip_name: migration.zip_name, zip_path: migration.zip_path, built_at: migration.built_at };
