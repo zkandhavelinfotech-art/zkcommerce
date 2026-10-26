@@ -62,6 +62,19 @@ function buildBundle() {
   fs.cpSync(srcFullAssets, destFullAssets, { recursive: true });
   console.log(`✅ Bundled design system assets into ${destFullAssets}`);
 
+  // 4. Copy PHP API endpoints
+  const phpDir = path.join(__dirname, '../../api/services/php');
+  if (fs.existsSync(phpDir)) {
+    const phpFiles = fs.readdirSync(phpDir).filter(f => f.endsWith('.php'));
+    phpFiles.forEach(f => {
+      const targetPath = path.join(bundleDir, f);
+      // Don't overwrite existing db_config.php if user already configured credentials
+      if (f === 'db_config.php' && fs.existsSync(targetPath)) return;
+      fs.copyFileSync(path.join(phpDir, f), targetPath);
+    });
+    console.log(`✅ Copied ${phpFiles.length} PHP backend endpoints to ${bundleDir}`);
+  }
+
   // 3. Create web.config for GoDaddy Windows IIS
   const webConfigContent = `<?xml version="1.0" encoding="UTF-8"?>
 <configuration>

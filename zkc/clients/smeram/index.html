@@ -164,6 +164,21 @@ nav{background:rgba(255,255,255,0.98);backdrop-filter:blur(10px);border-bottom:2
   font-size:16px;
   flex-shrink:0;
 }
+.smd-cat-thumb{
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  object-fit:cover;
+  border:1px solid var(--border-light);
+  background:#fff;
+  flex-shrink:0;
+}
+body.hide-cat-images .smd-cat-thumb{
+  display:none !important;
+}
+body:not(.hide-cat-images) .smd-cat-icon{
+  display:none !important;
+}
 .smd-cat-text{
   flex-grow:1;
   white-space:nowrap;
@@ -896,21 +911,25 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
             <div class="smd-col-title">Sub Categories</div>
             <div class="smd-cat-list">
               <button type="button" class="smd-cat-btn active" data-cat="Hair Care Oil" onmouseenter="activateSubCat('Hair Care Oil')" onclick="selectSubCat('Hair Care Oil', event)">
+                <img src="../../assets/themes/smeram/smeram-box-bottle.jpg" data-file="smeram-box-bottle.jpg" alt="Hair Care Oil" class="smd-cat-thumb" onerror="fallbackImg(this)">
                 <span class="smd-cat-icon">🧴</span>
                 <span class="smd-cat-text">Hair Care Oil</span>
                 <span class="smd-chevron">›</span>
               </button>
               <button type="button" class="smd-cat-btn" data-cat="Joint Pain & Orthocare" onmouseenter="activateSubCat('Joint Pain & Orthocare')" onclick="selectSubCat('Joint Pain & Orthocare', event)">
+                <img src="../../assets/themes/smeram/ortho-care.jpg" data-file="ortho-care.jpg" alt="Joint Pain & Orthocare" class="smd-cat-thumb" onerror="fallbackImg(this)">
                 <span class="smd-cat-icon">🌿</span>
                 <span class="smd-cat-text">Joint Pain &amp; Orthocare</span>
                 <span class="smd-chevron">›</span>
               </button>
               <button type="button" class="smd-cat-btn" data-cat="Ayurgold Face Care" onmouseenter="activateSubCat('Ayurgold Face Care')" onclick="selectSubCat('Ayurgold Face Care', event)">
+                <img src="../../assets/themes/smeram/face-care.jpg" data-file="face-care.jpg" alt="Ayurgold Face Care" class="smd-cat-thumb" onerror="fallbackImg(this)">
                 <span class="smd-cat-icon">✨</span>
                 <span class="smd-cat-text">Ayurgold Face Care</span>
                 <span class="smd-chevron">›</span>
               </button>
               <button type="button" class="smd-cat-btn" data-cat="Health Foods" onmouseenter="activateSubCat('Health Foods')" onclick="selectSubCat('Health Foods', event)">
+                <img src="../../assets/themes/smeram/health-foods.jpg" data-file="health-foods.jpg" alt="Health Foods" class="smd-cat-thumb" onerror="fallbackImg(this)">
                 <span class="smd-cat-icon">🍯</span>
                 <span class="smd-cat-text">Health Foods</span>
                 <span class="smd-chevron">›</span>
@@ -1003,7 +1022,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
     </ul>
 
     <div class="nav-right">
-      <a href="https://wa.me/917539972026?text=Hello%20Smeram%20Naturals%2C%20I%20want%20to%20order" target="_blank" rel="noopener" class="wa-nav-btn" title="Direct WhatsApp Orders">
+      <a href="https://wa.me/917539972026?text=Hello%20Smeram%20Naturals%2C%20I%20want%20to%20order" target="_blank" rel="noopener" class="wa-nav-btn" id="navWaBtn" title="Direct WhatsApp Orders" style="display:none">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.2.662.589 1.22.771 1.394.858.173.086.274.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.825z"/></svg>
         <span>WhatsApp Order</span>
       </a>
@@ -2663,6 +2682,19 @@ async function syncCheckoutSettings() {
   const chField = document.getElementById('chDeliveryTaxField');
   if (row) row.style.display = checkout.show_shipping_field === false ? 'none' : 'flex';
   if (chField) chField.style.display = checkout.show_shipping_field === false ? 'none' : 'block';
+
+  // Apply Quick Order via WhatsApp visibility (disabled by default)
+  const isWaOrderEnabled = (checkout.show_whatsapp_order === true) || (localStorage.getItem('zk_checkout_show_whatsapp_order') === 'true');
+  const navWa = document.getElementById('navWaBtn');
+  if (navWa) navWa.style.display = isWaOrderEnabled ? 'inline-flex' : 'none';
+
+  // Apply category images visibility in header Shop menu
+  const isCatImagesEnabled = (localStorage.getItem('zk_header_cat_images') !== 'false');
+  if (!isCatImagesEnabled) {
+    document.body.classList.add('hide-cat-images');
+  } else {
+    document.body.classList.remove('hide-cat-images');
+  }
 }
 
 // Check if announcement bar and products sections are disabled by store or page settings

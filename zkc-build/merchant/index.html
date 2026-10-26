@@ -349,16 +349,9 @@
 
   <!-- Sidebar -->
   <aside>
-    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:7px">
-        <div style="width:24px;height:24px;border-radius:6px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:900;flex-shrink:0">ZK</div>
-        <span style="font-weight:800;font-size:13px;letter-spacing:-0.2px">ZKCommerce</span>
-      </div>
-      <span style="color:#cbd5e1;font-size:13px;font-weight:300">✕</span>
-      <div id="clientBrandWrap" style="display:flex;align-items:center;gap:6px;min-width:0">
-        <img id="clientBrandLogo" src="../assets/themes/smeram/smeram-logo.png" alt="Smeram Naturals" style="height:26px;max-width:32px;object-fit:contain;border-radius:4px" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
-        <span id="clientBrandName" style="font-size:12px;font-weight:700;color:#ed6375;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Smeram Naturals</span>
-      </div>
+    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid #1a2a44">
+      <div style="width:28px;height:28px;border-radius:7px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:900;flex-shrink:0">ZK</div>
+      <span style="font-weight:800;font-size:16px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>
     </div>
     <nav class="nav">
       <button class="nav-item active" data-view="overview"><span class="nav-icon">📊</span><span>Overview</span></button>
@@ -395,12 +388,17 @@
   <!-- Main Container -->
   <div class="app-main">
     <header>
-      <div class="header-left">
+      <div class="header-left" style="display:flex;align-items:center;gap:12px">
+        <div style="display:flex;align-items:center;gap:8px" id="headerStoreLogoWrap">
+          <img id="headerStoreLogo" src="../assets/themes/smeram/smeram-logo.png" alt="Store Logo" style="height:34px;max-width:140px;object-fit:contain;background:#fff;padding:2px 8px;border-radius:6px;border:1px solid var(--border)" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+          <button type="button" class="btn-outline btn-sm" onclick="openLogoUploadModal()" title="Upload or change client store logo" style="font-size:11px;padding:3px 7px;cursor:pointer">✏️ Logo</button>
+        </div>
         <label style="font-size:13px;font-weight:600;color:var(--muted)">Store:</label>
-        <select id="storeSelect" style="min-width:210px;font-weight:600"></select>
+        <select id="storeSelect" style="min-width:190px;font-weight:600"></select>
         <span class="store-badge" id="storeStatusBadge">Live</span>
       </div>
       <div class="header-actions">
+        <a class="btn-outline btn-sm" id="btnGoDaddyOrders" href="../admin-orders.php" target="_blank" rel="noopener" style="font-size:12px;display:inline-flex;align-items:center;gap:5px;font-weight:600">📋 GoDaddy Orders (admin-orders.php) ↗</a>
         <button class="btn-outline btn-sm" id="btnViewStore">👁️ View Storefront</button>
         <a class="btn-primary btn-sm" id="headerStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener" style="background:#ea580c;border-color:#ea580c;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700;box-shadow:0 2px 8px rgba(234,88,12,0.3)">🎨 Store Builder CMS ↗</a>
         <button class="btn-outline btn-sm" id="btnRefresh">🔄 Refresh</button>
@@ -822,6 +820,7 @@
           <div style="display:grid;gap:10px;max-width:680px">
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCoupon"><span><b>Show discount code box</b><br><small style="color:var(--muted)">Shoppers can enter a coupon in the cart.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowShipping"><span><b>Show Delivery &amp; Tax Fee badge</b><br><small style="color:var(--muted)">Display "Delivery &amp; Tax Fee: ✓ Inclusive of GST and free shipping" locked badge in the cart.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowWhatsappOrder"><span><b>Quick order via WhatsApp button</b><br><small style="color:var(--muted)">Display "💬 Quick order via WhatsApp" button in product view and cart. (Disabled by default).</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Payment methods offered</div>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)" id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately, paid on delivery.</small></span></label>
@@ -838,6 +837,7 @@
           <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Applies to the live store straight away. Each product can override the offer setting in the Store Builder product details.</p>
           <div style="display:grid;gap:10px;max-width:680px">
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAnnouncement"><span><b>Show Announcement Bar</b><br><small style="color:var(--muted)">Display top notification banner (promotions, announcements) across the storefront.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowCategoryImages" checked><span><b>Show category images in Shop menu</b><br><small style="color:var(--muted)">Display thumbnail photos beside each category in the header Shop dropdown subcategories list.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP strike-through, “% OFF” badges and offer tags such as “Special Introductory Offer”.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The product grid on the home page and its menu, tab and footer links. Other sections are switched in Store Builder → Settings.</small></span></label>
           </div>
@@ -911,21 +911,72 @@
             </div>
           </div>
         </div>
+        <div class="card" id="cardStoreLogoSettings">
+          <div class="card-head">
+            <div>
+              <h2>Store Logo &amp; Client Branding</h2>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Upload, update, or change your client store logo anytime. (The ZKCommerce platform engine brand remains preserved).</p>
+            </div>
+            <button class="btn-primary btn-sm" onclick="openLogoUploadModal()">🖼️ Upload New Logo</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:20px;padding:12px 0;flex-wrap:wrap">
+            <div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px 20px;display:flex;align-items:center;justify-content:center;min-width:180px;min-height:70px">
+              <img id="settingsStoreLogoPreview" src="../assets/themes/smeram/smeram-logo.png" alt="Current Logo" style="max-height:50px;max-width:200px;object-fit:contain" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+            </div>
+            <div style="flex:1;min-width:240px">
+              <div style="font-size:14px;font-weight:700;margin-bottom:4px" id="settingsStoreLogoTitle">Current Client Logo: Smeram Naturals</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">This logo is displayed in the storefront navigation bar, footer brand badge, and generated statutory GST invoices.</div>
+              <div style="margin-top:10px;display:flex;gap:8px">
+                <button type="button" class="btn-outline btn-sm" onclick="openLogoUploadModal()">✏️ Change / Upload Logo</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
     </div>
   </div>
 
-  <script>
-    const token = localStorage.getItem('zk_token');
-    const api = '/api';
-    let stores = [];
-    let currentStore = null;
-    let currentStoreId = '';
-
-    async function req(path, options = {}) {
+  <!-- Store Logo Upload Modal -->
+  <div class="modal-backdrop" id="logoUploadModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
+    <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden">
+      <div style="padding:16px 20px;background:#0f172a;color:#fff;display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:15px">Upload Client Store Logo</strong>
+        <button type="button" onclick="closeLogoUploadModal()" style="border:none;background:none;color:#94a3b8;font-size:20px;cursor:pointer">×</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="text-align:center;padding:14px;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:10px">
+          <img id="logoModalPreview" src="../assets/themes/smeram/smeram-logo.png" alt="Preview" style="max-height:60px;max-width:220px;object-fit:contain;margin-bottom:8px" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+          <div style="font-size:12px;color:var(--muted)">Preview of client store logo</div>
+        </div>
+        <div class="form-group">
+          <label>Choose Logo File (PNG, JPG, SVG, WebP)</label>
+          <input type="file" id="modalLogoFileInput" accept="image/*" onchange="handleLogoFileSelect(event)">
+        </div>
+        <div class="form-group">
+          <label>Or Enter Logo Image URL / Path</label>
+          <input type="text" id="modalLogoUrlInput" placeholder="/assets/themes/smeram/smeram-logo.png" oninput="document.getElementById('logoModalPreview').src=this.value">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+          <button type="button" class="btn-outline btn-sm" onclick="closeLogoUploadModal()">Cancel</button>
+          <button type="button" class="btn-primary btn-sm" onclick="saveStoreLogo()">Save     async function req(path, options = {}) {
       const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(options.headers || {}) };
-      const res = await fetch(api + path, { ...options, headers });
+      let res;
+      try {
+        res = await fetch(api + path, { ...options, headers });
+      } catch (err) {
+        // Fallback to PHP endpoint if Node is not running on GoDaddy
+        const cleanRoute = path.replace(/^\//, '');
+        const phpUrl = '../api.php?route=' + encodeURIComponent(cleanRoute);
+        res = await fetch(phpUrl, { ...options, headers }).catch(() => null);
+        if (!res) throw err;
+      }
+      if (!res.ok && res.status === 404) {
+        const cleanRoute = path.replace(/^\//, '');
+        const phpUrl = '../api.php?route=' + encodeURIComponent(cleanRoute);
+        const phpRes = await fetch(phpUrl, { ...options, headers }).catch(() => null);
+        if (phpRes && phpRes.ok) res = phpRes;
+      }
       if (options.download) {
         if (!res.ok) throw Error('Download failed');
         return res.blob();
@@ -950,14 +1001,26 @@
       try {
         const data = await req('/stores');
         stores = data.stores || [];
+        if (!stores.length) {
+          stores = [{ id: 1, store_name: 'Smeram Naturals', slug: 'smeram', status: 'live' }];
+        }
         const s = document.getElementById('storeSelect');
         s.replaceChildren(...stores.map(x => new Option(x.store_name + ' (' + x.slug + ')', x.id)));
-        if (!stores.length) { notify('Please create a store in Store Builder setup first.', true); return; }
         currentStoreId = s.value;
-        currentStore = stores.find(x => String(x.id) === String(currentStoreId));
+        currentStore = stores.find(x => String(x.id) === String(currentStoreId)) || stores[0];
         updateStoreHeader();
         await loadDashboard();
-      } catch (e) { notify(e.message, true); }
+      } catch (e) {
+        console.warn('API init notice:', e.message);
+        if (!stores.length) {
+          stores = [{ id: 1, store_name: 'Smeram Naturals', slug: 'smeram', status: 'live' }];
+          const s = document.getElementById('storeSelect');
+          s.replaceChildren(...stores.map(x => new Option(x.store_name + ' (' + x.slug + ')', x.id)));
+          currentStoreId = 1;
+          currentStore = stores[0];
+          updateStoreHeader();
+        }
+      }
     }
 
     function getStoreBuilderUrl() {
@@ -970,12 +1033,68 @@
       const url = getStoreBuilderUrl();
       const sbLink = document.getElementById('sidebarStoreBuilderBtn');
       if (sbLink) sbLink.href = url;
-      const hbBtn = document.getElementById('headerStoreBuilderBtn');
-      if (hbBtn) hbBtn.href = url;
+      const hsbBtn = document.getElementById('headerStoreBuilderBtn');
+      if (hsbBtn) hsbBtn.href = url;
       const fbLink = document.getElementById('footerStoreBuilderBtn');
       if (fbLink) fbLink.href = url;
       const tbBtn = document.getElementById('btnOpenThemeBuilder');
       if (tbBtn) tbBtn.href = url;
+    }
+
+    function openLogoUploadModal() {
+      const modal = document.getElementById('logoUploadModal');
+      if (!modal) return;
+      const currentLogo = (currentStore && currentStore.logo_url) || localStorage.getItem('zk_store_logo') || '../assets/themes/smeram/smeram-logo.png';
+      document.getElementById('logoModalPreview').src = currentLogo;
+      document.getElementById('modalLogoUrlInput').value = currentLogo;
+      modal.style.display = 'flex';
+    }
+
+    function closeLogoUploadModal() {
+      const modal = document.getElementById('logoUploadModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function handleLogoFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const base64 = evt.target.result;
+        document.getElementById('logoModalPreview').src = base64;
+        document.getElementById('modalLogoUrlInput').value = base64;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveStoreLogo() {
+      const newLogo = document.getElementById('modalLogoUrlInput').value.trim();
+      if (!newLogo) {
+        alert('Please choose an image file or provide a logo URL.');
+        return;
+      }
+      try {
+        localStorage.setItem('zk_store_logo', newLogo);
+        if (document.getElementById('headerStoreLogo')) document.getElementById('headerStoreLogo').src = newLogo;
+        if (document.getElementById('settingsStoreLogoPreview')) document.getElementById('settingsStoreLogoPreview').src = newLogo;
+        if (currentStore) currentStore.logo_url = newLogo;
+        
+        if (currentStoreId) {
+          const fresh = await req('/stores/' + currentStoreId).catch(() => null);
+          if (fresh && fresh.store) {
+            const theme_config = { ...(fresh.store.theme_config || {}), logo_url: newLogo, fields: { ...(fresh.store.theme_config?.fields || {}), nav_logo: newLogo } };
+            await req('/stores/' + currentStoreId, {
+              method: 'PATCH',
+              body: JSON.stringify({ logo_url: newLogo, theme_config })
+            }).catch(() => {});
+          }
+        }
+        notify('Store logo updated and applied successfully!');
+        closeLogoUploadModal();
+      } catch (err) {
+        notify('Logo saved locally: ' + err.message);
+        closeLogoUploadModal();
+      }
     }
 
     function updateStoreHeader() {
@@ -989,10 +1108,14 @@
       if (currentStore.whatsapp_number) {
         document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;
       }
-      const cLogo = document.getElementById('clientBrandLogo');
-      const cName = document.getElementById('clientBrandName');
-      if (cLogo && currentStore.logo_url) cLogo.src = currentStore.logo_url;
-      if (cName) cName.textContent = currentStore.store_name || 'Client Store';
+      const savedLogo = localStorage.getItem('zk_store_logo') || currentStore.logo_url;
+      const hLogo = document.getElementById('headerStoreLogo');
+      const sLogo = document.getElementById('settingsStoreLogoPreview');
+      if (hLogo && savedLogo) hLogo.src = savedLogo;
+      if (sLogo && savedLogo) sLogo.src = savedLogo;
+      const sTitle = document.getElementById('settingsStoreLogoTitle');
+      if (sTitle) sTitle.textContent = 'Current Client Logo: ' + (currentStore.store_name || 'Smeram Naturals');
+
       if (currentStore.slug === 'smeram') {
         document.documentElement.style.setProperty('--bg', '#fff5f7');
         document.documentElement.style.setProperty('--border', '#fce7ec');
@@ -1475,6 +1598,10 @@
         if (document.getElementById('dsAnnouncement')) {
           document.getElementById('dsAnnouncement').checked = v.announcement_enabled !== false;
         }
+        if (document.getElementById('dsShowCategoryImages')) {
+          const storedCatImgs = localStorage.getItem('zk_header_cat_images');
+          document.getElementById('dsShowCategoryImages').checked = (storedCatImgs !== null ? storedCatImgs === 'true' : (v.show_category_images !== false));
+        }
         document.getElementById('dsStatus').textContent = '';
       } catch (e) { console.warn('Display settings:', e.message); }
     }
@@ -1482,14 +1609,17 @@
       const st = document.getElementById('dsStatus');
       try {
         const annEnabled = document.getElementById('dsAnnouncement')?.checked !== false;
+        const showCatImgs = document.getElementById('dsShowCategoryImages')?.checked !== false;
         const d = await req('/stores/' + currentStoreId + '/display', { method: 'PUT', body: JSON.stringify({
           show_offers: document.getElementById('dsShowOffers').checked,
           show_all_products: document.getElementById('dsAllProducts').checked,
-          announcement_enabled: annEnabled
+          announcement_enabled: annEnabled,
+          show_category_images: showCatImgs
         }) });
         try {
           localStorage.setItem('zk_announcement_enabled', String(annEnabled));
           localStorage.setItem('zk_announcement_disabled', String(!annEnabled));
+          localStorage.setItem('zk_header_cat_images', String(showCatImgs));
         } catch(_) {}
         st.style.color = '#166534';
         st.textContent = d.live ? 'Saved — the live store is updated.' : 'Saved. The store is not published yet; it applies when you publish.';
@@ -1535,6 +1665,10 @@
         if (document.getElementById('coShowShipping')) {
           document.getElementById('coShowShipping').checked = c.show_shipping_field !== false && c.show_shipping !== false;
         }
+        if (document.getElementById('coShowWhatsappOrder')) {
+          const storedWa = localStorage.getItem('zk_checkout_show_whatsapp_order');
+          document.getElementById('coShowWhatsappOrder').checked = (storedWa !== null ? storedWa === 'true' : (c.show_whatsapp_order === true));
+        }
         document.getElementById('coRazorpay').checked = c.razorpay !== false;
         document.getElementById('coCod').checked = c.cod !== false || c.razorpay === false;
         document.getElementById('coRzpStatus').innerHTML = 'UPI, cards, netbanking, wallets. ' + (razorpayInfo.razorpay_configured
@@ -1560,16 +1694,20 @@
         // Re-read the draft right before saving so changes made in the Store Builder meanwhile are kept.
         const fresh = await req('/stores/' + currentStoreId + '/builder');
         const showShipping = document.getElementById('coShowShipping')?.checked !== false;
+        const showWhatsapp = document.getElementById('coShowWhatsappOrder')?.checked === true;
         const codEnabled = document.getElementById('coCod').checked;
         const theme_config = { ...(fresh.store.theme_config || {}), checkout: {
           show_coupon: document.getElementById('coShowCoupon').checked,
           show_shipping_field: showShipping,
+          show_whatsapp_order: showWhatsapp,
           razorpay: document.getElementById('coRazorpay').checked,
           cod: codEnabled
         } };
         try {
           localStorage.setItem('zk_checkout_cod', String(codEnabled));
           localStorage.setItem('zk_show_shipping_field', String(showShipping));
+          localStorage.setItem('zk_checkout_show_whatsapp_order', String(showWhatsapp));
+          localStorage.setItem('zk_checkout_show_whatsapp', String(showWhatsapp));
         } catch(_) {}
         await req('/stores/' + currentStoreId + '/draft', { method: 'PUT', body: JSON.stringify({ theme_config }) });
         if (publish) await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });

@@ -213,12 +213,38 @@ async function doLogin(){
   var btn=document.querySelector('.btn-primary');
   btn.textContent='Logging in...';btn.disabled=true;
   try{
-    var r=await fetch(API_BASE+'/auth/login',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:em,password:pw})
-    });
-    var d=await r.json();
-    if(d.token){
+    var r = null, d = null;
+    // 1. First try primary API_BASE
+    try {
+      r = await fetch(API_BASE+'/auth/login',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:em,password:pw})
+      });
+      if (r.ok || r.status === 401) {
+        d = await r.json();
+      }
+    } catch (_) {}
+
+    // 2. If primary API failed (e.g. GoDaddy PHP hosting without Node.js), fallback to PHP api.php
+    if (!d || (!r.ok && r.status !== 401)) {
+      var phpEndpoints = ['../api.php?route=auth/login', 'api.php?route=auth/login', '/api.php?route=auth/login'];
+      for (var ep of phpEndpoints) {
+        try {
+          var pr = await fetch(ep, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: em, password: pw})
+          });
+          if (pr.ok || pr.status === 401) {
+            d = await pr.json();
+            r = pr;
+            break;
+          }
+        } catch (_) {}
+      }
+    }
+
+    if(d && d.token){
       localStorage.setItem('zk_token',d.token);
       localStorage.setItem('zk_user',JSON.stringify(d.user||{}));
       var params = new URLSearchParams(window.location.search);
@@ -235,11 +261,17 @@ async function doLogin(){
           window.location.href = '../merchant/index.html' + (d.user && d.user.store_id ? '?store_id=' + encodeURIComponent(d.user.store_id) : '');
         }
       }
+    } else if (d && (d.error || d.message)) {
+      alert(d.error || d.message);
     } else {
-      alert(d.error||d.message||'Invalid email or password');
+      if (confirm('Could not connect to the API server.\n\nAre you managing the store on GoDaddy? Click OK to sign in directly at the GoDaddy Orders Portal (admin-orders.php).')) {
+        window.location.href = '../admin-orders.php';
+      }
     }
   }catch(e){
-    alert('Cannot connect to API. Run: npm run dev');
+    if (confirm('Authentication connection error.\n\nClick OK to open the GoDaddy Orders Portal (admin-orders.php).')) {
+      window.location.href = '../admin-orders.php';
+    }
   }finally{
     btn.textContent='Continue with email →';btn.disabled=false;
   }

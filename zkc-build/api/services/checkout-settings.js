@@ -5,7 +5,8 @@ function checkoutSettings(themeConfig) {
   // At least one payment method must stay available.
   const cod = c.cod !== false || !razorpay;
   const show_shipping_field = c.show_shipping_field !== false && c.show_shipping !== false;
-  return { show_coupon: c.show_coupon === true, cod, razorpay, show_shipping_field };
+  const show_whatsapp_order = c.show_whatsapp_order === true; // Disabled by default
+  return { show_coupon: c.show_coupon === true, cod, razorpay, show_shipping_field, show_whatsapp_order };
 }
 
 const PAYMENT_LABELS = {
