@@ -53,6 +53,13 @@ function zkcOrderFields($o) {
         'order_time'      => date('h:i a', $ts),
         'tracking_number' => (string)($o['tracking_number'] ?? ''),
         'store_name'      => defined('STORE_NAME') ? STORE_NAME : '',
+        'courier'         => (string)($o['courier'] ?? ''),
+        'tracking_url'    => (string)($o['tracking_url'] ?? ''),
+        // Low-stock alert fields are filled from the product, not an order.
+        'product_name'    => (string)($o['product_name'] ?? ''),
+        'variant'         => (string)($o['variant'] ?? ''),
+        'stock_left'      => (string)($o['stock_left'] ?? ''),
+        'threshold'       => (string)($o['threshold'] ?? ''),
     ];
 }
 

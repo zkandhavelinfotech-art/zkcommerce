@@ -1,18 +1,24 @@
 const router = require('express').Router();
 const pool   = require('../db');
 const auth   = require('../middleware/auth');
+const inventory = require('../services/inventory');
 
-// Auto-migrate additional columns if not exists
-(async function initProductColumns() {
-  try {
-    await pool.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS user_instructions TEXT");
-    await pool.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS benefits TEXT");
-    await pool.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS additional_note TEXT");
-    await pool.query("ALTER TABLE products ADD COLUMN IF NOT EXISTS quantity INTEGER DEFAULT 100");
-  } catch (e) {
-    // Ignore migration error if already exists or db not ready
-  }
-})();
+// Net weight / volume of the product, e.g. 100 ml or 450 g.
+function netQuantity(body) {
+  const value = body.net_quantity_value === '' || body.net_quantity_value === null || body.net_quantity_value === undefined ? null : Number(body.net_quantity_value);
+  const unit = body.net_quantity_unit ? String(body.net_quantity_unit).toLowerCase() : null;
+  if (value !== null && !(value > 0)) throw Object.assign(new Error('Net quantity must be a positive number'), { status: 400 });
+  if (unit && !inventory.UNITS.includes(unit)) throw Object.assign(new Error(`Net quantity unit must be one of ${inventory.UNITS.join(', ')}`), { status: 400 });
+  return value === null ? { value: null, unit: null } : { value, unit: unit || 'g' };
+}
+// Per-product low-stock level; empty = use the store default.
+function lowStockThreshold(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = parseInt(v, 10);
+  if (!(n >= 0)) throw Object.assign(new Error('Low-stock level must be a whole number from 0'), { status: 400 });
+  return n;
+}
+
 
 async function ownedStore(req) {
   const storeId = Number((req.body || {}).store_id || req.query.store_id || req.user.store_id);
@@ -50,7 +56,7 @@ router.get('/', auth, async (req, res) => {
     );
     const { rows:[{count}] } = await pool.query(`SELECT COUNT(*) FROM products p LEFT JOIN categories c ON c.id=p.category_id ${where}`, params);
     res.json({ products: rows, pagination: { page:+page, limit:+limit, total:+count, pages:Math.ceil(count/limit) } });
-  } catch(e){ res.status(500).json({error:e.message}); }
+  } catch(e){ res.status(e.status || 500).json({error:e.message}); }
 });
 
 // GET /api/products/:id
@@ -60,7 +66,7 @@ router.get('/:id', auth, async (req,res) => {
     const {rows} = await pool.query(`SELECT p.*,c.name AS category_name FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.id=$1 AND p.store_id=$2`,[req.params.id,store.id]);
     if(!rows.length) return res.status(404).json({error:'Product not found'});
     res.json({product:rows[0]});
-  } catch(e){ res.status(500).json({error:e.message}); }
+  } catch(e){ res.status(e.status || 500).json({error:e.message}); }
 });
 
 // POST /api/products
@@ -78,14 +84,24 @@ router.post('/', auth, async (req,res) => {
     if(categoryId===false) return res.status(400).json({error:'Category does not belong to this store'});
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now().toString(36);
     const parsedQty = quantity !== undefined && quantity !== null && !isNaN(Number(quantity)) ? Math.max(0, parseInt(quantity, 10)) : 100;
-    const finalInStock = in_stock !== undefined ? (in_stock === true || in_stock === 'true') : (parsedQty > 0);
+    let finalInStock = in_stock !== undefined ? (in_stock === true || in_stock === 'true') : (parsedQty > 0);
+    // Variants (100 ml / 200 ml …) carry their own price and stock; the product row keeps the totals.
+    const variantList = inventory.normalizeVariants(variants);
+    const fromVariants = inventory.deriveFromVariants(variantList, { compare_price });
+    const net = netQuantity(req.body);
+    const finalQty = fromVariants.quantity ?? parsedQty;
+    if (fromVariants.quantity !== undefined) finalInStock = fromVariants.in_stock;
     const {rows} = await pool.query(
-      `INSERT INTO products (store_id,name,slug,sku,description,price,compare_price,images,variants,category_id,in_stock,active,featured,badge_text,ingredients,product_size,offer_text,user_instructions,benefits,additional_note,quantity)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING *`,
-      [store.id,name,slug,sku||null,description||null,price,compare_price||null,JSON.stringify(images||[]),JSON.stringify(variants||[]),categoryId,finalInStock,active,featured,badge_text||null,ingredients||null,product_size||null,offer_text||null,user_instructions||null,benefits||null,additional_note||null,parsedQty]
+      `INSERT INTO products (store_id,name,slug,sku,description,price,compare_price,images,variants,category_id,in_stock,active,featured,badge_text,ingredients,product_size,offer_text,user_instructions,benefits,additional_note,quantity,net_quantity_value,net_quantity_unit,low_stock_threshold)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) RETURNING *`,
+      [store.id,name,slug,sku||null,description||null,fromVariants.price ?? price,fromVariants.price !== undefined ? fromVariants.compare_price : (compare_price||null),JSON.stringify(images||[]),JSON.stringify(variantList),categoryId,finalInStock,active,featured,badge_text||null,ingredients||null,product_size||null,offer_text||null,user_instructions||null,benefits||null,additional_note||null,finalQty,net.value,net.unit,lowStockThreshold(req.body.low_stock_threshold)]
     );
+    // New product → opening stock appears in the inventory history straight away.
+    const opening = variantList.length ? variantList.filter(v => v.quantity > 0).map(v => [v.id, v.quantity]) : (finalQty > 0 ? [[null, finalQty]] : []);
+    for (const [variantId, qty] of opening)
+      await pool.query("INSERT INTO inventory_movements (store_id, product_id, variant_id, change, quantity_after, reason, note) VALUES ($1,$2,$3,$4,$4,'initial','Opening stock')", [store.id, rows[0].id, variantId, qty]);
     res.status(201).json({product:rows[0]});
-  } catch(e){ res.status(500).json({error:e.message}); }
+  } catch(e){ res.status(e.status || 500).json({error:e.message}); }
 });
 
 // PUT /api/products/:id
@@ -99,13 +115,29 @@ router.put('/:id', auth, async (req,res) => {
     const params = [];
     let idx = 1;
 
+    let variantTotals = null;
+    if (f.variants !== undefined) {
+      const variantList = inventory.normalizeVariants(f.variants || []);
+      updates.push(`variants=$${idx++}`); params.push(JSON.stringify(variantList));
+      variantTotals = inventory.deriveFromVariants(variantList, { compare_price: f.compare_price });
+      if (variantTotals.quantity !== undefined) {
+        // With variants, stock, availability and the "from" price follow the variants.
+        updates.push(`quantity=$${idx++}`, `in_stock=$${idx++}`, `price=$${idx++}`, `compare_price=$${idx++}`);
+        params.push(variantTotals.quantity, variantTotals.in_stock, variantTotals.price, variantTotals.compare_price);
+        delete f.quantity; delete f.in_stock; delete f.price; delete f.compare_price;
+      }
+    }
+    if (f.net_quantity_value !== undefined || f.net_quantity_unit !== undefined) {
+      const net = netQuantity(f);
+      updates.push(`net_quantity_value=$${idx++}`, `net_quantity_unit=$${idx++}`); params.push(net.value, net.unit);
+    }
+    if (f.low_stock_threshold !== undefined) { updates.push(`low_stock_threshold=$${idx++}`); params.push(lowStockThreshold(f.low_stock_threshold)); }
     if (f.name !== undefined) { updates.push(`name=$${idx++}`); params.push(f.name); }
     if (f.sku !== undefined) { updates.push(`sku=$${idx++}`); params.push(f.sku); }
     if (f.description !== undefined) { updates.push(`description=$${idx++}`); params.push(f.description); }
     if (f.price !== undefined) { updates.push(`price=$${idx++}`); params.push(f.price); }
     if (f.compare_price !== undefined) { updates.push(`compare_price=$${idx++}`); params.push(f.compare_price); }
     if (f.images !== undefined) { updates.push(`images=$${idx++}`); params.push(JSON.stringify(f.images || [])); }
-    if (f.variants !== undefined) { updates.push(`variants=$${idx++}`); params.push(JSON.stringify(f.variants || [])); }
     if (f.quantity !== undefined && f.quantity !== null) {
       const qty = Math.max(0, parseInt(f.quantity, 10) || 0);
       updates.push(`quantity=$${idx++}`);
@@ -147,7 +179,7 @@ router.put('/:id', auth, async (req,res) => {
     );
     if (!rows.length) return res.status(404).json({error:'Product not found'});
     res.json({product:rows[0]});
-  } catch(e){ res.status(500).json({error:e.message}); }
+  } catch(e){ res.status(e.status || 500).json({error:e.message}); }
 });
 
 // DELETE /api/products/:id
@@ -157,7 +189,7 @@ router.delete('/:id', auth, async (req,res) => {
     const {rowCount} = await pool.query('UPDATE products SET active=false WHERE id=$1 AND store_id=$2',[req.params.id,store.id]);
     if (!rowCount) return res.status(404).json({error:'Product not found'});
     res.json({message:'Product deactivated'});
-  } catch(e){ res.status(500).json({error:e.message}); }
+  } catch(e){ res.status(e.status || 500).json({error:e.message}); }
 });
 
 module.exports = router;

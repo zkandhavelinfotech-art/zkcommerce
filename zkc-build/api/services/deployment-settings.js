@@ -9,8 +9,8 @@ const TECHNOLOGIES = ['php', 'nodejs', 'static'];
 let columnReady = null;
 function ensureColumn() {
   if (!columnReady) {
-    columnReady = pool.query("ALTER TABLE stores ADD COLUMN IF NOT EXISTS deployment_settings JSONB NOT NULL DEFAULT '{}'::jsonb")
-      .catch(e => { columnReady = null; throw e; });
+    // Column comes from pg-migrations (002_store_settings_columns).
+    columnReady = require('./pg-migrations').ready().catch(e => { columnReady = null; throw e; });
   }
   return columnReady;
 }
@@ -171,5 +171,5 @@ function nextVersion(settings, env, technology) {
 
 module.exports = {
   ENVIRONMENTS, TECHNOLOGIES, normalizeEnv, normalizeRemotePath, normalizeFtpHost,
-  loadSettings, persist, resolvedEnv, publicView, saveEnvironment, nextVersion, decrypt, buildHistory
+  loadSettings, persist, resolvedEnv, publicView, saveEnvironment, nextVersion, encrypt, decrypt, buildHistory
 };

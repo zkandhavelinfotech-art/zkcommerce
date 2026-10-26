@@ -39,7 +39,14 @@ const PLACEHOLDERS = {
   order_date:      ['Order date', o => dateIn(o, { day: '2-digit', month: 'short', year: 'numeric' })],
   order_time:      ['Order time', o => dateIn(o, { hour: '2-digit', minute: '2-digit' })],
   tracking_number: ['Tracking number', o => o.tracking_number || ''],
-  store_name:      ['Store name', (o, s) => (s && s.store_name) || '']
+  store_name:      ['Store name', (o, s) => (s && s.store_name) || ''],
+  courier:         ['Courier (shipped message)', o => o.courier || ''],
+  tracking_url:    ['Tracking link (shipped message)', o => o.tracking_url || ''],
+  // Low-stock alert fields (filled from the product, not an order).
+  product_name:    ['Product name (low-stock alert)', () => ''],
+  variant:         ['Variant / size (low-stock alert)', () => ''],
+  stock_left:      ['Units left (low-stock alert)', () => ''],
+  threshold:       ['Low-stock level (low-stock alert)', () => '']
 };
 
 const DEFAULTS = {
@@ -65,7 +72,13 @@ Your order *{order_id}* ({total}) is confirmed.
 {products}
 
 Delivery to: {address}
-We will share tracking details once it ships.`
+We will share tracking details once it ships.`,
+  low_stock_template: `⚠️ *Low stock — {store_name}*
+{product_name} {variant}
+Only *{stock_left}* left (alert level {threshold}).
+Restock soon to avoid missing orders.`,
+  shipped_template: `🚚 Hello {customer_name}, your {store_name} order *{order_id}* has shipped with {courier}.
+Track it here: {tracking_url}`
 };
 
 function cleanPhone(phone) {
@@ -75,8 +88,10 @@ function cleanPhone(phone) {
   return d.length >= 10 ? d : '';
 }
 
-function render(template, order, store) {
-  return String(template || '').replace(/\{([a-z_]+)\}/g, (m, key) => (PLACEHOLDERS[key] ? String(PLACEHOLDERS[key][1](order, store) ?? '') : m));
+// extra: values for message-specific fields, e.g. { product_name, variant, quantity, threshold } in a low-stock alert.
+function render(template, order, store, extra = {}) {
+  return String(template || '').replace(/\{([a-z_]+)\}/g, (m, key) => (Object.prototype.hasOwnProperty.call(extra, key) ? String(extra[key] ?? '')
+    : PLACEHOLDERS[key] ? String(PLACEHOLDERS[key][1](order || {}, store) ?? '') : m));
 }
 
 const waLink = (phone, text) => { const p = cleanPhone(phone); return p ? `https://wa.me/${p}?text=${encodeURIComponent(text)}` : null; };
@@ -90,7 +105,8 @@ function normalize(raw, store) {
 
 let columnReady = null;
 function ensureColumn() {
-  if (!columnReady) columnReady = pool.query("ALTER TABLE stores ADD COLUMN IF NOT EXISTS whatsapp_settings JSONB NOT NULL DEFAULT '{}'::jsonb").catch(e => { columnReady = null; throw e; });
+  // Column comes from pg-migrations (002_store_settings_columns).
+  if (!columnReady) columnReady = require('./pg-migrations').ready().catch(e => { columnReady = null; throw e; });
   return columnReady;
 }
 
@@ -103,7 +119,7 @@ async function loadSettings(storeId) {
 async function saveSettings(storeId, body) {
   await ensureColumn();
   const next = {};
-  for (const k of ['care_template', 'customer_template', 'care_label']) if (body[k] !== undefined) next[k] = String(body[k]).slice(0, 3000);
+  for (const k of ['care_template', 'customer_template', 'low_stock_template', 'shipped_template', 'care_label']) if (body[k] !== undefined) next[k] = String(body[k]).slice(0, 3000);
   for (const k of ['enabled', 'customer_handoff']) if (body[k] !== undefined) next[k] = !!body[k];
   if (body.care_number !== undefined) {
     const p = cleanPhone(body.care_number);

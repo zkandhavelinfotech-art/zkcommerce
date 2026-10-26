@@ -9,6 +9,8 @@ const helmet       = require('helmet');
 const rateLimit    = require('express-rate-limit');
 const pool         = require('./db');
 const { renderStore } = require('./store-renderer');
+// Tracked schema migrations (api/services/pg-migrations.js) run once at start-up.
+require('./services/pg-migrations').ready().catch(e => console.error('[ZKCommerce] Database migration failed:', e.message));
 const path = require('path');
 
 const app  = express();
@@ -66,6 +68,8 @@ app.use('/api/cron',        require('./routes/cron'));
 app.use('/api/admin',       require('./routes/adminRoutes'));
 app.use('/api/upload',      require('./routes/upload'));
 app.use('/api/notify',      require('./routes/notify'));
+app.use('/api/inventory',   require('./routes/inventory'));
+app.use('/api/whatsapp',    require('./routes/whatsapp'));
 
 async function serveStore(req, res, identifier, subpath = '/', basePathOverride = null) {
   const cleanId = String(identifier || '').toLowerCase().trim().replace(/^www\./, '');

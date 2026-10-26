@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const pool = require('../db');
 const { checkoutSettings } = require('../services/checkout-settings');
+const inventory = require('../services/inventory');
+const waSender = require('../services/wa-sender');
 
 router.get('/:slug', async (req,res) => {
   try {
@@ -64,9 +66,17 @@ router.post('/:slug/checkout',async(req,res)=>{
     for(const item of items){
       const p=products.find(x=>String(x.id)===String(item.product_id));
       const quantity=Number(item.quantity);
-      if(!p||!p.in_stock||!Number.isInteger(quantity)||quantity<1||quantity>999){await client.query('ROLLBACK');return res.status(400).json({error:`Product ${item.product_id} not available`});}
-      subtotal+=Number(p.price)*quantity;lineItems.push({...p,quantity,variant:item.variant});
+      if(!p||!Number.isInteger(quantity)||quantity<1||quantity>999){await client.query('ROLLBACK');return res.status(400).json({error:`Product ${item.product_id} not available`});}
+      // Variant price comes from the published snapshot (what the shopper saw); stock is checked live below.
+      const variant=item.variant_id?inventory.activeVariants(p).find(v=>v.id===String(item.variant_id)):null;
+      if(item.variant_id&&!variant){await client.query('ROLLBACK');return res.status(400).json({error:`That size of ${p.name} is no longer available`});}
+      if(!variant&&inventory.hasVariants(p)){await client.query('ROLLBACK');return res.status(400).json({error:`Choose a size for ${p.name}`});}
+      const price=Number(variant?variant.price:p.price);
+      subtotal+=price*quantity;
+      lineItems.push({...p,product_id:p.id,price,quantity,variant_id:variant?variant.id:null,variant:variant?variant.label:(item.variant||null),size:variant?variant.label:(p.product_size||null),sku:variant&&variant.sku?variant.sku:p.sku});
     }
+    try{await inventory.checkAvailability(client,storeId,lineItems.map(l=>({product_id:l.id,variant_id:l.variant_id,quantity:l.quantity})));}
+    catch(stockErr){await client.query('ROLLBACK');return res.status(stockErr.status||409).json({error:stockErr.message});}
     let coupon=null,discount_amount=0;
     if(coupon_code){
       const {rows}=await client.query(`SELECT * FROM coupons WHERE store_id=$1 AND upper(code)=upper($2) AND active=true AND (starts_at IS NULL OR starts_at<=NOW()) AND (expires_at IS NULL OR expires_at>NOW()) AND (usage_limit IS NULL OR used_count<usage_limit) FOR UPDATE`,[storeId,String(coupon_code).trim()]);
@@ -92,24 +102,22 @@ router.post('/:slug/checkout',async(req,res)=>{
       [storeId,orderNum,String(customer.name).slice(0,150),customer.email||null,customer.phone||null,JSON.stringify(address||{}),JSON.stringify(lineItems),subtotal,discount_amount,gst_rate,gst_amount,shipping_amount,selectedShippingRate,total_amount,coupon?.code||null,payment_method,payment_method==='cod'?'cod':'unpaid',payment_method==='cod'?'confirmed':'pending']);
     for(const item of lineItems)await client.query('INSERT INTO order_items(order_id,product_id,quantity,price) VALUES($1,$2,$3,$4)',[order.id,item.id,item.quantity,item.price]);
     if(coupon)await client.query('UPDATE coupons SET used_count=used_count+1 WHERE id=$1',[coupon.id]);
+    // COD is confirmed now, so its stock is taken in the same transaction; Razorpay orders take stock once paid.
+    const lowStock=payment_method==='cod'?await inventory.deductForOrder(client,order.id):[];
     await client.query('COMMIT');
 
     // WhatsApp: merchant templates. COD is confirmed now; Razorpay orders get the hand-off link after payment (payments.js).
     let waResults = null, whatsappHandoffUrl = null;
     if (payment_method === 'cod') {
       try {
-        const whatsapp = require('../services/whatsapp');
         const orderMessages = require('../services/order-messages');
         const storeInfo = (sr[0] && sr[0].published_snapshot && sr[0].published_snapshot.store) || sr[0];
         const fullOrder = { ...order, customer_name: customer.name, customer_phone: customer.phone, customer_email: customer.email, shipping_address: address, payment_method: 'cod', payment_status: 'cod', items: lineItems, created_at: new Date() };
         const waSettings = await orderMessages.loadSettings(storeId);
         if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, fullOrder, storeInfo).care_url;
-        waResults = await whatsapp.sendOrderNotification({
-          order: fullOrder,
-          store: storeInfo,
-          items: lineItems,
-          templates: waSettings
-        });
+        // Customer confirmation + customer-care alert through the store's WhatsApp sender; low-stock alerts to the merchant.
+        waResults = await waSender.notifyOrderConfirmed(storeId, { ...fullOrder, id: order.id }, storeInfo);
+        waSender.notifyLowStock(storeId, lowStock);
       } catch (waErr) {
         console.warn('[Storefront Checkout] WhatsApp alert warning:', waErr.message);
       }
@@ -129,7 +137,7 @@ router.post('/:slug/checkout',async(req,res)=>{
       whatsapp: waResults,
       whatsapp_handoff_url: whatsappHandoffUrl
     });
-  }catch(e){await client.query('ROLLBACK');res.status(500).json({error:e.message});}
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});res.status(e.status||500).json({error:e.message});}
   finally{client.release();}
 });
 module.exports=router;

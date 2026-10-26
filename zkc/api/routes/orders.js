@@ -3,6 +3,8 @@ const pool   = require('../db');
 const auth   = require('../middleware/auth');
 const whatsapp = require('../services/whatsapp');
 const orderMessages = require('../services/order-messages');
+const inventory = require('../services/inventory');
+const waSender = require('../services/wa-sender');
 
 async function storeFor(req) {
   const requested = Number((req.body && req.body.store_id) || req.query.store_id || req.user.store_id);
@@ -160,12 +162,26 @@ router.put('/:id/status', auth, async (req, res) => {
     const valid = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
     if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
-    const { rows } = await pool.query(
-      `UPDATE orders SET status=$3, tracking_number=COALESCE($4, tracking_number), courier=COALESCE($5, courier), updated_at=NOW()
-       WHERE id=$1 AND store_id=$2 RETURNING *`,
-      [req.params.id, store.id, status, tracking_number || null, courier || null]
-    );
+    // Status change and stock move together: cancelling returns stock, un-cancelling a paid/COD order takes it again.
+    const client = await pool.connect();
+    let rows, lowStock = [];
+    try {
+      await client.query('BEGIN');
+      const { rows: [prev] } = await client.query('SELECT status FROM orders WHERE id=$1 AND store_id=$2 FOR UPDATE', [req.params.id, store.id]);
+      ({ rows } = await client.query(
+        `UPDATE orders SET status=$3, tracking_number=COALESCE($4, tracking_number), courier=COALESCE($5, courier), updated_at=NOW()
+         WHERE id=$1 AND store_id=$2 RETURNING *`,
+        [req.params.id, store.id, status, tracking_number || null, courier || null]
+      ));
+      if (rows.length && (status === 'cancelled' || status === 'returned')) await inventory.restockForOrder(client, rows[0].id);
+      // Only orders coming back from cancelled/returned take stock again (older orders predate stock tracking).
+      else if (rows.length && prev && ['cancelled', 'returned'].includes(prev.status) && ['confirmed', 'processing', 'shipped', 'delivered'].includes(status) && ['paid', 'cod'].includes(rows[0].payment_status))
+        lowStock = await inventory.deductForOrder(client, rows[0].id, { allowNegative: true });
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK').catch(() => {}); throw e; }
+    finally { client.release(); }
     if (!rows.length) return res.status(404).json({ error: 'Order not found' });
+    waSender.notifyLowStock(store.id, lowStock);
 
     // If marked shipped, notify customer on WhatsApp
     if (status === 'shipped') {

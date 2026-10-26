@@ -7,6 +7,36 @@ function getRazorpay() {
   const Razorpay = require('razorpay');
   return new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
 }
+/**
+ * Runs once when an order becomes paid (from /verify or the webhook, whichever flips it first):
+ * takes stock, sends the WhatsApp confirmation / care alert, and low-stock alerts. Never throws.
+ */
+async function afterPaid(order) {
+  let whatsappHandoffUrl = null;
+  try {
+    const orderMessages = require('../services/order-messages');
+    const inventory = require('../services/inventory');
+    const waSender = require('../services/wa-sender');
+    const client = await pool.connect();
+    let lowStock = [];
+    try {
+      await client.query('BEGIN');
+      lowStock = await inventory.deductForOrder(client, order.id, { allowNegative: true });
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK').catch(() => {}); console.warn('[Payment] stock update failed:', e.message); }
+    finally { client.release(); }
+    const { rows: storeRows } = await pool.query('SELECT * FROM stores WHERE id=$1', [order.store_id]);
+    const store = storeRows[0] || {};
+    const lineItems = typeof order.items === 'string' ? JSON.parse(order.items || '[]') : order.items;
+    const full = { ...order, items: lineItems };
+    const waSettings = await orderMessages.loadSettings(order.store_id);
+    if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, full, store).care_url;
+    waSender.notifyOrderConfirmed(order.store_id, full, store);
+    waSender.notifyLowStock(order.store_id, lowStock);
+  } catch (e) { console.warn('[Payment] after-paid steps failed:', e.message); }
+  return { whatsappHandoffUrl };
+}
+
 function safeEqualHex(actual, expected) {
   if (!/^[a-f0-9]{64}$/i.test(String(actual || '')) || !/^[a-f0-9]{64}$/i.test(String(expected || ''))) return false;
   return crypto.timingSafeEqual(Buffer.from(actual, 'hex'), Buffer.from(expected, 'hex'));
@@ -58,22 +88,7 @@ router.post('/razorpay/verify', async (req, res) => {
       if (existing.rows[0]?.payment_status === 'paid') return res.json({ message: 'Payment already verified', order_id: Number(order_id) });
       return res.status(404).json({ error: 'Pending order not found for this payment' });
     }
-    // WhatsApp for the paid Razorpay order: merchant templates, hand-off link for the customer's browser.
-    let whatsappHandoffUrl = null;
-    try {
-      const whatsapp = require('../services/whatsapp');
-      const orderMessages = require('../services/order-messages');
-      const { rows: storeRows } = await pool.query('SELECT * FROM stores WHERE id=$1', [rows[0].store_id]);
-      const lineItems = typeof rows[0].items === 'string' ? JSON.parse(rows[0].items || '[]') : rows[0].items;
-      const waSettings = await orderMessages.loadSettings(rows[0].store_id);
-      if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, { ...rows[0], items: lineItems }, storeRows[0] || {}).care_url;
-      whatsapp.sendOrderNotification({
-        order: rows[0],
-        store: storeRows[0] || {},
-        items: lineItems,
-        templates: waSettings
-      }).catch(err => console.warn('[Payment Verify] WhatsApp alert warning:', err.message));
-    } catch (_) {}
+    const { whatsappHandoffUrl } = await afterPaid(rows[0]);
     res.json({ message: 'Payment verified', order_id: Number(order_id), whatsapp_handoff_url: whatsappHandoffUrl });
   } catch (e) { res.status(503).json({ error: e.message }); }
 });
@@ -103,8 +118,10 @@ router.post('/razorpay/webhook', async (req, res) => {
     if (!safeEqualHex(signature, expected)) return res.status(400).json({ error: 'Invalid webhook signature' });
     const event = req.body, payment = event?.payload?.payment?.entity;
     if (event.event === 'payment.captured' && payment?.order_id) {
-      await pool.query(`UPDATE orders SET status='confirmed',payment_status='paid',razorpay_payment_id=$1,paid_at=COALESCE(paid_at,NOW()),updated_at=NOW()
-        WHERE razorpay_order_id=$2 AND status='pending'`, [payment.id, payment.order_id]);
+      // Covers shoppers who closed the tab before /verify ran. Only the request that flips the order runs afterPaid.
+      const { rows } = await pool.query(`UPDATE orders SET status='confirmed',payment_status='paid',razorpay_payment_id=$1,paid_at=COALESCE(paid_at,NOW()),updated_at=NOW()
+        WHERE razorpay_order_id=$2 AND status='pending' RETURNING *`, [payment.id, payment.order_id]);
+      if (rows.length) await afterPaid(rows[0]);
     } else if (event.event === 'payment.failed' && payment?.order_id) {
       const client = await pool.connect();
       try {
