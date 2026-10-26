@@ -71,8 +71,15 @@ UPDATE stores SET logo_url='/assets/themes/smeram/smeram-logo.png',primary_colou
   theme_config=(COALESCE(theme_config,'{}'::jsonb) - 'sections' - 'templates' - 'hidden_sections' - 'removed_sections') || jsonb_build_object(
     'design','smeram','template_id','smeram-natural','style_preset','smeram',
     'primary_colour','#ED6375','bg_colour','#FFF5F7','accent_colour','#A3B545','logo_url','/assets/themes/smeram/smeram-logo.png',
-    'announcement_enabled', false,
-    'sections', jsonb_build_object('announcement', jsonb_build_object('visible', false), 'products', jsonb_build_object('visible', false)),
+    'sections', jsonb_build_object(
+      'announcement', jsonb_build_object('visible', false),
+      'products', jsonb_build_object('visible', false),
+      'nav', jsonb_build_object('menu', jsonb_build_array(
+        jsonb_build_object('type', 'page', 'page', 'about-us', 'label', 'About Us'),
+        jsonb_build_object('type', 'shop', 'label', 'Shop'),
+        jsonb_build_object('type', 'contact', 'label', 'Contact Us')
+      ))
+    ),
     'section_order',jsonb_build_array('trust','hero','products','why','ingredients','reviews','contact'),
     'fields',jsonb_build_object(
       'announcement_enabled', false,

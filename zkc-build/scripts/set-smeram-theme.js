@@ -18,6 +18,14 @@ async function run() {
     tc.sections = tc.sections || {};
     tc.sections.announcement = { ...tc.sections.announcement, visible: false };
     tc.sections.products = { ...tc.sections.products, visible: false };
+    tc.sections.nav = {
+      ...tc.sections.nav,
+      menu: [
+        { type: 'page', page: 'about-us', label: 'About Us' },
+        { type: 'shop', label: 'Shop' },
+        { type: 'contact', label: 'Contact Us' }
+      ]
+    };
     tc.fields = tc.fields || {};
     tc.fields.announcement_enabled = false;
     tc.fields.ann_show = false;

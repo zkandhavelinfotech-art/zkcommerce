@@ -11,12 +11,9 @@
 <script>
 (function(){
   try{
-    let css = '';
+    let css = '#products{display:none}';
     if(localStorage.getItem('zk_announcement_disabled')==='true'||localStorage.getItem('zk_announcement_enabled')==='false'){
       css += '#top-announcement-bar,.ann-bar{display:none!important}';
-    }
-    if(localStorage.getItem('zk_products_disabled')==='true'){
-      css += '#products,#nav-all{display:none!important}';
     }
     if(css){
       document.write('<style id="zk-section-preload">'+css+'</style>');
@@ -80,10 +77,236 @@ nav{background:rgba(255,255,255,0.98);backdrop-filter:blur(10px);border-bottom:2
 .logo-naturals{font-family:'Dancing Script',cursive;font-size:24px;font-weight:700;color:var(--gold);margin-top:-2px;display:flex;align-items:center;gap:6px}
 .logo-naturals::before{content:'';display:inline-block;width:24px;height:12px;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 40 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 15 Q10 2 20 10 Q30 18 38 5' fill='none' stroke='%23D4A017' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/contain}
 
-.nav-links{display:flex;align-items:center;gap:12px;list-style:none;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
-.nav-links::-webkit-scrollbar{display:none}
-.nav-links li a{font-size:12px;font-weight:600;color:var(--muted);padding:6px 3px;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
-.nav-links li a:hover,.nav-links li a.active{color:var(--pink);border-bottom-color:var(--pink)}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none;margin:0;padding:0}
+.nav-links>li{position:relative}
+.nav-links>li>a{font-size:14.5px;font-weight:700;color:var(--muted);padding:8px 4px;border-bottom:2.5px solid transparent;transition:all .2s;white-space:nowrap;display:inline-block}
+.nav-links>li>a:hover,.nav-links>li>a.active{color:var(--pink);border-bottom-color:var(--pink)}
+
+/* Shop Dropdown Trigger */
+.nav-shop-item{position:relative}
+.nav-drop-btn{background:none;border:none;font:inherit;font-size:14.5px;font-weight:700;color:var(--muted);padding:8px 4px;border-bottom:2.5px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+.nav-drop-btn:hover,.nav-shop-item.open .nav-drop-btn,.nav-drop-btn.active{color:var(--pink);border-bottom-color:var(--pink)}
+.nav-drop-btn .caret{font-size:11px;transition:transform .25s ease}
+.nav-shop-item:hover .nav-drop-btn .caret,.nav-shop-item.open .nav-drop-btn .caret{transform:rotate(180deg)}
+
+/* Mega Dropdown Box (Sub Category Menu then Product Menu) */
+.shop-mega-dropdown{
+  display:none;
+  position:absolute;
+  top:calc(100% + 14px);
+  left:50%;
+  transform:translateX(-35%);
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:20px;
+  box-shadow:0 24px 60px rgba(36,24,18,0.15), 0 4px 18px rgba(237,99,117,0.08);
+  padding:22px;
+  width:680px;
+  max-width:92vw;
+  z-index:450;
+  grid-template-columns:250px 1fr;
+  gap:22px;
+  animation:fadeInDown .22s cubic-bezier(.16,1,.3,1);
+}
+.nav-shop-item:hover .shop-mega-dropdown,
+.nav-shop-item.open .shop-mega-dropdown{
+  display:grid;
+}
+@keyframes fadeInDown{
+  from{opacity:0;transform:translateX(-35%) translateY(-8px)}
+  to{opacity:1;transform:translateX(-35%) translateY(0)}
+}
+
+/* Sub Categories Column */
+.smd-subcats-col{
+  border-right:1.5px solid var(--border-light);
+  padding-right:16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.smd-col-title{
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--pink);
+  margin-bottom:8px;
+  padding-left:6px;
+}
+.smd-cat-btn{
+  background:#fff;
+  border:1.5px solid transparent;
+  border-radius:12px;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  text-align:left;
+  cursor:pointer;
+  transition:all .18s;
+  color:var(--text);
+  font-size:13.5px;
+  font-weight:700;
+}
+.smd-cat-btn:hover,.smd-cat-btn.active{
+  background:var(--pink-light);
+  border-color:var(--pink-border);
+  color:var(--pink-dark);
+}
+.smd-cat-icon{
+  font-size:16px;
+  flex-shrink:0;
+}
+.smd-cat-text{
+  flex-grow:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.smd-chevron{
+  color:var(--muted);
+  font-size:15px;
+  font-weight:800;
+  transition:transform .18s;
+}
+.smd-cat-btn:hover .smd-chevron,.smd-cat-btn.active .smd-chevron{
+  color:var(--pink);
+  transform:translateX(3px);
+}
+
+/* Product Menu Column */
+.smd-prods-col{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+.smd-prod-panel{
+  display:none;
+  flex-direction:column;
+  gap:12px;
+  animation:fadeIn .2s ease;
+}
+.smd-prod-panel.active{
+  display:flex;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.smd-prod-card{
+  display:flex;
+  gap:14px;
+  padding:14px;
+  border:1.5px solid var(--border-light);
+  border-radius:14px;
+  background:#FFFDFB;
+  cursor:pointer;
+  transition:all .2s;
+  align-items:center;
+}
+.smd-prod-card:hover{
+  border-color:var(--pink);
+  background:#fff;
+  box-shadow:0 8px 22px rgba(237,99,117,0.14);
+  transform:translateY(-2px);
+}
+.smd-prod-img{
+  width:72px;
+  height:72px;
+  border-radius:10px;
+  object-fit:cover;
+  border:1px solid var(--border-light);
+  background:#fff;
+  flex-shrink:0;
+}
+.smd-prod-info{
+  flex-grow:1;
+  min-width:0;
+}
+.smd-prod-tag{
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--orange);
+  margin-bottom:3px;
+}
+.smd-prod-name{
+  font-family:'Playfair Display',serif;
+  font-size:16px;
+  font-weight:700;
+  color:var(--dark);
+  line-height:1.2;
+  margin-bottom:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.smd-prod-sub{
+  font-size:11.5px;
+  color:var(--muted);
+  line-height:1.4;
+  margin-bottom:6px;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.smd-prod-price{
+  font-size:15px;
+  font-weight:800;
+  color:var(--orange);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.smd-prod-mrp{
+  font-size:11.5px;
+  color:#9C7D6A;
+  text-decoration:line-through;
+  font-weight:500;
+}
+.smd-save-badge{
+  font-size:10px;
+  font-weight:800;
+  background:var(--green-light);
+  color:var(--green-dark);
+  padding:2px 6px;
+  border-radius:99px;
+  border:1px solid #C8E6C9;
+}
+.smd-prod-action{
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--pink);
+  white-space:nowrap;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.smd-panel-foot{
+  margin-top:auto;
+  padding-top:10px;
+  border-top:1px dashed var(--border);
+  text-align:right;
+}
+.smd-browse-btn{
+  font-size:12px;
+  font-weight:800;
+  color:var(--pink);
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:all .15s;
+}
+.smd-browse-btn:hover{
+  color:var(--pink-dark);
+  transform:translateX(3px);
+}
+
 .nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .wa-nav-btn{background:#E8F8EE;color:#1E8E3E;border:1.5px solid #25D366;padding:7px 12px;border-radius:99px;font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(37,211,102,0.15);transition:all .2s;white-space:nowrap}
 .wa-nav-btn:hover{background:#25D366;color:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,211,102,0.3)}
@@ -655,18 +878,123 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
       </div>
     </a>
 
-    <!-- Primary Menu Links (Strict Single Line Layout, Home Active by Default) -->
+    <!-- Primary Menu Links: [About Us], Shop ▾ (sub category menu then product menu), [Contact Us] -->
     <ul class="nav-links" id="navLinks">
-      <li><a href="#hero" class="active" id="nav-home" onclick="goToHome(event)">Home</a></li>
-      <li><a href="#products" id="nav-all" onclick="showCategory('all', event)">All Products</a></li>
-      <li><a href="#products" id="nav-hair" onclick="showCategory('Hair Care Oil', event)">Hair Care Oil</a></li>
-      <li><a href="#products" id="nav-joint" onclick="showCategory('Joint Pain & Orthocare', event)">Joint Pain &amp; Orthocare</a></li>
-      <li><a href="#products" id="nav-face" onclick="showCategory('Ayurgold Face Care', event)">Ayurgold Face Care</a></li>
-      <li><a href="#products" id="nav-health" onclick="showCategory('Health Foods', event)">Health Foods</a></li>
-      <li><a href="#why" id="nav-why" onclick="scrollToSection('why', event)">Why Smeram</a></li>
       <li><a href="#about" id="nav-about" onclick="openPolicyModal('about', event)">About Us</a></li>
+      <li class="nav-shop-item" id="navShopItem">
+        <button type="button" class="nav-drop-btn" id="navShopBtn" aria-haspopup="true" aria-expanded="false" onclick="toggleShopDropdown(event)">
+          Shop <span class="caret">▾</span>
+        </button>
+        <!-- Mega Dropdown: Sub Category Menu Then Product Menu -->
+        <div class="shop-mega-dropdown" id="shopMegaDropdown" onclick="event.stopPropagation()">
+          <div class="smd-subcats-col">
+            <div class="smd-col-title">Sub Categories</div>
+            <div class="smd-cat-list">
+              <button type="button" class="smd-cat-btn active" data-cat="Hair Care Oil" onmouseenter="activateSubCat('Hair Care Oil')" onclick="selectSubCat('Hair Care Oil', event)">
+                <span class="smd-cat-icon">🧴</span>
+                <span class="smd-cat-text">Hair Care Oil</span>
+                <span class="smd-chevron">›</span>
+              </button>
+              <button type="button" class="smd-cat-btn" data-cat="Joint Pain & Orthocare" onmouseenter="activateSubCat('Joint Pain & Orthocare')" onclick="selectSubCat('Joint Pain & Orthocare', event)">
+                <span class="smd-cat-icon">🌿</span>
+                <span class="smd-cat-text">Joint Pain &amp; Orthocare</span>
+                <span class="smd-chevron">›</span>
+              </button>
+              <button type="button" class="smd-cat-btn" data-cat="Ayurgold Face Care" onmouseenter="activateSubCat('Ayurgold Face Care')" onclick="selectSubCat('Ayurgold Face Care', event)">
+                <span class="smd-cat-icon">✨</span>
+                <span class="smd-cat-text">Ayurgold Face Care</span>
+                <span class="smd-chevron">›</span>
+              </button>
+              <button type="button" class="smd-cat-btn" data-cat="Health Foods" onmouseenter="activateSubCat('Health Foods')" onclick="selectSubCat('Health Foods', event)">
+                <span class="smd-cat-icon">🍯</span>
+                <span class="smd-cat-text">Health Foods</span>
+                <span class="smd-chevron">›</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="smd-prods-col">
+            <div class="smd-col-title" id="smdProdTitle">Products · Hair Care Oil</div>
+            
+            <!-- Panel 1: Hair Care Oil -->
+            <div class="smd-prod-panel active" id="smdPanel-hair">
+              <div class="smd-prod-card" onclick="openProductDetail(1); closeShopDropdown();">
+                <img src="../../assets/themes/smeram/smeram-box-bottle.jpg" alt="Smeram Naturals Hair Oil" class="smd-prod-img" onerror="fallbackImg(this)">
+                <div class="smd-prod-info">
+                  <div class="smd-prod-tag">Double Boiled &amp; Infused</div>
+                  <div class="smd-prod-name">Smeram Naturals Hair Oil</div>
+                  <div class="smd-prod-sub">100% Dandruff Control &amp; Hair Growth Promoter (100ml / 200ml)</div>
+                  <div class="smd-prod-price">₹299 <span class="smd-prod-mrp">MRP ₹349</span> <span class="smd-save-badge">Save ₹50</span></div>
+                </div>
+                <div class="smd-prod-action">View details →</div>
+              </div>
+              <div class="smd-panel-foot">
+                <a href="#products" class="smd-browse-btn" onclick="showCategory('Hair Care Oil', event); closeShopDropdown();">
+                  Explore Hair Care Category Products →
+                </a>
+              </div>
+            </div>
+
+            <!-- Panel 2: Joint Pain & Orthocare -->
+            <div class="smd-prod-panel" id="smdPanel-joint">
+              <div class="smd-prod-card" onclick="openProductDetail(2); closeShopDropdown();">
+                <img src="../../assets/themes/smeram/ortho-care.jpg" alt="Mahanarayan Ortho Pain Oil" class="smd-prod-img" onerror="fallbackImg(this)">
+                <div class="smd-prod-info">
+                  <div class="smd-prod-tag">Fast Relief Tailam</div>
+                  <div class="smd-prod-name">Mahanarayan Ortho Pain Oil</div>
+                  <div class="smd-prod-sub">Deep penetrating relief for knees, joints, and muscular stiffness</div>
+                  <div class="smd-prod-price">₹349 <span class="smd-prod-mrp">MRP ₹449</span> <span class="smd-save-badge">Save ₹100</span></div>
+                </div>
+                <div class="smd-prod-action">View details →</div>
+              </div>
+              <div class="smd-panel-foot">
+                <a href="#products" class="smd-browse-btn" onclick="showCategory('Joint Pain & Orthocare', event); closeShopDropdown();">
+                  Explore Orthocare Category Products →
+                </a>
+              </div>
+            </div>
+
+            <!-- Panel 3: Ayurgold Face Care -->
+            <div class="smd-prod-panel" id="smdPanel-face">
+              <div class="smd-prod-card" onclick="openProductDetail(3); closeShopDropdown();">
+                <img src="../../assets/themes/smeram/face-care.jpg" alt="Ayurgold Kumkumadi Face Oil" class="smd-prod-img" onerror="fallbackImg(this)">
+                <div class="smd-prod-info">
+                  <div class="smd-prod-tag">Kashmiri Saffron Elixir</div>
+                  <div class="smd-prod-name">Ayurgold Kumkumadi Face Oil</div>
+                  <div class="smd-prod-sub">Pure Kumkumadi Tailam for radiant golden glow and pigmentation repair</div>
+                  <div class="smd-prod-price">₹499 <span class="smd-prod-mrp">MRP ₹699</span> <span class="smd-save-badge">Save ₹200</span></div>
+                </div>
+                <div class="smd-prod-action">View details →</div>
+              </div>
+              <div class="smd-panel-foot">
+                <a href="#products" class="smd-browse-btn" onclick="showCategory('Ayurgold Face Care', event); closeShopDropdown();">
+                  Explore Face Care Category Products →
+                </a>
+              </div>
+            </div>
+
+            <!-- Panel 4: Health Foods -->
+            <div class="smd-prod-panel" id="smdPanel-health">
+              <div class="smd-prod-card" onclick="openProductDetail(4); closeShopDropdown();">
+                <img src="../../assets/themes/smeram/health-foods.jpg" alt="Vedic A2 Desi Gir Cow Bilona Ghee" class="smd-prod-img" onerror="fallbackImg(this)">
+                <div class="smd-prod-info">
+                  <div class="smd-prod-tag">Curd-Churned Bilona</div>
+                  <div class="smd-prod-name">Vedic A2 Desi Gir Cow Bilona Ghee</div>
+                  <div class="smd-prod-sub">Traditional wooden churned golden granular ghee rich in Ojas</div>
+                  <div class="smd-prod-price">₹799 <span class="smd-prod-mrp">MRP ₹999</span> <span class="smd-save-badge">Save ₹200</span></div>
+                </div>
+                <div class="smd-prod-action">View details →</div>
+              </div>
+              <div class="smd-panel-foot">
+                <a href="#products" class="smd-browse-btn" onclick="showCategory('Health Foods', event); closeShopDropdown();">
+                  Explore Health Foods Category Products →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
       <li><a href="#contact" id="nav-contact" onclick="scrollToSection('contact', event)">Contact Us</a></li>
-      <li><a href="#privacy" id="nav-privacy" onclick="openPolicyModal('privacy', event)">Privacy Policy</a></li>
     </ul>
 
     <div class="nav-right">
@@ -785,19 +1113,18 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
   </div>
 </div>
 
-<!-- PRODUCTS CATALOG SECTION -->
-<section class="sec" id="products">
+<!-- PRODUCTS CATALOG SECTION (Hidden on Home Page, Revealed when navigating via Shop or Categories) -->
+<section class="sec" id="products" style="display:none">
   <div class="si">
     <div class="sec-head">
       <span class="sec-eyebrow">Pure Botanical Formulations</span>
-      <h2 class="sec-title" id="catalogTitle">All Products</h2>
-      <p class="sec-sub">Select any category tab below to filter authentic Siddha oils and herbal formulations.</p>
+      <h2 class="sec-title" id="catalogTitle">Shop Products</h2>
+      <p class="sec-sub">Select any category below to explore authentic Siddha oils and herbal formulations.</p>
     </div>
 
-    <!-- Category Filter Pill Buttons -->
+    <!-- Category Filter Pill Buttons (No All Products tab) -->
     <div class="cat-tabs" id="catTabs">
-      <button class="cat-tab-btn active" data-cat="all" onclick="showCategory('all', event)">All Products <span class="badge">4</span></button>
-      <button class="cat-tab-btn" data-cat="Hair Care Oil" onclick="showCategory('Hair Care Oil', event)">Hair Care Oil <span class="badge">1</span></button>
+      <button class="cat-tab-btn active" data-cat="Hair Care Oil" onclick="showCategory('Hair Care Oil', event)">Hair Care Oil <span class="badge">1</span></button>
       <button class="cat-tab-btn" data-cat="Joint Pain & Orthocare" onclick="showCategory('Joint Pain & Orthocare', event)">Joint Pain &amp; Orthocare <span class="badge">1</span></button>
       <button class="cat-tab-btn" data-cat="Ayurgold Face Care" onclick="showCategory('Ayurgold Face Care', event)">Ayurgold Face Care <span class="badge">1</span></button>
       <button class="cat-tab-btn" data-cat="Health Foods" onclick="showCategory('Health Foods', event)">Health Foods <span class="badge">1</span></button>
@@ -1144,8 +1471,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
       </div>
 
       <div class="footer-col">
-        <h4>Categories</h4>
-        <a onclick="showCategory('all', event)">All Products</a>
+        <h4>Shop by Category</h4>
         <a onclick="showCategory('Hair Care Oil', event)">Hair Care Oil</a>
         <a onclick="showCategory('Joint Pain & Orthocare', event)">Joint Pain &amp; Orthocare</a>
         <a onclick="showCategory('Ayurgold Face Care', event)">Ayurgold Face Care</a>
@@ -1482,41 +1808,89 @@ function fallbackImg(img) {
   }
 }
 
+// Shop Dropdown & Category Navigation
+function toggleShopDropdown(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const item = document.getElementById('navShopItem');
+  if (item) item.classList.toggle('open');
+}
+
+function closeShopDropdown() {
+  const item = document.getElementById('navShopItem');
+  if (item) item.classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#navShopItem')) {
+    closeShopDropdown();
+  }
+});
+
+function activateSubCat(catName) {
+  document.querySelectorAll('.smd-cat-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat === catName);
+  });
+  const titleEl = document.getElementById('smdProdTitle');
+  if (titleEl) titleEl.textContent = 'Products · ' + catName;
+
+  document.querySelectorAll('.smd-prod-panel').forEach(p => p.classList.remove('active'));
+  if (catName === 'Hair Care Oil') document.getElementById('smdPanel-hair')?.classList.add('active');
+  else if (catName === 'Joint Pain & Orthocare') document.getElementById('smdPanel-joint')?.classList.add('active');
+  else if (catName === 'Ayurgold Face Care') document.getElementById('smdPanel-face')?.classList.add('active');
+  else if (catName === 'Health Foods') document.getElementById('smdPanel-health')?.classList.add('active');
+}
+
+function selectSubCat(catName, e) {
+  if (e) e.preventDefault();
+  closeShopDropdown();
+  showCategory(catName, e);
+}
+
 // Navigation handlers
 function goToHome(e) {
   if (e) e.preventDefault();
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  document.getElementById('nav-home')?.classList.add('active');
+  closeShopDropdown();
+  document.querySelectorAll('.nav-links a, .nav-drop-btn').forEach(a => a.classList.remove('active'));
+  
+  // Hide products section so home page is clean with no products
+  const pSec = document.getElementById('products');
+  if (pSec) {
+    pSec.style.display = 'none';
+  }
   const hero = document.getElementById('hero') || document.querySelector('.hero');
   if (hero) hero.scrollIntoView({ behavior: 'smooth' });
   else window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Category filter logic
+// Category filter & shop display logic
 function showCategory(catName, e) {
   if (e) e.preventDefault();
+  closeShopDropdown();
   
-  // Update nav active states
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  if (catName === 'all') document.getElementById('nav-all')?.classList.add('active');
-  else if (catName === 'Hair Care Oil') document.getElementById('nav-hair')?.classList.add('active');
-  else if (catName === 'Joint Pain & Orthocare') document.getElementById('nav-joint')?.classList.add('active');
-  else if (catName === 'Ayurgold Face Care') document.getElementById('nav-face')?.classList.add('active');
-  else if (catName === 'Health Foods') document.getElementById('nav-health')?.classList.add('active');
+  // Reveal products section
+  const pSec = document.getElementById('products');
+  if (pSec) {
+    pSec.style.display = 'block';
+  }
 
-  // Update tabs
+  // Update nav active states
+  document.querySelectorAll('.nav-links a, .nav-drop-btn').forEach(a => a.classList.remove('active'));
+  document.getElementById('navShopBtn')?.classList.add('active');
+
+  // Update category tabs in the shop section
   document.querySelectorAll('.cat-tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.cat === catName);
   });
 
-  // Filter cards
+  // Filter cards: show ONLY selected category, hide all other products!
   const cards = document.querySelectorAll('.p-card');
-  let matchCount = 0;
   cards.forEach(card => {
     const cardCat = card.dataset.category;
-    if (catName === 'all' || cardCat === catName) {
+    if (cardCat === catName) {
       card.style.display = 'flex';
-      matchCount++;
     } else {
       card.style.display = 'none';
     }
@@ -1524,11 +1898,10 @@ function showCategory(catName, e) {
 
   const titleEl = document.getElementById('catalogTitle');
   if (titleEl) {
-    titleEl.textContent = catName === 'all' ? 'All Products' : catName;
+    titleEl.textContent = catName;
   }
 
   // Smooth scroll to products
-  const pSec = document.getElementById('products');
   if (pSec) {
     pSec.scrollIntoView({ behavior: 'smooth' });
   }
@@ -1536,9 +1909,9 @@ function showCategory(catName, e) {
 
 function scrollToSection(id, e) {
   if (e) e.preventDefault();
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  if (id === 'why') document.getElementById('nav-why')?.classList.add('active');
-  else if (id === 'contact') document.getElementById('nav-contact')?.classList.add('active');
+  closeShopDropdown();
+  document.querySelectorAll('.nav-links a, .nav-drop-btn').forEach(a => a.classList.remove('active'));
+  if (id === 'contact') document.getElementById('nav-contact')?.classList.add('active');
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
