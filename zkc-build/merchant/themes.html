@@ -268,41 +268,152 @@ body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-
         </div>
       </div>
 
-      <!-- Quick Customizer Panel -->
-      <div class="card" style="margin-bottom:32px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <!-- WordPress / Shopify Model Visual Store Customizer -->
+      <div class="card" style="margin-bottom:32px;border-top:4px solid var(--zk-fire);box-shadow:0 8px 30px rgba(0,0,0,0.06)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div>
-            <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin:0 0 4px">⚡ Quick Brand &amp; Colors Customizer</h3>
-            <div style="font-size:12px;color:var(--zk-muted)">Adjust core colors directly or launch StoreBuilder for complete layout editing</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge badge-green" style="font-size:11px;font-weight:800">Shopify / WordPress Model</span>
+              <span style="font-size:12px;color:var(--zk-muted)">Self-Sufficient Client CMS · Standalone Database Sync</span>
+            </div>
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:800;margin:6px 0 2px">🎨 Storefront Customizer &amp; Header Styling Engine</h3>
+            <div style="font-size:13px;color:var(--zk-muted)">Edit header menu typography, hover colors, submenu styling, announcement bar, and hero content with instant database reflection.</div>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="saveQuickCustomizer()" id="quick-save-btn">Save Brand Colors</button>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-secondary btn-sm" onclick="toggleLivePreviewModal()" style="font-weight:700">👁️ Live Split Preview</button>
+            <button class="btn btn-primary btn-sm" onclick="saveVisualCustomizer()" id="customizer-save-btn" style="font-weight:800;padding:8px 20px">💾 Save &amp; Publish Live</button>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
-          <div class="field-group">
-            <label class="field-label">Primary Brand Color</label>
-            <div style="display:flex;align-items:center;gap:8px">
-              <input type="color" id="quick-primary-color" value="#ED6375" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer">
-              <input type="text" id="quick-primary-hex" value="#ED6375" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('quick-primary-hex','quick-primary-color')">
+
+        <!-- Customizer Category Tabs -->
+        <div style="display:flex;gap:10px;border-bottom:1px solid var(--zk-border);padding-bottom:12px;margin-bottom:20px">
+          <button type="button" class="btn btn-sm btn-primary" id="tab-btn-header" onclick="switchCustomizerTab('header')">Header &amp; Menu Styling</button>
+          <button type="button" class="btn btn-sm btn-secondary" id="tab-btn-brand" onclick="switchCustomizerTab('brand')">Brand Palette</button>
+          <button type="button" class="btn btn-sm btn-secondary" id="tab-btn-hero" onclick="switchCustomizerTab('hero')">Hero &amp; Announcement</button>
+        </div>
+
+        <!-- Tab 1: Header & Menu Colours -->
+        <div id="tab-panel-header" class="customizer-tab-panel">
+          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span>🧭</span> Header Menu &amp; Submenu Colors (Real-Time CSS Injected)
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px">
+            <div class="field-group">
+              <label class="field-label">Menu Font Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-link-color" value="#111827" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-link-color','menu-link-hex')">
+                <input type="text" id="menu-link-hex" value="#111827" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-link-hex','menu-link-color')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Top-level navigation link text</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Menu Hover Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-link-hover" value="#FF6B00" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-link-hover','menu-link-hover-hex')">
+                <input type="text" id="menu-link-hover-hex" value="#FF6B00" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-link-hover-hex','menu-link-hover')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Hover accent on menu links</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Submenu Font Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-sub-color" value="#374151" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-sub-color','menu-sub-hex')">
+                <input type="text" id="menu-sub-hex" value="#374151" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-sub-hex','menu-sub-color')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Shop category &amp; dropdown text</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Submenu Hover Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-sub-hover" value="#FF6B00" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-sub-hover','menu-sub-hover-hex')">
+                <input type="text" id="menu-sub-hover-hex" value="#FF6B00" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-sub-hover-hex','menu-sub-hover')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Hover highlight on dropdown items</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Submenu Background</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-sub-bg" value="#FFFFFF" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-sub-bg','menu-sub-bg-hex')">
+                <input type="text" id="menu-sub-bg-hex" value="#FFFFFF" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-sub-bg-hex','menu-sub-bg')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Dropdown container background</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Header Background Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="menu-nav-bg" value="#FFFFFF" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('menu-nav-bg','menu-nav-bg-hex')">
+                <input type="text" id="menu-nav-bg-hex" value="#FFFFFF" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('menu-nav-bg-hex','menu-nav-bg')">
+              </div>
+              <div style="font-size:11px;color:var(--zk-muted);margin-top:3px">Top bar navigation background</div>
             </div>
           </div>
-          <div class="field-group">
-            <label class="field-label">Accent / Highlights</label>
-            <div style="display:flex;align-items:center;gap:8px">
-              <input type="color" id="quick-accent-color" value="#A3B545" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer">
-              <input type="text" id="quick-accent-hex" value="#A3B545" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('quick-accent-hex','quick-accent-color')">
+        </div>
+
+        <!-- Tab 2: Brand Palette -->
+        <div id="tab-panel-brand" class="customizer-tab-panel" style="display:none">
+          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span>🎨</span> Core Brand Palette
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px">
+            <div class="field-group">
+              <label class="field-label">Primary Brand Color</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="quick-primary-color" value="#ED6375" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('quick-primary-color','quick-primary-hex')">
+                <input type="text" id="quick-primary-hex" value="#ED6375" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('quick-primary-hex','quick-primary-color')">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Accent / Highlights</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="quick-accent-color" value="#A3B545" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('quick-accent-color','quick-accent-hex')">
+                <input type="text" id="quick-accent-hex" value="#A3B545" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('quick-accent-hex','quick-accent-color')">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Store Tagline</label>
+              <input type="text" id="quick-tagline" value="Thoughtfully made essentials" class="field" placeholder="Store tagline">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Button CTA Text</label>
+              <input type="text" id="quick-cta-text" value="Shop now" class="field" placeholder="Shop now">
             </div>
           </div>
-          <div class="field-group">
-            <label class="field-label">Hero Button CTA Text</label>
-            <input type="text" id="quick-cta-text" value="Shop now" class="field" placeholder="Shop now">
+        </div>
+
+        <!-- Tab 3: Hero & Announcement -->
+        <div id="tab-panel-hero" class="customizer-tab-panel" style="display:none">
+          <div style="font-size:13px;font-weight:700;color:var(--zk-text);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <span>📢</span> Announcement Bar &amp; Hero Content
           </div>
-          <div class="field-group">
-            <label class="field-label">Store Tagline</label>
-            <input type="text" id="quick-tagline" value="Thoughtfully made essentials" class="field" placeholder="Store tagline">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:16px">
+            <div class="field-group">
+              <label class="field-label">Announcement Message</label>
+              <input type="text" id="ann-text" value="Free shipping on all orders over ₹499 · 100% Herbal &amp; Natural" class="field" placeholder="Top announcement banner text">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Announcement Background</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" id="ann-bg-color" value="#1688E8" style="width:40px;height:38px;padding:2px;border-radius:8px;border:1px solid var(--zk-border);cursor:pointer" oninput="syncColorInput('ann-bg-color','ann-bg-hex')">
+                <input type="text" id="ann-bg-hex" value="#1688E8" class="field" style="font-family:monospace;font-size:12px" oninput="syncColorInput('ann-bg-hex','ann-bg-color')">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Main Headline</label>
+              <input type="text" id="hero-headline" value="100% Herbal &amp; Cold Pressed Hair Oil" class="field" placeholder="Hero banner main headline">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hero Subtext Description</label>
+              <input type="text" id="hero-subtext" value="Formulated with 24 pure botanical extracts to strengthen roots and stop hair fall naturally." class="field" placeholder="Hero subtext">
+            </div>
           </div>
         </div>
       </div>
-
+      
       <!-- Theme Preset Library -->
       <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
         <div>
