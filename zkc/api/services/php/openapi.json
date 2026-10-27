@@ -69,6 +69,56 @@
         }
       }
     },
+    "/reset-db": {
+      "get": {
+        "tags": ["Diagnostics"],
+        "summary": "Reset & Recreate MySQL Database",
+        "description": "Drops all existing tables in MySQL, recreates all 17 schema tables up to v1.0.12, and seeds production data for Smeram Naturals. Pass ?confirm=1&key=demo1234 to execute.",
+        "parameters": [
+          {
+            "name": "confirm",
+            "in": "query",
+            "description": "Set to 1 to confirm database wipe and recreate",
+            "required": false,
+            "schema": { "type": "string", "example": "1" }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "Admin authorization secret key (ADMIN_SECRET_KEY / demo1234)",
+            "required": false,
+            "schema": { "type": "string", "example": "demo1234" }
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "description": "Return JSON response instead of HTML UI",
+            "required": false,
+            "schema": { "type": "string", "example": "1" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Database reset & seed status",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "authenticated": true,
+                  "database": "smeram_naturals",
+                  "result": {
+                    "status": "success",
+                    "message": "Database successfully reset and seeded for Smeram Naturals!",
+                    "tables_created": 17,
+                    "time_ms": 134.5
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": ["Diagnostics"],

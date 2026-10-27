@@ -32,7 +32,8 @@ function buildApiBundle() {
     'invoice.php',
     'stock.php',
     'coupons.php',
-    'customers.php'
+    'customers.php',
+    'reset-db.php'
   ];
 
   let copiedPhp = 0;
@@ -64,7 +65,12 @@ function buildApiBundle() {
     console.log(`✅ Bundled OpenAPI 3.0 specification (openapi.json)`);
   }
 
-  // 3. Copy MySQL schema seed
+  // 3. Copy MySQL schema reset & seed SQL
+  const fullSqlSrc = path.join(__dirname, '../../database/smeram_full_reset_and_seed.sql');
+  if (fs.existsSync(fullSqlSrc)) {
+    fs.copyFileSync(fullSqlSrc, path.join(apiBundleDir, 'smeram_full_reset_and_seed.sql'));
+    console.log(`✅ Bundled full reset & seed SQL (smeram_full_reset_and_seed.sql)`);
+  }
   const sqlSrc = path.join(__dirname, '../smeram-godaddy/smeram_mysql.sql');
   if (fs.existsSync(sqlSrc)) {
     fs.copyFileSync(sqlSrc, path.join(apiBundleDir, 'smeram_mysql.sql'));
@@ -150,7 +156,9 @@ You can upload this directly to GoDaddy without re-uploading storefront images o
 ## Contents
 - \`api.php\` — Main REST API routing (checkout, orders, auth, payments, merchant)
 - \`db_config.php\` — MySQL database credentials configuration
-- \`test-db.php\` — Visual database connection test console (open in browser: \`https://smeram-naturals.in/test-db.php\`)
+- \`test-db.php\` — Visual database connection test console (\`https://smeram-naturals.in/test-db.php\`)
+- \`reset-db.php\` — Clean database wipe, recreate & seed tool (\`https://smeram-naturals.in/reset-db.php\`)
+- \`smeram_full_reset_and_seed.sql\` — Complete reset & seed SQL for phpMyAdmin import
 - \`swagger.html\` — Interactive Swagger UI testing console (\`https://smeram-naturals.in/swagger.html\`)
 - \`openapi.json\` — Complete OpenAPI 3.0 specification
 - \`order.php\` — Direct order receiver (supports both \`orders\` and \`smeram_orders\`)
@@ -162,7 +170,8 @@ You can upload this directly to GoDaddy without re-uploading storefront images o
 1. In GoDaddy cPanel or File Manager, navigate to \`public_html\` (or \`httpdocs\`).
 2. Upload and extract \`smeram-api-v${version}.zip\` directly into the root folder.
 3. Open \`https://smeram-naturals.in/test-db.php\` to verify database connection.
-4. Open \`https://smeram-naturals.in/swagger.html\` to test all API endpoints!
+4. If database is fresh or needs a clean wipe, open \`https://smeram-naturals.in/reset-db.php\` (or import \`smeram_full_reset_and_seed.sql\` in phpMyAdmin).
+5. Open \`https://smeram-naturals.in/swagger.html\` to test all API endpoints!
 `;
   fs.writeFileSync(path.join(apiBundleDir, 'README-API-DEPLOY.md'), readmeContent, 'utf8');
 

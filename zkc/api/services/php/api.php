@@ -130,6 +130,14 @@ if ($route === 'docs' || $route === 'swagger') {
     }
 }
 
+// ── Database Reset & Seed Tool ──
+if ($route === 'reset-db') {
+    if (is_file(__DIR__ . '/reset-db.php')) {
+        require __DIR__ . '/reset-db.php';
+        exit;
+    }
+}
+
 // ── Health Check ──
 if ($route === 'health') {
     respond([

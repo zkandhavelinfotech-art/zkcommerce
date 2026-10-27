@@ -376,10 +376,20 @@ if ($isJson) {
               <?php endforeach; ?>
             </tbody>
           </table>
+          <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">
+            <a href="reset-db.php" style="background:#dc2626;color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px">
+              ⚡ Reset &amp; Recreate All Tables (reset-db.php)
+            </a>
+          </div>
         <?php else: ?>
           <p style="color:#f59e0b;font-size:13px;padding:10px 0">
-            ⚠️ Connected, but 0 tables found in <b><?php echo htmlspecialchars($dbName); ?></b>. Import <code>smeram_mysql.sql</code> in phpMyAdmin to create the tables.
+            ⚠️ Connected, but 0 tables found in <b><?php echo htmlspecialchars($dbName); ?></b>. Click below to initialize schema &amp; seed data:
           </p>
+          <div style="margin-top:10px">
+            <a href="reset-db.php" style="background:#0284c7;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px">
+              ⚡ Initialize &amp; Seed Database (reset-db.php)
+            </a>
+          </div>
         <?php endif; ?>
       </div>
     <?php else: ?>
