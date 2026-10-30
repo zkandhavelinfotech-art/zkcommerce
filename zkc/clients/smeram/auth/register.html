@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Start free trial — ZKCommerce</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
@@ -186,10 +187,7 @@ body{font-family:'Inter',sans-serif;background:#0D0D1A;color:#fff;min-height:100
 </div>
 
 <script>
-var localHost = ['localhost','127.0.0.1'].includes(location.hostname);
-var localPage = localHost || location.protocol === 'file:';
-var separateFrontendPort = ['5173','5500','5501','8080'].includes(location.port);
-var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : (localPage ? (location.port && !separateFrontendPort ? location.origin+'/api' : 'http://localhost:3000/api') : '/api');
+var API_BASE = ZK.api;
 
 function showWA(){
   document.getElementById('email-form').style.display='none';

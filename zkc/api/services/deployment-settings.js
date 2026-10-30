@@ -36,7 +36,7 @@ function decrypt(value) {
 
 function normalizeEnv(env) {
   const e = String(env || '').toLowerCase();
-  if (e === 'dev') return 'development';
+  if (e === 'dev' || e === 'phpdev') return 'development'; // phpdev = PHP packages on MAMP
   if (e === 'prod') return 'production';
   if (e === 'staging') return 'stage';
   return ENVIRONMENTS.includes(e) ? e : null;
@@ -70,11 +70,14 @@ function resolvedEnv(settings, env) {
   const e = settings.environments[env] || {};
   return {
     custom_domain: e.custom_domain || '',
+    site_url: e.site_url || '',
+    backend_url: e.backend_url || '',
     technology: e.technology || null,
     provider: e.provider || null,
     db: e.db ? { ...e.db, password: decrypt(e.db.password) } : null,
     ftp: e.ftp ? { ...e.ftp, password: decrypt(e.ftp.password) } : null,
-    payments: e.payments ? { key_id: e.payments.key_id || '', key_secret: decrypt(e.payments.key_secret) } : null
+    payments: e.payments ? { key_id: e.payments.key_id || '', key_secret: decrypt(e.payments.key_secret), webhook_secret: decrypt(e.payments.webhook_secret) } : null,
+    admin_password: decrypt(e.admin_password)
   };
 }
 
@@ -98,11 +101,14 @@ function publicView(settings) {
     const e = settings.environments[env] || {};
     environments[env] = {
       custom_domain: e.custom_domain || '',
+      site_url: e.site_url || '',
+      backend_url: e.backend_url || '',
       technology: e.technology || null,
       provider: e.provider || null,
       db: e.db ? { ...e.db, password: undefined, has_password: !!e.db.password } : null,
       ftp: e.ftp ? { ...e.ftp, password: undefined, has_password: !!e.ftp.password } : null,
-      payments: e.payments ? { key_id: e.payments.key_id || '', has_secret: !!e.payments.key_secret } : null,
+      payments: e.payments ? { key_id: e.payments.key_id || '', has_secret: !!e.payments.key_secret, has_webhook_secret: !!e.payments.webhook_secret } : null,
+      has_admin_password: !!e.admin_password,
       ftp_tested_at: e.ftp_tested_at || null,
       last_package: e.last_package || null,
       builds: buildHistory(e),
@@ -147,7 +153,20 @@ async function saveEnvironment(storeId, merchantId, env, body) {
     if (keyId && !/^rzp_(test|live)_[A-Za-z0-9]+$/.test(keyId)) throw Object.assign(new Error('Razorpay key id looks like rzp_live_xxxx or rzp_test_xxxx'), { status: 400 });
     current.payments = { ...(current.payments || {}), key_id: keyId };
     if (body.payments.key_secret) current.payments.key_secret = encrypt(String(body.payments.key_secret).trim());
+    if (body.payments.webhook_secret) current.payments.webhook_secret = encrypt(String(body.payments.webhook_secret).trim());
     if (!keyId) delete current.payments.key_secret;
+  }
+  // Admin password for admin-orders.php, migrate.php and the other PHP admin pages (ADMIN_SECRET_KEY / ADMIN_PASSWORD).
+  if (body.admin_password) {
+    if (String(body.admin_password).length < 8) throw Object.assign(new Error('Admin password must be at least 8 characters'), { status: 400 });
+    current.admin_password = encrypt(String(body.admin_password));
+  }
+  // Environment URLs written into zk-env.js: the frontend (shopping portal) and the Backend + API folder.
+  for (const key of ['site_url', 'backend_url']) {
+    if (body[key] === undefined) continue;
+    const url = String(body[key] || '').trim().replace(/\/+$/, '');
+    if (url && !/^https?:\/\/[^\s/]+(\/\S*)?$/i.test(url)) throw Object.assign(new Error(key.replace('_', ' ') + ' must start with http:// or https://'), { status: 400 });
+    current[key] = url;
   }
   if (body.custom_domain !== undefined) current.custom_domain = String(body.custom_domain || '').trim().toLowerCase();
   if (body.technology !== undefined && TECHNOLOGIES.includes(body.technology)) current.technology = body.technology;

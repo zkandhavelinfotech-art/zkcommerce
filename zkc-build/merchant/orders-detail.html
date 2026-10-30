@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="en"><head>
+<script src="../zk-env.js"></script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
@@ -32,7 +33,7 @@
 </div>
 </div></div></div><script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = window.location.protocol==='file:' ? 'http://localhost:3000/api' : (window.ZK?ZK.api:'/api');
+var API_BASE = ZK.api;
 
 function getOrderId() {
   var params = new URLSearchParams(window.location.search);

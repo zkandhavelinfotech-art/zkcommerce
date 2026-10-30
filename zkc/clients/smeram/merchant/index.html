@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Merchant Dashboard · ZKCommerce</title>
@@ -966,10 +967,7 @@
   </div>
 
   <script>
-    const localHost = ['localhost', '127.0.0.1'].includes(location.hostname);
-    const localPage = localHost || location.protocol === 'file:';
-    const separateFrontendPort = ['5173', '5500', '5501', '8080'].includes(location.port);
-    const API_BASE = localPage ? (location.port && !separateFrontendPort ? location.origin + '/api' : 'http://localhost:3000/api') : (location.origin + '/api');
+    const API_BASE = ZK.api;
     const api = API_BASE;
     const token = localStorage.getItem('zk_token');
     let stores = [];
@@ -1121,7 +1119,7 @@
       const badge = document.getElementById('storeStatusBadge');
       badge.textContent = currentStore.status || 'live';
       document.getElementById('btnViewStore').onclick = () => {
-        window.open('/store/' + currentStore.slug, '_blank');
+        window.open(ZK.storeUrl(currentStore.slug), '_blank');
       };
       if (currentStore.whatsapp_number) {
         document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;

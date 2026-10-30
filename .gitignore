@@ -62,3 +62,11 @@ deployment/*.zip
 zkc/deployment/smeram-api/
 zkc-build/deployment/smeram-api/
 deployment/smeram-api/
+
+# Split PHP packages (Publish portal → Frontend / Backend + API) and versioned API bundles: build output with generated config
+zkc/deployment/*-frontend*/
+zkc/deployment/*-backend-api*/
+zkc/deployment/smeram-api-v*/
+zkc-build/deployment/*-frontend*/
+zkc-build/deployment/*-backend-api*/
+zkc-build/deployment/smeram-api-v*/

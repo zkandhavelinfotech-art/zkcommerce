@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Analytics &amp; Performance Insights — ZKCommerce Merchant Admin</title>
@@ -979,9 +980,7 @@ body {
 <!-- Global App & Utilities -->
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = window.location.protocol === 'file:'
-  ? 'http://localhost:3000/api'
-  : (window.ZK ? ZK.api : '/api');
+var API_BASE = ZK.api;
 
 // Dynamic Chart Data Generator & Renderer
 var chartPeriods = {

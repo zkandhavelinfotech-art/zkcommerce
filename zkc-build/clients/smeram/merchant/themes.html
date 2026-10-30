@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Themes &amp; Store Customizer — ZKCommerce Client Admin</title>
@@ -461,7 +462,7 @@ body { background: var(--zk-chalk); overflow-x: hidden; font-family: var(--font-
 
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : (window.ZK ? ZK.api : '/api');
+var API_BASE = ZK.api;
 var STORE_ID = null;
 var CURRENT_STORE = null;
 
@@ -752,7 +753,7 @@ function populateActiveTheme(store) {
 
   document.getElementById('active-theme-hero-title').textContent = store.store_name || 'My Store';
   document.getElementById('active-theme-hero-tagline').textContent = store.tagline || 'Everyday Essentials';
-  document.getElementById('active-theme-url').textContent = (store.slug || 'store') + '.zkcommerce.in';
+  document.getElementById('active-theme-url').textContent = ZK.storeUrl(store.slug || 'store').replace(/^https?:\/\//, '');
   document.getElementById('active-theme-cta-btn').style.background = primary;
 
   document.getElementById('swatch-primary').style.background = primary;

@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>StoreBuilder · storebuilderapp.zksuvevy.in</title>
+<html lang="en"><head>
+<script src="../zk-env.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>StoreBuilder · storebuilderapp.zksuvevy.in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{font-family:'Inter',sans-serif;color:#202223;background:#f1f2f3;font-synthesis:none;--ink:#202223;--sub:#616a70;--muted:#8c9196;--line:#e1e3e5;--surface:#fff;--canvas:#e9eaec;--green:#008060;--green-dark:#006e52;--focus:#2c6ecb;--soft:#f6f6f7;--shadow:0 1px 3px #1a1a1a1a}*{box-sizing:border-box}body{margin:0;height:100vh;overflow:hidden;display:flex;flex-direction:column}.topbar{height:56px;flex:none;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 16px;z-index:5}.brand{font-size:14px;font-weight:700;white-space:nowrap}.brand small{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:2px}.store-select,.template-select,.product-select{height:34px;max-width:240px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 10px;font:500 12px inherit;color:var(--ink)}.store-select{min-width:170px}.top-divider{height:24px;border-left:1px solid var(--line)}.template-control{display:flex;align-items:center;gap:8px;margin:auto;min-width:240px}.template-control label{font-size:11px;color:var(--sub)}.top-actions{display:flex;align-items:center;gap:8px;margin-left:auto}.btn{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);height:34px;padding:0 12px;font:600 12px inherit;cursor:pointer;white-space:nowrap}.btn:hover{background:#f6f6f7}.btn-primary{background:var(--green);color:white;border-color:var(--green)}.btn-primary:hover{background:var(--green-dark)}.btn-text{border-color:transparent;background:transparent}.save-state{font-size:11px;color:var(--muted);min-width:80px;text-align:right}.main{min-height:0;flex:1;display:grid;grid-template-columns:250px minmax(300px,1fr) 310px;gap:0}.left,.right{background:#fff;min-height:0;display:flex;flex-direction:column;overflow:auto}.left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}.left-tabs{height:48px;display:flex;border-bottom:1px solid var(--line);flex:none}.left-tabs button{flex:1;border:0;background:#fff;color:var(--sub);font:600 12px inherit;cursor:pointer;border-bottom:2px solid transparent}.left-tabs button.active{color:var(--ink);border-bottom-color:var(--green)}.left-section{padding:14px 12px 8px}.section-heading{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.045em;display:flex;align-items:center;justify-content:space-between;padding:2px 6px 9px}.tree-group{margin:0 0 14px}.tree-label{font-size:10px;font-weight:700;color:#8c9196;text-transform:uppercase;letter-spacing:.06em;padding:7px 8px}.tree-item{height:36px;border-radius:6px;display:flex;align-items:center;gap:8px;padding:0 8px;cursor:pointer;color:#303438;font-size:12px;user-select:none;border:1px solid transparent}.tree-item:hover{background:#f6f6f7}.tree-item.active{background:#eff6ff;border-color:#cfe0f7;color:#1a4d85}.tree-item.dragging{opacity:.45}.tree-item.drop-target{border-top-color:var(--focus)}.drag{color:#9ca3a8;font-size:15px;cursor:grab}.tree-icon{width:18px;text-align:center;color:#697077}.tree-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.tree-action{width:22px;height:22px;border:0;border-radius:4px;background:transparent;color:#81878c;cursor:pointer}.tree-action:hover{background:#e9eaec;color:#303438}.add-section{margin:4px 6px;width:calc(100% - 12px);height:34px;border:1px dashed #aeb4b9;border-radius:6px;background:#fff;color:#3c5a4f;font:600 12px inherit;cursor:pointer}.add-section:hover{border-color:var(--green);background:#f3faf7}.theme-entry{margin:8px 6px;padding:11px;border:1px solid var(--line);border-radius:8px;cursor:pointer}.theme-entry:hover{border-color:#aeb4b9}.theme-entry strong{font-size:12px}.theme-entry p{font-size:11px;color:var(--sub);line-height:1.45;margin:5px 0 0}.theme-swatches{display:flex;gap:5px;margin-top:9px}.theme-swatches i{width:18px;height:18px;border-radius:50%;border:1px solid #0001}.center{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--canvas)}.canvas-toolbar{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#f6f6f7;border-bottom:1px solid #dadde0}.preview-domain{font-size:11px;color:#60676d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.devices{display:flex;gap:4px}.device{height:30px;min-width:32px;border:1px solid transparent;border-radius:5px;background:transparent;color:#616a70;cursor:pointer}.device.active{background:#fff;border-color:#d2d5d8;color:#202223;box-shadow:var(--shadow)}.refresh{height:30px;border:0;border-radius:5px;background:transparent;cursor:pointer;color:#616a70}.frame-wrap{flex:1;min-height:0;overflow:hidden;display:flex;justify-content:center;align-items:stretch;padding:12px 16px;background:var(--canvas)}.frame-wrap iframe{width:100%;height:100%;min-height:0;flex:1;border:0;background:white;box-shadow:0 4px 20px rgba(0,0,0,0.08);transition:width .2s;border-radius:6px;display:block}.frame-wrap.tablet iframe{width:768px;max-width:100%;flex:none}.frame-wrap.mobile iframe{width:390px;max-width:100%;flex:none}.empty-preview{margin:auto;text-align:center;color:#616a70;max-width:340px;padding:28px}.empty-preview h2{font-size:18px;color:#303438}.empty-preview p{font-size:13px;line-height:1.5}.right-head{padding:16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}.right-title{font-size:14px;font-weight:700}.right-sub{font-size:11px;color:var(--sub);margin-top:4px}.right-body{padding:16px;overflow:auto}.group{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid #eeeff0}.group:last-child{border:0}.group-title{font-size:11px;font-weight:700;color:#51585d;margin-bottom:12px}.field{margin-bottom:13px}.field:last-child{margin-bottom:0}.field label{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:#42484d;margin-bottom:6px}.field input[type=text],.field input[type=url],.field input[type=number],.field textarea,.field select{width:100%;border:1px solid #c9cccf;border-radius:6px;padding:8px 9px;font:12px inherit;color:var(--ink);background:#fff;outline:none}.field textarea{min-height:72px;resize:vertical;line-height:1.45}.field input:focus,.field textarea:focus,.field select:focus{border-color:#458fff;box-shadow:0 0 0 2px #458fff33}.color-input{display:flex;align-items:center;gap:8px}.color-input input[type=color]{height:34px;width:38px;padding:2px;border:1px solid #c9cccf;border-radius:6px;background:white}.color-input input[type=text]{flex:1}.upload{border:1px dashed #aeb4b9;border-radius:7px;padding:10px;text-align:center;position:relative;color:#596168;font-size:11px;cursor:pointer}.upload input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}.upload img{display:block;max-height:76px;max-width:100%;margin:0 auto 8px;object-fit:contain}.switch-row{display:flex;justify-content:space-between;align-items:center;font-size:12px}.switch-row input{accent-color:var(--green)}.notice{font-size:11px;line-height:1.5;color:var(--sub);padding:10px;border-radius:6px;background:#f6f6f7}.modal-backdrop{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;z-index:20;padding:20px}.modal-backdrop.open{display:flex}.modal{width:min(520px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 16px 50px #0003}.modal.modal-lg{width:min(780px,95vw);max-height:92vh;border-radius:14px;box-shadow:0 24px 60px rgba(15,23,42,0.22)}.form-section{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}.form-section-title{font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}.check-toggle-card{background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:12px 14px;margin-top:10px;transition:all .15s ease-in-out}.check-toggle-card:hover{border-color:#94a3b8}.check-toggle-card.checked{border-color:#10b981;background:#f0fdf4}.check-toggle-label{display:flex;align-items:center;gap:10px;font-weight:600;font-size:13px;color:#1e293b;cursor:pointer;user-select:none}.check-toggle-label input[type=checkbox]{width:18px;height:18px;accent-color:#059669;cursor:pointer}.desc-textarea{width:100%!important;min-height:180px!important;line-height:1.6!important;font-size:13px!important;padding:12px 14px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;box-sizing:border-box!important;resize:vertical!important;font-family:inherit!important}.badge-preview{display:inline-flex;align-items:center;gap:6px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:600;margin-top:8px}.param-badge{font-size:10px;background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px;margin-right:3px;font-weight:500;display:inline-block}.modal-head,.modal-foot{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-head strong{font-size:14px}.modal-foot{border:0;border-top:1px solid var(--line);justify-content:flex-end;gap:8px}.modal-body{padding:16px 18px}.library-item{display:flex;gap:10px;padding:11px;border-bottom:1px solid #eee;align-items:center}.library-item div{flex:1}.library-item strong{font-size:12px}.library-item p{font-size:11px;color:var(--sub);margin:4px 0 0}.status{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);background:#202223;color:#fff;padding:10px 15px;border-radius:7px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:30}.status.show{opacity:1;transform:translate(-50%,0)}.status.error{background:#b42318}.pages-workspace,.products-workspace,.settings-workspace{grid-column:1/-1;padding:24px;overflow:auto;background:#f6f6f7}.workspace-card{max-width:1000px;margin:auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}.workspace-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.workspace-head h2{font-size:17px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #eee;font-size:12px}th{color:#687078;font-size:10px;text-transform:uppercase;letter-spacing:.04em}td button{margin-right:5px}.product-form,.page-form{display:grid;grid-template-columns:repeat(2,minmax(150px,1fr));gap:10px}.product-form label,.page-form label{display:grid;gap:5px;font-size:11px;font-weight:600;color:#596168}.product-form input,.product-form textarea,.product-form select,.page-form input,.page-form textarea,.page-form select{width:100%;border:1px solid #c9cccf;border-radius:6px;padding:8px;font:12px inherit}.span2{grid-column:1/-1}.page-empty{color:#777;font-size:12px;padding:16px 0}
@@ -61,7 +62,7 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
           <span>Publish &amp; Multi-Cloud Deployment Portal</span>
           <span class="pub-badge" id="pubModalBadge">Draft Ready</span>
         </div>
-        <div style="font-size:11.5px;color:#94a3b8;margin-top:2px">Export static storefront, standalone Node.js API, and SQL seeds for GoDaddy, Vercel, Railway or GitHub.</div>
+        <div style="font-size:11.5px;color:#94a3b8;margin-top:2px">PHP + MySQL only · Frontend (shopping portal) and Backend + API (store builder, merchant, orders, Razorpay, WhatsApp) build &amp; deploy separately.</div>
       </div>
     </div>
     <button class="btn" data-close="publishModal" style="background:transparent;color:#94a3b8;border-color:#334155">✕</button>
@@ -72,13 +73,24 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
     <div class="portal-section">
       <div class="portal-section-title">
         <span>Environment</span>
-        <span style="font-size:11px;font-weight:normal;color:#64748b">Each environment keeps its own database, FTP, domain &amp; package versions</span>
+        <span style="font-size:11px;font-weight:normal;color:#64748b">nodedev = this Node app (.env) · PHP packages are built for phpdev or prod</span>
       </div>
       <div class="env-tabs" id="envTabs">
-        <button type="button" data-env="development">🧪 Dev</button>
-        <button type="button" data-env="stage">🧱 Stage</button>
-        <button type="button" data-env="preview">👁 Preview</button>
-        <button type="button" data-env="production" class="active">🚀 Production</button>
+        <button type="button" data-env="development">🐘 phpdev (MAMP)</button>
+        <button type="button" data-env="production" class="active">🚀 prod</button>
+      </div>
+      <!-- Environment URLs → zk-env.js (window.ZK) and store_config.php in every package -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+        <label style="font-size:11px;font-weight:600;color:#475569">Frontend URL (shopping portal)
+          <input id="pub_site_url" placeholder="https://smeram-naturals.in" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+        </label>
+        <label style="font-size:11px;font-weight:600;color:#475569">Backend + API URL (folder of api.php)
+          <input id="pub_backend_url" placeholder="https://smeram-naturals.in/smeram-backend-api" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+        </label>
+        <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <span id="envUrlsMsg" style="font-size:11.5px;color:#64748b"></span>
+          <button type="button" class="btn btn-primary" id="saveEnvUrlsBtn" style="font-size:11px;height:28px;font-weight:600">💾 Save Environment URLs</button>
+        </div>
       </div>
     </div>
 
@@ -86,32 +98,16 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
     <div class="portal-section">
       <div class="portal-section-title">
         <span>1. Select Target Hosting Provider</span>
-        <span style="font-size:11px;font-weight:normal;color:#64748b">Configures .htaccess, vercel.json, railway.toml &amp; API bundle</span>
+        <span style="font-size:11px;font-weight:normal;color:#64748b">Configures .htaccess (Apache) &amp; web.config (IIS) for the PHP API</span>
       </div>
       <div class="provider-grid" id="providerGrid">
         <div class="provider-card active" data-provider="godaddy">
           <div class="provider-card-icon">🌐</div>
           <div class="provider-card-info">
-            <strong>GoDaddy / cPanel</strong>
-            <span>Apache + MySQL phpMyAdmin + Node.js API</span>
+            <strong>GoDaddy / cPanel / Plesk</strong>
+            <span>Apache or IIS + PHP API + MySQL phpMyAdmin</span>
           </div>
           <div class="provider-tag">Recommended for GoDaddy</div>
-        </div>
-        <div class="provider-card" data-provider="vercel">
-          <div class="provider-card-icon">▲</div>
-          <div class="provider-card-info">
-            <strong>Vercel</strong>
-            <span>Edge CDN + Serverless API Functions</span>
-          </div>
-          <div class="provider-tag">Global Edge CDN</div>
-        </div>
-        <div class="provider-card" data-provider="railway">
-          <div class="provider-card-icon">🚂</div>
-          <div class="provider-card-info">
-            <strong>Railway</strong>
-            <span>Fullstack Node.js + Managed PostgreSQL</span>
-          </div>
-          <div class="provider-tag">Cloud Container</div>
         </div>
         <div class="provider-card" data-provider="github">
           <div class="provider-card-icon">🐙</div>
@@ -138,7 +134,7 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
             <small>Standard for GoDaddy cPanel, phpMyAdmin &amp; AWS RDS</small>
           </div>
         </label>
-        <label class="db-type-card" id="dbTypePostgresCard">
+        <label class="db-type-card" id="dbTypePostgresCard" style="display:none">
           <input type="radio" name="portal_db_type" value="postgres" style="accent-color:#008060">
           <div>
             <strong>PostgreSQL</strong>
@@ -170,6 +166,12 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
         </label>
         <label style="font-size:11px;font-weight:600;color:#475569">Razorpay Key Secret
           <input id="pub_rzp_secret" type="password" placeholder="••••••••" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+        </label>
+        <label style="font-size:11px;font-weight:600;color:#475569">Razorpay Webhook Secret
+          <input id="pub_rzp_webhook" type="password" placeholder="••••••••" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
+        </label>
+        <label style="font-size:11px;font-weight:600;color:#475569">Admin password (admin-orders.php, migrate.php)
+          <input id="pub_admin_pass" type="password" placeholder="••••••••" autocomplete="new-password" style="width:100%;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
         </label>
         <div id="rzpKeyHint" style="grid-column:1/-1;font-size:11px;color:#64748b"></div>
       </div>
@@ -206,7 +208,7 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
         <span style="font-size:11px;font-weight:normal;color:#64748b">Point your GoDaddy / Registrar DNS</span>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:10px">
-        <input type="text" id="pub_custom_domain" placeholder="e.g. smeramnaturals.com or shop.mydomain.com" style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600">
+        <input type="text" id="pub_custom_domain" placeholder="e.g. smeram-naturals.in or shop.mydomain.com" style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600">
       </div>
       <div class="dns-table-wrap">
         <table style="width:100%;font-size:11.5px">
@@ -283,10 +285,9 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button type="button" class="btn" id="saveFtpBtn" style="font-weight:600">💾 1. Save FTP</button>
           <button type="button" class="btn" id="testFtpBtn" style="font-weight:600">⚡ 2. Test Connection</button>
-          <button type="button" class="btn btn-primary" id="deployFtpBtn" disabled style="background:#0284c7;border-color:#0284c7">🚀 3. Build &amp; Upload to GoDaddy</button>
           <span id="ftpStatusMsg" style="font-size:12px;font-weight:600;margin-left:6px"></span>
         </div>
-        <div style="font-size:11px;color:#64748b;margin-top:6px">Upload builds a new version of the package selected in step 6 and sends it to the remote directory. SQL files and README stay local.</div>
+        <div style="font-size:11px;color:#64748b;margin-top:6px">Once tested, <b>Build &amp; Deploy Frontend</b> and <b>Build &amp; Deploy Backend + API</b> (bottom of this window) upload straight to this directory. Both go to the same web root; SQL files and README stay local.</div>
       </div>
 
       <!-- GitHub Panel -->
@@ -310,75 +311,51 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
       </div>
     </div>
 
-    <!-- 6. Deployment Package -->
-    <!-- 6. Deployment Package Options (API Only vs Full Storefront) -->
+    <!-- 6. Deployment Packages: Frontend (shopping portal) and Backend + API, PHP only -->
     <div class="portal-section">
       <div class="portal-section-title">
-        <span>6. Deployment Package Selection</span>
-        <span style="font-size:11px;font-weight:normal;color:#64748b">Choose whether to publish only backend API changes or full storefront</span>
+        <span>6. Deployment Packages (PHP)</span>
+        <span style="font-size:11px;font-weight:normal;color:#64748b">Two independent packages for the same web root — redeploy either one on its own</span>
       </div>
 
-      <!-- Option 1: Standalone API Only Package -->
-      <div style="background:#f0f9ff;border:1.5px solid #0284c7;border-radius:12px;padding:16px;margin-bottom:14px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:18px">⚡</span>
-              <strong style="font-size:14px;color:#0369a1">Option 1: Standalone API Only Package (PHP Backend + Swagger + DB Tester)</strong>
-              <span style="background:#0284c7;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px">Recommended for API Updates</span>
-            </div>
-            <p style="font-size:12px;color:#334155;margin:6px 0 10px 0;line-height:1.5">
-              Only backend endpoints (<code>api.php</code>, <code>order.php</code>, <code>db_config.php</code>), interactive <b>Swagger UI testing console</b> (<code>swagger.html</code>, <code>openapi.json</code>), visual <b>Database Tester</b> (<code>test-db.php</code>), and IIS/Apache URL rewrite rules. <b>Size: ~52 KB</b> — instant upload to GoDaddy without rebuilding or re-uploading 37MB of storefront images!
-            </p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <a href="../swagger.html" target="_blank" class="btn" style="font-size:11.5px;padding:5px 10px;background:#fff">📚 Open Swagger UI</a>
-              <a href="../test-db.php" target="_blank" class="btn" style="font-size:11.5px;padding:5px 10px;background:#fff">🔌 Test DB Connection</a>
-            </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+        <!-- Frontend -->
+        <div style="background:#f0fdf4;border:1.5px solid #059669;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">🛍</span>
+            <strong style="font-size:14px;color:#047857">Frontend · Shopping Portal</strong>
           </div>
-          <button type="button" class="btn btn-primary" id="buildApiPackageBtn" style="background:#0284c7;border-color:#0284c7;font-weight:700;padding:8px 16px;align-self:center">
-            ⚡ Build &amp; Download API ZIP (52 KB)
-          </button>
-        </div>
-      </div>
-
-      <!-- Option 2: Full Storefront & Web App Package -->
-      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:16px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:18px">🚀</span>
-              <strong style="font-size:14px;color:#1e293b">Option 2: Full Storefront &amp; Application Package (Complete Source)</strong>
-              <span style="background:#64748b;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px">Complete Store Build</span>
-            </div>
-            <p style="font-size:12px;color:#64748b;margin:6px 0 10px 0;line-height:1.5">
-              Complete website export including static storefront HTML, full media assets &amp; themes (~15MB), visual Store Builder, Merchant Dashboard, and PHP API backend. <b>Size: ~37 MB</b>.
-            </p>
-          </div>
+          <p style="font-size:12px;color:#334155;margin:0;line-height:1.5">
+            Pre-rendered storefront: home, collections, product &amp; content pages, plus only the product images they use. Cart and checkout call the Backend's <code>api.php</code>.
+          </p>
+          <div style="font-size:11.5px;color:#475569">ZIP: <code id="pkgNameFrontend"></code></div>
+          <button type="button" class="btn" id="buildFrontendZipBtn" style="font-weight:600;align-self:flex-start">📦 Build Frontend ZIP only</button>
         </div>
 
-        <div class="provider-grid" id="techGrid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:10px">
-          <div class="provider-card active" data-tech="php">
-            <div class="provider-card-icon">🐘</div>
-            <div class="provider-card-info"><strong>PHP + MySQL</strong><span>GoDaddy shared hosting · api.php, admin-orders.php, phpMyAdmin SQL</span></div>
+        <!-- Backend + API -->
+        <div style="background:#f0f9ff;border:1.5px solid #0284c7;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">⚙</span>
+            <strong style="font-size:14px;color:#0369a1">Backend + API</strong>
           </div>
-          <div class="provider-card" data-tech="nodejs">
-            <div class="provider-card-icon">🟢</div>
-            <div class="provider-card-info"><strong>Node.js</strong><span>Express frontend + backend · Railway, VPS, cPanel Node app</span></div>
+          <p style="font-size:12px;color:#334155;margin:0;line-height:1.5">
+            PHP API (<code>api.php</code>, <code>/api/</code>), Store Builder, Merchant dashboard &amp; client admin, orders, stock, coupons, invoices, packaging, Razorpay, WhatsApp, <code>migrate.php</code>, MySQL SQL, Swagger UI &amp; DB tester. No product images.
+          </p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <a href="../swagger.html" target="_blank" class="btn" style="font-size:11px;padding:4px 8px;background:#fff">📚 Swagger UI</a>
+            <a href="../test-db.php" target="_blank" class="btn" style="font-size:11px;padding:4px 8px;background:#fff">🔌 Test DB</a>
           </div>
-          <div class="provider-card" data-tech="static">
-            <div class="provider-card-icon">📄</div>
-            <div class="provider-card-info"><strong>Static HTML</strong><span>No server · orders go to WhatsApp · Vercel, GitHub Pages</span></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px">
-          <label style="font-size:11px;font-weight:600;color:#475569">Version
-            <input id="pub_version" placeholder="1.0.1" style="width:110px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px;display:block">
-          </label>
-          <div style="flex:1;min-width:220px;font-size:11.5px;color:#475569;padding-bottom:7px">ZIP: <code id="pkgNamePreview"></code></div>
-          <button type="button" class="btn" id="buildPackageBtn" style="font-weight:600">📦 Build Full Store ZIP</button>
+          <div style="font-size:11.5px;color:#475569">ZIP: <code id="pkgNameBackend"></code></div>
+          <button type="button" class="btn" id="buildBackendZipBtn" style="font-weight:600;align-self:flex-start">📦 Build Backend + API ZIP only</button>
         </div>
       </div>
 
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px">
+        <label style="font-size:11px;font-weight:600;color:#475569">Version (optional)
+          <input id="pub_version" placeholder="auto" style="width:110px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px;display:block">
+        </label>
+        <div style="flex:1;min-width:220px;font-size:11px;color:#64748b;padding-bottom:7px">Blank = next version of each package. Frontend and Backend + API are numbered separately.</div>
+      </div>
       <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px">
         <label style="font-size:11px;font-weight:600;color:#475569">Save ZIP to (all downloads)
           <select id="dl_target" style="display:block;min-width:300px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;margin-top:4px">
@@ -397,13 +374,14 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
     <div id="pubResultCard" style="display:none;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:14px 16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div style="font-size:13px;font-weight:700;color:#166534;display:flex;align-items:center;gap:6px">
-          <span>✅ Storefront &amp; API Successfully Published!</span>
+          <span id="pubResultTitle">✅ Deployed!</span>
         </div>
         <span id="pubTimeBadge" style="font-size:11px;color:#15803d"></span>
       </div>
       <div style="font-size:12px;color:#1e293b;line-height:1.6">
         <div>📁 Export Directory: <code id="pubExportDir" style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-weight:700"></code></div>
-        <div>📦 Standalone Deployment ZIP: <code id="pubZipPath" style="background:#dcfce7;padding:2px 6px;border-radius:4px"></code></div>
+        <div>📦 Deployment ZIP: <code id="pubZipPath" style="background:#dcfce7;padding:2px 6px;border-radius:4px"></code></div>
+        <div id="pubUploadLine" style="display:none">⬆ FTP: <span id="pubUploadMsg"></span></div>
         <div>🌐 Live Storefront URL: <a id="pubLiveLink" target="_blank" style="color:#059669;font-weight:700;text-decoration:underline"></a></div>
       </div>
     </div>
@@ -417,18 +395,15 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn" id="openLiveStoreBtn" target="_blank" style="display:none;border-color:#10b981;color:#047857;font-weight:600">🌐 Open Live Store</a>
       <button class="btn" id="downloadZipBtn" style="display:none;font-weight:600">📦 Download Deployment ZIP</button>
-      <button class="btn btn-primary" id="publishApiOnlyBtn" style="background:#0284c7;border-color:#0284c7;font-weight:700;padding:0 18px;font-size:13px;height:36px">⚡ Export API &amp; Swagger Package</button>
-      <button class="btn btn-primary" id="executePublishBtn" style="padding:0 20px;font-size:13px;height:36px;font-weight:700;background:#059669;border-color:#059669">🚀 Publish Full Store</button>
+      <button class="btn btn-primary" id="deployFrontendBtn" style="padding:0 18px;font-size:13px;height:36px;font-weight:700;background:#059669;border-color:#059669">🛍 Build &amp; Deploy Frontend</button>
+      <button class="btn btn-primary" id="deployBackendBtn" style="background:#0284c7;border-color:#0284c7;font-weight:700;padding:0 18px;font-size:13px;height:36px">⚙ Build &amp; Deploy Backend + API</button>
     </div>
   </div>
 </div></div>
 
 <div class="status" id="toast" role="status"></div>
 <script>
-const localHost = ['localhost', '127.0.0.1'].includes(location.hostname);
-const localPage = localHost || location.protocol === 'file:';
-const separateFrontendPort = ['5173', '5500', '5501', '8080'].includes(location.port);
-const API = localPage ? (location.port && !separateFrontendPort ? location.origin + '/api' : 'http://localhost:3000/api') : (location.origin + '/api');
+const API = ZK.api;
 const token = localStorage.getItem('zk_token');
 let paymentsInfo={},stores=[],store=null,products=[],categories=[],pages=[],themeConfig={},selectedSection='hero',selectedTemplate='home',selectedResource='',dirty=false,saveTimer=null,previewObjectUrl='',leftMode='sections',editingProduct=null,editingPage=null;
 const sectionMeta={announcement:['◉','Announcement bar','Shared header'],nav:['▤','Header','Shared header'],hero:['▧','Image banner','Home page'],trust:['✦','Trust band','Home page'],why:['♡','Why us','Home page'],ingredients:['❋','Ingredients','Home page'],howtouse:['①','How to use','Home page'],slider:['▧','Image slider','Home page'],offers:['％','Offers','Home page'],products:['▦','Featured products','Home page'],gallery:['▧','Gallery','Home page'],reviews:['☆','Reviews','Home page'],contact:['✉','Contact form','Home page'],product:['▦','Product information','Product template'],collection:['▦','Collection products','Collection template'],page_content:['▤','Page content','Content page'],footer_above:['✦','Footer feature','Shared footer'],footer:['▤','Footer','Shared footer']};
@@ -607,7 +582,7 @@ function setSectionProp(key,prop,value){
 function orderFor(){const c=selectedConfig();if(selectedTemplate==='home'){if(!c.section_order)c.section_order=[...defaultOrder];return c.section_order}return []}function pageContext(){return selectedTemplate==='page'?pages.find(p=>String(p.id)===String(selectedResource)):null}
 function templateSections(){if(selectedTemplate==='home')return orderFor().filter(x=>sectionMeta[x]);if(selectedTemplate==='product')return ['product'];if(selectedTemplate==='collection')return ['collection'];if(selectedTemplate==='page')return ['page_content'];return []}
 async function init(){if(!token){location.href='../auth/login.html';return}try{const data=await api('/stores');stores=data.stores||[];const s=document.getElementById('storeSelect');s.replaceChildren(...stores.map(x=>new Option(x.store_name+' · '+x.slug,x.id)));if(!stores.length){location.href='./setup.html';return}const wantStore=new URLSearchParams(location.search).get('store_id');if(wantStore&&stores.some(x=>String(x.id)===wantStore))s.value=wantStore;await selectStore(s.value);if(location.hash==='#publish')openPublishPortal();const q=new URLSearchParams(location.search),ws=q.get('workspace');if(ws==='categories'){document.querySelector('[data-workspace="products"]').click();document.getElementById('manageCategoriesBtn').click()}else if(ws&&document.querySelector('[data-workspace="'+ws+'"]'))document.querySelector('[data-workspace="'+ws+'"]').click()}catch(e){toast(e.message,true)}}
-async function selectStore(id){clearTimeout(saveTimer);store=(stores||[]).find(x=>String(x.id)===String(id));if(!store)return;selectedTemplate='home';selectedResource='';selectedSection='hero';const ts=document.getElementById('templateSelect');if(ts)ts.value='home';const rs=document.getElementById('resourceSelect');if(rs)rs.hidden=true;document.getElementById('saveState').textContent='Loading…';try{const d=await api('/stores/'+store.id+'/builder');store=d.store;products=d.products||[];categories=d.categories||[];pages=d.pages||[];paymentsInfo=d.payments||{};document.getElementById('packagingLink').href='../merchant/packaging.html?store_id='+encodeURIComponent(store.id);const cpLink=document.getElementById('clientPortalLink');if(cpLink){cpLink.href=(store.slug==='smeram'?'../clients/smeram/merchant/index.html':'../merchant/index.html')+'?store_id='+encodeURIComponent(store.id);cpLink.target='_blank';}themeConfig=store.theme_config||{};if(!themeConfig.fields)themeConfig.fields={};if(!themeConfig.style_preset&&store.theme_name==='dark-navy')themeConfig.style_preset='dark-navy';dirty=false;document.getElementById('saveState').textContent='All changes saved';document.getElementById('previewDomain').textContent=store.custom_domain||store.slug+'.zkcommerce.in';renderTree();renderThemeStyles();renderProperties(selectedSection);renderProducts();renderCategories();renderPages();renderStoreSettings();await refreshPreview()}catch(e){toast(e.message,true)}}
+async function selectStore(id){clearTimeout(saveTimer);store=(stores||[]).find(x=>String(x.id)===String(id));if(!store)return;selectedTemplate='home';selectedResource='';selectedSection='hero';const ts=document.getElementById('templateSelect');if(ts)ts.value='home';const rs=document.getElementById('resourceSelect');if(rs)rs.hidden=true;document.getElementById('saveState').textContent='Loading…';try{const d=await api('/stores/'+store.id+'/builder');store=d.store;products=d.products||[];categories=d.categories||[];pages=d.pages||[];paymentsInfo=d.payments||{};document.getElementById('packagingLink').href='../merchant/packaging.html?store_id='+encodeURIComponent(store.id);const cpLink=document.getElementById('clientPortalLink');if(cpLink){cpLink.href=(store.slug==='smeram'?'../clients/smeram/merchant/index.html':'../merchant/index.html')+'?store_id='+encodeURIComponent(store.id);cpLink.target='_blank';}themeConfig=store.theme_config||{};if(!themeConfig.fields)themeConfig.fields={};if(!themeConfig.style_preset&&store.theme_name==='dark-navy')themeConfig.style_preset='dark-navy';dirty=false;document.getElementById('saveState').textContent='All changes saved';document.getElementById('previewDomain').textContent=ZK.storeUrl(store.slug).replace(/^https?:\/\//, '');renderTree();renderThemeStyles();renderProperties(selectedSection);renderProducts();renderCategories();renderPages();renderStoreSettings();await refreshPreview()}catch(e){toast(e.message,true)}}
 function setWorkspace(name){for(const id of ['centerPane','leftPane','rightPane','productsWorkspace','pagesWorkspace','settingsWorkspace'])document.getElementById(id).hidden=false;document.getElementById('leftPane').style.display=name==='theme'?'flex':'none';document.getElementById('rightPane').style.display=name==='theme'?'flex':'none';document.getElementById('centerPane').style.display=name==='theme'?'flex':'none';document.getElementById('productsWorkspace').hidden=name!=='products';document.getElementById('pagesWorkspace').hidden=name!=='pages';document.getElementById('settingsWorkspace').hidden=name!=='settings'}
 function updateResourcePicker(){const t=document.getElementById('templateSelect'),r=document.getElementById('resourceSelect');if(!t||!r)return;selectedTemplate=t.value;r.hidden=!['product','collection','page'].includes(selectedTemplate);r.replaceChildren();if(selectedTemplate==='product'){products.forEach(p=>r.add(new Option(p.name,p.id)));if(selectedResource&&products.some(p=>String(p.id)===String(selectedResource)))r.value=String(selectedResource);else selectedResource=r.value||products[0]?.id||''}else if(selectedTemplate==='collection'){categories.forEach(c=>r.add(new Option(c.name,c.name)));if(selectedResource&&categories.some(c=>c.name===selectedResource||c.slug===selectedResource)){const mc=categories.find(c=>c.name===selectedResource||c.slug===selectedResource);r.value=mc?mc.name:selectedResource;selectedResource=r.value}else selectedResource=r.value||categories[0]?.name||''}else if(selectedTemplate==='page'){pages.forEach(p=>r.add(new Option(p.title,p.id)));if(selectedResource&&pages.some(p=>String(p.id)===String(selectedResource)))r.value=String(selectedResource);else selectedResource=r.value||pages[0]?.id||''}renderTree();renderProperties(selectedSection==='theme'?'theme':selectedSection);refreshPreview()}
 let previewSequence=0;
@@ -727,7 +702,7 @@ async function uploadFile(input,key){const files=Array.from(input.files||[]);if(
 function renderStoreSettings(){const host=document.getElementById('storeSettingsForm');const domainHelp=store?.custom_domain?'<div style="grid-column:1/-1;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;font-size:12px;color:#166534;line-height:1.6"><strong>🌐 Connected Domain: '+esc(store.custom_domain)+'</strong><br>• <strong>A Record (@):</strong> Point to your SaaS Server Public IP (TTL: 600s)<br>• <strong>CNAME (www):</strong> Point to <code>stores.zkcommerce.in</code><br>• <strong>Live URL:</strong> <a href="https://'+esc(store.custom_domain)+'" target="_blank" style="color:#15803d;font-weight:700">https://'+esc(store.custom_domain)+'</a></div>':'';host.innerHTML='<div class="product-form">'+field('Store name','store_name',store?.store_name||'')+field('Tagline','tagline',store?.tagline||'')+field('Store URL slug','slug',store?.slug||'')+field('Custom domain (e.g. smeram-naturals.in)','custom_domain',store?.custom_domain||'')+domainHelp+field('Hero headline','hero_headline',store?.hero_headline||'')+field('Hero subtext','hero_subtext',store?.hero_subtext||'')+field('Hero button','hero_cta_text',store?.hero_cta_text||'')+field('WhatsApp number','whatsapp_number',store?.whatsapp_number||'')+field('Instagram handle','instagram_handle',store?.instagram_handle||'')+field('City','city',store?.city||'')+field('State','state',store?.state||'')+field('Address','address',store?.address||'','textarea','class="span2"')+'</div><p class="notice" style="margin:14px 0">Domain changes are saved with the theme draft. Point your GoDaddy DNS A/CNAME to your SaaS server.</p><button class="btn btn-primary" id="saveStoreSettings">Save settings</button>';document.getElementById('saveStoreSettings').onclick=async()=>{const fields={};host.querySelectorAll('[data-path]').forEach(el=>fields[el.dataset.path]=el.value);try{await api('/stores/'+store.id+'/draft',{method:'PUT',body:JSON.stringify({theme_config:themeConfig,store_fields:fields})});Object.assign(store,fields);dirty=false;document.getElementById('saveState').textContent='All changes saved';renderStoreSettings();refreshPreview();toast('Store settings saved')}catch(e){toast(e.message,true)}};renderDisplaySettings(host);renderEkartSettings(host);renderCheckoutSettings(host);renderWhatsAppSettings(host)}
 async function saveDraft(){if(!store||!dirty)return;try{const data=await api('/stores/'+store.id+'/draft',{method:'PUT',body:JSON.stringify({theme_config:themeConfig})});store=data.store;dirty=false;document.getElementById('saveState').textContent='Saved';renderTree();refreshPreview()}catch(e){document.getElementById('saveState').textContent='Save failed';toast(e.message,true)}}
 async function saveNow(){clearTimeout(saveTimer);if(!dirty){toast('Everything is saved');return}await saveDraft();if(!dirty)toast('Draft saved')}
-async function publish(){try{if(dirty)await saveDraft();if(dirty)throw Error('The draft could not be saved. Fix the save error before publishing.');const r=await api('/stores/'+store.id+'/publish',{method:'POST',body:JSON.stringify({})});store={...store,...r.store};document.getElementById('saveState').textContent='Published';const liveUrl=store.custom_domain?'https://'+store.custom_domain:store.slug+'.zkcommerce.in';toast('Published snapshot is live: '+liveUrl)}catch(e){toast(e.message,true)}}
+async function publish(){try{if(dirty)await saveDraft();if(dirty)throw Error('The draft could not be saved. Fix the save error before publishing.');const r=await api('/stores/'+store.id+'/publish',{method:'POST',body:JSON.stringify({})});store={...store,...r.store};document.getElementById('saveState').textContent='Published';const liveUrl=ZK.storeUrl(store.slug);toast('Published snapshot is live: '+liveUrl)}catch(e){toast(e.message,true)}}
 function renderProducts(){const host=document.getElementById('productTable');const rows=products.map(p=>{const badges=[];if(p.additional_note)badges.push('GST Note');if(p.user_instructions)badges.push('Instructions');if(p.benefits)badges.push('Benefits');const badgeHtml=badges.map(b=>'<span class="param-badge">'+b+'</span>').join('');return '<tr><td><strong>'+esc(p.name)+'</strong>'+(badgeHtml?'<div style="margin-top:4px">'+badgeHtml+'</div>':'')+'</td><td>'+esc(p.category_name||'Uncategorized')+'</td><td>'+esc(p.product_size||p.size||'—')+'</td><td><strong style="color:'+((p.quantity||0)>0?'#059669':'#dc2626')+'">'+(p.quantity!==undefined?p.quantity:100)+'</strong> <small style="color:#64748b">units</small></td><td>'+esc(p.sku||'—')+'</td><td>₹'+Number(p.price||0).toLocaleString('en-IN')+'</td><td>'+(!p.active?'Draft':p.unlisted?'<span title="Not listed in the shop; open it from its link">Hidden · link only</span>':'Active')+'</td><td>'+((p.quantity>0&&p.in_stock!==false)?'<span style="color:#059669;font-weight:600">● In stock</span>':'<span style="color:#dc2626;font-weight:600">○ Sold out</span>')+'</td><td><button class="btn btn-primary" data-edit-product="'+p.id+'">Edit</button>'+(p.unlisted&&p.active?'<button class="btn" data-copy-link="'+p.id+'" title="Hidden products open only from this link">Copy link</button>':'')+'<button class="btn" data-delete-product="'+p.id+'">Archive</button></td></tr>'}).join('');host.innerHTML=rows?'<table><thead><tr><th>Product</th><th>Category</th><th>Size</th><th>Stock Qty</th><th>SKU</th><th>Price</th><th>Status</th><th>Stock Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>':'<div class="page-empty">No products yet. Add your first product. A category is optional.</div>';host.querySelectorAll('[data-edit-product]').forEach(b=>b.onclick=()=>openProduct(products.find(p=>String(p.id)===b.dataset.editProduct)));host.querySelectorAll('[data-copy-link]').forEach(b=>b.onclick=async()=>{const p=products.find(x=>String(x.id)===b.dataset.copyLink);const url=(store.custom_domain?'https://'+store.custom_domain:location.origin+'/store/'+store.slug)+'/products/'+encodeURIComponent(p.slug);try{await navigator.clipboard.writeText(url);toast('Link copied: '+url+' (publish first if the product is new)')}catch(e){prompt('Copy this link',url)}});host.querySelectorAll('[data-delete-product]').forEach(b=>b.onclick=()=>deleteProduct(b.dataset.deleteProduct))}
 function renderCategories(){
   const select=document.getElementById('productCategory');
@@ -1011,7 +986,26 @@ let selectedEnv = 'production';
 let selectedTech = 'php';
 let deploySettings = null;
 const ENV_SUFFIX = { development: '-dev', stage: '-stage', preview: '-preview', production: '' };
-const PROVIDER_TECH = { godaddy: 'php', railway: 'nodejs', vercel: 'static', github: 'static' };
+// Deployments are PHP + MySQL only, split into the Frontend (shopping portal) and Backend + API packages.
+const PROVIDER_TECH = { godaddy: 'php', github: 'php' };
+const PART_LABEL = { frontend: 'Frontend', backend: 'Backend + API' };
+
+// Frontend / Backend + API URLs of the selected environment: saved values, else the server's defaults.
+function envUrlDefaults() {
+  return (deploySettings && deploySettings.default_urls && deploySettings.default_urls[selectedEnv]) || {};
+}
+function renderEnvUrls() {
+  const e = envSettings(), d = envUrlDefaults();
+  document.getElementById('pub_site_url').value = e.site_url || d.site_url || '';
+  document.getElementById('pub_backend_url').value = e.backend_url || d.backend_url || '';
+  renderEnvUrlsMsg(!!(e.site_url || e.backend_url));
+}
+function renderEnvUrlsMsg(saved) {
+  const backend = document.getElementById('pub_backend_url').value.trim().replace(/\/+$/, '');
+  const msg = document.getElementById('envUrlsMsg');
+  msg.textContent = (backend ? 'ZK.api = ' + backend + '/api' : 'Enter the Backend + API URL') + (saved ? ' · ✅ saved for ' : ' · default for ') + selectedEnv;
+  msg.style.color = saved ? '#15803d' : '#64748b';
+}
 
 function envSettings() {
   return (deploySettings && deploySettings.environments[selectedEnv]) || {};
@@ -1020,7 +1014,8 @@ function envSettings() {
 async function loadDeploySettings() {
   try { deploySettings = await api('/stores/' + store.id + '/deployment-settings'); }
   catch (e) { deploySettings = null; toast('Could not load saved deployment settings: ' + e.message, true); }
-  if (deploySettings && deploySettings.active_env) selectedEnv = deploySettings.active_env;
+  // Only phpdev (development) and prod (production) are offered; older stage / preview settings stay saved.
+  if (deploySettings && ['development', 'production'].includes(deploySettings.active_env)) selectedEnv = deploySettings.active_env;
   applyEnvToForm();
 }
 
@@ -1030,26 +1025,17 @@ function setPasswordPlaceholder(id, hasSaved) {
   el.placeholder = hasSaved ? 'Saved — leave blank to keep' : '••••••••';
 }
 
-function selectTech(tech) {
-  selectedTech = tech;
-  document.querySelectorAll('#techGrid .provider-card').forEach(c => c.classList.toggle('active', c.dataset.tech === tech));
-  updatePackagePreview();
-}
-
-function nextVersionFor() {
-  return (deploySettings && deploySettings.next_versions && deploySettings.next_versions[selectedEnv + ':' + selectedTech]) || '1.0.1';
+function nextVersionFor(part) {
+  return (deploySettings && deploySettings.next_versions && deploySettings.next_versions[selectedEnv + ':php-' + part]) || '1.0.1';
 }
 
 function updatePackagePreview() {
   if (!store) return;
   const slug = String(store.slug || 'store').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
   const sfx = ENV_SUFFIX[selectedEnv];
-  const v = document.getElementById('pub_version').value.trim() || nextVersionFor();
-  document.getElementById('pub_version').placeholder = nextVersionFor();
-  const name = selectedTech === 'php' ? `deployment/${slug}-godaddy-deploy${sfx}-v${v}.zip`
-    : selectedTech === 'nodejs' ? `deployment/published/${slug}${sfx}-nodejs-v${v}.zip`
-    : `deployment/published/${slug}-static${sfx}-v${v}.zip`;
-  document.getElementById('pkgNamePreview').textContent = name;
+  const typed = document.getElementById('pub_version').value.trim();
+  document.getElementById('pkgNameFrontend').textContent = `deployment/${slug}-frontend${sfx}-v${typed || nextVersionFor('frontend')}.zip`;
+  document.getElementById('pkgNameBackend').textContent = `deployment/${slug}-backend-api${sfx}-v${typed || nextVersionFor('backend')}.zip`;
   const last = envSettings().last_package;
   document.getElementById('pkgStatusMsg').textContent = last ? `Last build: ${last.zip_name} · ${new Date(last.built_at).toLocaleString()}` : '';
 }
@@ -1065,7 +1051,7 @@ function applyEnvToForm() {
   document.querySelectorAll('#envTabs button').forEach(b => b.classList.toggle('active', b.dataset.env === selectedEnv));
   const e = envSettings();
   const db = e.db || {};
-  const type = db.type || (selectedProvider === 'railway' || selectedProvider === 'vercel' ? 'postgres' : 'mysql');
+  const type = 'mysql';
   selectedDbType = type;
   document.querySelector('input[name="portal_db_type"][value="' + type + '"]').checked = true;
   document.getElementById('dbTypeMysqlCard').classList.toggle('active', type === 'mysql');
@@ -1078,9 +1064,11 @@ function applyEnvToForm() {
   const pay = e.payments || {};
   document.getElementById('pub_rzp_key').value = pay.key_id || '';
   setPasswordPlaceholder('pub_rzp_secret', pay.has_secret);
+  setPasswordPlaceholder('pub_rzp_webhook', pay.has_webhook_secret);
+  setPasswordPlaceholder('pub_admin_pass', e.has_admin_password);
   document.getElementById('rzpKeyHint').textContent = pay.key_id
     ? `Packages for ${selectedEnv} use these ${/^rzp_live_/.test(pay.key_id) ? 'LIVE' : 'TEST'} keys for online payment.`
-    : `Leave blank to use this server's ${paymentsInfo.razorpay_configured ? (paymentsInfo.razorpay_mode || 'test').toUpperCase() + ' keys' : 'keys (none configured)'}. Use live keys for Production.`;
+    : `Leave blank to use this server's .env ${selectedEnv === 'production' ? 'RAZORPAY_LIVE_*' : 'RAZORPAY_TEST_*'} keys. Use live keys for prod, test keys for phpdev.`;
   document.getElementById('dbSaveMsg').textContent = e.db ? '✅ Saved for ' + selectedEnv : 'Not saved for ' + selectedEnv;
   document.getElementById('dbSaveMsg').style.color = e.db ? '#15803d' : '#64748b';
 
@@ -1091,14 +1079,15 @@ function applyEnvToForm() {
   document.getElementById('ftp_path').value = ftp.path || '/public_html';
   document.getElementById('ftp_secure').checked = !!ftp.secure;
   setPasswordPlaceholder('ftp_pass', ftp.has_password);
-  document.getElementById('deployFtpBtn').disabled = !(e.ftp && e.ftp_tested_at);
-  if (!e.ftp) setFtpStatus('Not saved for ' + selectedEnv);
-  else if (e.ftp_tested_at) setFtpStatus('✅ Saved & tested ' + new Date(e.ftp_tested_at).toLocaleString(), '#15803d');
+  if (!e.ftp) setFtpStatus('Not saved for ' + selectedEnv + ' — deploy buttons download the ZIP');
+  else if (e.ftp_tested_at) setFtpStatus('✅ Saved & tested ' + new Date(e.ftp_tested_at).toLocaleString() + ' — deploy buttons upload via FTP', '#15803d');
   else setFtpStatus('Saved — run Test Connection to enable upload', '#b45309');
 
   document.getElementById('pub_custom_domain').value = selectedEnv === 'production' ? (store.custom_domain || e.custom_domain || '') : (e.custom_domain || '');
+  renderEnvUrls();
   document.getElementById('pub_version').value = '';
-  selectTech(e.technology || PROVIDER_TECH[selectedProvider] || 'php');
+  selectedTech = 'php';
+  updatePackagePreview();
   renderMigrationPicker();
   renderDownloadTarget();
   renderEnvPreview();
@@ -1266,7 +1255,7 @@ function openPublishPortal() {
   document.getElementById('pubGlobalStatus').textContent = 'Ready to publish';
 
   if (isPub) {
-    const liveUrl = store.custom_domain ? 'https://' + store.custom_domain : '/store/' + store.slug;
+    const liveUrl = ZK.storeUrl(store.slug);
     const openLive = document.getElementById('openLiveStoreBtn');
     openLive.href = liveUrl;
     openLive.style.display = 'inline-flex';
@@ -1279,7 +1268,7 @@ function openPublishPortal() {
 
 function renderEnvPreview() {
   if (!store) return '';
-  const domain = document.getElementById('pub_custom_domain')?.value.trim() || store.custom_domain || (store.slug + '.zkcommerce.in');
+  const domain = document.getElementById('pub_custom_domain')?.value.trim() || ZK.storeUrl(store.slug).replace(/^https?:\/\//, '');
   const dbHost = document.getElementById('pub_db_host')?.value.trim() || 'localhost';
   const dbPort = document.getElementById('pub_db_port')?.value.trim() || (selectedDbType === 'mysql' ? '3306' : '5432');
   const dbName = document.getElementById('pub_db_name')?.value.trim() || (store.slug.replace(/[^a-zA-Z0-9_]/g, '_') + '_db');
@@ -1321,62 +1310,109 @@ CORS_ORIGIN=*
   return env;
 }
 
-async function executePublish() {
+const DEPLOY_BUTTONS = ['deployFrontendBtn', 'deployBackendBtn', 'buildFrontendZipBtn', 'buildBackendZipBtn'];
+const ftpReady = () => !!(envSettings().ftp && envSettings().ftp_tested_at);
+
+function packageRequest(part) {
+  return {
+    env: selectedEnv,
+    technology: 'php',
+    part,
+    version: document.getElementById('pub_version').value.trim() || undefined,
+    provider: selectedProvider,
+    db_type: 'mysql',
+    db_host: document.getElementById('pub_db_host').value.trim(),
+    db_port: document.getElementById('pub_db_port').value.trim(),
+    db_name: document.getElementById('pub_db_name').value.trim(),
+    db_user: document.getElementById('pub_db_user').value.trim(),
+    db_password: document.getElementById('pub_db_pass').value.trim()
+  };
+}
+
+function showDeployResult(part, d, liveUrl, uploadMsg) {
+  document.getElementById('pubResultCard').style.display = 'block';
+  document.getElementById('pubResultTitle').textContent = '✅ ' + PART_LABEL[part] + ' v' + d.version + (uploadMsg && !/^❌/.test(uploadMsg) ? ' deployed' : ' built');
+  document.getElementById('pubTimeBadge').textContent = new Date().toLocaleTimeString();
+  document.getElementById('pubExportDir').textContent = d.export_dir;
+  document.getElementById('pubZipPath').textContent = d.zip_path || ('ZIP failed: ' + d.zip_error);
+  document.getElementById('pubUploadLine').style.display = uploadMsg ? 'block' : 'none';
+  document.getElementById('pubUploadMsg').textContent = uploadMsg || '';
+  const liveLink = document.getElementById('pubLiveLink');
+  liveLink.parentElement.style.display = liveUrl ? 'block' : 'none';
+  if (liveUrl) { liveLink.href = liveUrl; liveLink.textContent = liveUrl; }
+  const dlBtn = document.getElementById('downloadZipBtn');
+  dlBtn.style.display = d.zip_name ? 'inline-flex' : 'none';
+  dlBtn.textContent = '📦 Download ' + PART_LABEL[part] + ' ZIP';
+  dlBtn.onclick = () => downloadPackage(d.zip_name).catch(e => toast(e.message, true));
+}
+
+// Build & Deploy one package. Frontend also publishes the storefront snapshot.
+// With tested FTP settings the package is uploaded, otherwise the ZIP is downloaded.
+// zipOnly = the "Build … ZIP only" buttons: never upload.
+async function deployPart(part, zipOnly) {
   if (!store) return;
+  const status = document.getElementById('pubGlobalStatus');
+  const upload = !zipOnly && ftpReady();
+  if (upload) {
+    const ftp = envSettings().ftp;
+    if (!confirm(`Upload ${PART_LABEL[part]} (${selectedEnv}) to ${ftp.host}${ftp.path}?\nExisting files with the same names will be overwritten.`)) return;
+  }
+  DEPLOY_BUTTONS.forEach(id => { document.getElementById(id).disabled = true; });
+  const previousBuiltAt = (envSettings().last_package || {}).built_at;
+  status.textContent = `⏳ Building ${PART_LABEL[part]} package${upload ? ' and uploading… this can take a few minutes' : '…'}`;
   try {
     if (dirty) await saveDraft();
-    document.getElementById('pubGlobalStatus').textContent = '⏳ Publishing snapshot & generating package...';
-    document.getElementById('executePublishBtn').disabled = true;
-    
-    const payload = {
-      env: selectedEnv,
-      technology: selectedTech,
-      version: document.getElementById('pub_version').value.trim() || undefined,
-      provider: selectedProvider,
-      db_type: selectedDbType,
-      custom_domain: document.getElementById('pub_custom_domain').value.trim() || null,
-      db_host: document.getElementById('pub_db_host').value.trim(),
-      db_port: document.getElementById('pub_db_port').value.trim(),
-      db_name: document.getElementById('pub_db_name').value.trim(),
-      db_user: document.getElementById('pub_db_user').value.trim(),
-      db_password: document.getElementById('pub_db_pass').value.trim()
-    };
-    
-    const res = await api('/stores/' + store.id + '/publish-portal', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    
-    store = { ...store, ...res.store };
-    document.getElementById('saveState').textContent = 'Published';
-    document.getElementById('pubModalBadge').textContent = 'Published · Live';
-    document.getElementById('pubModalBadge').style.background = '#10b981';
-    document.getElementById('pubGlobalStatus').textContent = '✅ Published successfully!';
-    
-    const resCard = document.getElementById('pubResultCard');
-    resCard.style.display = 'block';
-    document.getElementById('pubTimeBadge').textContent = new Date().toLocaleTimeString();
-    document.getElementById('pubExportDir').textContent = res.deployment.export_dir;
-    document.getElementById('pubZipPath').textContent = res.deployment.zip_path || ('ZIP failed: ' + res.deployment.zip_error);
-    const liveLink = document.getElementById('pubLiveLink');
-    liveLink.href = res.live_url;
-    liveLink.textContent = res.live_url;
-    
-    const openLive = document.getElementById('openLiveStoreBtn');
-    openLive.href = res.live_url;
-    openLive.style.display = 'inline-flex';
-    
-    const dlBtn = document.getElementById('downloadZipBtn');
-    dlBtn.style.display = 'inline-flex';
-    dlBtn.onclick = () => downloadPackage(res.deployment.zip_name).catch(e => toast(e.message, true));
+    const body = packageRequest(part);
+    let d, liveUrl = null, uploadMsg = null;
+    if (part === 'frontend' && !zipOnly) {
+      const res = await api('/stores/' + store.id + '/publish-portal', {
+        method: 'POST',
+        body: JSON.stringify({ ...body, upload, custom_domain: document.getElementById('pub_custom_domain').value.trim() || null })
+      });
+      store = { ...store, ...res.store };
+      document.getElementById('saveState').textContent = 'Published';
+      document.getElementById('pubModalBadge').textContent = 'Published · Live';
+      document.getElementById('pubModalBadge').style.background = '#10b981';
+      const openLive = document.getElementById('openLiveStoreBtn');
+      openLive.href = res.live_url;
+      openLive.style.display = 'inline-flex';
+      d = res.deployment;
+      liveUrl = res.live_url;
+      if (res.upload) uploadMsg = res.upload.error ? '❌ ' + res.upload.error : res.upload.message;
+    } else if (upload) {
+      const res = await api('/stores/' + store.id + '/deploy-ftp/upload', { method: 'POST', body: JSON.stringify(body) });
+      d = res.deployment;
+      uploadMsg = res.message;
+    } else {
+      d = (await api('/stores/' + store.id + '/deployment-package', { method: 'POST', body: JSON.stringify(body) })).deployment;
+    }
+    if (!upload) uploadMsg = null;
+    showDeployResult(part, d, liveUrl, uploadMsg);
+    if (!upload && d.zip_name) await downloadPackage(d.zip_name);
     await refreshVersions();
-
-    toast('Published ' + selectedEnv + ' v' + res.deployment.version + ' → ' + res.deployment.zip_name);
+    let warn = '';
+    if (part === 'backend' && d.checkout && d.checkout.razorpay && d.razorpay_mode === 'not configured') warn = ' ⚠ Razorpay keys missing — online payment will not work.';
+    else if (part === 'backend' && d.razorpay_mode === 'test' && selectedEnv === 'production' && d.checkout?.razorpay) warn = ' ⚠ Production uses Razorpay TEST keys.';
+    const failedUpload = uploadMsg && /^❌/.test(uploadMsg);
+    status.textContent = (failedUpload ? '⚠ ' + PART_LABEL[part] + ' built but upload failed' : '✅ ' + (upload ? uploadMsg : PART_LABEL[part] + ' v' + d.version + ' → ' + d.zip_name)) + warn;
+    toast(failedUpload ? uploadMsg : PART_LABEL[part] + ' v' + d.version + (upload ? ' deployed' : ' ready'), failedUpload);
   } catch (err) {
-    document.getElementById('pubGlobalStatus').textContent = '❌ Error: ' + err.message;
+    if (isNetworkError(err)) {
+      // The server may have restarted mid-request; the build can still have finished.
+      status.textContent = '⚠ Lost connection to the server. Checking whether the build finished…';
+      const built = await recoverDroppedBuild(previousBuiltAt);
+      if (built) {
+        updatePackagePreview();
+        status.textContent = `✅ ${built.zip_name} was built (the server restarted during the request${upload ? ' — check the FTP upload' : ''}).`;
+        if (!upload) downloadPackage(built.zip_name).catch(e => toast(e.message, true));
+        return;
+      }
+      err = Error('Could not reach the server, and no new build was found. Check that the API server is running, then try again.');
+    }
+    status.textContent = '❌ ' + PART_LABEL[part] + ': ' + err.message;
     toast(err.message, true);
   } finally {
-    document.getElementById('executePublishBtn').disabled = false;
+    DEPLOY_BUTTONS.forEach(id => { document.getElementById(id).disabled = false; });
   }
 }
 
@@ -1398,21 +1434,6 @@ function bindPublishPortal() {
         ftpPanel.style.display = 'block';
         ghPanel.style.display = 'none';
       }
-      
-      if (selectedProvider === 'railway' || selectedProvider === 'vercel') {
-        document.querySelector('input[name="portal_db_type"][value="postgres"]').checked = true;
-        document.getElementById('dbTypePostgresCard').classList.add('active');
-        document.getElementById('dbTypeMysqlCard').classList.remove('active');
-        selectedDbType = 'postgres';
-        document.getElementById('pub_db_port').value = '5432';
-      } else {
-        document.querySelector('input[name="portal_db_type"][value="mysql"]').checked = true;
-        document.getElementById('dbTypeMysqlCard').classList.add('active');
-        document.getElementById('dbTypePostgresCard').classList.remove('active');
-        selectedDbType = 'mysql';
-        document.getElementById('pub_db_port').value = '3306';
-      }
-      selectTech(PROVIDER_TECH[selectedProvider] || 'php');
       renderEnvPreview();
     };
   });
@@ -1435,10 +1456,19 @@ function bindPublishPortal() {
     btn.onclick = () => { selectedEnv = btn.dataset.env; applyEnvToForm(); };
   });
 
-  // Package technology
-  document.querySelectorAll('#techGrid .provider-card').forEach(card => {
-    card.onclick = () => { selectTech(card.dataset.tech); renderEnvPreview(); };
-  });
+  // Environment URLs → zk-env.js / store_config.php of the next build
+  document.getElementById('pub_backend_url').oninput = () => renderEnvUrlsMsg(false);
+  document.getElementById('saveEnvUrlsBtn').onclick = async () => {
+    try {
+      await saveEnvSection({
+        site_url: document.getElementById('pub_site_url').value.trim(),
+        backend_url: document.getElementById('pub_backend_url').value.trim()
+      });
+      renderEnvUrls();
+      toast('Environment URLs saved for ' + selectedEnv + ' — rebuild both packages to apply them');
+    } catch (e) { toast(e.message, true); }
+  };
+
   document.getElementById('pub_version').oninput = updatePackagePreview;
 
   // Save database settings
@@ -1454,7 +1484,8 @@ function bindPublishPortal() {
           user: document.getElementById('pub_db_user').value.trim(),
           password: document.getElementById('pub_db_pass').value
         },
-        payments: { key_id: document.getElementById('pub_rzp_key').value.trim(), key_secret: document.getElementById('pub_rzp_secret').value },
+        payments: { key_id: document.getElementById('pub_rzp_key').value.trim(), key_secret: document.getElementById('pub_rzp_secret').value, webhook_secret: document.getElementById('pub_rzp_webhook').value },
+        admin_password: document.getElementById('pub_admin_pass').value,
         custom_domain: selectedEnv === 'production' ? undefined : document.getElementById('pub_custom_domain').value.trim(),
         technology: selectedTech,
         provider: selectedProvider
@@ -1572,86 +1603,13 @@ function bindPublishPortal() {
       const res = await api('/stores/' + store.id + '/deploy-ftp/test', { method: 'POST', body: JSON.stringify({ ...v, env: selectedEnv }) });
       if (res.saved) {
         if (deploySettings && deploySettings.environments[selectedEnv]) deploySettings.environments[selectedEnv].ftp_tested_at = new Date().toISOString();
-        document.getElementById('deployFtpBtn').disabled = false;
-        setFtpStatus('✅ ' + res.message, '#15803d');
+        setFtpStatus('✅ ' + res.message + ' Deploy buttons now upload via FTP.', '#15803d');
       } else {
-        document.getElementById('deployFtpBtn').disabled = true;
         setFtpStatus('✅ ' + res.message + ' Click Save FTP, then test again to enable upload.', '#b45309');
       }
       toast('FTP connected successfully!');
     } catch (e) {
       setFtpStatus('❌ ' + e.message, '#b91c1c');
-      toast(e.message, true);
-    } finally {
-      btn.disabled = false;
-    }
-  };
-
-  // Build a new version and upload it over FTP
-  document.getElementById('deployFtpBtn').onclick = async () => {
-    const btn = document.getElementById('deployFtpBtn');
-    const version = document.getElementById('pub_version').value.trim() || nextVersionFor();
-    if (!confirm(`Upload ${selectedTech.toUpperCase()} package v${version} (${selectedEnv}) to ${envSettings().ftp?.host}${envSettings().ftp?.path}?\nExisting files with the same names will be overwritten.`)) return;
-    btn.disabled = true;
-    setFtpStatus(`⏳ Building v${version} and uploading… this can take a few minutes`, '#0284c7');
-    try {
-      if (dirty) await saveDraft();
-      const res = await api('/stores/' + store.id + '/deploy-ftp/upload', {
-        method: 'POST',
-        body: JSON.stringify({ env: selectedEnv, technology: selectedTech, version, provider: selectedProvider })
-      });
-      setFtpStatus('✅ ' + res.message, '#15803d');
-      toast(res.message);
-      await refreshVersions();
-    } catch (e) {
-      setFtpStatus('❌ ' + e.message, '#b91c1c');
-      toast(e.message, true);
-    } finally {
-      btn.disabled = false;
-    }
-  };
-
-  // Build & download the versioned ZIP for the selected technology
-  document.getElementById('buildPackageBtn').onclick = async () => {
-    const btn = document.getElementById('buildPackageBtn');
-    const msg = document.getElementById('pkgStatusMsg');
-    btn.disabled = true;
-    msg.style.color = '#0284c7';
-    msg.textContent = '⏳ Building package…';
-    const previousBuiltAt = (envSettings().last_package || {}).built_at;
-    try {
-      if (dirty) await saveDraft();
-      const res = await api('/stores/' + store.id + '/deployment-package', {
-        method: 'POST',
-        body: JSON.stringify({ env: selectedEnv, technology: selectedTech, version: document.getElementById('pub_version').value.trim() || undefined, provider: selectedProvider })
-      });
-      const d = res.deployment;
-      const where = await downloadPackage(d.zip_name);
-      await refreshVersions();
-      msg.style.color = '#15803d';
-      msg.textContent = `✅ ${d.zip_name} — ${d.pages_rendered} pages, ${d.assets_copied} assets → ${d.export_dir}` + (d.assets_missing.length ? ` (⚠ ${d.assets_missing.length} missing assets, see README)` : '') + ' · ZIP ' + where.replace(d.zip_name + ' ', '');
-      if (d.checkout && d.checkout.razorpay && d.razorpay_mode === 'not configured') msg.textContent += ' ⚠ Razorpay keys missing — online payment will not work in this package.';
-      else if (d.razorpay_mode === 'test' && selectedEnv === 'production' && d.checkout?.razorpay) msg.textContent += ' ⚠ Production package uses Razorpay TEST keys.';
-      toast('Package v' + d.version + ' ready');
-    } catch (e) {
-      if (isNetworkError(e)) {
-        msg.style.color = '#b45309';
-        msg.textContent = '⚠ Lost connection to the server (it may have restarted). Checking whether the build finished…';
-        const built = await recoverDroppedBuild(previousBuiltAt);
-        if (built) {
-          updatePackagePreview();
-          msg.style.color = '#15803d';
-          msg.textContent = `✅ ${built.zip_name} was built. (The server restarted during the request: restart "npm run dev" so nodemon ignores the deployment folder.)`;
-          downloadPackage(built.zip_name).then(w => { msg.textContent += ' ZIP ' + w.replace(built.zip_name + ' ', ''); }).catch(err => { msg.style.color = '#b91c1c'; msg.textContent = '❌ ' + err.message; });
-          return;
-        }
-        msg.style.color = '#b91c1c';
-        msg.textContent = '❌ Could not reach the server, and no new build was found. Check that the API server is running, then try again.';
-        toast('Server connection lost', true);
-        return;
-      }
-      msg.style.color = '#b91c1c';
-      msg.textContent = '❌ ' + e.message;
       toast(e.message, true);
     } finally {
       btn.disabled = false;
@@ -1685,40 +1643,11 @@ function bindPublishPortal() {
     }
   };
 
-  // Build Standalone API Package (PHP + Swagger + DB Tester)
-  const handleApiPackageBuild = async () => {
-    const msg = document.getElementById('pkgStatusMsg');
-    const apiBtn = document.getElementById('buildApiPackageBtn');
-    const ftrBtn = document.getElementById('publishApiOnlyBtn');
-    if (apiBtn) apiBtn.disabled = true;
-    if (ftrBtn) ftrBtn.disabled = true;
-    msg.style.color = '#0284c7';
-    msg.textContent = '⏳ Building standalone PHP API & Swagger package…';
-    try {
-      const res = await api('/stores/' + store.id + '/api-package', { method: 'POST' });
-      const pkg = res.package || {};
-      const zipFile = pkg.zip_name || 'smeram-api-v1.0.12.zip';
-      const where = await downloadPackage(zipFile);
-      msg.style.color = '#15803d';
-      msg.textContent = `✅ ${zipFile} ready! (${where}) Includes Swagger UI & DB tester.`;
-      toast('API Package ready: ' + zipFile);
-    } catch (e) {
-      browserDownload('smeram-api-v1.0.12.zip');
-      msg.style.color = '#15803d';
-      msg.textContent = '✅ Downloaded smeram-api-v1.0.12.zip';
-      toast('Downloaded smeram-api-v1.0.12.zip');
-    } finally {
-      if (apiBtn) apiBtn.disabled = false;
-      if (ftrBtn) ftrBtn.disabled = false;
-    }
-  };
-  const bApiBtn = document.getElementById('buildApiPackageBtn');
-  if (bApiBtn) bApiBtn.onclick = handleApiPackageBuild;
-  const pApiBtn = document.getElementById('publishApiOnlyBtn');
-  if (pApiBtn) pApiBtn.onclick = handleApiPackageBuild;
-
-  // Execute Publish Button
-  document.getElementById('executePublishBtn').onclick = executePublish;
+  // Build & Deploy: Frontend (shopping portal) and Backend + API, each on its own
+  document.getElementById('deployFrontendBtn').onclick = () => deployPart('frontend');
+  document.getElementById('deployBackendBtn').onclick = () => deployPart('backend');
+  document.getElementById('buildFrontendZipBtn').onclick = () => deployPart('frontend', true);
+  document.getElementById('buildBackendZipBtn').onclick = () => deployPart('backend', true);
 
   // Bind top bar buttons
   const pubBtn = document.getElementById('publishBtn');

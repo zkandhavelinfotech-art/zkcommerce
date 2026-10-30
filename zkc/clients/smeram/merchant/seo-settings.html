@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
@@ -54,7 +55,7 @@
 </main>
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = (typeof ZK !== 'undefined' && ZK.api) ? ZK.api : 'http://localhost:3000/api';
+var API_BASE = ZK.api;
 async function loadSEO() {
   var token = auth.token; var user = auth.user;
   if (!token || !user || !user.store_id) return;

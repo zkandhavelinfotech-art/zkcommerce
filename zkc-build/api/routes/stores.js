@@ -1,7 +1,8 @@
 const router = require('express').Router();
 const fs = require('fs');
 const path = require('path');
-const { exportStoreDeployment, exportDbMigration } = require('../services/deployment-exporter');
+const { exportStoreDeployment, exportDbMigration, PHP_PARTS } = require('../services/deployment-exporter');
+const zkEnv = require('../services/zk-env');
 // Defined here (not imported) so listing and downloading packages keeps working whatever the exporter exports.
 const DEPLOY_ROOT = process.env.ZKC_DEPLOY_ROOT || path.join(__dirname, '..', '..', 'deployment');
 const mysqlMigrations = require('../services/mysql-migrations');
@@ -257,13 +258,25 @@ async function packageCommerce(storeId) {
   return { gst: gst || {}, inventory: inv, shipping: { enabled: ship.enabled, courier_name: ship.courier_name, tracking_url_template: ship.tracking_url_template }, sender: plain };
 }
 
-// Razorpay keys for a package: this environment's saved keys, else the keys this server runs with.
-function razorpayKeysFor(saved) {
+// Razorpay keys for a package: this environment's saved keys, else this server's .env keys for that environment
+// (phpdev / development → RAZORPAY_TEST_*, prod / production → RAZORPAY_LIVE_*).
+function razorpayKeysFor(saved, env) {
   const p = saved.payments || {};
-  const key_id = p.key_id && p.key_secret ? p.key_id : (process.env.RAZORPAY_KEY_ID || '');
-  const key_secret = p.key_id && p.key_secret ? p.key_secret : (process.env.RAZORPAY_KEY_SECRET || '');
-  const webhook_secret = p.webhook_secret || process.env.RAZORPAY_WEBHOOK_SECRET || '';
+  const e = process.env, live = env === 'production';
+  const envKey = live ? e.RAZORPAY_LIVE_KEY_ID : e.RAZORPAY_TEST_KEY_ID;
+  const envSecret = live ? e.RAZORPAY_LIVE_KEY_SECRET : e.RAZORPAY_TEST_KEY_SECRET;
+  const hasSaved = !!(p.key_id && p.key_secret);
+  const key_id = hasSaved ? p.key_id : (envKey || '');
+  const key_secret = hasSaved ? p.key_secret : (envSecret || '');
+  const webhook_secret = p.webhook_secret || (live ? e.RAZORPAY_LIVE_WEBHOOK_SECRET : e.RAZORPAY_TEST_WEBHOOK_SECRET) || '';
   return key_id && key_secret ? { key_id, key_secret, webhook_secret, mode: /^rzp_live_/.test(key_id) ? 'live' : 'test', source: p.key_id ? 'environment' : 'server' } : null;
+}
+
+// Frontend / Backend + API URLs for a PHP environment (written into zk-env.js and store_config.php):
+// the ones saved in the Publish portal, else defaults from the domain.
+function envUrls(store, env, saved, customDomain) {
+  const defaults = zkEnv.defaultPhpUrls(store, env, customDomain);
+  return { site_url: saved.site_url || defaults.site_url, backend_url: saved.backend_url || defaults.backend_url };
 }
 
 // Build a versioned package for one environment, using saved settings with optional request overrides.
@@ -274,25 +287,29 @@ async function buildPackage(store, merchantId, body, data) {
   const saved = deploySettings.resolvedEnv(settings, env);
   const technology = deploySettings.TECHNOLOGIES.includes(body.technology) ? body.technology : (saved.technology || 'php');
   if (body.version && !VERSION_RE.test(String(body.version))) throw Object.assign(new Error('Version must look like 1.0.3'), { status: 400 });
-  const version = body.version ? String(body.version) : deploySettings.nextVersion(settings, env, technology);
+  // Frontend and Backend + API PHP packages are versioned separately ("php-frontend", "php-backend").
+  const part = technology === 'php' && PHP_PARTS.includes(body.part) ? body.part : 'full';
+  const buildKey = part === 'full' ? technology : `${technology}-${part}`;
+  const version = body.version ? String(body.version) : deploySettings.nextVersion(settings, env, buildKey);
   const sdb = saved.db || {};
   const db = {
     type: body.db_type || sdb.type, host: body.db_host || sdb.host, port: body.db_port || sdb.port,
     name: body.db_name || sdb.name, user: body.db_user || sdb.user, password: body.db_password || sdb.password
   };
   const customDomain = env === 'production' ? (store.custom_domain || saved.custom_domain) : (body.custom_domain || saved.custom_domain);
+  const urls = envUrls(store, env, saved, customDomain);
   const deployment = await exportStoreDeployment({
     store, themeConfig: store.theme_config || {}, ...(data || await loadPackageData(store.id)),
-    options: { env, technology, version, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved), whatsapp: await orderMessages.loadSettings(store.id), commerce: await packageCommerce(store.id) }
+    options: { env, technology, part, version, urls, provider: body.provider || saved.provider || 'godaddy', db, db_type: db.type, custom_domain: customDomain, razorpay: razorpayKeysFor(saved, env), admin_password: saved.admin_password, whatsapp: await orderMessages.loadSettings(store.id), commerce: await packageCommerce(store.id) }
   });
-  settings.versions[`${env}:${technology}`] = version;
+  settings.versions[`${env}:${buildKey}`] = version;
   const envSettings = settings.environments[env] || {};
   // Build history drives "migrate from version X": each entry remembers the schema that version shipped with.
   // Read it before last_package is replaced so a pre-history build is carried over.
-  const history = deploySettings.buildHistory(envSettings).filter(b => !(b.version === version && b.technology === technology));
+  const history = deploySettings.buildHistory(envSettings).filter(b => !(b.version === version && b.technology === buildKey));
   envSettings.technology = technology;
-  envSettings.last_package = { technology, version, schema: deployment.schema, zip_name: deployment.zip_name, zip_path: deployment.zip_path, export_dir: deployment.export_dir, built_at: deployment.built_at };
-  envSettings.builds = [{ version, technology, schema: deployment.schema, zip_name: deployment.zip_name, zip_path: deployment.zip_path, built_at: deployment.built_at }, ...history].slice(0, 50);
+  envSettings.last_package = { technology: buildKey, version, schema: deployment.schema, zip_name: deployment.zip_name, zip_path: deployment.zip_path, export_dir: deployment.export_dir, built_at: deployment.built_at };
+  envSettings.builds = [{ version, technology: buildKey, schema: deployment.schema, zip_name: deployment.zip_name, zip_path: deployment.zip_path, built_at: deployment.built_at }, ...history].slice(0, 50);
   settings.environments[env] = envSettings;
   settings.active_env = env;
   await deploySettings.persist(store.id, settings);
@@ -305,8 +322,14 @@ router.get('/:id/deployment-settings', auth, async (req, res) => {
     const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
     if (!loaded) return res.status(404).json({ error: 'Store not found' });
     const view = deploySettings.publicView(loaded.settings);
+    // Defaults shown in the Environment URLs fields until the merchant saves their own.
+    view.default_urls = {};
+    for (const env of deploySettings.ENVIRONMENTS) {
+      const e = loaded.settings.environments[env] || {};
+      view.default_urls[env] = zkEnv.defaultPhpUrls(loaded.store, env, env === 'production' ? loaded.store.custom_domain || e.custom_domain : e.custom_domain);
+    }
     view.next_versions = {};
-    for (const env of deploySettings.ENVIRONMENTS) for (const t of deploySettings.TECHNOLOGIES)
+    for (const env of deploySettings.ENVIRONMENTS) for (const t of [...deploySettings.TECHNOLOGIES, 'php-frontend', 'php-backend'])
       view.next_versions[`${env}:${t}`] = deploySettings.nextVersion(loaded.settings, env, t);
     view.schema = { latest: mysqlMigrations.latestId(), latest_version: mysqlMigrations.latestVersion(), migrations: mysqlMigrations.MIGRATIONS.map(m => ({ id: m.id, version: m.version, description: m.description })) };
     // Which ZIPs can still be downloaded (deleted or moved files show as unavailable in the dashboard).
@@ -377,12 +400,19 @@ router.post('/:id/publish-portal', auth, async (req, res) => {
     }
     const deployment = await buildPackage({ ...store, ...updated.rows[0] }, req.user.id, { ...req.body, env }, data);
     const envDomain = env === 'production' ? store.custom_domain : req.body.custom_domain;
+    // { upload: true } also sends the freshly built package to this environment's saved FTP server.
+    let upload = null;
+    if (req.body.upload) {
+      try { upload = await uploadPackage(req, env, deployment); }
+      catch (e) { upload = { error: e.message }; }
+    }
     res.json({
       success: true,
       store: updated.rows[0],
       published_snapshot: snapshot,
       deployment,
-      live_url: envDomain ? 'https://' + envDomain : '/store/' + store.slug
+      upload,
+      live_url: deployment.site_url || (envDomain ? 'https://' + envDomain : '/store/' + store.slug)
     });
   } catch (e) {
     if (!committed) await client.query('ROLLBACK').catch(() => {});
@@ -582,26 +612,37 @@ async function ftpTest(req, res) {
 router.post('/:id/deploy-ftp/test', auth, ftpTest);
 router.post('/:id/deploy-ftp', auth, ftpTest);
 
+// The saved FTP settings for an environment, or a 400 error when none are saved.
+async function savedFtpFor(req, env) {
+  const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
+  if (!loaded) throw Object.assign(new Error('Store not found'), { status: 404 });
+  const ftpCfg = deploySettings.resolvedEnv(loaded.settings, env).ftp;
+  if (!ftpCfg || !ftpCfg.host || !ftpCfg.password) throw Object.assign(new Error('Save the FTP settings for this environment first'), { status: 400 });
+  return ftpCfg;
+}
+
+// Upload a built package with the saved FTP settings.
+async function uploadPackage(req, env, deployment, ftpCfg) {
+  ftpCfg = ftpCfg || await savedFtpFor(req, env);
+  let result;
+  try { result = await ftpDeployer.uploadDirectory(ftpCfg, deployment.upload_dir, { skipEnv: deployment.technology === 'nodejs' }); }
+  catch (e) { throw Object.assign(new Error('Upload failed: ' + ftpDeployer.friendlyError(e)), { status: 400 }); }
+  const label = deployment.part === 'frontend' ? 'Frontend ' : deployment.part === 'backend' ? 'Backend + API ' : '';
+  return { ...result, message: `Uploaded ${label}v${deployment.version} (${result.files} files, ${(result.bytes / 1048576).toFixed(1)} MB) to ${ftpCfg.host}${result.remote_path}` };
+}
+
 // POST /api/stores/:id/deploy-ftp/upload — build a new version and upload it with the saved FTP settings
+// body: { env, technology, part: 'frontend' | 'backend' | 'full', version? }
 router.post('/:id/deploy-ftp/upload', auth, async (req, res) => {
+  let deployment;
   try {
     const env = deploySettings.normalizeEnv(req.body.env) || 'production';
-    const loaded = await deploySettings.loadSettings(req.params.id, req.user.id);
-    if (!loaded) return res.status(404).json({ error: 'Store not found' });
-    const ftpCfg = deploySettings.resolvedEnv(loaded.settings, env).ftp;
-    if (!ftpCfg || !ftpCfg.host || !ftpCfg.password) return res.status(400).json({ error: 'Save the FTP settings for this environment first' });
+    const ftpCfg = await savedFtpFor(req, env);
     const { rows } = await pool.query('SELECT * FROM stores WHERE id=$1', [req.params.id]);
-    const deployment = await buildPackage(rows[0], req.user.id, { ...req.body, env });
-    let result;
-    try { result = await ftpDeployer.uploadDirectory(ftpCfg, deployment.upload_dir, { skipEnv: deployment.technology === 'nodejs' }); }
-    catch (e) { return res.status(400).json({ error: 'Upload failed: ' + ftpDeployer.friendlyError(e), deployment }); }
-    res.json({
-      success: true,
-      deployment,
-      ...result,
-      message: `Uploaded v${deployment.version} (${result.files} files, ${(result.bytes / 1048576).toFixed(1)} MB) to ${ftpCfg.host}${result.remote_path}`
-    });
-  } catch (e) { sendError(res, e); }
+    deployment = await buildPackage(rows[0], req.user.id, { ...req.body, env });
+    const result = await uploadPackage(req, env, deployment, ftpCfg);
+    res.json({ success: true, deployment, ...result });
+  } catch (e) { res.status(e.status || 500).json({ error: e.message, deployment }); }
 });
 
 // POST /api/stores/:id/deploy-github

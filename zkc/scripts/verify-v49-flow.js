@@ -32,8 +32,8 @@ async function testV49() {
   console.log('\n--- 2. Testing Razorpay Dual Configuration ---');
   const mode = process.env.RAZORPAY_MODE || 'live';
   assert.strictEqual(mode, 'live', 'Active Razorpay mode must be live');
-  assert.strictEqual(process.env.RAZORPAY_KEY_ID, 'rzp_live_TrzrN3plJPv1lV', 'Live key ID must match');
-  assert.strictEqual(process.env.RAZORPAY_KEY_SECRET, 'LrNPKD7DytSnHcsc5NxQMKCb', 'Live secret must match');
+  assert.ok(/^rzp_live_/.test(process.env.RAZORPAY_KEY_ID || ''), 'Live key ID must be a rzp_live_ key (from .env)');
+  assert.ok((process.env.RAZORPAY_KEY_SECRET || '').length >= 20, 'Live secret must be set in .env');
   assert.strictEqual(process.env.RAZORPAY_TEST_KEY_ID, 'rzp_test_your_key_id', 'Test key ID must be configured');
   assert.strictEqual(process.env.RAZORPAY_TEST_KEY_SECRET, 'your_razorpaay_key_secret', 'Test secret must be configured');
   console.log('✅ Dual Razorpay configuration verified (Mode: LIVE active)');

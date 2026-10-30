@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
@@ -618,9 +619,9 @@ function refreshPreview(){
   setS('pv-price','color',c);
   const slug=(S.storeName||'yourstore').toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
   const urlEl=document.getElementById('store-url');
-  if(urlEl) urlEl.textContent=slug+'.zkcommerce.in';
+  if(urlEl) urlEl.textContent=ZK.storeUrl(slug).replace(/^https?:\/\//, '');
   const liveEl=document.getElementById('live-url');
-  if(liveEl) liveEl.textContent=slug+'.zkcommerce.in';
+  if(liveEl) liveEl.textContent=ZK.storeUrl(slug).replace(/^https?:\/\//, '');
 }
 
 // ─── CMS ─────────────────────────────────
@@ -900,8 +901,8 @@ function setDev(m,el){
 function renderLaunch(){
   const nm=S.storeName||'yourstore';
   const slug=nm.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-  document.getElementById('store-url').textContent=slug+'.zkcommerce.in';
-  document.getElementById('live-url').textContent=slug+'.zkcommerce.in';
+  document.getElementById('store-url').textContent=ZK.storeUrl(slug).replace(/^https?:\/\//, '');
+  document.getElementById('live-url').textContent=ZK.storeUrl(slug).replace(/^https?:\/\//, '');
   const tasks=[
     {ico:'🏪',ttl:'Store name & logo',dsc:'Set your store name and brand logo',done:!!S.storeName,cta:'Edit design',act:()=>goStep(3)},
     {ico:'🎨',ttl:'Theme selected',dsc:'Pick your storefront look and feel',done:!!S.theme,cta:'Change theme',act:()=>goStep(2)},
@@ -970,7 +971,7 @@ async function doLaunch(){
 
     const storeUrl = getStoreURL(storeSlug);
     const liveEl = document.getElementById('live-url');
-    if (liveEl) { liveEl.textContent = storeSlug + '.zkcommerce.in'; }
+    if (liveEl) { liveEl.textContent = ZK.storeUrl(storeSlug).replace(/^https?:\/\//, ''); }
 
     document.getElementById('success-overlay').style.display = 'flex';
     toast.success('🎉 Your store is live!');
@@ -978,7 +979,7 @@ async function doLaunch(){
     console.error('Launch store error:', e);
     localStorage.setItem('zk_setup_complete', '1');
     localStorage.setItem('zk_store_slug', slug);
-    document.getElementById('live-url').textContent = slug + '.zkcommerce.in';
+    document.getElementById('live-url').textContent = ZK.storeUrl(slug).replace(/^https?:\/\//, '');
     document.getElementById('success-overlay').style.display = 'flex';
     toast.success('🎉 Your store is live!');
   } finally {
@@ -1019,14 +1020,7 @@ function autoSave(){
 }
 
 function getStoreURL(slug) {
-  var host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
-    return '../storefront/home.html?store=' + slug;
-  }
-  if (host.endsWith('.vercel.app')) {
-    return window.location.origin + '/storefront/home.html?store=' + slug;
-  }
-  return 'https://' + slug + '.zkcommerce.in';
+  return ZK.storeUrl(slug);
 }
 
 function previewStore() {

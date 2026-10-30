@@ -1,60 +1,15 @@
 /**
  * ZKCommerce v4.1 — Unified Utility Library
- * URL auto-detection: file:// → localhost:3000 | Railway/custom → env-based
+ * API URL: window.ZK from zk-env.js (nodedev / phpdev / prod)
  */
 'use strict';
 
-/* ── API base URL — works for ALL environments ───────────────
-   file://        → http://localhost:3000/api  (local dev, HTML opened directly)
-   localhost      → http://localhost:3000/api  (local dev via http-server)
-   railway.app    → /api                       (Railway deployment, same-origin proxy)
-   custom domain  → uses window.ZK_API_URL if injected, else /api
+/* ── API base URL ─────────────────────────────────────────
+   Comes from zk-env.js (window.ZK), loaded before this file: .env for the Node app (nodedev),
+   the Publish portal for PHP packages (phpdev / prod). No host is guessed here.
 */
 window.ZK = window.ZK || {};
-
-(function detectAPI() {
-  var proto = window.location.protocol;
-  var host  = window.location.hostname;
-
-  // 1. Explicit JS override
-  if (window.ZK_API_URL) { ZK.api = window.ZK_API_URL; return; }
-
-  // 2. Meta tag override (<meta name="zk-api-url" content="https://api.zkcommerce.in/api">)
-  var metaApi = document.querySelector('meta[name="zk-api-url"]');
-  if (metaApi && metaApi.content) { ZK.api = metaApi.content; return; }
-
-  // 3. Local file opened directly
-  if (proto === 'file:') { ZK.api = 'http://localhost:3000/api'; return; }
-
-  // 4. localhost or local IP dev
-  if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
-    ZK.api = 'http://localhost:3000/api'; return;
-  }
-
-  // 5. zkcommerce.in & subdomains (e.g. app.zkcommerce.in, smeram.zkcommerce.in)
-  if (host.endsWith('zkcommerce.in')) {
-    ZK.api = 'https://api.zkcommerce.in/api'; return;
-  }
-
-  // 6. Custom tenant domains (e.g. smeram-natural.in)
-  if (host.endsWith('smeram-natural.in')) {
-    ZK.api = 'https://api.zkcommerce.in/api'; return;
-  }
-
-  // 7. Vercel preview URLs
-  if (host.endsWith('.vercel.app')) {
-    ZK.api = window.RAILWAY_API_URL || 'https://api.zkcommerce.in/api';
-    return;
-  }
-
-  // 8. Railway app domain
-  if (host.endsWith('.railway.app')) {
-    ZK.api = '/api'; return;
-  }
-
-  // Default production fallback for standalone frontends
-  ZK.api = 'https://api.zkcommerce.in/api';
-})();
+if (!ZK.api) { ZK.api = '/api'; console.warn('[ZKCommerce] zk-env.js was not loaded; using same-origin /api'); }
 
 /* ── Auth ─────────────────────────────────────────────────── */
 var auth = {

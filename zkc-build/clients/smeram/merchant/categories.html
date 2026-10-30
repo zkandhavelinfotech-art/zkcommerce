@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
@@ -265,7 +266,7 @@ body { background: var(--zk-chalk); overflow-x: hidden; }
 
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : (window.ZK ? ZK.api : '/api');
+var API_BASE = ZK.api;
 var CATEGORIES = [];
 var PRODUCTS = [];
 var CURRENT_STORE = null;
@@ -293,7 +294,7 @@ async function loadStoreData() {
       } else {
         CURRENT_STORE = d.stores[0];
       }
-      var liveUrl = CURRENT_STORE.custom_domain ? ('https://' + CURRENT_STORE.custom_domain) : ('/store/' + CURRENT_STORE.slug);
+      var liveUrl = ZK.storeUrl(CURRENT_STORE.slug);
       var link1 = document.getElementById('side-view-store-link');
       var link2 = document.getElementById('top-view-store-link');
       if (link1) link1.href = liveUrl;

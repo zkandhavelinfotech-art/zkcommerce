@@ -7,6 +7,7 @@ const { renderStore } = require('../store-renderer');
 const migrationsLib = require('./mysql-migrations');
 const { checkoutSettings } = require('./checkout-settings');
 const orderMessages = require('./order-messages');
+const zkEnv = require('./zk-env');
 
 const REPO_ROOT = path.join(__dirname, '..', '..');
 const DEPLOY_ROOT = process.env.ZKC_DEPLOY_ROOT || path.join(REPO_ROOT, 'deployment');
@@ -741,10 +742,11 @@ function injectHead(html, snippet) {
   return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + snippet) : snippet + html;
 }
 
-// Routes the storefront's fetch('/api/...') calls to api.php?route=... so no URL rewrite module is needed.
+// PHP storefront pages load the package's zk-env.js, which points ZK.api at the Backend + API package and routes
+// the storefront's fetch('/api/...') calls to <backend>/api.php?route=... (no URL rewrite module needed).
 // prefix = path from the page back to the site root ("" or "../../"), so a subfolder install works too.
 function phpFetchShim(prefix = '') {
-  return `<script>(function(){var f=window.fetch;window.fetch=function(u,o){if(typeof u==='string'&&u.indexOf('/api/')===0){var q=u.indexOf('?'),r=q<0?u.slice(5):u.slice(5,q);u=${JSON.stringify(prefix)}+'api.php?route='+encodeURIComponent(r)+(q<0?'':'&'+u.slice(q+1))}return f.call(this,u,o)}})();</script>`;
+  return `<script src="${prefix}zk-env.js"></script>`;
 }
 
 // Static hosting has no backend: checkout and contact forms hand off to WhatsApp instead.
@@ -830,17 +832,21 @@ try {
 }
 
 // ── PHP + MySQL (GoDaddy / cPanel / Plesk) bundle ──────────────────────────
-function generateStoreConfigPhp(store, env, version, checkout = checkoutSettings(store.theme_config), wa = orderMessages.normalize(null, store), commerce = {}) {
+function generateStoreConfigPhp(store, env, version, checkout = checkoutSettings(store.theme_config), wa = orderMessages.normalize(null, store), commerce = {}, urls = zkEnv.defaultPhpUrls(store, env)) {
   wa = orderMessages.normalize(wa, store);
   const gst = commerce.gst || {}, inv = commerce.inventory || {}, ship = commerce.shipping || {};
+  const siteUrl = zkEnv.trimUrl(urls.site_url), backendUrl = zkEnv.trimUrl(urls.backend_url);
   return `<?php
 // ${store.store_name} — store identity and checkout options for api.php and admin-orders.php (${env}, v${version}).
 define('STORE_ID', ${Number(store.id)});
 define('STORE_SLUG', ${phpString(store.slug)});
 define('STORE_NAME', ${phpString(store.store_name)});
 define('STORE_ENV', ${phpString(env)});
-define('STORE_DOMAIN', ${phpString(store.custom_domain || 'smeram-naturals.in')});
-define('API_BASE', 'https://' . STORE_DOMAIN . '/api');
+// Environment URLs (Publish portal → Environment URLs); the same values as zk-env.js.
+define('SITE_URL', ${phpString(siteUrl)});
+define('BACKEND_URL', ${phpString(backendUrl)});
+define('STORE_DOMAIN', ${phpString(String(siteUrl).replace(/^https?:\/\//i, '').replace(/\/.*$/, ''))});
+define('API_BASE', ${phpString(backendUrl + '/api')});
 define('PACKAGE_VERSION', ${phpString(version)});
 // "From" address on packaging labels.
 define('STORE_ADDRESS', ${phpString(store.address || '')});
@@ -875,49 +881,51 @@ define('SHIP_TRACKING_URL', ${phpString(ship.tracking_url_template || 'https://e
 `;
 }
 
-function generatePaymentConfigPhp(store, env, rzp) {
-  const liveKey = rzp.live_key_id || (rzp.mode === 'live' ? rzp.key_id : 'rzp_live_TrzrN3plJPv1lV');
-  const liveSecret = rzp.live_key_secret || (rzp.mode === 'live' ? rzp.key_secret : 'LrNPKD7DytSnHcsc5NxQMKCb');
-  const testKey = rzp.test_key_id || (rzp.mode === 'test' ? rzp.key_id : 'rzp_test_your_key_id');
-  const testSecret = rzp.test_key_secret || (rzp.mode === 'test' ? rzp.key_secret : 'your_razorpaay_key_secret');
+function generatePaymentConfigPhp(store, env, rzp, urls = zkEnv.defaultPhpUrls(store, env)) {
+  // Keys were already chosen for this environment (portal → else .env; prod = live, phpdev = test).
+  // Only that mode's keys go into the package: a phpdev build never carries the live secret, and the reverse.
   const activeMode = rzp.mode === 'test' ? 'test' : 'live';
+  const mine = mode => activeMode === mode;
+  const liveKey = rzp.live_key_id || (mine('live') ? rzp.key_id || '' : '');
+  const liveSecret = rzp.live_key_secret || (mine('live') ? rzp.key_secret || '' : '');
+  const testKey = rzp.test_key_id || (mine('test') ? rzp.key_id || '' : '');
+  const testSecret = rzp.test_key_secret || (mine('test') ? rzp.key_secret || '' : '');
+  // The webhook is served by this environment's Backend + API package.
+  const webhookUrl = zkEnv.trimUrl(urls.backend_url) + '/api.php?route=payments/razorpay/webhook';
+  const domain = zkEnv.trimUrl(urls.site_url).replace(/^https?:\/\//i, '');
 
   return `<?php
 // ${store.store_name} — Razorpay keys (${env}, Dual Mode: Live & Test). Keep this file private; it is blocked from the web.
 // Change RAZORPAY_MODE to 'live' or 'test' to switch modes.
 define('RAZORPAY_MODE', ${phpString(activeMode)});
 
-// ── Live Credentials (Domain: smeranm-naturals.in) ───────────
+// ── Live Credentials ─────────────────────────────────────────
 define('RAZORPAY_LIVE_KEY_ID', ${phpString(liveKey)});
 define('RAZORPAY_LIVE_KEY_SECRET', ${phpString(liveSecret)});
-define('RAZORPAY_LIVE_WEBHOOK_SECRET', ${phpString(rzp.live_webhook_secret || 'smeram_live_webhook_secret_2026')});
-define('RAZORPAY_LIVE_DOMAIN', 'smeranm-naturals.in');
-define('RAZORPAY_LIVE_WEBHOOK_URL', 'https://smeranm-naturals.in/api.php?route=payments/razorpay/webhook');
+define('RAZORPAY_LIVE_WEBHOOK_SECRET', ${phpString(rzp.live_webhook_secret || (mine('live') && rzp.webhook_secret) || '')});
 
-// ── Test Credentials (Domain: localhost:3000) ─────────────────
+// ── Test Credentials ─────────────────────────────────────────
 define('RAZORPAY_TEST_KEY_ID', ${phpString(testKey)});
 define('RAZORPAY_TEST_KEY_SECRET', ${phpString(testSecret)});
-define('RAZORPAY_TEST_WEBHOOK_SECRET', ${phpString(rzp.test_webhook_secret || 'smeram_test_webhook_secret_2026')});
-define('RAZORPAY_TEST_DOMAIN', 'localhost:3000');
-define('RAZORPAY_TEST_WEBHOOK_URL', 'http://localhost:3000/api.php?route=payments/razorpay/webhook');
+define('RAZORPAY_TEST_WEBHOOK_SECRET', ${phpString(rzp.test_webhook_secret || (mine('test') && rzp.webhook_secret) || '')});
+
+// ── Environment (${zkEnv.ENV_NAME[env] || env}) ─────────────────────────
+define('RAZORPAY_DOMAIN', ${phpString(domain)});
+define('RAZORPAY_WEBHOOK_URL', ${phpString(webhookUrl)});
 
 // ── Active Mode Resolution ────────────────────────────────────
 if (RAZORPAY_MODE === 'live') {
     define('RAZORPAY_KEY_ID', RAZORPAY_LIVE_KEY_ID);
     define('RAZORPAY_KEY_SECRET', RAZORPAY_LIVE_KEY_SECRET);
     define('RAZORPAY_WEBHOOK_SECRET', RAZORPAY_LIVE_WEBHOOK_SECRET);
-    define('RAZORPAY_DOMAIN', RAZORPAY_LIVE_DOMAIN);
-    define('RAZORPAY_WEBHOOK_URL', RAZORPAY_LIVE_WEBHOOK_URL);
 } else {
     define('RAZORPAY_KEY_ID', RAZORPAY_TEST_KEY_ID);
     define('RAZORPAY_KEY_SECRET', RAZORPAY_TEST_KEY_SECRET);
     define('RAZORPAY_WEBHOOK_SECRET', RAZORPAY_TEST_WEBHOOK_SECRET);
-    define('RAZORPAY_DOMAIN', RAZORPAY_TEST_DOMAIN);
-    define('RAZORPAY_WEBHOOK_URL', RAZORPAY_TEST_WEBHOOK_URL);
 }
 
 // Razorpay Dashboard Setup:
-// Webhook URL: https://smeranm-naturals.in/api.php?route=payments/razorpay/webhook
+// Webhook URL: ${webhookUrl}
 // Events: payment.captured, payment.failed
 `;
 }
@@ -985,7 +993,9 @@ define('DB_PORT', ${Number(db.port) || 3306});
 define('DB_NAME', ${phpString(db.name || '')});
 define('DB_USER', ${phpString(db.user || '')});
 define('DB_PASS', ${phpString(db.password || '')});
-define('ADMIN_SECRET_KEY', ${phpString(adminKey)});   // Password for admin-orders.php
+// Admin password (Publish portal → Admin password): admin-orders.php, migrate.php, stock / coupons / invoice pages.
+define('ADMIN_SECRET_KEY', ${phpString(adminKey)});
+define('ADMIN_PASSWORD', ${phpString(adminKey)});
 
 function getDbConnection() {
     static $pdo = null;
@@ -1179,11 +1189,13 @@ function generatePhpHtaccess() {
   return `# Apache / cPanel (Linux GoDaddy hosting). Windows/Plesk hosting uses web.config instead.
 DirectoryIndex index.html index.php
 Options -Indexes
+# Rules are relative to this folder, so they also work when the backend lives in a subfolder (e.g. /<slug>-backend-api).
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteRule ^database(/|$) - [R=404,L]
   RewriteRule ^api/(.*)$ api.php?route=$1 [QSA,L]
 </IfModule>
-RedirectMatch 404 ^/database(/|$)
+RedirectMatch 404 /database(/|$)
 <FilesMatch "^((store|payment|whatsapp)_config|admin_common|commerce)\\.php$">
   Require all denied
 </FilesMatch>
@@ -1297,6 +1309,61 @@ function readExistingAdminKey(dir) {
   return m ? m[1].replace(/\\(.)/g, '$1') : null;
 }
 
+// PHP packages can be split so the storefront and the backend deploy independently to the same web root:
+//   frontend → shopping portal only (pre-rendered pages + the images they use)
+//   backend  → api.php + admin PHP, Merchant / Store Builder / auth / client admin, Razorpay & WhatsApp config, SQL
+//   full     → both in one package
+const PHP_PARTS = ['full', 'frontend', 'backend'];
+const PHP_PART_DIR = { full: 'godaddy-deploy', frontend: 'frontend', backend: 'backend-api' };
+// API docs and the DB connection check ship with the backend package.
+const PHP_BACKEND_EXTRAS = ['order.php', 'swagger.html', 'openapi.json', 'test-db.php'];
+
+// Copy an admin folder, skipping uploads, product / theme photos (they belong to the frontend package) and backups.
+// From assets/ the admin pages only need css, js, icons and logos.
+function copyAdminFolder(src, dest) {
+  if (!fs.existsSync(src)) return;
+  const inAssets = path.basename(src) === 'assets';
+  fs.cpSync(src, dest, {
+    recursive: true,
+    filter: f => {
+      const rel = path.relative(src, f).replace(/\\/g, '/');
+      const name = path.basename(f);
+      if (/(^|\/)uploads(\/|$)/.test(rel) || /\.bak$/i.test(name)) return false;
+      if (inAssets && /\.(jpe?g|png|webp|gif|avif)$/i.test(name) && !/logo/i.test(name)) return false;
+      if (name === 'payment_config.php') return false; // secrets come from the generated config only
+      return true;
+    }
+  });
+}
+
+function generatePhpPartReadme(store, env, version, part, zipName, info) {
+  const slug = safeSlug(store.slug);
+  const other = part === 'frontend' ? `${slug}-backend-api` : `${slug}-frontend`;
+  const body = part === 'frontend'
+    ? `Shopping portal only: \`index.html\`, \`products/\`, \`collections/\`, \`page/\` and the ${info.assets.copied} images they use (\`assets/\`).
+Cart, checkout, Razorpay and contact forms call \`api.php\`, which ships in the **Backend + API** package.`
+    : `PHP backend and admin: \`api.php\` (+ \`api/\` gateway), order dashboard and admin PHP pages, Merchant (\`merchant/\`),
+Store Builder (\`store-builder/\`), sign-in (\`auth/\`), client admin (\`clients/${slug}/\`), Razorpay (\`payment_config.php\`),
+WhatsApp (\`whatsapp_config.php\`), \`migrate.php\`, API docs (\`swagger.html\`, \`openapi.json\`), \`test-db.php\` and \`database/${slug}_mysql.sql\`.
+No storefront pages or product images — those ship in the **Frontend** package.`;
+  return `# ${store.store_name} — ${part === 'frontend' ? 'Frontend (Shopping Portal)' : 'Backend + API'} · PHP + MySQL
+
+**Environment:** ${env.toUpperCase()}  ·  **Version:** v${version}  ·  **Generated:** ${new Date().toISOString()}
+**Package:** \`${zipName}\`
+
+${body}
+
+## Deploy
+Upload this package and the matching \`${other}-v*.zip\` to the **same web root** (e.g. \`public_html\`). The two packages never
+contain the same files except \`.htaccess\` / \`web.config\`, which are identical, so either can be redeployed on its own.
+${part === 'backend' ? `
+1. **MySQL** — create the database, then phpMyAdmin → Import → \`database/${slug}_mysql.sql\` (or open \`/migrate.php\`).
+2. **db_config.php** — confirm host, name, user and password.
+3. **Check** — \`https://<your-domain>/api.php?route=health\` → \`"db":"connected"\`; API docs at \`/swagger.html\`.
+4. **Razorpay webhook** — \`https://<your-domain>/api.php?route=payments/razorpay/webhook\` (events payment.captured, payment.failed).
+` : ''}${info.assets.missing.length ? `\n> Missing assets (referenced but not found locally):\n${info.assets.missing.map(m => '> - ' + m).join('\n')}\n` : ''}`;
+}
+
 function technologyFor(options) {
   if (['php', 'nodejs', 'static'].includes(options.technology)) return options.technology;
   if (options.provider === 'railway') return 'nodejs';
@@ -1325,12 +1392,21 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
   const suffix = ENV_SUFFIX[env];
   const checkout = checkoutSettings(themeConfig || store.theme_config);
   const livePages = pages.filter(p => p.status !== 'draft');
+  const part = technology === 'php' && PHP_PARTS.includes(options.part) ? options.part : 'full';
+  const withFrontend = part !== 'backend';
+  const withBackend = part !== 'frontend';
+  // Environment URLs for zk-env.js / store_config.php. The full package holds everything in one folder.
+  const urls = { ...zkEnv.defaultPhpUrls(store, env, customDomain), ...(options.urls || {}) };
+  if (part === 'full') urls.backend_url = urls.site_url;
 
   let exportDir, siteDir, zipPath;
   if (technology === 'php') {
-    exportDir = path.join(DEPLOY_ROOT, `${slug}-godaddy-deploy${suffix}`);
+    exportDir = path.join(DEPLOY_ROOT, `${slug}-${PHP_PART_DIR[part]}${suffix}`);
     siteDir = exportDir;
-    zipPath = path.join(DEPLOY_ROOT, `${slug}-godaddy-deploy${suffix}-v${version}.zip`);
+    zipPath = path.join(DEPLOY_ROOT, `${slug}-${PHP_PART_DIR[part]}${suffix}-v${version}.zip`);
+    // The frontend is rebuilt from scratch so removed images do not linger. The backend folder is kept:
+    // it holds db_config.php (admin password) and any hand-edited payment / WhatsApp config.
+    if (part === 'frontend') fs.rmSync(exportDir, { recursive: true, force: true });
   } else if (technology === 'nodejs') {
     exportDir = path.join(DEPLOY_ROOT, 'published', `${slug}${suffix}`);
     siteDir = path.join(exportDir, 'static');
@@ -1351,28 +1427,40 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
     products, categories, pages: livePages
   };
   const shim = technology === 'php' ? phpFetchShim : technology === 'static' ? staticFetchShim(store, products) : '';
-  const htmls = renderSite(snapshot, storefrontRoutes(products, categories, livePages), siteDir, shim);
-  const assets = copyReferencedAssets(htmls, siteDir);
+  const htmls = withFrontend ? renderSite(snapshot, storefrontRoutes(products, categories, livePages), siteDir, shim) : [];
+  const assets = withFrontend ? copyReferencedAssets(htmls, siteDir) : { copied: 0, missing: [] };
   const mysqlSql = generateMySqlSeed(store, categories, products, livePages, { version, env, extra });
-  const versionInfo = `${store.store_name}\nenvironment=${env}\ntechnology=${technology}\nversion=${version}\nbuilt=${new Date().toISOString()}\n`;
-  fs.writeFileSync(path.join(exportDir, 'VERSION.txt'), versionInfo, 'utf8');
-
+  const versionInfo = `${store.store_name}\nenvironment=${env}\ntechnology=${technology}\npart=${part}\nversion=${version}\nbuilt=${new Date().toISOString()}\n`;
+  // Split packages share one web root, so each keeps its own version file.
+  fs.writeFileSync(path.join(exportDir, part === 'full' ? 'VERSION.txt' : `VERSION-${part}.txt`), versionInfo, 'utf8');
+  // Every page (storefront, Store Builder, Merchant, client admin) reads its API from this one file.
   if (technology === 'php') {
+    fs.writeFileSync(path.join(exportDir, 'zk-env.js'), zkEnv.zkEnvScript({
+      env: zkEnv.ENV_NAME[env] || env, siteUrl: urls.site_url, backendUrl: urls.backend_url, php: true
+    }), 'utf8');
+  }
+
+  if (technology === 'php' && !withBackend) {
+    fs.writeFileSync(path.join(exportDir, 'web.config'), generateWebConfig(), 'utf8');
+    fs.writeFileSync(path.join(exportDir, '.htaccess'), generatePhpHtaccess(), 'utf8');
+    fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), generatePhpPartReadme(store, env, version, part, zipName, { assets }), 'utf8');
+  } else if (technology === 'php') {
     const dbDir = path.join(exportDir, 'database');
     fs.mkdirSync(dbDir, { recursive: true });
     fs.writeFileSync(path.join(dbDir, `${slug}_mysql.sql`), mysqlSql, 'utf8');
-    fs.writeFileSync(path.join(exportDir, 'store_config.php'), generateStoreConfigPhp(store, env, version, checkout, options.whatsapp || undefined, commerce), 'utf8');
+    fs.writeFileSync(path.join(exportDir, 'store_config.php'), generateStoreConfigPhp(store, env, version, checkout, options.whatsapp || undefined, commerce, urls), 'utf8');
     // WhatsApp sender keys: write when known, otherwise keep a hand-edited file, otherwise one-click links only.
     if (commerce.sender) fs.writeFileSync(path.join(exportDir, 'whatsapp_config.php'), generateWhatsAppConfigPhp(store, env, commerce.sender), 'utf8');
     else if (!fs.existsSync(path.join(exportDir, 'whatsapp_config.php'))) fs.writeFileSync(path.join(exportDir, 'whatsapp_config.php'), generateWhatsAppConfigPhp(store, env, { provider: 'none' }), 'utf8');
     // Razorpay keys: write when known, otherwise keep a hand-edited file, otherwise leave blank placeholders.
     const rzp = options.razorpay || {};
-    if (rzp.key_id && rzp.key_secret) fs.writeFileSync(path.join(exportDir, 'payment_config.php'), generatePaymentConfigPhp(store, env, rzp), 'utf8');
-    else if (!fs.existsSync(path.join(exportDir, 'payment_config.php'))) fs.writeFileSync(path.join(exportDir, 'payment_config.php'), generatePaymentConfigPhp(store, env, { key_id: '', key_secret: '', mode: 'not configured' }), 'utf8');
+    if (rzp.key_id && rzp.key_secret) fs.writeFileSync(path.join(exportDir, 'payment_config.php'), generatePaymentConfigPhp(store, env, rzp, urls), 'utf8');
+    else if (!fs.existsSync(path.join(exportDir, 'payment_config.php'))) fs.writeFileSync(path.join(exportDir, 'payment_config.php'), generatePaymentConfigPhp(store, env, { key_id: '', key_secret: '', mode: 'not configured' }, urls), 'utf8');
     // Keep a hand-edited db_config.php when no database settings were saved for this environment.
     const hasDb = !!(db.name && db.user);
     if (hasDb || !fs.existsSync(path.join(exportDir, 'db_config.php'))) {
-      const adminKey = readExistingAdminKey(exportDir) || crypto.randomBytes(9).toString('base64url');
+      // Portal admin password first; else keep the one already in the package; else a new random one.
+      const adminKey = options.admin_password || readExistingAdminKey(exportDir) || crypto.randomBytes(9).toString('base64url');
       fs.writeFileSync(path.join(exportDir, 'db_config.php'), generateDbConfigPhp(store, db, adminKey, env), 'utf8');
     }
     // Storefront API, admin pages and shared helpers are real PHP files, copied verbatim.
@@ -1381,8 +1469,15 @@ async function exportStoreDeployment({ store, themeConfig, products = [], catego
     fs.writeFileSync(path.join(exportDir, 'packaging.php'), generatePackagingPhp(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'shipments.php'), generateShipmentsPhp(), 'utf8');
     fs.writeFileSync(path.join(exportDir, 'migrate.php'), generateMigratePhp(mysqlSeedStatements(store, categories, products, livePages, extra), version, env), 'utf8');
+    if (part === 'backend') {
+      for (const file of PHP_BACKEND_EXTRAS) if (fs.existsSync(path.join(PHP_DIR, file))) fs.copyFileSync(path.join(PHP_DIR, file), path.join(exportDir, file));
+      // Admin apps + their shared css/js/logos (no product uploads), and this client's own admin pages.
+      for (const folder of ['merchant', 'store-builder', 'auth', 'assets']) copyAdminFolder(path.join(REPO_ROOT, folder), path.join(exportDir, folder));
+      const clientDir = path.join(REPO_ROOT, 'clients', slug);
+      for (const folder of ['auth', 'merchant', 'store-builder', 'assets']) copyAdminFolder(path.join(clientDir, folder), path.join(exportDir, 'clients', slug, folder));
+    }
     // Bundled Merchant admin, Store Builder, auth, and shared design assets (accessible at /merchant/, /store-builder/ and /auth/)
-    for (const folder of ['merchant', 'store-builder', 'auth', 'assets']) {
+    for (const folder of part === 'backend' ? [] : ['merchant', 'store-builder', 'auth', 'assets']) {
       const src = path.join(REPO_ROOT, folder);
       if (fs.existsSync(src)) {
         try { fs.cpSync(src, path.join(exportDir, folder), { recursive: true }); }
@@ -1410,7 +1505,9 @@ require_once __DIR__ . '/../api.php';
 `, 'utf8');
     fs.writeFileSync(path.join(exportDir, 'web.config'), generateWebConfig(), 'utf8');
     fs.writeFileSync(path.join(exportDir, '.htaccess'), generatePhpHtaccess(), 'utf8');
-    fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), generatePhpReadme(store, env, version, db.name, zipName, assets), 'utf8');
+    fs.writeFileSync(path.join(exportDir, 'README-DEPLOY.md'), part === 'backend'
+      ? generatePhpPartReadme(store, env, version, part, zipName, { assets })
+      : generatePhpReadme(store, env, version, db.name, zipName, assets), 'utf8');
   } else if (technology === 'nodejs') {
     const apiDir = path.join(exportDir, 'api');
     const dbDir = path.join(exportDir, 'database');
@@ -1450,7 +1547,8 @@ require_once __DIR__ . '/../api.php';
 
   return {
     success: true,
-    technology, env, version, provider, dbType, customDomain, slug,
+    technology, part, env, version, provider, dbType, customDomain, slug,
+    site_url: urls.site_url, backend_url: urls.backend_url,
     export_dir: exportDir,
     upload_dir: exportDir,
     zip_path: zipError ? null : zipPath,
@@ -1460,7 +1558,7 @@ require_once __DIR__ . '/../api.php';
     assets_copied: assets.copied,
     assets_missing: assets.missing,
     checkout,
-    razorpay_mode: technology === 'php' ? ((options.razorpay || {}).key_id ? (options.razorpay.mode || 'test') : 'not configured') : null,
+    razorpay_mode: technology === 'php' && withBackend ? ((options.razorpay || {}).key_id ? (options.razorpay.mode || 'test') : 'not configured') : null,
     schema: migrationsLib.latestId(),
     built_at: new Date().toISOString(),
     download_url: `/api/stores/${store.id}/deployment-zip?file=${encodeURIComponent(zipName)}`
@@ -1518,5 +1616,6 @@ module.exports = {
   generateEnvFile,
   generateMySqlSeed,
   generatePostgresSeed,
+  PHP_PARTS,
   DEPLOY_ROOT
 };

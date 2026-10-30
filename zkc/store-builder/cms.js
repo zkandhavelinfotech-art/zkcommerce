@@ -1,7 +1,6 @@
 /* API-backed Store Builder for v4.2. */
-var defaultApi = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') && location.port && location.port !== '3000'
-  ? `${location.protocol}//${location.hostname}:3000/api` : '/api';
-var API_BASE = (new URLSearchParams(location.search).get('apiBase') || window.ZK_API_BASE || defaultApi).replace(/\/$/, '');
+// API comes from zk-env.js (window.ZK): nodedev from .env, phpdev / prod from the Publish portal.
+var API_BASE = window.ZK && ZK.api;
 var TOKEN = localStorage.getItem('zk_token') || '';
 var storeRecords = [], activeStore = null, activeStoreId = null, draftFields = {}, previewUrl = '';
 var currentProductId = null;
@@ -82,7 +81,7 @@ async function switchStore(value) {
   activeStore = storeRecords.find(store => store.id === activeStoreId);
   if (!activeStore) return;
   currentStore = String(activeStoreId);
-  const domain = activeStore.custom_domain || `${activeStore.slug}.zkcommerce.in`;
+  const domain = ZK.storeUrl(activeStore.slug).replace(/^https?:\/\//, '');
   storeDomains[currentStore] = domain;
   const badge = document.getElementById('storeBadge');
   badge.className = 'store-badge badge-' + (activeStore.status === 'live' ? 'live' : activeStore.status === 'published' ? 'published' : 'draft');
@@ -490,7 +489,7 @@ async function saveSettings(){
   catch(error){showToast(error.message);throw error;}
 }
 async function saveChanges(){try{await saveSettings();document.getElementById('lastSaved').textContent=new Date().toLocaleTimeString();}catch(_error){}}
-async function publishStore(){if(!activeStoreId)return;try{await saveSettings();const result=await api(`/stores/${activeStoreId}/publish`,{method:'POST',body:{}});showToast('Published: https://'+(activeStore.custom_domain||activeStore.slug+'.zkcommerce.in'));await switchStore(String(activeStoreId));}catch(error){showToast(error.message);}}
+async function publishStore(){if(!activeStoreId)return;try{await saveSettings();const result=await api(`/stores/${activeStoreId}/publish`,{method:'POST',body:{}});showToast('Published: '+ZK.storeUrl(activeStore.slug));await switchStore(String(activeStoreId));}catch(error){showToast(error.message);}}
 function openPreview(){if(previewUrl)window.open(previewUrl,'_blank','noopener');else refreshPreview();}
 function openInNewTab(){openPreview();}
 function reloadPreview(){refreshPreview();}

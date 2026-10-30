@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../../zk-env.js"></script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
@@ -116,7 +117,7 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE = ZK ? ZK.api : 'http://localhost:3000/api';
+var API_BASE = ZK.api;
 
 async function loadStoreSettings() {
   var user  = auth.user;
@@ -206,15 +207,7 @@ async function saveStoreSettings() {
 }
 
 function getStoreURL(slug) {
-  if (!slug) return '#';
-  var host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
-    return '../storefront/home.html?store=' + slug;
-  }
-  if (host.endsWith('.vercel.app')) {
-    return window.location.origin + '/storefront/home.html?store=' + slug;
-  }
-  return 'https://' + slug + '.zkcommerce.in';
+  return slug ? ZK.storeUrl(slug) : '#';
 }
 
 function openStorefront() {

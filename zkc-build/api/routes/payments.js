@@ -6,13 +6,13 @@ function getRazorpayConfig() {
   const mode = (process.env.RAZORPAY_MODE || 'live').toLowerCase();
   const key_id = mode === 'test'
     ? (process.env.RAZORPAY_TEST_KEY_ID || process.env.RAZORPAY_KEY_ID)
-    : (process.env.RAZORPAY_LIVE_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_live_TrzrN3plJPv1lV');
+    : (process.env.RAZORPAY_LIVE_KEY_ID || process.env.RAZORPAY_KEY_ID);
   const key_secret = mode === 'test'
     ? (process.env.RAZORPAY_TEST_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET)
-    : (process.env.RAZORPAY_LIVE_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET || 'LrNPKD7DytSnHcsc5NxQMKCb');
+    : (process.env.RAZORPAY_LIVE_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET);
   const webhook_secret = mode === 'test'
-    ? (process.env.RAZORPAY_TEST_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET || 'smeram_test_webhook_secret_2026')
-    : (process.env.RAZORPAY_LIVE_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET || 'smeram_live_webhook_secret_2026');
+    ? (process.env.RAZORPAY_TEST_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET)
+    : (process.env.RAZORPAY_LIVE_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET);
   return { mode, key_id, key_secret, webhook_secret };
 }
 

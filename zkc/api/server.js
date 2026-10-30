@@ -24,6 +24,9 @@ app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE','PATCH'] }));
 app.use(express.json({ limit: '10mb', verify: (req, _res, buffer) => { req.rawBody = Buffer.from(buffer); } }));
 app.use(express.urlencoded({ extended: true }));
 app.use(rateLimit({ windowMs: 15*60*1000, max: 500, message: { error: 'Too many requests' } }));
+// nodedev environment config (window.ZK / API_BASE) from .env, at any depth: /zk-env.js, /merchant/../zk-env.js, /clients/x/zk-env.js
+const { nodeEnvScript } = require('./services/zk-env');
+app.get(/\/zk-env\.js$/, (req, res) => res.type('application/javascript').set('Cache-Control', 'no-store').send(nodeEnvScript(req)));
 app.use('/store-builder', express.static(path.join(__dirname, '..', 'store-builder')));
 app.use('/auth', express.static(path.join(__dirname, '..', 'auth')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));

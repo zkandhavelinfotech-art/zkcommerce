@@ -5,22 +5,13 @@
     "version": "1.0.12",
     "description": "Production REST API for ZKCommerce stores (Smeram Naturals) hosted on PHP + MySQL (GoDaddy/cPanel/Plesk). Supports authentication, storefront catalog, checkout (COD & Razorpay), merchant order management, inventory, and database diagnostics.",
     "contact": {
-      "name": "ZKandavel Infotech Pvt Ltd",
-      "url": "https://smeram-naturals.in"
+      "name": "ZKandavel Infotech Pvt Ltd"
     }
   },
   "servers": [
     {
-      "url": "/api",
-      "description": "Auto-resolved API root (/api or api.php?route=)"
-    },
-    {
-      "url": "https://smeram-naturals.in/api",
-      "description": "Live GoDaddy Production (smeram-naturals.in)"
-    },
-    {
-      "url": "http://localhost:3000/api",
-      "description": "Local Development Server"
+      "url": "api",
+      "description": "This backend's API (relative to openapi.json; swagger.html replaces it with ZK.api from zk-env.js)"
     }
   ],
   "tags": [
@@ -325,7 +316,7 @@
                   "razorpay_order_id": "order_EK1234567890",
                   "amount": 59800,
                   "currency": "INR",
-                  "key": "rzp_live_TrzrN3plJPv1lV"
+                  "key": "rzp_live_xxxxxxxxxxxxxx"
                 }
               }
             }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="zk-env.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ZKCommerce API Testing Console · Swagger UI</title>
@@ -109,21 +110,33 @@
       <a href="test-db.php" class="btn-top btn-accent">🔌 Test DB Connection</a>
       <a href="openapi.json" target="_blank" class="btn-top">📄 openapi.json</a>
       <a href="merchant/index.html" class="btn-top">📦 Merchant Portal</a>
-      <a href="index.html" class="btn-top">🛒 Storefront</a>
+      <a href="#" id="storefrontLink" class="btn-top" target="_blank">🛒 Storefront</a>
     </div>
   </div>
+  <div id="envBar" style="padding:6px 20px;font-size:12px;font-family:monospace"></div>
 
   <div id="swagger-ui"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
   <script>
-    window.onload = function() {
-      // Determine specification URL: try local openapi.json, then fallback to api.php?route=openapi.json
-      var specUrl = 'openapi.json';
-      
-      const ui = SwaggerUIBundle({
-        url: specUrl,
+    window.onload = async function() {
+      // Servers come from zk-env.js (phpdev / prod, written by the Publish portal) — nothing hardcoded.
+      var ZK = window.ZK || {};
+      var api = ZK.api || new URL('api', location.href).href.replace(/\/$/, '');
+      document.getElementById('envBar').textContent = 'Environment: ' + (ZK.env || 'unknown (zk-env.js not loaded)') + ' · API: ' + api;
+      document.getElementById('storefrontLink').href = ZK.siteUrl || '#';
+
+      // openapi.json next to this page, else through api.php when the static file is not reachable.
+      var spec = null;
+      for (var u of ['openapi.json', 'api.php?route=openapi.json']) {
+        try { var r = await fetch(u); if (r.ok) { spec = await r.json(); break; } } catch (_) {}
+      }
+      var opts = spec
+        ? { spec: Object.assign(spec, { servers: [{ url: api, description: (ZK.env || 'this backend') + ' · ' + api }] }) }
+        : { url: 'openapi.json' };
+
+      const ui = SwaggerUIBundle(Object.assign(opts, {
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
@@ -141,7 +154,7 @@
         onComplete: function() {
           console.log('ZKCommerce Swagger UI ready');
         }
-      });
+      }));
       window.ui = ui;
     };
   </script>

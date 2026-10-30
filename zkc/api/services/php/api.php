@@ -17,8 +17,10 @@ if (!defined('STORE_ID')) define('STORE_ID', 2);
 if (!defined('STORE_SLUG')) define('STORE_SLUG', 'smeram');
 if (!defined('STORE_NAME')) define('STORE_NAME', 'Smeram Naturals');
 if (!defined('STORE_ENV')) define('STORE_ENV', 'production');
-if (!defined('STORE_DOMAIN')) define('STORE_DOMAIN', 'smeram-naturals.in');
-if (!defined('API_BASE')) define('API_BASE', 'https://smeram-naturals.in/api');
+// Without store_config.php, the URLs come from this request (the folder api.php runs in).
+if (!defined('BACKEND_URL')) define('BACKEND_URL', ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . preg_replace('#/api$#', '', rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/'))); // api/index.php runs one folder down
+if (!defined('STORE_DOMAIN')) define('STORE_DOMAIN', $_SERVER['HTTP_HOST'] ?? 'localhost');
+if (!defined('API_BASE')) define('API_BASE', BACKEND_URL . '/api');
 if (!defined('PACKAGE_VERSION')) define('PACKAGE_VERSION', '1.0.12');
 if (!defined('CHECKOUT_COD')) define('CHECKOUT_COD', false);
 if (!defined('CHECKOUT_RAZORPAY')) define('CHECKOUT_RAZORPAY', true);
@@ -198,32 +200,41 @@ if ($route === 'test-db' || $route === 'health/db') {
     ], $pdo ? 200 : 503);
 }
 
-// ── Auth login endpoint for GoDaddy standalone hosting ──
+
+// Auth login endpoint — queries merchants table with bcrypt password_verify
 if ($route === 'auth/login' && $method === 'POST') {
     $email = trim((string)($body['email'] ?? ''));
     $pass  = (string)($body['password'] ?? '');
-    $expectedPass = defined('ADMIN_SECRET_KEY') ? (string)ADMIN_SECRET_KEY : '';
-    $valid = false;
-    if ($expectedPass !== '' && hash_equals($expectedPass, $pass)) {
-        $valid = true;
-    } elseif ($pass === 'demo1234' || (defined('ADMIN_PASSWORD') && hash_equals((string)ADMIN_PASSWORD, $pass))) {
-        $valid = true;
+    if ($email === '' || $pass === '') {
+        respond(['error' => 'Email and password are required.'], 400);
     }
-    if ($valid) {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
-        $_SESSION['zkc_admin'] = STORE_ID;
-        respond([
-            'token' => 'godaddy_session_' . STORE_ID . '_' . bin2hex(random_bytes(8)),
-            'user' => [
-                'id' => STORE_ID,
-                'email' => $email ?: 'merchant@smeramnaturals.in',
-                'role' => 'merchant',
-                'store_id' => STORE_ID,
-                'store_slug' => STORE_SLUG
-            ]
-        ]);
+    // Require DB connection for merchant lookup
+    if (!$pdo) {
+        respond(['error' => 'Database not available. Cannot authenticate.'], 503);
     }
-    respond(['error' => 'Invalid email or password. Use your store admin password.'], 401);
+    try {
+        $stmt = $pdo->prepare('SELECT id, name, email, role, store_id, password_hash FROM merchants WHERE email = ? LIMIT 1');
+        $stmt->execute([$email]);
+        $merchant = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        error_log('[api.php auth/login] ' . $e->getMessage());
+        respond(['error' => 'Authentication error. Please try again.'], 500);
+    }
+    if (!$merchant || !password_verify($pass, (string)($merchant['password_hash'] ?? ''))) {
+        respond(['error' => 'Invalid email or password.'], 401);
+    }
+    $token = bin2hex(random_bytes(24));
+    respond([
+        'token' => $token,
+        'user'  => [
+            'id'         => (int)$merchant['id'],
+            'name'       => $merchant['name'],
+            'email'      => $merchant['email'],
+            'role'       => $merchant['role'],
+            'store_id'   => $merchant['store_id'] ? (int)$merchant['store_id'] : STORE_ID,
+            'store_slug' => STORE_SLUG
+        ]
+    ]);
 }
 
 // For routes requiring the database, verify connection
@@ -679,7 +690,7 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
     $handoff = null;
     if ($payMethod === 'cod') {
         $order = function_exists('zkcOrderById') ? zkcOrderById($pdo, $orderId) : [];
-        if (function_exists('zkcEnsureInvoice')) zkcEnsureInvoice($pdo, $order);
+        if ($order && function_exists('zkcEnsureInvoice')) { try { zkcEnsureInvoice($pdo, $order); } catch (Exception $e) { error_log('[Invoice] ' . $e->getMessage()); } }
         if (function_exists('zkcHandoffUrl')) $handoff = zkcHandoffUrl($order);
         if (function_exists('zkcNotifyOrderConfirmed')) $wa = zkcNotifyOrderConfirmed($pdo, $order);
         if (function_exists('zkcNotifyLowStock')) zkcNotifyLowStock($pdo, $low);

@@ -8,17 +8,17 @@
 // ── Active Mode Selector (Currently: LIVE) ───────────────────
 define('RAZORPAY_MODE', 'live'); // Options: 'live' or 'test'
 
-// ── Live Credentials (Domain: smeranm-naturals.in) ───────────
-define('RAZORPAY_LIVE_KEY_ID', 'rzp_live_TrzrN3plJPv1lV');
-define('RAZORPAY_LIVE_KEY_SECRET', 'LrNPKD7DytSnHcsc5NxQMKCb');
-define('RAZORPAY_LIVE_WEBHOOK_SECRET', 'smeram_live_webhook_secret_2026');
-define('RAZORPAY_LIVE_DOMAIN', 'smeranm-naturals.in');
-define('RAZORPAY_LIVE_WEBHOOK_URL', 'https://smeranm-naturals.in/api.php?route=payments/razorpay/webhook');
+// ── Live Credentials (Domain: smeram-naturals.in) ───────────
+define('RAZORPAY_LIVE_KEY_ID', 'rzp_live_your_key_id');
+define('RAZORPAY_LIVE_KEY_SECRET', 'your_live_key_secret');
+define('RAZORPAY_LIVE_WEBHOOK_SECRET', 'your_live_webhook_secret');
+define('RAZORPAY_LIVE_DOMAIN', 'smeram-naturals.in');
+define('RAZORPAY_LIVE_WEBHOOK_URL', 'https://your-domain/your-backend-folder/api.php?route=payments/razorpay/webhook');
 
 // ── Test Credentials (Domain: localhost:3000) ─────────────────
 define('RAZORPAY_TEST_KEY_ID', 'rzp_test_your_key_id');
 define('RAZORPAY_TEST_KEY_SECRET', 'your_razorpaay_key_secret');
-define('RAZORPAY_TEST_WEBHOOK_SECRET', 'smeram_test_webhook_secret_2026');
+define('RAZORPAY_TEST_WEBHOOK_SECRET', 'your_test_webhook_secret');
 define('RAZORPAY_TEST_DOMAIN', 'localhost:3000');
 define('RAZORPAY_TEST_WEBHOOK_URL', 'http://localhost:3000/api.php?route=payments/razorpay/webhook');
 
@@ -41,7 +41,7 @@ if (RAZORPAY_MODE === 'live') {
  * Razorpay Dashboard Webhook Configuration:
  * 1. Go to: Razorpay Dashboard → Settings → Webhooks → Add New Webhook
  * 2. Webhook URL:
- *    - Live: https://smeranm-naturals.in/api.php?route=payments/razorpay/webhook
+ *    - Live: https://your-domain/your-backend-folder/api.php?route=payments/razorpay/webhook
  *    - Test: http://localhost:3000/api.php?route=payments/razorpay/webhook
  * 3. Secret: Value of RAZORPAY_WEBHOOK_SECRET defined above
  * 4. Active Events:
