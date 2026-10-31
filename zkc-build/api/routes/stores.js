@@ -778,8 +778,12 @@ async function storeForDisplay(req) {
 const displayOf = cfg => ({ 
   show_offers: ((cfg || {}).display || {}).show_offers !== false, 
   show_all_products: (((cfg || {}).sections || {}).products || {}).visible !== false,
-  announcement_enabled: (cfg || {}).announcement_enabled !== false && (((cfg || {}).sections || {}).announcement || {}).visible !== false
+  announcement_enabled: (cfg || {}).announcement_enabled !== false && (((cfg || {}).sections || {}).announcement || {}).visible !== false,
+  category_link: CATEGORY_LINK_MODES.includes(((cfg || {}).display || {}).category_link) ? cfg.display.category_link : 'collection',
+  category_cta_text: String(((cfg || {}).display || {}).category_cta_text || '')
 });
+// Where a home-page category box goes: its collection page, or straight to the product page.
+const CATEGORY_LINK_MODES = ['collection', 'single_product', 'first_product'];
 router.get('/:id/display', auth, async (req, res) => {
   try {
     const s = await storeForDisplay(req);
@@ -794,6 +798,8 @@ router.put('/:id/display', auth, async (req, res) => {
     const apply = cfg => {
       cfg = cfg || {};
       if (req.body.show_offers !== undefined) cfg.display = { ...(cfg.display || {}), show_offers: req.body.show_offers !== false };
+      if (req.body.category_link !== undefined) cfg.display = { ...(cfg.display || {}), category_link: CATEGORY_LINK_MODES.includes(req.body.category_link) ? req.body.category_link : 'collection' };
+      if (req.body.category_cta_text !== undefined) cfg.display = { ...(cfg.display || {}), category_cta_text: String(req.body.category_cta_text || '').trim().slice(0, 40) };
       if (req.body.show_all_products !== undefined || req.body.products_enabled !== undefined) {
         const prodVal = req.body.show_all_products !== undefined ? req.body.show_all_products !== false : req.body.products_enabled !== false;
         cfg.sections = cfg.sections || {};

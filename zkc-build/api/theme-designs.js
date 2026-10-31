@@ -127,12 +127,22 @@ function renderDesign(name, ctx) {
       });
     }
     c.count++;
+    (c.products = c.products || []).push(p);
     if (!c.image) c.image = safeImage(catOverrides[c.id] || catOverrides[c.slug] || catOverrides[c.name] || p.category_image) || imagesOf(p)[0] || '';
   });
   categories.forEach(c => {
     const override = catOverrides[c.id] || catOverrides[c.slug] || catOverrides[c.name];
     if (override) c.image = safeImage(override);
   });
+  // Home category boxes: open the collection page, or jump straight to the product page (Merchant portal → Shop display).
+  const display = cfg.display || {};
+  const categoryLinkMode = ['collection', 'single_product', 'first_product'].includes(display.category_link) ? display.category_link : 'collection';
+  const categoryHref = c => {
+    const items = c.products || [];
+    const direct = categoryLinkMode === 'first_product' ? items[0] : categoryLinkMode === 'single_product' && items.length === 1 ? items[0] : null;
+    return direct && direct.slug ? productPath(direct) : storeUrl('/collections/' + encodeURIComponent(c.slug));
+  };
+  const categoryCta = String(display.category_cta_text || '').trim().slice(0, 40) || 'Explore Products';
   const trustItems = list(sec('trust').items || fields.trust_items);
   const stars = '★★★★★';
 
@@ -245,7 +255,7 @@ function renderDesign(name, ctx) {
       const eyebrow = fields.hero_sub || store.tagline || '';
       const cta = s.button || fields.hero_cta || store.hero_cta_text || 'Shop now';
       const bg = s.background || fields.hero_bg;
-      const boxes = categories.length ? `<div class="category-grid">${categories.map(c => `<a class="cat-box" href="${storeUrl('/collections/' + encodeURIComponent(c.slug))}"><div class="cat-box-top"><span class="cat-pill">${esc(c.name.split(/\s+/)[0])}</span><span class="cat-count">${c.count} Product${c.count === 1 ? '' : 's'}</span></div><div class="cat-img-wrap">${c.image ? `<img src="${c.image}" alt="${esc(c.name)}" loading="lazy">` : `<span class="no-img">${esc(c.name.slice(0, 1))}</span>`}</div><div class="cat-box-title"><span>${esc(c.name)}</span><span class="cat-star">★ 4.9</span></div><div class="cat-box-action"><span>Explore Products</span><span class="arrow">→</span></div></a>`).join('')}</div>` : `<div class="hero-cta-row"><a class="btn-primary" href="#products">${esc(cta)} →</a></div>`;
+      const boxes = categories.length ? `<div class="category-grid">${categories.map(c => `<a class="cat-box" href="${categoryHref(c)}"><div class="cat-box-top"><span class="cat-pill">${esc(c.name.split(/\s+/)[0])}</span><span class="cat-count">${c.count} Product${c.count === 1 ? '' : 's'}</span></div><div class="cat-img-wrap">${c.image ? `<img src="${c.image}" alt="${esc(c.name)}" loading="lazy">` : `<span class="no-img">${esc(c.name.slice(0, 1))}</span>`}</div><div class="cat-box-title"><span>${esc(c.name)}</span><span class="cat-star">★ 4.9</span></div><div class="cat-box-action"><span>${esc(categoryCta)}</span><span class="arrow">→</span></div></a>`).join('')}</div>` : `<div class="hero-cta-row"><a class="btn-primary" href="#products">${esc(cta)} →</a></div>`;
       return `<section class="category-hero-section${img ? ' has-image' : ''}" data-zkc-section="hero" style="${bg ? `background-color:${safeColor(bg, '#fff')};` : ''}${img ? `background-image:linear-gradient(${rgba(skin.heroDark ? '#000000' : '#FFFFFF', skin.heroDark ? .45 : .82)},${rgba(skin.heroDark ? '#000000' : '#FFFFFF', skin.heroDark ? .45 : .82)}),url('${img}');` : ''}text-align:${['left', 'right'].includes(s.align) ? s.align : 'center'}"><div class="category-hero-inner"><div class="cat-header">${eyebrow ? `<div class="cat-badge-top">${esc(eyebrow)}</div>` : ''}<h1 class="cat-main-title">${esc(heading)}</h1>${sub ? `<p class="cat-main-subtitle">${esc(sub)}</p>` : ''}</div>${boxes}</div></section>`;
     },
     products() {

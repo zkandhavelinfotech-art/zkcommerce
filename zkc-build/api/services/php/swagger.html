@@ -123,7 +123,7 @@
     window.onload = async function() {
       // Servers come from zk-env.js (phpdev / prod, written by the Publish portal) — nothing hardcoded.
       var ZK = window.ZK || {};
-      var api = ZK.api || new URL('api', location.href).href.replace(/\/$/, '');
+      var api = ZK.api || new URL('api', document.baseURI).href.replace(/\/$/, '');
       document.getElementById('envBar').textContent = 'Environment: ' + (ZK.env || 'unknown (zk-env.js not loaded)') + ' · API: ' + api;
       document.getElementById('storefrontLink').href = ZK.siteUrl || '#';
 

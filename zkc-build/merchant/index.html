@@ -825,6 +825,30 @@
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Payment methods offered</div>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)" id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately, paid on delivery.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowPaymentSelector"><span><b>Show payment method choice in the cart</b><br><small style="color:var(--muted)">Turn off to hide the payment dropdown. Orders then use Razorpay when it is on, otherwise Cash on delivery.</small></span></label>
+            <div style="font-size:12px;font-weight:700;color:var(--muted)">Add to cart</div>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCartPopup"><span><b>Show “View Cart” popup after Add to cart</b><br><small style="color:var(--muted)">The “✓ added to cart · 🛒 View Cart →” bar at the bottom of the page. The cart count in the header still updates when this is off.</small></span></label>
+            <div style="font-size:12px;font-weight:700;color:var(--muted)">Checkout button</div>
+            <div class="legal-card" style="display:block">
+              <div class="form-grid" style="margin-bottom:10px">
+                <div class="form-group"><label for="coPayText">Button text</label><input id="coPayText" maxlength="40" placeholder="Place order"></div>
+                <div class="form-group"><label for="coPayFont">Font</label>
+                  <select id="coPayFont">
+                    <option value="">Theme font</option><option>Inter</option><option>Poppins</option><option>Roboto</option><option>Playfair Display</option><option>Dancing Script</option><option>Georgia</option><option>Arial</option>
+                  </select>
+                </div>
+                <div class="form-group"><label for="coPayFontSize">Text size (px)</label><input id="coPayFontSize" type="number" min="12" max="28" placeholder="Theme size"></div>
+                <div class="form-group"><label for="coPayRadius">Corner rounding (px)</label><input id="coPayRadius" type="number" min="0" max="40" placeholder="Theme rounding"></div>
+              </div>
+              <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="coPayBold"> Bold text</label>
+              <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="coPayCustomColors"> Use my own colours (off = theme colours)</label>
+              <div class="form-grid" id="coPayColorRow" style="margin-bottom:10px">
+                <div class="form-group"><label for="coPayBg">Button colour</label><input id="coPayBg" type="color" value="#2e7d32"></div>
+                <div class="form-group"><label for="coPayColor">Text colour</label><input id="coPayColor" type="color" value="#ffffff"></div>
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Preview</div>
+              <button type="button" id="coPayPreview" tabindex="-1" style="width:100%;max-width:420px;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:800;background:#2e7d32;color:#fff;cursor:default">Place order</button>
+            </div>
           </div>
           <div id="coStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -841,6 +865,19 @@
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowCategoryImages" checked><span><b>Show category images in Shop menu</b><br><small style="color:var(--muted)">Display thumbnail photos beside each category in the header Shop dropdown subcategories list.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP strike-through, “% OFF” badges and offer tags such as “Special Introductory Offer”.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The product grid on the home page and its menu, tab and footer links. Other sections are switched in Store Builder → Settings.</small></span></label>
+            <div class="legal-card" style="display:block">
+              <b>Home page category boxes</b><br><small style="color:var(--muted)">Where shoppers land when they click a category box (“Explore Products”) on the home page.</small>
+              <div class="form-grid" style="margin:10px 0 0">
+                <div class="form-group"><label for="dsCategoryLink">Opens</label>
+                  <select id="dsCategoryLink">
+                    <option value="collection">Category page (list of products)</option>
+                    <option value="single_product">Product page when the category has only 1 product</option>
+                    <option value="first_product">Always the first product's page</option>
+                  </select>
+                </div>
+                <div class="form-group"><label for="dsCategoryCta">Box button text</label><input id="dsCategoryCta" maxlength="40" placeholder="Explore Products"></div>
+              </div>
+            </div>
           </div>
           <div id="dsStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
           <button class="btn-primary" id="btnSaveDisplay">Save display settings</button>
@@ -1611,6 +1648,8 @@
         const v = d.live || d.display;
         document.getElementById('dsShowOffers').checked = v.show_offers;
         document.getElementById('dsAllProducts').checked = v.show_all_products;
+        document.getElementById('dsCategoryLink').value = v.category_link || 'collection';
+        document.getElementById('dsCategoryCta').value = v.category_cta_text || '';
         if (document.getElementById('dsAnnouncement')) {
           document.getElementById('dsAnnouncement').checked = v.announcement_enabled !== false;
         }
@@ -1630,7 +1669,9 @@
           show_offers: document.getElementById('dsShowOffers').checked,
           show_all_products: document.getElementById('dsAllProducts').checked,
           announcement_enabled: annEnabled,
-          show_category_images: showCatImgs
+          show_category_images: showCatImgs,
+          category_link: document.getElementById('dsCategoryLink').value,
+          category_cta_text: document.getElementById('dsCategoryCta').value.trim()
         }) });
         try {
           localStorage.setItem('zk_announcement_enabled', String(annEnabled));
@@ -1687,6 +1728,18 @@
         }
         document.getElementById('coRazorpay').checked = c.razorpay !== false;
         document.getElementById('coCod').checked = c.cod !== false || c.razorpay === false;
+        document.getElementById('coShowPaymentSelector').checked = c.show_payment_selector !== false;
+        document.getElementById('coShowCartPopup').checked = c.show_cart_popup !== false;
+        const pb = c.pay_button || {};
+        document.getElementById('coPayText').value = pb.text || '';
+        document.getElementById('coPayFont').value = pb.font_family || '';
+        document.getElementById('coPayFontSize').value = pb.font_size || '';
+        document.getElementById('coPayRadius').value = pb.radius != null ? pb.radius : '';
+        document.getElementById('coPayBold').checked = pb.bold !== false;
+        document.getElementById('coPayCustomColors').checked = !!(pb.bg_color || pb.text_color);
+        if (pb.bg_color) document.getElementById('coPayBg').value = pb.bg_color;
+        if (pb.text_color) document.getElementById('coPayColor').value = pb.text_color;
+        renderPayButtonPreview();
         document.getElementById('coRzpStatus').innerHTML = 'UPI, cards, netbanking, wallets. ' + (razorpayInfo.razorpay_configured
           ? `Razorpay keys on this server: <b>${escHtml((razorpayInfo.razorpay_mode || 'test').toUpperCase())}</b>.`
           : '<b style="color:#b91c1c">Razorpay keys are not configured on this server.</b>');
@@ -1702,6 +1755,31 @@
       document.getElementById('btnSaveCheckout').disabled = document.getElementById('btnPublishCheckout').disabled = !ok;
       return ok;
     }
+    // Checkout button (theme_config.checkout.pay_button). Empty fields keep the storefront theme's look.
+    function readPayButton() {
+      const num = id => { const v = document.getElementById(id).value.trim(); return v === '' ? null : Number(v); };
+      const custom = document.getElementById('coPayCustomColors').checked;
+      return {
+        text: document.getElementById('coPayText').value.trim(),
+        font_family: document.getElementById('coPayFont').value,
+        font_size: num('coPayFontSize'),
+        radius: num('coPayRadius'),
+        bold: document.getElementById('coPayBold').checked,
+        bg_color: custom ? document.getElementById('coPayBg').value : '',
+        text_color: custom ? document.getElementById('coPayColor').value : ''
+      };
+    }
+    function renderPayButtonPreview() {
+      const pb = readPayButton(), btn = document.getElementById('coPayPreview');
+      document.getElementById('coPayColorRow').style.display = document.getElementById('coPayCustomColors').checked ? '' : 'none';
+      btn.textContent = pb.text || 'Place order';
+      btn.style.background = pb.bg_color || 'var(--primary, #2e7d32)';
+      btn.style.color = pb.text_color || '#fff';
+      btn.style.fontFamily = pb.font_family ? `'${pb.font_family}', sans-serif` : '';
+      btn.style.fontSize = (pb.font_size || 15) + 'px';
+      btn.style.borderRadius = (pb.radius != null ? pb.radius : 10) + 'px';
+      btn.style.fontWeight = pb.bold ? '800' : '500';
+    }
     async function saveCheckout(publish) {
       if (!validateCheckout() || !checkoutThemeConfig) return;
       if (publish && !confirm('Publish now? This also publishes any other unpublished changes made in the Store Builder.')) return;
@@ -1712,12 +1790,18 @@
         const showShipping = document.getElementById('coShowShipping')?.checked !== false;
         const showWhatsapp = document.getElementById('coShowWhatsappOrder')?.checked === true;
         const codEnabled = document.getElementById('coCod').checked;
-        const theme_config = { ...(fresh.store.theme_config || {}), checkout: {
+        // Merge into the existing checkout object so keys set elsewhere (e.g. Store Builder) are kept.
+        const freshTheme = fresh.store.theme_config || {};
+        const theme_config = { ...freshTheme, checkout: {
+          ...(freshTheme.checkout || {}),
           show_coupon: document.getElementById('coShowCoupon').checked,
           show_shipping_field: showShipping,
           show_whatsapp_order: showWhatsapp,
           razorpay: document.getElementById('coRazorpay').checked,
-          cod: codEnabled
+          cod: codEnabled,
+          show_payment_selector: document.getElementById('coShowPaymentSelector').checked,
+          show_cart_popup: document.getElementById('coShowCartPopup').checked,
+          pay_button: readPayButton()
         } };
         try {
           localStorage.setItem('zk_checkout_cod', String(codEnabled));
@@ -1957,6 +2041,8 @@
     document.getElementById('btnResetWa').onclick = () => { if (!waDefaults) return; document.getElementById('waCareTpl').value = waDefaults.care_template; document.getElementById('waCustomerTpl').value = waDefaults.customer_template; document.getElementById('waLowTpl').value = waDefaults.low_stock_template || ''; document.getElementById('waShippedTpl').value = waDefaults.shipped_template || ''; document.getElementById('waDeliveredTpl').value = waDefaults.delivered_template || ''; waRenderPreview(); };
     ['waCareTpl', 'waCustomerTpl', 'waLowTpl', 'waShippedTpl', 'waDeliveredTpl'].forEach(id => { const el = document.getElementById(id); el.onfocus = () => { waLastFocus = el; waRenderPreview(); }; el.oninput = waRenderPreview; });
     ['coShowCoupon', 'coRazorpay', 'coCod'].forEach(id => document.getElementById(id).onchange = validateCheckout);
+    ['coPayText', 'coPayFont', 'coPayFontSize', 'coPayRadius', 'coPayBold', 'coPayCustomColors', 'coPayBg', 'coPayColor'].forEach(id => document.getElementById(id).addEventListener('input', renderPayButtonPreview));
+    renderPayButtonPreview();
     document.getElementById('btnSaveCheckout').onclick = () => saveCheckout(false);
     document.getElementById('btnSaveDisplay').onclick = saveDisplaySettings;
     document.getElementById('btnSaveEkart').onclick = saveEkartSettings;

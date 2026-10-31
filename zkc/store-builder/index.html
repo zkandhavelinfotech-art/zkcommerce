@@ -848,7 +848,9 @@ function renderCheckoutSettings(host) {
   validate();
   document.getElementById('saveCheckoutSettings').onclick = async () => {
     if (!validate()) return;
+    // Merge so options managed in the Merchant portal (checkout button, cart popup, payment choice) are kept.
     themeConfig.checkout = {
+      ...(themeConfig.checkout || {}),
       show_coupon: document.getElementById('chk_show_coupon').checked,
       show_shipping_field: document.getElementById('chk_show_shipping').checked,
       razorpay: document.getElementById('chk_pay_razorpay').checked,

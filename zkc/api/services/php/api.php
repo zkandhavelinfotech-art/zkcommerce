@@ -124,12 +124,22 @@ if ($route === 'openapi.json') {
         exit;
     }
 }
-if ($route === 'docs' || $route === 'swagger') {
+// Swagger served from /api/docs: <base> points its relative links (zk-env.js, openapi.json, test-db.php)
+// back at the backend folder instead of /api/, where they would be treated as API routes.
+if ($route === 'docs' || $route === 'swagger' || $route === 'swagger.html') {
     if (is_file(__DIR__ . '/swagger.html')) {
         header('Content-Type: text/html; charset=utf-8');
-        echo file_get_contents(__DIR__ . '/swagger.html');
+        $base = '<base href="' . htmlspecialchars(rtrim(BACKEND_URL, '/') . '/', ENT_QUOTES, 'UTF-8') . '">';
+        echo preg_replace('#<head[^>]*>#i', '$0' . "\n" . $base, file_get_contents(__DIR__ . '/swagger.html'), 1);
         exit;
     }
+}
+// zk-env.js requested relative to /api/ by mistake: serve the backend's copy.
+if ($route === 'zk-env.js' && is_file(__DIR__ . '/zk-env.js')) {
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Cache-Control: no-store');
+    readfile(__DIR__ . '/zk-env.js');
+    exit;
 }
 
 // ── Database Reset & Seed Tool ──

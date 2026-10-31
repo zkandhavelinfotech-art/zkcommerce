@@ -549,7 +549,7 @@ body {
       </div>
     </a>
     <div style="display:flex; align-items:center; gap:8px;">
-      <span class="brand-badge">Audit Baseline: v4.8.0-STABLE</span>
+      <span class="brand-badge">Audit Baseline: v4.9 (b0a1fce)</span>
     </div>
     <nav class="nav-links">
       <a href="/release-history.html" class="nav-btn">Release History</a>
@@ -589,8 +589,194 @@ body {
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Current Release</div>
-      <div class="kpi-value">v4.8.0</div>
-      <div class="kpi-sub">Commit <code>aee30f3</code> (Main + v4.8)</div>
+      <div class="kpi-value">v4.9</div>
+      <div class="kpi-sub">Commit <code>b0a1fce</code> (branch v4.9) · v4.8.0 baseline <code>aee30f3</code></div>
+    </div>
+  </section>
+
+  <!-- v4.9 Update: delivered, open gaps, untested -->
+  <section id="v49-update" style="margin-bottom: 50px;">
+    <div class="section-head">
+      <div class="section-title">
+        <span>v4.9</span> Environments, Split Deployment &amp; Security Update
+      </div>
+      <span class="section-tag">Latest · Oct 2026</span>
+    </div>
+
+    <h3 style="margin:0 0 12px;font-size:15px;color:var(--zk-text-light)">Delivered in v4.9</h3>
+    <div class="matrix-container" style="margin-bottom:28px">
+      <table class="matrix-table">
+        <thead>
+          <tr><th>Feature</th><th>Target Domain</th><th>Delivery Status</th><th>Where</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Split Frontend / Backend + API PHP packages</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">🛍 Build &amp; Deploy Frontend (shopping portal + its images) and ⚙ Build &amp; Deploy Backend + API (api.php, Store Builder, Merchant, client admin, orders, Razorpay, WhatsApp, SQL) — separate versions, ZIPs and FTP upload</span></td>
+            <td>Publish Portal</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td><a href="/store-builder/" style="color:#60A5FA;text-decoration:none;">Store Builder → Publish →</a></td>
+          </tr>
+          <tr>
+            <td><strong>PHP-only Publish portal</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Node.js / Railway / Vercel / PostgreSQL options removed from the portal; backend package ~718 KB (no product images)</span></td>
+            <td>Publish Portal</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td><code>store-builder/index.html</code></td>
+          </tr>
+          <tr>
+            <td><strong>3 environments: nodedev · phpdev · prod</strong><br><span style="color:var(--zk-text-muted);font-size:12px;"><code>zk-env.js</code> sets <code>window.ZK</code> / <code>API_BASE</code> for every page: nodedev from <code>.env</code> (Node serves it), phpdev &amp; prod written into the PHP packages. 91 pages switched to <code>ZK.api</code>; no host guessing left</span></td>
+            <td>All pages</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td><code>api/services/zk-env.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Per-environment settings in the portal</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Frontend URL, Backend + API URL, MySQL, admin password, Razorpay keys + webhook secret (secrets encrypted). Generates <code>db_config.php</code>, <code>store_config.php</code>, <code>payment_config.php</code>, <code>zk-env.js</code></span></td>
+            <td>Publish Portal</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td>phpdev &amp; prod tabs</td>
+          </tr>
+          <tr>
+            <td><strong>Razorpay keys per environment</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">prod → live, phpdev → test; each package carries only its own keys. Webhook URL from the backend URL</span></td>
+            <td>Payments</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td><code>deployment-exporter.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Hardcoded keys, hosts &amp; typo domain removed</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Live Razorpay key/secret and webhook secrets removed from source (read from <code>.env</code> / portal); <code>smeranm-naturals.in</code> typo fixed; <code>api.zkcommerce.in</code> / <code>localhost:3000</code> guessing removed</span></td>
+            <td>Security</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td>payments.js, examples, exporter</td>
+          </tr>
+          <tr>
+            <td><strong>Production API 500 fixed</strong><br><span style="color:var(--zk-text-muted);font-size:12px;"><code>commerce.php</code> declared <code>zkcEnsureInvoice()</code> twice (from cca8385) — every api.php request failed. UTF-8 BOM stripped from api.php / login pages</span></td>
+            <td>PHP API</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Fixed in code</span></td>
+            <td><code>api/services/php/commerce.php</code></td>
+          </tr>
+          <tr>
+            <td><strong>Subfolder-safe backend, prod login, Swagger</strong><br><span style="color:var(--zk-text-muted);font-size:12px;"><code>.htaccess</code> works in <code>/smeram-backend-api</code> (database/ 404, configs 403); demo credentials hidden on prod; Swagger &amp; openapi servers from the environment</span></td>
+            <td>Backend</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Completed</span></td>
+            <td><code>swagger.html</code>, <code>login.html</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:0 0 12px;font-size:15px;color:var(--zk-text-light)">Open gaps after v4.9</h3>
+    <div class="matrix-container" style="margin-bottom:28px">
+      <table class="matrix-table">
+        <thead>
+          <tr><th>Gap</th><th>Area</th><th>Severity</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Rotate the live Razorpay key secret</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Removed from source, but still in git history (pushed with branch v4.9)</span></td>
+            <td>Security</td>
+            <td><span class="severity-tag severity-high">High</span></td>
+            <td>Razorpay Dashboard → regenerate secret → save in prod tab + <code>.env</code></td>
+          </tr>
+          <tr>
+            <td><strong>Production backend not redeployed</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Live api.php still returns HTTP 500 (duplicate function) until the fixed Backend + API package is uploaded</span></td>
+            <td>Deployment</td>
+            <td><span class="severity-tag severity-high">High</span></td>
+            <td>prod tab → ⚙ Build &amp; Deploy Backend + API, then 🛍 Frontend</td>
+          </tr>
+          <tr>
+            <td><strong>Razorpay test keys missing</strong><br><span style="color:var(--zk-text-muted);font-size:12px;"><code>RAZORPAY_TEST_KEY_ID / SECRET</code> in <code>.env</code> are placeholders — phpdev &amp; nodedev online payment fails</span></td>
+            <td>Payments</td>
+            <td><span class="severity-tag severity-high">High</span></td>
+            <td>Add rzp_test_ keys to <code>.env</code> or the phpdev tab</td>
+          </tr>
+          <tr>
+            <td><strong>Webhook secrets are placeholders</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">prod blank → falls back to <code>.env</code> placeholder</span></td>
+            <td>Payments</td>
+            <td><span class="severity-tag severity-med">Medium</span></td>
+            <td>Create webhook at <code>&lt;backend&gt;/api.php?route=payments/razorpay/webhook</code>, save secret</td>
+          </tr>
+          <tr>
+            <td><strong>nodedev uses LIVE Razorpay</strong><br><span style="color:var(--zk-text-muted);font-size:12px;"><code>RAZORPAY_MODE=live</code> in <code>.env</code></span></td>
+            <td>Payments</td>
+            <td><span class="severity-tag severity-med">Medium</span></td>
+            <td>Set <code>RAZORPAY_MODE=test</code> once test keys exist</td>
+          </tr>
+          <tr>
+            <td><strong><code>test-db.php</code> has no password</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Shows DB host and user to anyone</span></td>
+            <td>Security</td>
+            <td><span class="severity-tag severity-med">Medium</span></td>
+            <td>Add admin-password gate (as admin-orders.php)</td>
+          </tr>
+          <tr>
+            <td><strong><code>merchants</code> table on prod MySQL</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">PHP login needs it; only the full reset seed creates it</span></td>
+            <td>Database</td>
+            <td><span class="severity-tag severity-med">Medium</span></td>
+            <td>Check after redeploy; add a merchants-only SQL if login fails</td>
+          </tr>
+          <tr>
+            <td><strong>FTP not saved</strong> for phpdev / prod</td>
+            <td>Deployment</td>
+            <td><span class="severity-tag severity-low">Low</span></td>
+            <td>Save &amp; test FTP so deploy buttons upload</td>
+          </tr>
+          <tr>
+            <td><strong>Swagger not served by Node</strong> (nodedev)</td>
+            <td>API docs</td>
+            <td><span class="severity-tag severity-low">Low</span></td>
+            <td>Optional <code>/swagger.html</code> route in Node</td>
+          </tr>
+          <tr>
+            <td><strong>Pre-existing script error in <code>affiliates.html</code></strong> (merchant + client)</td>
+            <td>Merchant</td>
+            <td><span class="severity-tag severity-low">Low</span></td>
+            <td>Fix the inline script syntax</td>
+          </tr>
+          <tr>
+            <td><strong>Legacy <code>clients/smeram/index.html</code></strong> still has the public Razorpay key id (not deployed)</td>
+            <td>Storefront</td>
+            <td><span class="severity-tag severity-low">Low</span></td>
+            <td>Remove or read from config</td>
+          </tr>
+          <tr>
+            <td><strong>Same admin password</strong> for phpdev and prod</td>
+            <td>Security</td>
+            <td><span class="severity-tag severity-low">Low</span></td>
+            <td>Use a separate, stronger prod password</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:0 0 8px;font-size:15px;color:var(--zk-text-light)">Not yet tested end-to-end</h3>
+    <ul style="margin:0 0 8px 18px;color:var(--zk-text-dim);font-size:13.5px;line-height:1.8">
+      <li>Build &amp; Deploy buttons clicked in the browser, and FTP upload (packages were verified by scripted builds)</li>
+      <li>phpdev against the real MAMP database (MySQL user <code>smeram</code> not yet confirmed — check <code>/api/health</code>)</li>
+      <li>Swagger UI in a browser; live prod after redeploy</li>
+    </ul>
+    <p style="color:var(--zk-text-muted);font-size:12.5px;margin:0">Verified: nodedev <code>zk-env.js</code> from <code>.env</code>; phpdev packages on MAMP Apache in a subfolder (API rewrite, database/ 404, configs 403, fetch routing); PHP 7.4 / 8.3 lint.</p>
+  </section>
+
+  <!-- Gap documents index -->
+  <section id="gap-documents" style="margin-bottom: 50px;">
+    <div class="section-head">
+      <div class="section-title">
+        <span>📚</span> Gap Documents Index
+      </div>
+      <span class="section-tag">All in one place</span>
+    </div>
+    <div class="matrix-container">
+      <table class="matrix-table">
+        <thead>
+          <tr><th>Document</th><th>What it is</th><th>Open (nodedev)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>gap-analysis.html</code> (this page)</td><td>Product Gap Analysis &amp; Release Audit — v4.8.0 baseline + v4.9 update</td><td><a href="/gap-analysis" style="color:#60A5FA;text-decoration:none;">/gap-analysis</a> (also <code>/audit</code>)</td></tr>
+          <tr><td><code>release-gap-comparison.html</code></td><td>Release History &amp; Gap Analysis Comparison Report — v4.8.0</td><td><a href="/release-gap-comparison" style="color:#60A5FA;text-decoration:none;">/release-gap-comparison</a></td></tr>
+          <tr><td><code>admin/gap-analysis-full.html</code></td><td>Gap Analysis v4 vs v5</td><td><a href="/admin/gap-analysis-full.html" style="color:#60A5FA;text-decoration:none;">/admin/gap-analysis-full.html</a></td></tr>
+          <tr><td><code>admin/gaps.html</code></td><td>Short gap list</td><td><a href="/admin/gaps.html" style="color:#60A5FA;text-decoration:none;">/admin/gaps.html</a></td></tr>
+          <tr><td><code>admin/roadmap-gap-analysis.html</code></td><td>Roadmap: v4.1 Final → v5.0 → v6.0</td><td><a href="/admin/roadmap-gap-analysis.html" style="color:#60A5FA;text-decoration:none;">/admin/roadmap-gap-analysis.html</a></td></tr>
+          <tr><td><code>DEPLOYMENT-READINESS.md</code></td><td>Deployment readiness checklist (Markdown)</td><td>Open in the editor</td></tr>
+          <tr><td><code>merchant/gap-analysis.html</code>, <code>merchant/release-gap-comparison.html</code></td><td>Copies of the first two, under the Merchant folder</td><td><a href="/merchant/gap-analysis.html" style="color:#60A5FA;text-decoration:none;">/merchant/gap-analysis.html</a></td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
