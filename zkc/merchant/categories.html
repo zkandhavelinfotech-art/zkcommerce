@@ -267,6 +267,29 @@ body { background: var(--zk-chalk); overflow-x: hidden; }
 <script src="../assets/js/app.js"></script>
 <script>
 var API_BASE = ZK.api;
+async function categoryFetch(urlOrPath, opts) {
+  var token = auth.token;
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {});
+  if (token && !opts.headers['Authorization']) opts.headers['Authorization'] = 'Bearer ' + token;
+  
+  var clean = urlOrPath.replace(/^.*?\/api\/?/, '').replace(/^\//, '');
+  var fullApi = API_BASE + '/' + clean;
+  var phpUrl = '../api.php?route=' + encodeURIComponent(clean);
+  
+  var res = null;
+  try {
+    res = await fetch(fullApi, opts);
+    if (!res.ok && (res.status === 404 || res.status === 405)) {
+      var pr = await fetch(phpUrl, opts).catch(function(){ return null; });
+      if (pr && pr.ok) res = pr;
+    }
+  } catch (err) {
+    res = await fetch(phpUrl, opts).catch(function(){ return null; });
+    if (!res) throw err;
+  }
+  return res;
+}
 var CATEGORIES = [];
 var PRODUCTS = [];
 var CURRENT_STORE = null;
@@ -283,7 +306,7 @@ async function initCategoriesPage() {
 async function loadStoreData() {
   try {
     var token = auth.token;
-    var r = await fetch(API_BASE + '/stores', {
+    var r = await categoryFetch(API_BASE + '/stores', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     var d = await r.json();
@@ -301,7 +324,7 @@ async function loadStoreData() {
       if (link2) link2.href = liveUrl;
 
       // Fetch builder catalog
-      var bRes = await fetch(API_BASE + '/stores/' + CURRENT_STORE.id + '/builder', {
+      var bRes = await categoryFetch(API_BASE + '/stores/' + CURRENT_STORE.id + '/builder', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       var bData = await bRes.json();
@@ -461,7 +484,7 @@ async function saveCategoryForm(e) {
     var token = auth.token;
     var url = API_BASE + '/categories' + (id ? ('/' + id) : '');
     var method = id ? 'PUT' : 'POST';
-    var r = await fetch(url, {
+    var r = await categoryFetch(url, {
       method: method,
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify(payload)
@@ -483,7 +506,7 @@ async function deleteCategory(id) {
   if (!confirm('Delete this category? Associated products will stay in your store as uncategorized.')) return;
   try {
     var token = auth.token;
-    var r = await fetch(API_BASE + '/categories/' + id, {
+    var r = await categoryFetch(API_BASE + '/categories/' + id, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ store_id: CURRENT_STORE.id })

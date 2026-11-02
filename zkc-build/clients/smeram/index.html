@@ -2269,44 +2269,39 @@ function handlePlaceOrder(e) {
         items: cart.map(function(c) { return { product_id: c.id, quantity: c.qty }; })
       });
 
-      fetch('/api/storefront/smeram/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: checkoutPayload
-      }).then(function(r) {
-        if (!r.ok && r.status === 404) {
-          return fetch('api.php?route=storefront/smeram/checkout', {
+      function safeCheckoutFetch(endpoint, payloadStr) {
+        var clean = endpoint.replace(/^\/?(api\/)?/, '');
+        var phpUrl = 'api.php?route=' + encodeURIComponent(clean);
+        var nodeUrl = '/api/' + clean;
+        return fetch(phpUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payloadStr
+        }).catch(function() {
+          return fetch(nodeUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: checkoutPayload
+            body: payloadStr
           });
-        }
-        return r;
-      }).then(safeParseJson).then(function(nodeRes) {
-        console.log('Order registered on API:', nodeRes);
-        if (nodeRes && nodeRes.order_id && paymentMeta && paymentMeta.paymentId) {
-          var verifyPayload = JSON.stringify({
-            order_id: nodeRes.order_id,
-            razorpay_order_id: paymentMeta.orderId || ('order_' + nodeRes.order_id),
-            razorpay_payment_id: paymentMeta.paymentId,
-            razorpay_signature: paymentMeta.signature || ''
-          });
-          fetch('/api/payments/razorpay/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: verifyPayload
-          }).then(function(vr) {
-            if (!vr.ok && vr.status === 404) {
-              return fetch('api.php?route=payments/razorpay/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: verifyPayload
-              });
-            }
-            return vr;
-          }).then(safeParseJson).catch(function(){});
-        }
-      }).catch(function(){});
+        });
+      }
+
+      safeCheckoutFetch('storefront/smeram/checkout', checkoutPayload)
+        .then(safeParseJson)
+        .then(function(nodeRes) {
+          console.log('Order registered on API:', nodeRes);
+          if (nodeRes && nodeRes.order_id && paymentMeta && paymentMeta.paymentId) {
+            var verifyPayload = JSON.stringify({
+              order_id: nodeRes.order_id,
+              razorpay_order_id: paymentMeta.orderId || ('order_' + nodeRes.order_id),
+              razorpay_payment_id: paymentMeta.paymentId,
+              razorpay_signature: paymentMeta.signature || ''
+            });
+            safeCheckoutFetch('payments/razorpay/verify', verifyPayload)
+              .then(safeParseJson)
+              .catch(function(){});
+          }
+        }).catch(function(){});
     } catch (_) {}
 
     renderSuccessScreen(paymentMeta);
@@ -2322,7 +2317,7 @@ function handlePlaceOrder(e) {
         currency: 'INR',
         name: 'Smeram Naturals',
         description: 'Order #' + orderNum,
-        image: 'assets/themes/smeram/smeram-box-bottle.jpg',
+        image: (location.origin + location.pathname.replace(/\/[^\/]*$/, '')) + '/assets/themes/smeram/smeram-box-bottle.jpg',
         handler: function(response) {
           persistOrderAndNotify({
             paymentId: response.razorpay_payment_id,

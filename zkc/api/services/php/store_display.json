@@ -1,0 +1,12 @@
+{
+  "show_offers": true,
+  "show_all_products": true,
+  "announcement_enabled": true,
+  "show_category_images": true,
+  "category_link": "single_product",
+  "category_cta_text": "",
+  "show_benefits": true,
+  "show_instructions": true,
+  "show_ingredients": true
+}
+

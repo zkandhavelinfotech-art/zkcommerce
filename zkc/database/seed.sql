@@ -70,6 +70,7 @@ UPDATE stores SET logo_url='/assets/themes/smeram/smeram-logo.png',primary_colou
   -- Drop section overrides saved by the older design so the new content shows.
   theme_config=(COALESCE(theme_config,'{}'::jsonb) - 'sections' - 'templates' - 'hidden_sections' - 'removed_sections') || jsonb_build_object(
     'design','smeram','template_id','smeram-natural','style_preset','smeram',
+    'display', jsonb_build_object('category_link', 'single_product', 'category_cta_text', '', 'show_benefits', true, 'show_instructions', true, 'show_ingredients', true),
     'primary_colour','#ED6375','bg_colour','#FFF5F7','accent_colour','#A3B545','logo_url','/assets/themes/smeram/smeram-logo.png',
     'sections', jsonb_build_object(
       'announcement', jsonb_build_object('visible', false),

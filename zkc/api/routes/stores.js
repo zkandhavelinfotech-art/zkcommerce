@@ -135,6 +135,18 @@ router.put('/:id/draft', auth, async (req, res) => {
       const conflict = await pool.query('SELECT id FROM stores WHERE lower(custom_domain)=lower($1) AND id<>$2',[fields.custom_domain,req.params.id]);
       if (conflict.rows.length) return res.status(409).json({ error: 'Custom domain is already connected to another store' });
     }
+    // Retain settings between Store Builder and Merchant Portal (both keep what the other saved)
+    const existingRes = await pool.query('SELECT theme_config FROM stores WHERE id=$1 AND merchant_id=$2', [req.params.id, req.user.id]);
+    if (!existingRes.rows.length) return res.status(404).json({ error: 'Store not found' });
+    const existingConfig = existingRes.rows[0].theme_config || {};
+    const finalThemeConfig = {
+      ...existingConfig,
+      ...theme_config,
+      checkout: {
+        ...(existingConfig.checkout || {}),
+        ...(theme_config.checkout || {})
+      }
+    };
     const { rows } = await pool.query(
       `UPDATE stores SET theme_config=$3::jsonb, store_name=COALESCE($4,store_name), tagline=COALESCE($5,tagline),
        hero_headline=COALESCE($6,hero_headline),hero_subtext=COALESCE($7,hero_subtext),hero_cta_text=COALESCE($8,hero_cta_text),
@@ -142,7 +154,7 @@ router.put('/:id/draft', auth, async (req, res) => {
        logo_url=COALESCE($12,logo_url),whatsapp_number=COALESCE($13,whatsapp_number),instagram_handle=COALESCE($14,instagram_handle),
        address=COALESCE($15,address),city=COALESCE($16,city),state=COALESCE($17,state),custom_domain=COALESCE($18,custom_domain),updated_at=NOW()
        WHERE id=$1 AND merchant_id=$2 RETURNING id,store_name,slug,status,theme_config,updated_at`,
-      [req.params.id, req.user.id, JSON.stringify(theme_config), fields.store_name, fields.tagline,
+      [req.params.id, req.user.id, JSON.stringify(finalThemeConfig), fields.store_name, fields.tagline,
        fields.hero_headline, fields.hero_subtext, fields.hero_cta_text, fields.primary_colour,
        fields.bg_colour, fields.accent_colour, fields.logo_url, fields.whatsapp_number, fields.instagram_handle,
        fields.address, fields.city, fields.state, fields.custom_domain]
@@ -779,8 +791,11 @@ const displayOf = cfg => ({
   show_offers: ((cfg || {}).display || {}).show_offers !== false, 
   show_all_products: (((cfg || {}).sections || {}).products || {}).visible !== false,
   announcement_enabled: (cfg || {}).announcement_enabled !== false && (((cfg || {}).sections || {}).announcement || {}).visible !== false,
-  category_link: CATEGORY_LINK_MODES.includes(((cfg || {}).display || {}).category_link) ? cfg.display.category_link : 'collection',
-  category_cta_text: String(((cfg || {}).display || {}).category_cta_text || '')
+  category_link: CATEGORY_LINK_MODES.includes(((cfg || {}).display || {}).category_link) ? cfg.display.category_link : 'single_product',
+  category_cta_text: String(((cfg || {}).display || {}).category_cta_text || ''),
+  show_benefits: ((cfg || {}).display || {}).show_benefits !== false,
+  show_instructions: ((cfg || {}).display || {}).show_instructions !== false,
+  show_ingredients: ((cfg || {}).display || {}).show_ingredients !== false
 });
 // Where a home-page category box goes: its collection page, or straight to the product page.
 const CATEGORY_LINK_MODES = ['collection', 'single_product', 'first_product'];
@@ -800,6 +815,9 @@ router.put('/:id/display', auth, async (req, res) => {
       if (req.body.show_offers !== undefined) cfg.display = { ...(cfg.display || {}), show_offers: req.body.show_offers !== false };
       if (req.body.category_link !== undefined) cfg.display = { ...(cfg.display || {}), category_link: CATEGORY_LINK_MODES.includes(req.body.category_link) ? req.body.category_link : 'collection' };
       if (req.body.category_cta_text !== undefined) cfg.display = { ...(cfg.display || {}), category_cta_text: String(req.body.category_cta_text || '').trim().slice(0, 40) };
+      if (req.body.show_benefits !== undefined) cfg.display = { ...(cfg.display || {}), show_benefits: req.body.show_benefits !== false };
+      if (req.body.show_instructions !== undefined) cfg.display = { ...(cfg.display || {}), show_instructions: req.body.show_instructions !== false };
+      if (req.body.show_ingredients !== undefined) cfg.display = { ...(cfg.display || {}), show_ingredients: req.body.show_ingredients !== false };
       if (req.body.show_all_products !== undefined || req.body.products_enabled !== undefined) {
         const prodVal = req.body.show_all_products !== undefined ? req.body.show_all_products !== false : req.body.products_enabled !== false;
         cfg.sections = cfg.sections || {};

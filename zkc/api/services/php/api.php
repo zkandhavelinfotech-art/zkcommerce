@@ -5,6 +5,15 @@
  * Same rules as the Node API: sizes and stock, coupons, shipping rates, GST, Razorpay (verify + webhook), WhatsApp.
  */
 header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin');
+header('Access-Control-Max-Age: 86400');
+
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 if (is_file(__DIR__ . '/store_config.php')) require_once __DIR__ . '/store_config.php';
 require_once __DIR__ . '/db_config.php';
 if (is_file(__DIR__ . '/payment_config.php')) require_once __DIR__ . '/payment_config.php';
@@ -94,6 +103,35 @@ function zkcGetOrdersTable($pdo) {
     return $tbl;
 }
 
+function zkcGetThemeConfig() {
+    $themeConfigFile = __DIR__ . '/store_theme_config.json';
+    $saved = [];
+    if (is_file($themeConfigFile)) {
+        $saved = json_decode(file_get_contents($themeConfigFile), true) ?: [];
+    }
+    $defaultCheckout = [
+        'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : true,
+        'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
+        'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
+        'show_shipping_field' => true,
+        'show_whatsapp_order' => false,
+        'show_cart_popup' => true,
+        'show_payment_selector' => true,
+        'pay_button' => [
+            'text' => 'Place order',
+            'font_family' => '',
+            'font_size' => null,
+            'radius' => null,
+            'bold' => true,
+            'bg_color' => '',
+            'text_color' => ''
+        ]
+    ];
+    $savedCheckout = $saved['checkout'] ?? [];
+    $saved['checkout'] = array_merge($defaultCheckout, is_array($savedCheckout) ? $savedCheckout : []);
+    return $saved;
+}
+
 // 1. Check query parameter route
 $route = trim($_GET['route'] ?? '', '/');
 // 2. If route is empty (e.g. called via /api/auth/login or /api/orders directly), parse REQUEST_URI
@@ -120,6 +158,15 @@ $pdo = getDbConnection();
 if ($route === 'openapi.json') {
     if (is_file(__DIR__ . '/openapi.json')) {
         header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin');
+header('Access-Control-Max-Age: 86400');
+
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
         echo file_get_contents(__DIR__ . '/openapi.json');
         exit;
     }
@@ -289,13 +336,109 @@ if (preg_match('#^stores/(\d+)$#', $route, $sm) && $method === 'GET') {
             'theme_name' => 'smeram',
             'logo_url' => 'assets/themes/smeram/smeram-logo.png',
             'status' => 'live',
-            'theme_config' => [
-                'checkout' => [
-                    'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : false,
-                    'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
-                    'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
-                    'show_shipping_field' => true,
-                    'show_whatsapp_order' => false
+            'theme_config' => zkcGetThemeConfig()
+        ]
+    ]);
+}
+
+// Category & Product & Page DB helpers for Store Builder & Merchant Dashboard
+function zkcGetCategories($pdo, $storeId = STORE_ID) {
+    try {
+        $pdo->query("SELECT 1 FROM `categories` LIMIT 1");
+    } catch (Exception $e) {
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `categories` (
+              `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+              `store_id` BIGINT NOT NULL,
+              `name` VARCHAR(120) NOT NULL,
+              `slug` VARCHAR(120) NOT NULL,
+              `image_url` TEXT DEFAULT NULL,
+              `sort_order` INT DEFAULT 0,
+              `active` TINYINT(1) DEFAULT 1,
+              `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              INDEX `idx_cat_store` (`store_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        } catch (Exception $ce) {}
+    }
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM `categories` WHERE store_id = ? ORDER BY sort_order ASC, name ASC, id ASC");
+        $stmt->execute([$storeId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        if (!empty($rows)) {
+            return array_map(function($r) {
+                $r['id'] = (int)$r['id'];
+                $r['sort_order'] = (int)($r['sort_order'] ?? 0);
+                $r['active'] = (bool)($r['active'] ?? 1);
+                return $r;
+            }, $rows);
+        }
+    } catch (Exception $e) {}
+    return [
+        ['id' => 1, 'store_id' => $storeId, 'name' => 'Hair Care', 'slug' => 'hair-care', 'image_url' => 'assets/themes/smeram/smeram-bottle-single.jpg', 'sort_order' => 1, 'active' => true],
+        ['id' => 2, 'store_id' => $storeId, 'name' => 'Joint Care', 'slug' => 'joint-care', 'image_url' => 'assets/themes/smeram/ortho-pain.jpg', 'sort_order' => 2, 'active' => true],
+        ['id' => 3, 'store_id' => $storeId, 'name' => 'Ayurgold Face Care', 'slug' => 'ayurgold-face-care', 'image_url' => 'assets/themes/smeram/face-care.jpg', 'sort_order' => 3, 'active' => true],
+        ['id' => 4, 'store_id' => $storeId, 'name' => 'Vedic Health Foods', 'slug' => 'vedic-health-foods', 'image_url' => 'assets/themes/smeram/health-foods.jpg', 'sort_order' => 4, 'active' => true]
+    ];
+}
+
+function zkcGetProducts($pdo, $storeId = STORE_ID) {
+    try {
+        $stmt = $pdo->prepare("SELECT p.*, c.name AS category_name FROM `products` p LEFT JOIN `categories` c ON c.id = p.category_id WHERE p.store_id = ? ORDER BY p.created_at DESC");
+        $stmt->execute([$storeId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        if (!empty($rows)) {
+            return array_map(function($r) {
+                $r['id'] = (int)$r['id'];
+                $r['price'] = (float)$r['price'];
+                $r['in_stock'] = (bool)($r['in_stock'] ?? 1);
+                $r['active'] = (bool)($r['active'] ?? 1);
+                return $r;
+            }, $rows);
+        }
+    } catch (Exception $e) {}
+    return [
+        ['id' => 1, 'store_id' => $storeId, 'category_id' => 1, 'category_name' => 'Hair Care', 'name' => 'Classical Siddha Hair Oil', 'slug' => 'siddha-hair-oil', 'price' => 399.00, 'in_stock' => true, 'active' => true],
+        ['id' => 2, 'store_id' => $storeId, 'category_id' => 2, 'category_name' => 'Joint Care', 'name' => 'Ortho Pain Relief Thailam', 'slug' => 'ortho-pain-oil', 'price' => 449.00, 'in_stock' => true, 'active' => true],
+        ['id' => 3, 'store_id' => $storeId, 'category_id' => 3, 'category_name' => 'Ayurgold Face Care', 'name' => 'Ayurgold Kumkumadi Face Glow Oil', 'slug' => 'ayurgold-face-oil', 'price' => 599.00, 'in_stock' => true, 'active' => true],
+        ['id' => 4, 'store_id' => $storeId, 'category_id' => 4, 'category_name' => 'Vedic Health Foods', 'name' => 'Pure Moringa Leaf Powder', 'slug' => 'moringa-powder', 'price' => 249.00, 'in_stock' => true, 'active' => true]
+    ];
+}
+
+function zkcGetPages($pdo, $storeId = STORE_ID) {
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM `store_pages` WHERE store_id = ? ORDER BY sort_order ASC, id ASC");
+        $stmt->execute([$storeId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        if (!empty($rows)) return $rows;
+    } catch (Exception $e) {}
+    return [];
+}
+
+// Store templates for theme switcher
+if ($route === 'stores/templates' && $method === 'GET') {
+    respond([
+        'templates' => [
+            [
+                'id' => 'smeram-natural',
+                'name' => 'Smeram Naturals',
+                'family' => 'Ayurvedic & Siddha',
+                'description' => 'Earthy botanicals with rich terracotta accents',
+                'design' => 'smeram',
+                'starter_fields' => [
+                    'body_font' => 'Poppins',
+                    'hero_font' => 'Playfair Display',
+                    'announcement_text' => '🌿 100% Classical Siddha & Ayurvedic Formulations'
+                ]
+            ],
+            [
+                'id' => 'miliro-natural',
+                'name' => 'Miliro Herbals',
+                'family' => 'Herbals & Wellness',
+                'description' => 'Clean organic typography with fresh sage tones',
+                'design' => 'miliro',
+                'starter_fields' => [
+                    'body_font' => 'Inter',
+                    'hero_font' => 'Playfair Display'
                 ]
             ]
         ]
@@ -303,25 +446,21 @@ if (preg_match('#^stores/(\d+)$#', $route, $sm) && $method === 'GET') {
 }
 
 // Store builder data for merchant dashboard (e.g. req('/stores/2/builder'))
-if (preg_match('#^stores/(\d+)/builder$#', $route) && $method === 'GET') {
+if (preg_match('#^stores/(\d+)/builder$#', $route, $bMatch) && $method === 'GET') {
+    $storeId = (int)($bMatch[1] ?? STORE_ID);
     respond([
         'store' => [
-            'id' => STORE_ID,
+            'id' => $storeId,
             'store_name' => STORE_NAME,
             'slug' => STORE_SLUG,
             'theme_name' => 'smeram',
             'logo_url' => 'assets/themes/smeram/smeram-logo.png',
             'status' => 'live',
-            'theme_config' => [
-                'checkout' => [
-                    'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : false,
-                    'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
-                    'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
-                    'show_shipping_field' => true,
-                    'show_whatsapp_order' => false
-                ]
-            ]
+            'theme_config' => zkcGetThemeConfig()
         ],
+        'products' => zkcGetProducts($pdo, $storeId),
+        'categories' => zkcGetCategories($pdo, $storeId),
+        'pages' => zkcGetPages($pdo, $storeId),
         'payments' => [
             'razorpay_configured' => defined('RAZORPAY_KEY_ID') && RAZORPAY_KEY_ID !== '',
             'razorpay_mode' => defined('RAZORPAY_MODE') ? RAZORPAY_MODE : 'live'
@@ -329,24 +468,194 @@ if (preg_match('#^stores/(\d+)/builder$#', $route) && $method === 'GET') {
     ]);
 }
 
+// Storefront preview (HTML or JSON) for Store Builder iframe
+if (preg_match('#^stores/(\d+)/preview$#', $route, $pvMatch) && $method === 'GET') {
+    $format = $_GET['format'] ?? 'json';
+    if ($format === 'html') {
+        header('Content-Type: text/html; charset=utf-8');
+        header('X-Frame-Options: SAMEORIGIN');
+        $candidateFiles = [
+            __DIR__ . '/../../clients/' . STORE_SLUG . '/index.html',
+            __DIR__ . '/../clients/' . STORE_SLUG . '/index.html',
+            __DIR__ . '/../../index.html',
+            __DIR__ . '/../index.html',
+            __DIR__ . '/index.html',
+            __DIR__ . '/../../deployment/published/' . STORE_SLUG . '/static/index.html'
+        ];
+        $html = '';
+        foreach ($candidateFiles as $f) {
+            if (is_file($f)) {
+                $html = file_get_contents($f);
+                break;
+            }
+        }
+        if ($html === '') {
+            $html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><h2>Storefront Preview</h2><p>' . htmlspecialchars(STORE_NAME) . '</p></body></html>';
+        }
+        
+        $baseTag = '<base href="../clients/' . STORE_SLUG . '/">';
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            $baseTag = '<base href="' . htmlspecialchars(rtrim(BACKEND_URL, '/') . '/clients/' . STORE_SLUG . '/', ENT_QUOTES, 'UTF-8') . '">';
+        }
+        if (stripos($html, '<head>') !== false) {
+            $html = preg_replace('#<head[^>]*>#i', '$0' . "\n  " . $baseTag, $html, 1);
+        } else {
+            $html = '<head>' . $baseTag . '</head>' . $html;
+        }
+
+        if (!empty($_GET['theme_config'])) {
+            $tcJson = $_GET['theme_config'];
+            $inject = "\n<script>\n" .
+                      "try {\n" .
+                      "  window.ZK_PREVIEW_THEME = " . $tcJson . ";\n" .
+                      "  localStorage.setItem('zk_theme_config', JSON.stringify(" . $tcJson . "));\n" .
+                      "} catch(e) {}\n" .
+                      "</script>\n";
+            $html = preg_replace('#</head>#i', $inject . '</head>', $html, 1);
+        }
+
+        echo $html;
+        exit;
+    }
+
+    $storeId = (int)($pvMatch[1] ?? STORE_ID);
+    respond([
+        'preview' => true,
+        'store' => [
+            'id' => $storeId,
+            'store_name' => STORE_NAME,
+            'slug' => STORE_SLUG,
+            'theme_name' => 'smeram',
+            'theme_config' => zkcGetThemeConfig()
+        ],
+        'products' => zkcGetProducts($pdo, $storeId),
+        'categories' => zkcGetCategories($pdo, $storeId),
+        'pages' => zkcGetPages($pdo, $storeId)
+    ]);
+}
+
+// ── Categories CRUD ───────────────────────────────────────────
+if (($route === 'categories' || preg_match('#^stores/(\d+)/categories$#', $route)) && $method === 'GET') {
+    $storeId = STORE_ID;
+    if (isset($_GET['store_id'])) $storeId = (int)$_GET['store_id'];
+    elseif (preg_match('#^stores/(\d+)/categories$#', $route, $cm)) $storeId = (int)$cm[1];
+    respond(['categories' => zkcGetCategories($pdo, $storeId)]);
+}
+
+if (preg_match('#^categories/(\d+)$#', $route, $cm) && $method === 'GET') {
+    $catId = (int)$cm[1];
+    zkcGetCategories($pdo); // auto create table
+    $stmt = $pdo->prepare("SELECT * FROM `categories` WHERE id = ? LIMIT 1");
+    $stmt->execute([$catId]);
+    $cat = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$cat) respond(['error' => 'Category not found'], 404);
+    respond(['category' => $cat]);
+}
+
+if ($route === 'categories' && $method === 'POST') {
+    $storeId = (int)($body['store_id'] ?? STORE_ID);
+    $name = trim((string)($body['name'] ?? ''));
+    if ($name === '') respond(['error' => 'Category name is required'], 400);
+    $slug = trim((string)($body['slug'] ?? ''));
+    if ($slug === '') {
+        $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $name), '-'));
+    }
+    $imageUrl = trim((string)($body['image_url'] ?? '')) ?: null;
+    $sortOrder = (int)($body['sort_order'] ?? 0);
+    $active = isset($body['active']) ? ($body['active'] ? 1 : 0) : 1;
+
+    try {
+        zkcGetCategories($pdo, $storeId); // ensure table exists
+        $stmt = $pdo->prepare("INSERT INTO `categories` (store_id, name, slug, image_url, sort_order, active) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$storeId, $name, $slug, $imageUrl, $sortOrder, $active]);
+        $newId = (int)$pdo->lastInsertId();
+        respond(['success' => true, 'category' => [
+            'id' => $newId, 'store_id' => $storeId, 'name' => $name, 'slug' => $slug,
+            'image_url' => $imageUrl, 'sort_order' => $sortOrder, 'active' => (bool)$active
+        ]], 201);
+    } catch (Exception $e) {
+        respond(['error' => 'Failed to save category: ' . $e->getMessage()], 500);
+    }
+}
+
+if (preg_match('#^categories/(\d+)$#', $route, $cm) && ($method === 'PUT' || $method === 'POST')) {
+    $catId = (int)$cm[1];
+    $name = trim((string)($body['name'] ?? ''));
+    if ($name === '') respond(['error' => 'Category name is required'], 400);
+    $slug = trim((string)($body['slug'] ?? ''));
+    if ($slug === '') {
+        $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $name), '-'));
+    }
+    $imageUrl = trim((string)($body['image_url'] ?? '')) ?: null;
+    $sortOrder = (int)($body['sort_order'] ?? 0);
+    $active = isset($body['active']) ? ($body['active'] ? 1 : 0) : 1;
+
+    try {
+        zkcGetCategories($pdo);
+        $stmt = $pdo->prepare("UPDATE `categories` SET name = ?, slug = ?, image_url = ?, sort_order = ?, active = ? WHERE id = ?");
+        $stmt->execute([$name, $slug, $imageUrl, $sortOrder, $active, $catId]);
+        respond(['success' => true, 'category' => [
+            'id' => $catId, 'name' => $name, 'slug' => $slug,
+            'image_url' => $imageUrl, 'sort_order' => $sortOrder, 'active' => (bool)$active
+        ]]);
+    } catch (Exception $e) {
+        respond(['error' => 'Failed to update category: ' . $e->getMessage()], 500);
+    }
+}
+
+if (preg_match('#^categories/(\d+)$#', $route, $cm) && $method === 'DELETE') {
+    $catId = (int)$cm[1];
+    try {
+        zkcGetCategories($pdo);
+        $pdo->prepare("UPDATE `products` SET category_id = NULL WHERE category_id = ?")->execute([$catId]);
+        $pdo->prepare("DELETE FROM `categories` WHERE id = ?")->execute([$catId]);
+        respond(['success' => true, 'deleted_id' => $catId]);
+    } catch (Exception $e) {
+        respond(['error' => 'Failed to delete category: ' . $e->getMessage()], 500);
+    }
+}
+
 // Display settings
-if (preg_match('#^stores/(\d+)/display$#', $route)) {
+if (preg_match('#^stores/(\\d+)/display$#', $route)) {
+    $configFile = __DIR__ . '/store_display.json';
+    $saved = [];
+    if (is_file($configFile)) {
+        $saved = json_decode(file_get_contents($configFile), true) ?: [];
+    }
     if ($method === 'PUT') {
-        respond(['live' => true, 'display' => $body]);
+        $merged = array_merge($saved, is_array($body) ? $body : []);
+        @file_put_contents($configFile, json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        respond(['live' => true, 'display' => $merged]);
     } else {
-        respond([
-            'live' => true,
-            'display' => [
-                'show_offers' => true,
-                'show_all_products' => true,
-                'announcement_enabled' => true,
-                'show_category_images' => true
-            ]
-        ]);
+        $defaultDisplay = [
+            'show_offers' => true,
+            'show_all_products' => true,
+            'announcement_enabled' => true,
+            'show_category_images' => true,
+            'category_link' => 'single_product',
+            'category_cta_text' => '',
+            'show_benefits' => true,
+            'show_instructions' => true,
+            'show_ingredients' => true
+        ];
+        $display = array_merge($defaultDisplay, $saved);
+        respond(['live' => true, 'display' => $display]);
     }
 }
 
 // Draft & Publish
+if (preg_match('#^stores/(\d+)/draft$#', $route) && $method === 'PUT') {
+    $themeConfigFile = __DIR__ . '/store_theme_config.json';
+    $existing = zkcGetThemeConfig();
+    $incoming = is_array($body['theme_config'] ?? null) ? $body['theme_config'] : [];
+    $existingCheckout = $existing['checkout'] ?? [];
+    $incomingCheckout = is_array($incoming['checkout'] ?? null) ? $incoming['checkout'] : [];
+    $mergedCheckout = array_merge($existingCheckout, $incomingCheckout);
+    $merged = array_merge($existing, $incoming);
+    $merged['checkout'] = $mergedCheckout;
+    @file_put_contents($themeConfigFile, json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    respond(['success' => true, 'theme_config' => $merged]);
+}
 if (preg_match('#^stores/(\d+)/(draft|publish)$#', $route)) {
     respond(['success' => true]);
 }
@@ -358,15 +667,7 @@ if (preg_match('#^storefront/([^/]+)$#', $route) && $method === 'GET') {
             'id' => STORE_ID,
             'store_name' => STORE_NAME,
             'slug' => STORE_SLUG,
-            'theme_config' => [
-                'checkout' => [
-                    'cod' => defined('CHECKOUT_COD') ? CHECKOUT_COD : false,
-                    'razorpay' => defined('CHECKOUT_RAZORPAY') ? CHECKOUT_RAZORPAY : true,
-                    'show_coupon' => defined('CHECKOUT_COUPON') ? CHECKOUT_COUPON : false,
-                    'show_shipping_field' => true,
-                    'show_whatsapp_order' => false
-                ]
-            ]
+            'theme_config' => zkcGetThemeConfig()
         ]
     ]);
 }

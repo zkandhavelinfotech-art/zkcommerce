@@ -173,7 +173,11 @@ body{font-family:'Inter',sans-serif;background:#0D0D1A;color:#fff;min-height:100
 </div>
 
 <script>
-var API_BASE = ZK.api;
+var localHost = ['localhost','127.0.0.1'].includes(location.hostname);
+var localPage = localHost || location.protocol === 'file:';
+var isLocalPort3000 = location.port === '3000';
+var fallbackApi = localPage ? (isLocalPort3000 ? location.origin + '/api' : 'http://localhost:3000/api') : (location.origin + '/api');
+var API_BASE = (typeof ZK !== 'undefined' && ZK && ZK.api) ? ZK.api : fallbackApi;
 if(['localhost','127.0.0.1'].includes(location.hostname))document.getElementById('demo-logins').classList.add('visible');
 function demoLogin(email){document.getElementById('email').value=email;document.getElementById('password').value='demo1234';doLogin();}
 
@@ -226,9 +230,7 @@ async function doLogin(){
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({email:em,password:pw})
       });
-      if (r.ok || r.status === 401) {
-        d = await r.json();
-      }
+      d = await r.json().catch(function(){ return null; });
     } catch (_) {}
 
     // 2. If primary API failed (e.g. GoDaddy PHP hosting without Node.js), fallback to PHP api.php

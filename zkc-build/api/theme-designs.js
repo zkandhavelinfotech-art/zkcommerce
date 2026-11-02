@@ -72,6 +72,49 @@ function splitDescription(text) {
 const UNIT_LABEL = { ml: 'ml', l: 'L', g: 'g', kg: 'kg', pcs: 'pcs' };
 const netQuantityLabel = p => (p && p.net_quantity_value && p.net_quantity_unit ? `${Number(p.net_quantity_value)} ${UNIT_LABEL[p.net_quantity_unit] || p.net_quantity_unit}` : '');
 
+const SMERAM_DEFAULTS = {
+  'smeram naturals hair oil': {
+    benefits: [
+      'Deep Root Nourishment — Classical Sneha-Kalka-Drava herb decoction stimulates dormant follicles.',
+      '100% Dandruff Control — Antibacterial Ratanjot & Vetiver soothe scalp irritation.',
+      'Hair Fall Reduction — Bhringraj, Amla & Brahmi strengthen keratin roots.',
+      'Zero Mineral Oil — 100% pure cold-pressed coconut oil base with no liquid paraffin.'
+    ],
+    ingredients: ['Virgin Coconut Oil', 'Brahmi', 'Amla', 'Bhringraj', 'Ratanjot Roots', 'Jadamanshi', 'Vetiver', 'Curry Leaves', 'Hibiscus', 'Fenugreek', 'Lemongrass', 'Neem', 'Henna'],
+    howto: 'Step 1: Take 5–10 ml of oil, warm gently between palms.\nStep 2: Apply evenly across scalp and hair roots.\nStep 3: Massage in circular fingertip motions for 10 minutes.\nStep 4: Leave for 1–2 hours or overnight; wash with mild cleanser. Use 3 times weekly.'
+  },
+  'mahanarayan ortho pain oil': {
+    benefits: [
+      'Fast Joint & Muscular Relief — Eases knee stiffness, back pain and neck discomfort.',
+      'Deep Penetrating Heat Therapy — Stimulates micro-circulation for soothing warmth.',
+      'Cartilage & Synovial Support — Nourishes connective tissues and joint mobility.',
+      'Non-Greasy Herbal Aroma — Pure classical formulation with zero pungent synthetic smell.'
+    ],
+    ingredients: ['Mahanarayan Taila (52 classical herbs)', 'Gandhapura (Wintergreen)', 'Shallaki (Boswellia)', 'Nilgiri (Eucalyptus)', 'Nirgundi', 'Camphor', 'Virgin Sesame Oil'],
+    howto: 'Step 1: Clean and gently pat dry affected joint or muscle area.\nStep 2: Apply 5–8 ml of Mahanarayan Ortho Oil.\nStep 3: Massage gently with firm strokes for 8–10 minutes.\nStep 4: Cover with warm dry compress for deeper penetration. Apply twice daily.'
+  },
+  'ayurgold kumkumadi face oil': {
+    benefits: [
+      'Fades Pigmentation & Dark Spots — Pure Kashmiri saffron and Manjistha restore clear tone.',
+      'Luminous Golden Radiance — Imparts a healthy youthful glow to dull complexion.',
+      'Lightweight Overnight Elixir — Fast-absorbing botanical lipids nourish without greasy residue.',
+      'Clean Beauty Guarantee — Free of parabens, mineral oils, silicones, and synthetic fragrance.'
+    ],
+    ingredients: ['Grade-A Kashmiri Saffron (Crocus Sativus)', 'Red Sandalwood', 'Manjistha', 'Blue Lotus', 'Licorice', 'Pure Goat Milk', 'Virgin Sesame Seed Oil'],
+    howto: 'Step 1: Cleanse face and pat dry.\nStep 2: Dispense 2–3 drops onto clean fingertips.\nStep 3: Dab lightly across forehead, cheeks, and jawline; massage upward.\nStep 4: Leave on overnight as a restorative beauty treatment. Use nightly.'
+  },
+  'vedic a2 desi gir cow bilona ghee': {
+    benefits: [
+      'Traditional Wooden Bilona Method — Churned strictly from whole cultured A2 curd.',
+      'Golden Granular Texture (Danedar) — Divine Vedic aroma and unmatched purity.',
+      'Stimulates Digestive Fire (Agni) — Rich in natural butyric acid for gut flora.',
+      'High Thermal Smoke Point (~250°C) — Does not degrade or release free radicals in cooking.'
+    ],
+    ingredients: ['100% Pure Cultured Desi Gir Cow A2 Milk Fat (Traditional Bi-Directional Wooden Bilona Method)'],
+    howto: 'Step 1: Add 1–2 teaspoons daily to warm rice, rotis, or warm milk.\nStep 2: Take 1 tsp in the morning with warm water to kindle digestive agni.\nStep 3: Suitable for daily Ayurvedic wellness, cooking, and sautéing.'
+  }
+};
+
 function renderDesign(name, ctx) {
   const skin = skins[name];
   const { store, cfg, fields, allProducts, template, product, page, collection, pages, sec, isVisible, list,
@@ -136,13 +179,20 @@ function renderDesign(name, ctx) {
   });
   // Home category boxes: open the collection page, or jump straight to the product page (Merchant portal → Shop display).
   const display = cfg.display || {};
-  const categoryLinkMode = ['collection', 'single_product', 'first_product'].includes(display.category_link) ? display.category_link : 'collection';
+  const categoryLinkMode = ['collection', 'single_product', 'first_product'].includes(display.category_link) ? display.category_link : 'single_product';
   const categoryHref = c => {
     const items = c.products || [];
     const direct = categoryLinkMode === 'first_product' ? items[0] : categoryLinkMode === 'single_product' && items.length === 1 ? items[0] : null;
     return direct && direct.slug ? productPath(direct) : storeUrl('/collections/' + encodeURIComponent(c.slug));
   };
-  const categoryCta = String(display.category_cta_text || '').trim().slice(0, 40) || 'Explore Products';
+  const categoryCtaFor = c => {
+    const items = c.products || [];
+    const isDirect = categoryLinkMode === 'first_product' ? items.length > 0 : (categoryLinkMode === 'single_product' && items.length === 1);
+    if (display.category_cta_text && String(display.category_cta_text).trim()) {
+      return String(display.category_cta_text).trim().slice(0, 40);
+    }
+    return isDirect ? 'View Details' : 'Explore Products';
+  };
   const trustItems = list(sec('trust').items || fields.trust_items);
   const stars = '★★★★★';
 
@@ -255,7 +305,13 @@ function renderDesign(name, ctx) {
       const eyebrow = fields.hero_sub || store.tagline || '';
       const cta = s.button || fields.hero_cta || store.hero_cta_text || 'Shop now';
       const bg = s.background || fields.hero_bg;
-      const boxes = categories.length ? `<div class="category-grid">${categories.map(c => `<a class="cat-box" href="${categoryHref(c)}"><div class="cat-box-top"><span class="cat-pill">${esc(c.name.split(/\s+/)[0])}</span><span class="cat-count">${c.count} Product${c.count === 1 ? '' : 's'}</span></div><div class="cat-img-wrap">${c.image ? `<img src="${c.image}" alt="${esc(c.name)}" loading="lazy">` : `<span class="no-img">${esc(c.name.slice(0, 1))}</span>`}</div><div class="cat-box-title"><span>${esc(c.name)}</span><span class="cat-star">★ 4.9</span></div><div class="cat-box-action"><span>${esc(categoryCta)}</span><span class="arrow">→</span></div></a>`).join('')}</div>` : `<div class="hero-cta-row"><a class="btn-primary" href="#products">${esc(cta)} →</a></div>`;
+      const boxes = categories.length ? `<div class="category-grid">${categories.map(c => {
+        const items = c.products || [];
+        const direct = categoryLinkMode === 'first_product' ? items[0] : (categoryLinkMode === 'single_product' && items.length === 1 ? items[0] : null);
+        const href = categoryHref(c);
+        const ctaText = categoryCtaFor(c);
+        return `<a class="cat-box" href="${href}"${direct && direct.id ? ` onclick="return zkQuickView(${Number(direct.id)})"` : ''}><div class="cat-box-top"><span class="cat-pill">${esc(c.name.split(/\s+/)[0])}</span><span class="cat-count">${c.count} Product${c.count === 1 ? '' : 's'}</span></div><div class="cat-img-wrap">${c.image ? `<img src="${c.image}" alt="${esc(c.name)}" loading="lazy">` : `<span class="no-img">${esc(c.name.slice(0, 1))}</span>`}</div><div class="cat-box-title"><span>${esc(c.name)}</span><span class="cat-star">★ 4.9</span></div><div class="cat-box-action"><span>${esc(ctaText)}</span><span class="arrow">→</span></div></a>`;
+      }).join('')}</div>` : `<div class="hero-cta-row"><a class="btn-primary" href="#products">${esc(cta)} →</a></div>`;
       return `<section class="category-hero-section${img ? ' has-image' : ''}" data-zkc-section="hero" style="${bg ? `background-color:${safeColor(bg, '#fff')};` : ''}${img ? `background-image:linear-gradient(${rgba(skin.heroDark ? '#000000' : '#FFFFFF', skin.heroDark ? .45 : .82)},${rgba(skin.heroDark ? '#000000' : '#FFFFFF', skin.heroDark ? .45 : .82)}),url('${img}');` : ''}text-align:${['left', 'right'].includes(s.align) ? s.align : 'center'}"><div class="category-hero-inner"><div class="cat-header">${eyebrow ? `<div class="cat-badge-top">${esc(eyebrow)}</div>` : ''}<h1 class="cat-main-title">${esc(heading)}</h1>${sub ? `<p class="cat-main-subtitle">${esc(sub)}</p>` : ''}</div>${boxes}</div></section>`;
     },
     products() {
@@ -345,6 +401,19 @@ function renderDesign(name, ctx) {
   if (template === 'product' && product) {
     const imgs = imagesOf(product), d = splitDescription(product.description), off = discount(product);
     const ingredients = String(product.ingredients || '').split(/,|\n/).map(x => x.trim()).filter(Boolean);
+    const nameKey = String(product.name || '').toLowerCase().trim();
+    const fallback = SMERAM_DEFAULTS[nameKey] || {};
+    let benefits = [];
+    if (Array.isArray(product.benefits) && product.benefits.length) {
+      benefits = product.benefits.map(String);
+    } else if (product.benefits) {
+      benefits = String(product.benefits).split(/\r?\n|•|\*/).map(x => x.replace(/^[•\-*\s]+/, '').trim()).filter(Boolean);
+    } else if (fallback.benefits) {
+      benefits = fallback.benefits;
+    } else if (d.bullets.length) {
+      benefits = d.bullets;
+    }
+    const howto = String(product.user_instructions || product.instructions || fallback.howto || '').trim();
     // Sizes with their own price/stock (v4.6). Older plain-string "variants" stay as decorative chips.
     const sized = (Array.isArray(product.variants) ? product.variants : []).filter(v => v && typeof v === 'object' && v.id && v.active !== false);
     const firstSize = sized.find(v => Number(v.quantity) > 0) || sized[0] || null;
@@ -353,7 +422,7 @@ function renderDesign(name, ctx) {
     const ds = sec('product'), cat = categoryName(product);
     const related = allProducts.filter(p => p.id !== product.id && (!cat || categoryName(p) === cat)).slice(0, 3);
     const waLink = wa(`Hello ${storeName}, I want to order ${product.name}`);
-    content = `<div class="breadcrumb-bar"><div class="breadcrumb-inner"><div class="breadcrumb-links"><a href="${storeUrl('/')}">Home</a><span class="sep">/</span>${cat ? `<a href="${storeUrl('/collections/' + encodeURIComponent(slugify(cat)))}">${esc(cat)}</a><span class="sep">/</span>` : ''}<span class="current">${esc(product.name)}</span></div><a href="${storeUrl('/#products')}" class="btn-back-store">← Back to ${esc(storeName)}</a></div></div><main class="main-container"><section class="product-details-hero" data-zkc-section="product" style="${ds.background ? `background:${safeColor(ds.background, '#fff')}` : ''}"><div class="detail-grid"><div class="detail-gallery"><div class="detail-main-media">${imgs[0] ? `<img src="${imgs[0]}" alt="${esc(product.name)}" id="mainImage" onclick="zkLightbox(this.src)">` : `<span class="no-img big">${esc(product.name.slice(0, 1))}</span>`}</div>${imgs.length > 1 ? `<div class="detail-thumbs">${imgs.map((src, i) => `<button type="button" class="detail-thumb ${i ? '' : 'active'}" onclick="zkThumb(this,'${src}')"><img src="${src}" alt="Photo ${i + 1}"></button>`).join('')}</div>` : ''}</div><div class="detail-info">${cat ? `<div class="detail-cat-pill">${esc(cat)}</div>` : ''}<h1 class="detail-title">${esc(product.name)}</h1>${product.badge_text ? `<div class="detail-method-banner">${esc(product.badge_text)}</div>` : ''}${ds.show_stars !== false ? `<div class="detail-stars"><span class="stars">${stars}</span><span class="count">Loved by our customers</span></div>` : ''}<div class="detail-price-box"><div class="detail-price-row"><span class="detail-price-current" id="zkDetailPrice" style="${ds.price_color || fields.prod_price_c ? `color:${safeColor(ds.price_color || fields.prod_price_c, brand)}` : ''}">${format(firstSize ? firstSize.price : product.price)}</span>${product.compare_price && ds.compare_price !== false && Number(product.compare_price) > Number(product.price) && showOffers(product) ? `<span class="detail-price-mrp">MRP ${format(product.compare_price)}</span>` : ''}${off ? `<span class="detail-discount-tag">${off}% OFF</span>` : ''}</div><div class="price-note">Inclusive of all taxes</div></div>${d.bullets.length ? `<div class="label-bullet-grid">${d.bullets.map(b => `<div class="label-bullet-item"><span class="leaf-ico">${skin.leaf}</span><span>${esc(b)}</span></div>`).join('')}</div>` : ''}${d.prose ? `<p class="detail-desc">${esc(d.prose)}</p>` : ''}${sized.length ? `<div class="variant-section-title">Choose size</div><div class="detail-variants-grid">${sized.map(v => `<button type="button" class="variant-chip ${v === firstSize ? 'active' : ''}" data-variant="${esc(v.id)}" data-price="${Number(v.price)}"${Number(v.quantity) > 0 ? '' : ' disabled title="Out of stock"'} onclick="zkVariant(this)">${esc(v.label)} · ${format(v.price)}${Number(v.quantity) > 0 ? '' : ' (sold out)'}</button>`).join('')}</div><script>window.zkSelectedVariant=${JSON.stringify(firstSize ? String(firstSize.id) : null)}</script>` : ''}${netLabel && !sized.length ? `<div class="variant-section-title">Net quantity: ${esc(netLabel)}</div>` : ''}${variants.length ? `<div class="variant-section-title">Available options</div><div class="detail-variants-grid">${variants.map((v, i) => `<button type="button" class="variant-chip ${i ? '' : 'active'}" onclick="zkVariant(this)">${esc(v)}</button>`).join('')}</div>` : ''}${product.in_stock === false ? `<form class="notify-row" onsubmit="return notifyMe(event,${JSON.stringify(String(product.name)).replace(/</g, '\\u003c').replace(/"/g, '&quot;')})"><input type="email" required placeholder="Email me when it is back"><button class="btn-primary">Notify me</button></form>` : `<div class="purchase-action-row"><div class="qty-stepper"><button type="button" class="qty-btn" onclick="zkQty(-1)">−</button><span class="qty-display" id="qtyDisplay">1</span><button type="button" class="qty-btn" onclick="zkQty(1)">+</button></div><button type="button" class="btn-buy-now" style="${ds.button_color || fields.prod_cta_c ? `background:${safeColor(ds.button_color || fields.prod_cta_c, brand)}` : ''}" onclick="if(zkAdd(${Number(product.id)},zkQtyValue(),window.zkSelectedVariant))openCheckout()">⚡ Buy Now</button><button type="button" class="btn-add-cart" onclick="zkAdd(${Number(product.id)},zkQtyValue(),window.zkSelectedVariant)">🛒 Add to Cart</button></div>`}${(cfg.checkout && cfg.checkout.show_whatsapp_order === true) && waLink ? `<a href="${waLink}" target="_blank" rel="noopener" class="whatsapp-order-btn">💬 Quick order via WhatsApp</a>` : ''}${trustItems.length ? `<div class="trust-strip">${trustItems.slice(0, 4).map(t => { const it = parseItem(t); return `<div class="trust-item">${esc(it.icon || '✓')} ${esc(it.title)}</div>`; }).join('')}</div>` : ''}${ingredients.length ? `<div class="ingredients-block"><div class="ing-title">Ingredients:</div><div class="ingredients-pill-list">${ingredients.map(i => `<span class="ing-tag">${skin.leaf} ${esc(i)}</span>`).join('')}</div></div>` : ''}${ds.show_manufacturer !== false && (product.manufacturer || address) ? `<div class="mfg-info-card"><b>Manufactured &amp; Marketed by:</b><br><strong>${esc(product.manufacturer || storeName)}</strong>${address ? `<br>${esc(address)}` : ''}${phone ? `<br>Customer care: <b>${esc(phone)}</b>` : ''}${email ? `<br>Email: ${esc(email)}` : ''}</div>` : ''}</div></div></section>${ingredients.length && fields.label_show !== false ? `<section class="packaging-label-section">${sectionHead('Product label', 'What is inside', '')}<div class="label-card-replica">${skin.floralTop ? `<div class="label-floral-top" style="background-image:url('${safeImage(fields.floral_top_img) || skin.floralTop}')"></div>` : ''}<div class="label-body-content"><div class="label-left-col"><div class="label-heading-orange">Ingredients:</div><div class="label-ingredients-list">${esc(ingredients.join(', '))}.</div><div class="label-mfg-box"><b>Manufactured &amp; Marketed by</b><br><span class="label-mfg-name">${esc(product.manufacturer || storeName)}</span>${address ? `<br>${esc(address)}` : ''}${email ? `<br>Email: <b>${esc(email)}</b>` : ''}${phone ? `<br>Customer care: <b>${esc(phone)}</b>` : ''}<div class="label-mrp">MRP : ${format(product.compare_price || product.price)}</div><span class="price-note">Inclusive of GST</span></div></div><div class="label-right-col">${wordmark('label-logo')}<div class="label-product-title-bold"><span>❀</span> ${esc(product.name)} <span>❀</span></div>${product.badge_text ? `<div class="label-orange-bar">${esc(product.badge_text)}</div>` : ''}${d.bullets.length ? `<div class="label-bullet-vertical">${d.bullets.map(b => `<div class="label-bullet-row"><span class="leaf-glyph">${skin.leaf}</span><span>${esc(b)}</span></div>`).join('')}</div>` : ''}</div></div>${skin.floralBottom ? `<div class="label-floral-bottom" style="background-image:url('${safeImage(fields.footer_above_img) || skin.floralBottom}')"></div>` : ''}</div></section>` : ''}${related.length ? `<section class="related">${sectionHead('You may also like', cat ? 'More from ' + cat : 'More products', '')}<div class="products-box-grid">${related.map(productCard).join('')}</div></section>` : ''}</main>`;
+    content = `<div class="breadcrumb-bar"><div class="breadcrumb-inner"><div class="breadcrumb-links"><a href="${storeUrl('/')}">Home</a><span class="sep">/</span>${cat ? `<a href="${storeUrl('/collections/' + encodeURIComponent(slugify(cat)))}">${esc(cat)}</a><span class="sep">/</span>` : ''}<span class="current">${esc(product.name)}</span></div><a href="${storeUrl('/#products')}" class="btn-back-store">← Back to ${esc(storeName)}</a></div></div><main class="main-container"><section class="product-details-hero" data-zkc-section="product" style="${ds.background ? `background:${safeColor(ds.background, '#fff')}` : ''}"><div class="detail-grid"><div class="detail-gallery"><div class="detail-main-media">${imgs[0] ? `<img src="${imgs[0]}" alt="${esc(product.name)}" id="mainImage" onclick="zkLightbox(this.src)">` : `<span class="no-img big">${esc(product.name.slice(0, 1))}</span>`}</div>${imgs.length > 1 ? `<div class="detail-thumbs">${imgs.map((src, i) => `<button type="button" class="detail-thumb ${i ? '' : 'active'}" onclick="zkThumb(this,'${src}')"><img src="${src}" alt="Photo ${i + 1}"></button>`).join('')}</div>` : ''}</div><div class="detail-info">${cat ? `<div class="detail-cat-pill">${esc(cat)}</div>` : ''}<h1 class="detail-title">${esc(product.name)}</h1>${product.badge_text ? `<div class="detail-method-banner">${esc(product.badge_text)}</div>` : ''}${ds.show_stars !== false ? `<div class="detail-stars"><span class="stars">${stars}</span><span class="count">Loved by our customers</span></div>` : ''}<div class="detail-price-box"><div class="detail-price-row"><span class="detail-price-current" id="zkDetailPrice" style="${ds.price_color || fields.prod_price_c ? `color:${safeColor(ds.price_color || fields.prod_price_c, brand)}` : ''}">${format(firstSize ? firstSize.price : product.price)}</span>${product.compare_price && ds.compare_price !== false && Number(product.compare_price) > Number(product.price) && showOffers(product) ? `<span class="detail-price-mrp">MRP ${format(product.compare_price)}</span>` : ''}${off ? `<span class="detail-discount-tag">${off}% OFF</span>` : ''}</div><div class="price-note">Inclusive of all taxes</div></div>${d.bullets.length ? `<div class="label-bullet-grid">${d.bullets.map(b => `<div class="label-bullet-item"><span class="leaf-ico">${skin.leaf}</span><span>${esc(b)}</span></div>`).join('')}</div>` : ''}${d.prose ? `<p class="detail-desc">${esc(d.prose)}</p>` : ''}${sized.length ? `<div class="variant-section-title">Choose size</div><div class="detail-variants-grid">${sized.map(v => `<button type="button" class="variant-chip ${v === firstSize ? 'active' : ''}" data-variant="${esc(v.id)}" data-price="${Number(v.price)}"${Number(v.quantity) > 0 ? '' : ' disabled title="Out of stock"'} onclick="zkVariant(this)">${esc(v.label)} · ${format(v.price)}${Number(v.quantity) > 0 ? '' : ' (sold out)'}</button>`).join('')}</div><script>window.zkSelectedVariant=${JSON.stringify(firstSize ? String(firstSize.id) : null)}</script>` : ''}${netLabel && !sized.length ? `<div class="variant-section-title">Net quantity: ${esc(netLabel)}</div>` : ''}${variants.length ? `<div class="variant-section-title">Available options</div><div class="detail-variants-grid">${variants.map((v, i) => `<button type="button" class="variant-chip ${i ? '' : 'active'}" onclick="zkVariant(this)">${esc(v)}</button>`).join('')}</div>` : ''}${product.in_stock === false ? `<form class="notify-row" onsubmit="return notifyMe(event,${JSON.stringify(String(product.name)).replace(/</g, '\\u003c').replace(/"/g, '&quot;')})"><input type="email" required placeholder="Email me when it is back"><button class="btn-primary">Notify me</button></form>` : `<div class="purchase-action-row"><div class="qty-stepper"><button type="button" class="qty-btn" onclick="zkQty(-1)">−</button><span class="qty-display" id="qtyDisplay">1</span><button type="button" class="qty-btn" onclick="zkQty(1)">+</button></div><button type="button" class="btn-buy-now" style="${ds.button_color || fields.prod_cta_c ? `background:${safeColor(ds.button_color || fields.prod_cta_c, brand)}` : ''}" onclick="if(zkAdd(${Number(product.id)},zkQtyValue(),window.zkSelectedVariant))openCheckout()">⚡ Buy Now</button><button type="button" class="btn-add-cart" onclick="zkAdd(${Number(product.id)},zkQtyValue(),window.zkSelectedVariant)">🛒 Add to Cart</button></div>`}${(cfg.checkout && cfg.checkout.show_whatsapp_order === true) && waLink ? `<a href="${waLink}" target="_blank" rel="noopener" class="whatsapp-order-btn">💬 Quick order via WhatsApp</a>` : ''}${trustItems.length ? `<div class="trust-strip">${trustItems.slice(0, 4).map(t => { const it = parseItem(t); return `<div class="trust-item">${esc(it.icon || '✓')} ${esc(it.title)}</div>`; }).join('')}</div>` : ''}${display.show_benefits !== false && benefits.length ? `<div class="detail-benefits-section"><h3 class="detail-section-title">✨ Key Clinical &amp; Therapeutic Benefits</h3><div class="detail-benefits-grid">${benefits.map(b => `<div class="detail-benefit-item"><span class="benefit-check">✓</span><span>${esc(b)}</span></div>`).join('')}</div></div>` : ''}${display.show_instructions !== false && howto ? `<div class="detail-instructions-section"><h3 class="detail-section-title">📖 How to Use / Directions</h3><div class="detail-instructions-box">${howto.split(/\r?\n+/).filter(Boolean).map((st, i) => `<div class="instruction-step-row"><span class="step-num">${i + 1}</span><div class="step-text">${esc(st.replace(/^Step\s*\d+[:.-]\s*/i, ''))}</div></div>`).join('')}</div></div>` : ''}${ingredients.length ? `<div class="ingredients-block"><div class="ing-title">Ingredients:</div><div class="ingredients-pill-list">${ingredients.map(i => `<span class="ing-tag">${skin.leaf} ${esc(i)}</span>`).join('')}</div></div>` : ''}${ds.show_manufacturer !== false && (product.manufacturer || address) ? `<div class="mfg-info-card"><b>Manufactured &amp; Marketed by:</b><br><strong>${esc(product.manufacturer || storeName)}</strong>${address ? `<br>${esc(address)}` : ''}${phone ? `<br>Customer care: <b>${esc(phone)}</b>` : ''}${email ? `<br>Email: ${esc(email)}` : ''}</div>` : ''}</div></div></section>${ingredients.length && fields.label_show !== false ? `<section class="packaging-label-section">${sectionHead('Product label', 'What is inside', '')}<div class="label-card-replica">${skin.floralTop ? `<div class="label-floral-top" style="background-image:url('${safeImage(fields.floral_top_img) || skin.floralTop}')"></div>` : ''}<div class="label-body-content"><div class="label-left-col"><div class="label-heading-orange">Ingredients:</div><div class="label-ingredients-list">${esc(ingredients.join(', '))}.</div><div class="label-mfg-box"><b>Manufactured &amp; Marketed by</b><br><span class="label-mfg-name">${esc(product.manufacturer || storeName)}</span>${address ? `<br>${esc(address)}` : ''}${email ? `<br>Email: <b>${esc(email)}</b>` : ''}${phone ? `<br>Customer care: <b>${esc(phone)}</b>` : ''}<div class="label-mrp">MRP : ${format(product.compare_price || product.price)}</div><span class="price-note">Inclusive of GST</span></div></div><div class="label-right-col">${wordmark('label-logo')}<div class="label-product-title-bold"><span>❀</span> ${esc(product.name)} <span>❀</span></div>${product.badge_text ? `<div class="label-orange-bar">${esc(product.badge_text)}</div>` : ''}${d.bullets.length ? `<div class="label-bullet-vertical">${d.bullets.map(b => `<div class="label-bullet-row"><span class="leaf-glyph">${skin.leaf}</span><span>${esc(b)}</span></div>`).join('')}</div>` : ''}</div></div>${skin.floralBottom ? `<div class="label-floral-bottom" style="background-image:url('${safeImage(fields.footer_above_img) || skin.floralBottom}')"></div>` : ''}</div></section>` : ''}${related.length ? `<section class="related">${sectionHead('You may also like', cat ? 'More from ' + cat : 'More products', '')}<div class="products-box-grid">${related.map(productCard).join('')}</div></section>` : ''}</main>`;
   } else if (template === 'collection') {
     const s = sec('collection'), active = collection ? slugify(collection) : '';
     const products = active ? allProducts.filter(p => slugify(categoryName(p)) === active) : allProducts;
@@ -534,50 +603,16 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}.footer-inner{ma
 .qv-sec{margin-top:18px;border-top:1.5px solid var(--border-light);padding-top:14px}.qv-sec h4{font-family:var(--hf);font-size:17px;color:var(--dark);margin-bottom:8px}.qv-sec p,.qv-sec li{font-size:14px;line-height:1.7;color:var(--text)}.qv-sec ul{padding-left:18px}.qv-chips{display:flex;flex-wrap:wrap;gap:6px}.qv-chips span{font-size:12px;background:var(--soft);border:1px solid var(--border-light);padding:4px 10px;border-radius:99px}.qv-sizes{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.qv-size{border:1.5px solid var(--brand-border);background:#fff;color:var(--dark);padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer}.qv-size.active{background:var(--brand-light);color:var(--brand);border-color:var(--brand)}.qv-size[disabled],.variant-chip[disabled]{opacity:.45;cursor:not-allowed}.qv-full{display:inline-block;margin-top:16px;color:var(--brand);font-weight:700;font-size:13px}
 @media(max-width:820px){.qv-grid{grid-template-columns:1fr;gap:18px}.qv-media{position:static}.qv-main{height:320px}.zk-qv-box{padding:20px 16px;border-radius:16px}.zk-qv{padding:8px}}
 @media(max-width:900px){.detail-grid,.label-body-content,.contact-grid,.cp-grid{grid-template-columns:1fr}.detail-gallery{position:static}.label-left-col{border-right:none;border-bottom:1.5px solid var(--border-light);padding:0 0 24px}.why-grid,.testi-grid{grid-template-columns:1fr}.footer-top{grid-template-columns:1fr 1fr}.nav-links{display:none}.nav-burger{display:flex}nav.nav-open .nav-links{display:flex;flex-direction:column;align-items:stretch;gap:2px;position:absolute;top:100%;left:0;right:0;background:#fff;border-bottom:1.5px solid var(--border);box-shadow:0 14px 30px rgba(0,0,0,.1);padding:10px 20px 18px;overflow:visible;max-height:75vh;overflow-y:auto}nav.nav-open .nav-links > li > a,nav.nav-open .nav-drop{display:block;width:100%;text-align:left;padding:12px 0;font-size:17px;border-bottom:1px solid var(--border)}nav.nav-open .mega{position:static;transform:none;padding:0 0 8px;display:none}nav.nav-open .has-menu.open .mega{display:block}nav.nav-open .has-menu:hover .mega{display:none}nav.nav-open .has-menu.open:hover .mega{display:block}nav.nav-open .mega-inner{grid-template-columns:1fr;box-shadow:none;border:0;padding:8px 0 0 12px;gap:14px}.full-gallery{grid-template-columns:1fr 1fr}}
+.detail-benefits-section,.detail-instructions-section{margin-top:24px;border-top:1.5px solid var(--border-light);padding-top:20px}
+.detail-section-title{font-family:var(--hf);font-size:18px;font-weight:700;color:var(--dark);margin-bottom:12px}
+.detail-benefits-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.detail-benefit-item{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.6;color:var(--text);background:var(--soft);border:1px solid var(--border-light);padding:10px 14px;border-radius:10px}
+.benefit-check{color:var(--brand);font-weight:800;font-size:15px;line-height:1.2}
+.detail-instructions-box{display:grid;gap:8px}
+.instruction-step-row{display:flex;align-items:flex-start;gap:12px;background:#fff;border:1px solid var(--border);padding:10px 14px;border-radius:10px;font-size:13.5px;line-height:1.55}
+.step-num{background:var(--brand);color:#fff;width:24px;height:24px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:2px}
+.step-text{flex:1;color:var(--text)}
 @media(max-width:600px){.nav-inner{padding:0 14px;gap:10px}.brand-logo-img{height:40px}.wm-1{font-size:24px}.whatsapp-btn-top span{display:none}.footer-top,.form-row,.label-bullet-grid{grid-template-columns:1fr}.product-details-hero{padding:18px;border-radius:20px}.detail-main-media{height:340px}.ingredients-grid-section{padding:28px 16px}.label-body-content{padding:24px 18px}.products-box-grid{grid-template-columns:1fr}.pillars-inner{gap:14px}.header-top-floral-bar{height:48px;background-size:auto 48px}}`;
-
-  const SMERAM_DEFAULTS = {
-    'smeram naturals hair oil': {
-      benefits: [
-        'Deep Root Nourishment — Classical Sneha-Kalka-Drava herb decoction stimulates dormant follicles.',
-        '100% Dandruff Control — Antibacterial Ratanjot & Vetiver soothe scalp irritation.',
-        'Hair Fall Reduction — Bhringraj, Amla & Brahmi strengthen keratin roots.',
-        'Zero Mineral Oil — 100% pure cold-pressed coconut oil base with no liquid paraffin.'
-      ],
-      ingredients: ['Virgin Coconut Oil', 'Brahmi', 'Amla', 'Bhringraj', 'Ratanjot Roots', 'Jadamanshi', 'Vetiver', 'Curry Leaves', 'Hibiscus', 'Fenugreek', 'Lemongrass', 'Neem', 'Henna'],
-      howto: 'Step 1: Take 5–10 ml of oil, warm gently between palms.\nStep 2: Apply evenly across scalp and hair roots.\nStep 3: Massage in circular fingertip motions for 10 minutes.\nStep 4: Leave for 1–2 hours or overnight; wash with mild cleanser. Use 3 times weekly.'
-    },
-    'mahanarayan ortho pain oil': {
-      benefits: [
-        'Fast Joint & Muscular Relief — Eases knee stiffness, back pain and neck discomfort.',
-        'Deep Penetrating Heat Therapy — Stimulates micro-circulation for soothing warmth.',
-        'Cartilage & Synovial Support — Nourishes connective tissues and joint mobility.',
-        'Non-Greasy Herbal Aroma — Pure classical formulation with zero pungent synthetic smell.'
-      ],
-      ingredients: ['Mahanarayan Taila (52 classical herbs)', 'Gandhapura (Wintergreen)', 'Shallaki (Boswellia)', 'Nilgiri (Eucalyptus)', 'Nirgundi', 'Camphor', 'Virgin Sesame Oil'],
-      howto: 'Step 1: Clean and gently pat dry affected joint or muscle area.\nStep 2: Apply 5–8 ml of Mahanarayan Ortho Oil.\nStep 3: Massage gently with firm strokes for 8–10 minutes.\nStep 4: Cover with warm dry compress for deeper penetration. Apply twice daily.'
-    },
-    'ayurgold kumkumadi face oil': {
-      benefits: [
-        'Fades Pigmentation & Dark Spots — Pure Kashmiri saffron and Manjistha restore clear tone.',
-        'Luminous Golden Radiance — Imparts a healthy youthful glow to dull complexion.',
-        'Lightweight Overnight Elixir — Fast-absorbing botanical lipids nourish without greasy residue.',
-        'Clean Beauty Guarantee — Free of parabens, mineral oils, silicones, and synthetic fragrance.'
-      ],
-      ingredients: ['Grade-A Kashmiri Saffron (Crocus Sativus)', 'Red Sandalwood', 'Manjistha', 'Blue Lotus', 'Licorice', 'Pure Goat Milk', 'Virgin Sesame Seed Oil'],
-      howto: 'Step 1: Cleanse face and pat dry.\nStep 2: Dispense 2–3 drops onto clean fingertips.\nStep 3: Dab lightly across forehead, cheeks, and jawline; massage upward.\nStep 4: Leave on overnight as a restorative beauty treatment. Use nightly.'
-    },
-    'vedic a2 desi gir cow bilona ghee': {
-      benefits: [
-        'Traditional Wooden Bilona Method — Churned strictly from whole cultured A2 curd.',
-        'Golden Granular Texture (Danedar) — Divine Vedic aroma and unmatched purity.',
-        'Stimulates Digestive Fire (Agni) — Rich in natural butyric acid for gut flora.',
-        'High Thermal Smoke Point (~250°C) — Does not degrade or release free radicals in cooking.'
-      ],
-      ingredients: ['100% Pure Cultured Desi Gir Cow A2 Milk Fat (Traditional Bi-Directional Wooden Bilona Method)'],
-      howto: 'Step 1: Add 1–2 teaspoons daily to warm rice, rotis, or warm milk.\nStep 2: Take 1 tsp in the morning with warm water to kindle digestive agni.\nStep 3: Suitable for daily Ayurvedic wellness, cooking, and sautéing.'
-    }
-  };
 
   // "View Details" quick-view popup: everything the modal shows, keyed by product id.
   // Image URLs are already HTML-escaped by safeImage; text is escaped in the browser.

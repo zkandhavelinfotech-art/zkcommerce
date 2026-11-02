@@ -79,7 +79,22 @@ var api = {
     var opts = { method: method, headers: { 'Content-Type': 'application/json' } };
     if (token) opts.headers['Authorization'] = 'Bearer ' + token;
     if (body)  opts.body = JSON.stringify(body);
-    var res  = await fetch(ZK.api + path, opts);
+    var clean = path.replace(/^\//, '');
+    var res = null;
+    try {
+      res = await fetch(ZK.api + path, opts);
+      if (!res.ok && (res.status === 404 || res.status === 405)) {
+        var base = (ZK.siteUrl ? ZK.siteUrl : '');
+        var phpUrl = (base ? base + '/' : '') + 'api.php?route=' + encodeURIComponent(clean);
+        var pRes = await fetch(phpUrl, opts).catch(function(){ return null; });
+        if (pRes && pRes.ok) res = pRes;
+      }
+    } catch (err) {
+      var base = (ZK.siteUrl ? ZK.siteUrl : '');
+      var phpUrl = (base ? base + '/' : '') + 'api.php?route=' + encodeURIComponent(clean);
+      res = await fetch(phpUrl, opts).catch(function(){ return null; });
+      if (!res) throw err;
+    }
     var data = await res.json();
     return data;
   },
