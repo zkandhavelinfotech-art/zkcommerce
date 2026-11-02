@@ -181,6 +181,43 @@ if ($pdo) {
             $pdo->prepare("INSERT INTO `smeram_invoices` (`order_id`, `invoice_number`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `order_id`=`order_id`")
                 ->execute([$orderId, $invNum]);
         } catch (Exception $invE) {}
+
+        // Option 2: Server-side webhook alert to ZKWAConnect
+        try {
+            $zkwaWebhook = defined('ZKWA_WEBHOOK_URL') ? ZKWA_WEBHOOK_URL : '';
+            if (empty($zkwaWebhook) && is_file(__DIR__ . '/zkwa_config.json')) {
+                $zkwaCfg = json_decode(file_get_contents(__DIR__ . '/zkwa_config.json'), true);
+                $zkwaWebhook = $zkwaCfg['webhook_url'] ?? '';
+            }
+            if (!empty($zkwaWebhook)) {
+                $payloadData = [
+                    'event' => 'order.created',
+                    'order' => [
+                        'id' => $orderId,
+                        'order_number' => $orderNum,
+                        'customer' => ['name' => $name, 'phone' => $phone, 'email' => $email],
+                        'shipping_address' => ['line1' => $address, 'city' => $city, 'state' => $state, 'pincode' => $pincode],
+                        'items' => json_decode($itemsJson, true) ?: [],
+                        'total' => (float)$total,
+                        'payment_method' => $method,
+                        'payment_status' => $payStatus,
+                        'created_at' => date('c')
+                    ]
+                ];
+                $ch = curl_init($zkwaWebhook);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payloadData));
+                $headers = ['Content-Type: application/json'];
+                if (defined('ZKWA_API_KEY') && ZKWA_API_KEY !== '') {
+                    $headers[] = 'Authorization: Bearer ' . ZKWA_API_KEY;
+                }
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                @curl_exec($ch);
+                curl_close($ch);
+            }
+        } catch (Exception $wEx) {}
     } catch (Exception $e) {
         $dbError = $e->getMessage();
         error_log("[Order Insert Error] " . $e->getMessage());

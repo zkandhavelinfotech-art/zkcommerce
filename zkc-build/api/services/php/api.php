@@ -117,6 +117,7 @@ function zkcGetThemeConfig() {
         'show_whatsapp_order' => false,
         'show_cart_popup' => true,
         'show_payment_selector' => true,
+        'wa_auto_redirect' => defined('WA_AUTO_REDIRECT') ? WA_AUTO_REDIRECT : true,
         'pay_button' => [
             'text' => 'Place order',
             'font_family' => '',
@@ -636,7 +637,8 @@ if (preg_match('#^stores/(\\d+)/display$#', $route)) {
             'category_cta_text' => '',
             'show_benefits' => true,
             'show_instructions' => true,
-            'show_ingredients' => true
+            'show_ingredients' => true,
+            'wa_auto_redirect' => true
         ];
         $display = array_merge($defaultDisplay, $saved);
         respond(['live' => true, 'display' => $display]);

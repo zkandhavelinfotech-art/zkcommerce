@@ -7,6 +7,6 @@
   "category_cta_text": "",
   "show_benefits": true,
   "show_instructions": true,
-  "show_ingredients": true
+  "show_ingredients": true,
+  "wa_auto_redirect": true
 }
-
