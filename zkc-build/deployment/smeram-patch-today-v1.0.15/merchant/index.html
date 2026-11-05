@@ -1569,7 +1569,7 @@
     }
 
     function downloadInvoice(orderId, orderNumber) {
-      window.open('../api.php?route=invoices/' + orderId + '/pdf', '_blank');
+      window.open('../api.php?route=invoices/' + encodeURIComponent(orderId) + '/pdf', '_blank');
     }
 
     async function loadInvoices() {
@@ -1595,8 +1595,8 @@
             <td><span class="badge badge-${(i.payment_status === 'paid' || i.payment_method === 'cod') ? 'paid' : 'unpaid'}">${(i.payment_method || 'Online').toUpperCase()} · ${(i.payment_status || 'PAID').toUpperCase()}</span></td>
             <td>
               <div style="display:flex;gap:6px">
-                <button class="btn-outline btn-sm" onclick="downloadInvoiceById('${i.id}', '${i.invoice_number}')">📥 PDF</button>
-                <a class="btn-outline btn-sm" style="text-decoration:none" href="../invoice.php?id=${i.id}" target="_blank">🖨 Print View</a>
+                <a class="btn-outline btn-sm" style="text-decoration:none" href="../api.php?route=invoices/${i.id}/pdf" target="_blank" rel="noopener">📥 Open PDF</a>
+                <a class="btn-outline btn-sm" style="text-decoration:none" href="../invoice.php?id=${i.id}&print=1" target="_blank" rel="noopener">🖨 Print View</a>
               </div>
             </td>
           </tr>
@@ -1605,7 +1605,7 @@
     }
 
     function downloadInvoiceById(invId, number) {
-      window.open('../api.php?route=invoices/' + invId + '/pdf', '_blank');
+      window.open('../api.php?route=invoices/' + encodeURIComponent(invId) + '/pdf', '_blank');
     }
 
     async function loadCustomers() {

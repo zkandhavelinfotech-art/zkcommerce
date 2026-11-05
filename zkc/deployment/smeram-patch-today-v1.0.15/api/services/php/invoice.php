@@ -8,11 +8,15 @@
  * Prices are INCLUSIVE of GST with exact product-wise HSN and GST calculation breakup.
  */
 if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
-require_once __DIR__ . '/store_config.php';
-require_once __DIR__ . '/db_config.php';
-if (is_file(__DIR__ . '/whatsapp_config.php')) require_once __DIR__ . '/whatsapp_config.php';
-require_once __DIR__ . '/whatsapp_orders.php';
-require_once __DIR__ . '/commerce.php';
+$dir = __DIR__;
+if (!is_file($dir . '/store_config.php') && is_file($dir . '/api/services/php/store_config.php')) {
+    $dir = $dir . '/api/services/php';
+}
+require_once $dir . '/store_config.php';
+require_once $dir . '/db_config.php';
+if (is_file($dir . '/whatsapp_config.php')) require_once $dir . '/whatsapp_config.php';
+require_once $dir . '/whatsapp_orders.php';
+require_once $dir . '/commerce.php';
 
 function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 

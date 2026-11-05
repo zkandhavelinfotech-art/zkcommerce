@@ -67,6 +67,7 @@ function zkcBuildTrackingUrl($courier, $tracking) {
 }
 
 function zkcEnsureOrderColumns($pdo, $tbl) {
+    if (!$pdo) return;
     static $ensured = [];
     if (!empty($ensured[$tbl])) return;
     $cols = [
@@ -89,6 +90,7 @@ function zkcEnsureOrderColumns($pdo, $tbl) {
 }
 
 function zkcGetOrdersTable($pdo) {
+    if (!$pdo) return 'orders';
     static $tbl = null;
     if ($tbl !== null) return $tbl;
     try {
@@ -338,7 +340,8 @@ if ($route === 'auth/login' && $method === 'POST') {
 // For routes requiring the database, verify connection
 $dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores/templates', 'products', 'shipments/settings', 'webhooks/ekart', 'shipments/ekart/webhook'];
 $isProductRoute = ($route === 'products' || preg_match('#^products/#', $route) || preg_match('#^stores/(\\d+)/products#', $route));
-if (!$pdo && !in_array($route, $dbOptionalRoutes) && !$isProductRoute) {
+$isInvoiceRoute = ($route === 'invoices' || preg_match('#^invoices/#', $route));
+if (!$pdo && !in_array($route, $dbOptionalRoutes) && !$isProductRoute && !$isInvoiceRoute) {
     $connErr = function_exists('getDbConnectionError') ? getDbConnectionError() : ($GLOBALS['zkc_db_error'] ?? 'Unknown database error');
     respond([
         'error' => 'The store database is not reachable. Open test-db.php to check connection details and credentials.',
@@ -1198,11 +1201,38 @@ if (preg_match('#^invoices/(\d+)$#', $route, $m) && $method === 'POST') {
     $invNum = 'SM-' . sprintf('%02d', $orderId);
     respond(['success' => true, 'invoice' => ['id' => $orderId, 'invoice_number' => $invNum]]);
 }
-if (preg_match('#^invoices/(\d+)/pdf$#', $route, $m) && $method === 'GET') {
+if (preg_match('#^invoices/(\d+)/pdf/?$#', $route, $m) && $method === 'GET') {
     $orderId = (int)$m[1];
     $_GET['id'] = $orderId;
-    if (is_file(__DIR__ . '/invoice.php')) {
-        require __DIR__ . '/invoice.php';
+    if (!isset($_GET['print'])) $_GET['print'] = '1';
+    
+    $candidates = [
+        __DIR__ . '/invoice.php',
+        __DIR__ . '/api/services/php/invoice.php',
+        dirname(__DIR__) . '/invoice.php',
+        dirname(__DIR__) . '/services/php/invoice.php',
+        dirname(dirname(__DIR__)) . '/invoice.php',
+        dirname(dirname(__DIR__)) . '/api/services/php/invoice.php',
+        ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/invoice.php',
+        ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/api/services/php/invoice.php'
+    ];
+    $foundFile = null;
+    foreach ($candidates as $cand) {
+        if (!empty($cand) && is_file($cand) && filesize($cand) > 1000) {
+            $foundFile = $cand;
+            break;
+        }
+    }
+    if (!$foundFile) {
+        foreach ($candidates as $cand) {
+            if (!empty($cand) && is_file($cand)) {
+                $foundFile = $cand;
+                break;
+            }
+        }
+    }
+    if ($foundFile) {
+        require $foundFile;
         exit;
     }
     respond(['error' => 'Invoice template not found'], 404);
