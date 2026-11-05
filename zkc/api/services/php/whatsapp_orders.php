@@ -19,9 +19,30 @@ function zkcMoney($n) {
 }
 
 function zkcOrderItems($o) {
-    if (isset($o['items']) && is_array($o['items'])) return $o['items'];
-    $items = json_decode((string)($o['items_json'] ?? '[]'), true);
-    return is_array($items) ? $items : [];
+    $raw = [];
+    if (isset($o['items'])) {
+        $raw = is_array($o['items']) ? $o['items'] : (json_decode((string)$o['items'], true) ?: []);
+    } elseif (!empty($o['items_json'])) {
+        $raw = is_array($o['items_json']) ? $o['items_json'] : (json_decode((string)$o['items_json'], true) ?: []);
+    }
+    if (!is_array($raw)) return [];
+    return array_map(function($i) {
+        if (!is_array($i)) return ['name' => 'Item', 'quantity' => 1, 'price' => 0, 'unit_price' => 0, 'line_total' => 0];
+        $price = (float)($i['price'] ?? ($i['unit_price'] ?? 0));
+        $qty = (int)($i['quantity'] ?? ($i['qty'] ?? 1));
+        if ($qty < 1) $qty = 1;
+        return [
+            'product_id' => (int)($i['product_id'] ?? ($i['id'] ?? 0)),
+            'name'       => (string)($i['name'] ?? ($i['product_name'] ?? 'Item')),
+            'size'       => (string)($i['size'] ?? ($i['variant'] ?? ($i['product_size'] ?? ''))),
+            'sku'        => (string)($i['sku'] ?? ''),
+            'quantity'   => $qty,
+            'qty'        => $qty,
+            'price'      => $price,
+            'unit_price' => $price,
+            'line_total' => (float)($i['line_total'] ?? ($price * $qty))
+        ];
+    }, $raw);
 }
 
 function zkcOrderFields($o) {

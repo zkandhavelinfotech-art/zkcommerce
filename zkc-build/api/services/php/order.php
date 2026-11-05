@@ -18,6 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if (is_file(__DIR__ . '/db_config.php')) {
     require_once __DIR__ . '/db_config.php';
 }
+if (is_file(__DIR__ . '/store_config.php')) {
+    require_once __DIR__ . '/store_config.php';
+}
+if (is_file(__DIR__ . '/whatsapp_orders.php')) {
+    require_once __DIR__ . '/whatsapp_orders.php';
+}
 
 function getOrdersTable($pdo) {
     try {
@@ -130,6 +136,7 @@ if ($pdo) {
         $tbl = getOrdersTable($pdo);
         $subtotal = $total + $discount - $shipping;
         $payStatus = !empty($data['payment_status']) ? trim($data['payment_status']) : (($method === 'razorpay') ? 'paid' : 'pending');
+        $ordStatus = ($payStatus === 'paid' || $method === 'cod') ? 'confirmed' : 'pending';
         $rzpPaymentId = trim($data['razorpay_payment_id'] ?? '');
         $rzpOrderId = trim($data['razorpay_order_id'] ?? '');
         $rzpSig = trim($data['razorpay_signature'] ?? '');
@@ -144,22 +151,22 @@ if ($pdo) {
             $stmt = $pdo->prepare("
                 INSERT INTO `{$tbl}` 
                 (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json, subtotal, discount_amount, shipping_amount, total_amount, payment_method, payment_status, order_status, razorpay_order_id, razorpay_payment_id, razorpay_signature, notes)
-                VALUES (2, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?)
+                VALUES (2, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $orderNum, $name, $phone, $email, $address, $city, $state, $pincode, $itemsJson,
-                $subtotal, $discount, $shipping, $total, $method, $payStatus,
+                $subtotal, $discount, $shipping, $total, $method, $payStatus, $ordStatus,
                 $rzpOrderId ?: null, $rzpPaymentId ?: null, $rzpSig ?: null, $notes
             ]);
         } else {
             $stmt = $pdo->prepare("
                 INSERT INTO `{$tbl}` 
                 (order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json, subtotal, discount_amount, shipping_amount, total_amount, payment_method, payment_status, order_status, razorpay_order_id, razorpay_payment_id, razorpay_signature, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $orderNum, $name, $phone, $email, $address, $city, $state, $pincode, $itemsJson,
-                $subtotal, $discount, $shipping, $total, $method, $payStatus,
+                $subtotal, $discount, $shipping, $total, $method, $payStatus, $ordStatus,
                 $rzpOrderId ?: null, $rzpPaymentId ?: null, $rzpSig ?: null, $notes
             ]);
         }
@@ -167,7 +174,21 @@ if ($pdo) {
         $orderId = $pdo->lastInsertId();
         $savedToDb = true;
 
-        // Auto-generate invoice
+        // Auto-generate invoice in both standard and client invoice tables
+        $invNum = 'ZK-' . (defined('STORE_ID') ? STORE_ID : 2) . '-' . $orderId;
+        try {
+            $storeId = defined('STORE_ID') ? STORE_ID : 2;
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `invoices` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `store_id` INT DEFAULT {$storeId},
+                `order_id` INT NOT NULL UNIQUE,
+                `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
+                `issued_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX `idx_inv_order` (`order_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            $pdo->prepare("INSERT INTO `invoices` (`store_id`, `order_id`, `invoice_number`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `invoice_number`=VALUES(`invoice_number`)")
+                ->execute([$storeId, $orderId, $invNum]);
+        } catch (Exception $invE1) {}
         try {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `smeram_invoices` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -176,11 +197,9 @@ if ($pdo) {
                 `issued_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 INDEX `idx_inv_order` (`order_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-            $invNum = 'ZK-SMERAM-' . $orderId;
-            $pdo->prepare("INSERT INTO `smeram_invoices` (`order_id`, `invoice_number`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `order_id`=`order_id`")
+            $pdo->prepare("INSERT INTO `smeram_invoices` (`order_id`, `invoice_number`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `invoice_number`=VALUES(`invoice_number`)")
                 ->execute([$orderId, $invNum]);
-        } catch (Exception $invE) {}
+        } catch (Exception $invE2) {}
 
         // Option 2: Server-side webhook alert to ZKWAConnect
         try {
@@ -224,10 +243,39 @@ if ($pdo) {
     }
 }
 
+$waHandoff = null;
+$waCareUrl = null;
+$waCustomerUrl = null;
+if (function_exists('zkcOrderWhatsAppLinks')) {
+    $orderData = [
+        'id' => $orderId,
+        'order_number' => $orderNum,
+        'customer_name' => $name,
+        'customer_phone' => $phone,
+        'customer_email' => $email,
+        'shipping_address' => $address,
+        'city' => $city,
+        'state' => $state,
+        'pincode' => $pincode,
+        'items' => json_decode($itemsJson, true) ?: [],
+        'total_amount' => $total,
+        'payment_method' => $method,
+        'payment_status' => $payStatus ?? ($method === 'razorpay' ? 'paid' : 'pending'),
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+    $waLinks = zkcOrderWhatsAppLinks($orderData);
+    $waHandoff = $waLinks['care_url'] ?? null;
+    $waCareUrl = $waLinks['care_url'] ?? null;
+    $waCustomerUrl = $waLinks['customer_url'] ?? null;
+}
+
 echo json_encode([
     'success' => true,
     'order_id' => $orderId,
     'order_number' => $orderNum,
+    'whatsapp_handoff_url' => $waHandoff,
+    'whatsapp_care_url' => $waCareUrl,
+    'whatsapp_customer_url' => $waCustomerUrl,
     'saved_to_mysql' => $savedToDb,
     'db_error' => $dbError,
     'message' => 'Order registered successfully!'

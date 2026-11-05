@@ -77,11 +77,8 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 <div class="zk-table-wrap">
   <table class="zk-table">
     <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-    <tbody>
-      <tr><td class="col-primary">#ZK-2026-00284</td><td>Rajan Kumar<div style="font-size:11px;color:var(--zk-dim)">Coimbatore</div></td><td>2</td><td>₹19,940</td><td><span class="badge badge-brand">UPI</span></td><td><span class="status status-processing">Processing</span></td><td>17 Jul</td><td><div style="display:flex;gap:5px"><button class="btn btn-secondary btn-sm" onclick="toast.info('Order details')">View</button><button class="btn btn-primary btn-sm" onclick="toast.success('Label generated!')">Label</button></div></td></tr>
-      <tr><td class="col-primary">#ZK-2026-00283</td><td>Priya Nair<div style="font-size:11px;color:var(--zk-dim)">Chennai</div></td><td>1</td><td>₹1,850</td><td><span class="badge badge-brand">Card</span></td><td><span class="status status-shipped">Shipped</span></td><td>16 Jul</td><td><div style="display:flex;gap:5px"><button class="btn btn-secondary btn-sm" onclick="toast.info('Order details')">View</button><button class="btn btn-secondary btn-sm" onclick="toast.info('Tracking page')">Track</button></div></td></tr>
-      <tr><td class="col-primary">#ZK-2026-00282</td><td>Arun Murugan<div style="font-size:11px;color:var(--zk-dim)">Madurai</div></td><td>3</td><td>₹6,750</td><td><span class="badge badge-green">COD</span></td><td><span class="status status-delivered">Delivered</span></td><td>16 Jul</td><td><div style="display:flex;gap:5px"><button class="btn btn-secondary btn-sm" onclick="toast.info('Order details')">View</button><button class="btn btn-secondary btn-sm" onclick="toast.info('Invoice downloaded')">Invoice</button></div></td></tr>
-      <tr><td class="col-primary">#ZK-2026-00281</td><td>Kavitha S.<div style="font-size:11px;color:var(--zk-dim)">Trichy</div></td><td>1</td><td>₹2,100</td><td><span class="badge badge-brand">UPI</span></td><td><span class="status status-cancelled">Cancelled</span></td><td>15 Jul</td><td><div style="display:flex;gap:5px"><button class="btn btn-secondary btn-sm" onclick="toast.info('Order details')">View</button><button class="btn btn-secondary btn-sm" onclick="toast.success('Refund initiated')">Refund</button></div></td></tr>
+    <tbody id="orders-tbody">
+      <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--zk-muted)">Loading store orders…</td></tr>
     </tbody>
   </table>
 </div>
@@ -102,36 +99,65 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 
 <script src="../assets/js/app.js"></script>
 <script>
-var API_BASE=ZK.api;
-async function loadOrders(page,status){
-  var token=auth.token;
-  if(!token||token.startsWith('demo_token'))return;
-  var url=API_BASE+'/orders?page='+(page||1)+'&limit=20';
-  if(status)url+='&status='+status;
-  try{
-    var r=await fetch(url,{headers:{'Authorization':'Bearer '+token}});
-    var d=await r.json();
-    var tbody=document.getElementById('orders-tbody');
-    if(!tbody)return;
-    if(!d.orders||!d.orders.length){
-      tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--zk-muted)">No orders yet. Share your store to get your first order!</td></tr>';
-      return;
-    }
-    tbody.innerHTML=d.orders.map(function(o){
-      return '<tr><td class="col-primary">'+fmt.orderId(o.id)+'</td>'
-        +'<td>'+(o.customer_name||'-')+'</td>'
-        +'<td>'+(o.item_count||1)+'</td>'
-        +'<td>'+fmt.inr(o.total)+'</td>'
-        +'<td><span class="badge">'+(o.payment_method||'razorpay')+'</span></td>'
-        +'<td><span class="status status-'+o.status+'">'+o.status+'</span></td>'
-        +'<td>'+fmt.date(o.created_at)+'</td>'
-        +'<td><a href="orders-detail.html?id='+o.id+'" class="btn btn-secondary btn-sm">View</a></td></tr>';
-    }).join('');
-    var t=document.getElementById('orders-total');
-    if(t)t.textContent=(d.total||d.orders.length)+' orders';
-  }catch(e){console.warn('Orders:',e.message);}
+var API_BASE = (window.ZK && window.ZK.api) ? window.ZK.api : '../api.php?route=';
+
+async function loadOrders(page, status) {
+  var token = (window.auth && window.auth.token) ? window.auth.token : '';
+  var headers = { 'Accept': 'application/json' };
+  if (token && !token.startsWith('demo_token')) headers['Authorization'] = 'Bearer ' + token;
+  
+  var d = null;
+  var url1 = (API_BASE.indexOf('?') !== -1) ? (API_BASE + 'orders') : (API_BASE + '/orders');
+  try {
+    var r1 = await fetch(url1, { headers: headers });
+    if (r1.ok) d = await r1.json();
+  } catch(e) {}
+
+  if (!d || !d.orders) {
+    try {
+      var r2 = await fetch('../api.php?route=orders', { headers: headers });
+      if (r2.ok) d = await r2.json();
+    } catch(e2) {}
+  }
+
+  var tbody = document.getElementById('orders-tbody');
+  if (!tbody) return;
+
+  var orders = (d && d.orders) ? d.orders : [];
+  if (!orders.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--zk-muted)">No orders received yet. Once customers purchase, their complete orders will appear here.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = orders.map(function(o) {
+    var ordNum = o.order_number || ('#ZK-' + String(o.id).padStart(5, '0'));
+    var custName = o.customer_name || 'Customer';
+    var custPhone = o.customer_phone ? ('<div style="font-size:11px;color:var(--zk-dim)">' + o.customer_phone + '</div>') : '';
+    var total = '₹' + Number(o.total || o.total_amount || 0).toLocaleString('en-IN');
+    var payMethod = (o.payment_method === 'cod') ? 'COD' : 'Razorpay';
+    var payStatus = o.payment_status || 'paid';
+    var ordStatus = o.status || o.order_status || 'new';
+    var dt = o.created_at ? new Date(o.created_at).toLocaleDateString('en-IN') : '—';
+    var isPaid = (payStatus === 'paid' || ['confirmed', 'processing', 'shipped', 'delivered'].indexOf(ordStatus) !== -1 || (payMethod === 'cod' && ordStatus !== 'cancelled'));
+
+    return '<tr>'
+      + '<td class="col-primary"><strong>' + ordNum + '</strong></td>'
+      + '<td>' + custName + custPhone + '</td>'
+      + '<td>' + (o.item_count || 1) + '</td>'
+      + '<td><strong>' + total + '</strong></td>'
+      + '<td><span class="badge badge-' + (payStatus === 'paid' ? 'green' : 'brand') + '">' + payMethod + ' (' + payStatus + ')</span></td>'
+      + '<td><span class="status status-' + ordStatus + '">' + ordStatus + '</span></td>'
+      + '<td>' + dt + '</td>'
+      + '<td><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+      + '  <a href="orders-detail.html?id=' + o.id + '" class="btn btn-secondary btn-sm">View Details</a>'
+      + (isPaid ? '  <a href="../api.php?route=invoices/' + o.id + '/pdf" target="_blank" class="btn btn-secondary btn-sm">Invoice</a>' : '  <span style="font-size:11px;color:var(--zk-muted);padding:3px 6px;background:#f1f5f9;border-radius:4px" title="Invoices are generated only after payment is received">No Invoice (Unpaid)</span>')
+      + '  <a href="' + (o.whatsapp && o.whatsapp.care_url ? o.whatsapp.care_url : ('https://wa.me/917539972026?text=' + encodeURIComponent('🛍️ Order: ' + ordNum + ' | ' + custName + ' | ' + total))) + '" target="_blank" class="btn btn-secondary btn-sm" style="color:#047857;font-weight:700">↪ Care</a>'
+      + '</div></td>'
+      + '</tr>';
+  }).join('');
 }
-document.addEventListener('DOMContentLoaded',function(){loadOrders(1);});
+
+document.addEventListener('DOMContentLoaded', function() { loadOrders(1); });
 </script>
 </body>
 </html>

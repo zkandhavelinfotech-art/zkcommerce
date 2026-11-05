@@ -193,14 +193,40 @@ function zkcGstRate() { return zkcConstOr('GST_ENABLED', false) ? (float)zkcCons
 
 /** Same numbering as the Node dashboard: ZK-<store>-<order>. Only for confirmed orders. */
 function zkcEnsureInvoice($pdo, $o) {
-    $active = in_array($o['order_status'], ['new', 'confirmed', 'processing', 'shipped', 'delivered'], true);
-    $paid = in_array($o['payment_status'], ['paid', 'cod'], true);
-    if (!$active || !$paid) throw zkcError('An invoice can only be issued for a confirmed order', 409);
-    $number = 'ZK-' . STORE_ID . '-' . (int)$o['id'];
-    $pdo->prepare('INSERT IGNORE INTO invoices (store_id, order_id, invoice_number) VALUES (?,?,?)')->execute([STORE_ID, (int)$o['id'], $number]);
-    $stmt = $pdo->prepare('SELECT * FROM invoices WHERE order_id = ?');
-    $stmt->execute([(int)$o['id']]);
-    return $stmt->fetch();
+    $active = in_array($o['order_status'] ?? '', ['new', 'confirmed', 'processing', 'shipped', 'delivered'], true);
+    $paid = in_array($o['payment_status'] ?? '', ['paid', 'cod'], true);
+    if ($paid) $active = true;
+    if (!$active && !$paid) throw zkcError('An invoice can only be issued for a confirmed or paid order', 409);
+    $storeId = defined('STORE_ID') ? STORE_ID : 2;
+    $number = 'ZK-' . $storeId . '-' . (int)$o['id'];
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `invoices` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `store_id` INT DEFAULT {$storeId},
+            `order_id` INT NOT NULL UNIQUE,
+            `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
+            `issued_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX `idx_inv_order` (`order_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $pdo->prepare('INSERT IGNORE INTO invoices (store_id, order_id, invoice_number) VALUES (?,?,?)')->execute([$storeId, (int)$o['id'], $number]);
+    } catch (Exception $e1) {}
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `smeram_invoices` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `order_id` INT NOT NULL UNIQUE,
+            `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
+            `issued_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX `idx_inv_order` (`order_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $pdo->prepare('INSERT IGNORE INTO smeram_invoices (order_id, invoice_number) VALUES (?,?)')->execute([(int)$o['id'], $number]);
+    } catch (Exception $e2) {}
+    try {
+        $stmt = $pdo->prepare('SELECT * FROM invoices WHERE order_id = ?');
+        $stmt->execute([(int)$o['id']]);
+        $row = $stmt->fetch();
+        if ($row) return $row;
+    } catch (Exception $e3) {}
+    return ['invoice_number' => $number, 'order_id' => (int)$o['id'], 'issued_at' => $o['created_at'] ?? date('Y-m-d H:i:s')];
 }
 
 // ── WhatsApp sender (ZKWAConnect / Gupshup, from whatsapp_config.php) ──
@@ -281,9 +307,28 @@ function zkcWaSend($pdo, $kind, $to, $text, $fields = [], $orderId = null, $prod
 }
 
 function zkcOrderById($pdo, $id) {
-    $stmt = $pdo->prepare('SELECT * FROM orders WHERE id = ? AND store_id = ?');
-    $stmt->execute([(int)$id, STORE_ID]);
-    return $stmt->fetch() ?: null;
+    $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+    try {
+        $hasStoreId = true;
+        try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+        if ($hasStoreId && defined('STORE_ID')) {
+            $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id = ? AND store_id = ?");
+            $stmt->execute([(int)$id, STORE_ID]);
+        } else {
+            $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id = ?");
+            $stmt->execute([(int)$id]);
+        }
+        $o = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($o) return $o;
+    } catch (Exception $e) {}
+    $alt = ($tbl === 'orders') ? 'smeram_orders' : 'orders';
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM `{$alt}` WHERE id = ?");
+        $stmt->execute([(int)$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    } catch (Exception $e2) {
+        return null;
+    }
 }
 
 /** New confirmed / paid order: confirmation to the customer + alert to customer care. */

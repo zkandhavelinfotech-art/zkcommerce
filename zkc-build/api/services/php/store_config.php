@@ -39,10 +39,23 @@ define('WA_LOW_STOCK_TEMPLATE', "⚠️ *Low stock — {store_name}*\n{product_n
 define('WA_SHIPPED_TEMPLATE', "🚚 Hello {customer_name}, your {store_name} order *{order_id}* has shipped with {courier}.\nTrack it here: {tracking_url}");
 define('WA_DELIVERED_TEMPLATE', "✅ Hello {customer_name}, your {store_name} order *{order_id}* has been delivered.\nThank you for shopping with us! Reply here if anything is not right.");
 
-// GST
-define('GST_ENABLED', false);
-define('GST_RATE', 0);
+// Billing Entity & GST details (Smeram Industries)
+if (!defined('BILLING_NAME')) define('BILLING_NAME', 'Smeram Industries');
+if (!defined('GSTIN')) define('GSTIN', '33DVRPR1801M1Z6');
+if (!defined('GST_ENABLED')) define('GST_ENABLED', true);
+if (!defined('GST_RATE')) define('GST_RATE', 5);
 
 // Admin portal authentication credentials
 if (!defined('ADMIN_SECRET_KEY')) define('ADMIN_SECRET_KEY', 'ZKCommerce@Admin2026!');
 if (!defined('ADMIN_PASSWORD')) define('ADMIN_PASSWORD', 'demo1234');
+
+// Ekart Logistics & Webhook Configuration
+if (!defined('EKART_ENABLED')) define('EKART_ENABLED', true);
+if (!defined('EKART_MODE')) define('EKART_MODE', 'api');
+if (!defined('EKART_CLIENT_ID')) define('EKART_CLIENT_ID', 'EKART_6ad49aef2206ede3ee46d222');
+if (!defined('EKART_ALERT_EMAIL')) define('EKART_ALERT_EMAIL', 'smeramindustries@gmail.com');
+if (!defined('EKART_WEBHOOK_SECRET')) define('EKART_WEBHOOK_SECRET', 'ek_sec_984f1801m1z6_smeram');
+if (!defined('EKART_BASE_URL')) define('EKART_BASE_URL', 'https://api.ekartlogistics.com');
+if (!defined('EKART_MERCHANT_CODE')) define('EKART_MERCHANT_CODE', 'SMERAM');
+if (!defined('SHIP_COURIER')) define('SHIP_COURIER', 'Ekart Logistics');
+if (!defined('SHIP_TRACKING_URL')) define('SHIP_TRACKING_URL', 'https://ekartlogistics.com/shipmenttrack/{awb}');

@@ -1,0 +1,45 @@
+=======================================================
+SMERAM INDUSTRIES - TODAY'S PRODUCTION PATCH v1.0.16
+Release Date: 2026-11-05 12:33:25
+Billing Entity: Smeram Industries
+Trade / Brand Name: Smeram Naturals
+GSTIN: 33DVRPR1801M1Z6 | State: Tamil Nadu (Code 33)
+Invoice Series: SM-01, SM-02, SM-03...
+Customer Care WhatsApp: +91 75399 72026 (917539972026)
+=======================================================
+
+LATEST HIGHLIGHTS (MATCHING HANDWRITTEN REQUIREMENTS):
+------------------------------------------------------
+1. BILLING ENTITY & GST DETAILS:
+   - Billing Company: Smeram Industries
+   - Brand / Trade Name: Smeram Naturals
+   - Official GSTIN: 33DVRPR1801M1Z6
+   - Invoice numbering series: SM-01, SM-02, SM-03...
+
+2. PRODUCT-WISE INCLUSIVE GST & HSN CALCULATION:
+   1) Pain Oil (Joint Care / Ortho):
+      - GST: 5% | HSN: 30049013
+   2) Hair Oil (Classical Siddha Hair Oil):
+      - GST: 5% | HSN: 33059019
+   3) Face Pack / Oil (Ayurgold Face Care):
+      - GST: 18% | HSN: 33049990
+   4) Health Mix / Desi Ghee (Vedic Health Foods):
+      - GST: 18% | HSN: 19011099
+
+3. INCLUSIVE GST MATH (EXACT HANDWRITTEN FORMULA):
+   - Selling Price is Inclusive of GST.
+   - Taxable Value (Base) = Gross Selling Price * (100 / (100 + GST%))
+   - GST Amount = Gross Selling Price - Taxable Value
+   - Intra-state (Tamil Nadu, 33): CGST (Rate/2) + SGST (Rate/2)
+   - Inter-state: IGST (Full Rate)
+
+4. COMPLETE INVOICE BREAKUP TABLE:
+   - Item Description, HSN Code, Qty, Gross Rate (Incl. GST), Taxable Value, GST%, CGST/SGST/IGST, Total.
+   - Comprehensive HSN Tax Summary Table at the bottom.
+   - Verified Razorpay / COD Payment Box.
+   - Clean A4 Print & 1-click Save as PDF.
+
+5. PACKAGING & DELIVERY LABELS:
+   - Default stage: '📦 Ready to Pack' badge for confirmed/paid orders.
+   - Default date range: Last 7 days.
+   - Color-coded filter chips (Today in Green, Last 7 Days in Indigo, etc.).

@@ -1821,8 +1821,19 @@ const catalog = [
   }
 ];
 
-// In-Memory Cart State
+// Synchronized Cart State (in-memory + sessionStorage)
 let cart = [];
+try {
+  const savedCart = JSON.parse(sessionStorage.getItem('zk_cart') || '[]');
+  if (Array.isArray(savedCart) && savedCart.length) {
+    cart = savedCart.map(function(x) { return { id: Number(x.product_id || x.id), qty: Number(x.quantity || x.qty || 1) }; });
+  }
+} catch(_) {}
+function saveCart() {
+  try {
+    sessionStorage.setItem('zk_cart', JSON.stringify(cart.map(function(x) { return { product_id: x.id, id: x.id, quantity: x.qty, qty: x.qty }; })));
+  } catch(_) {}
+}
 let appliedDiscount = 0;
 let couponCode = '';
 
@@ -2009,10 +2020,12 @@ function addToCart(productId, qtyDelta = 1) {
   if (item) item.qty += qtyDelta;
   else cart.push({ id: productId, qty: qtyDelta });
   
+  saveCart();
   updateCartBadge();
   syncCardSteppers();
   triggerActionBanner(p ? p.name : '', p ? p.price : 0, item ? item.qty : qtyDelta);
   renderCart();
+  openCart();
 }
 
 function buyNow(productId) {
@@ -2027,6 +2040,7 @@ function updateCartQty(productId, delta) {
   if (item.qty <= 0) {
     cart = cart.filter(x => x.id !== productId);
   }
+  saveCart();
   updateCartBadge();
   syncCardSteppers();
   renderCart();
@@ -2038,6 +2052,7 @@ function updateCartQty(productId, delta) {
 
 function removeCartItem(productId) {
   cart = cart.filter(x => x.id !== productId);
+  saveCart();
   updateCartBadge();
   syncCardSteppers();
   renderCart();
@@ -2253,6 +2268,7 @@ function handlePlaceOrder(e) {
 
     // Reset cart
     cart = [];
+    saveCart();
     updateCartBadge();
   }
 
@@ -2276,7 +2292,18 @@ function handlePlaceOrder(e) {
       coupon_code: couponCode || null,
       items: cart.map(function(c) {
         var p = catalog.find(function(x) { return x.id === c.id; }) || {};
-        return { product_id: p.id || c.id, id: p.id || c.id, name: p.name || 'Product', size: p.size || 'Standard', quantity: c.qty, qty: c.qty, price: p.price || 0 };
+        var pr = p.price || 0;
+        return {
+          product_id: p.id || c.id,
+          id: p.id || c.id,
+          name: p.name || 'Product',
+          size: p.size || 'Standard',
+          quantity: c.qty,
+          qty: c.qty,
+          price: pr,
+          unit_price: pr,
+          line_total: pr * c.qty
+        };
       })
     };
 
@@ -2307,9 +2334,12 @@ function handlePlaceOrder(e) {
     // 2. Post to Storefront API (try /api then fallback to api.php?route=)
     try {
       var checkoutPayload = JSON.stringify({
+        order_number: orderNum,
         customer: { name: name, phone: phone, email: email },
         address: { line1: address, city: city, state: 'Tamil Nadu', pincode: pincode },
         payment_method: payMethod === 'razorpay' ? 'razorpay' : 'cod',
+        payment_status: paymentMeta && paymentMeta.payStatus ? paymentMeta.payStatus : (payMethod === 'razorpay' ? 'paid' : 'pending'),
+        razorpay_payment_id: paymentMeta && paymentMeta.paymentId ? paymentMeta.paymentId : null,
         coupon_code: couponCode || null,
         items: cart.map(function(c) { return { product_id: c.id, quantity: c.qty }; })
       });
@@ -2338,7 +2368,8 @@ function handlePlaceOrder(e) {
           if (nodeRes && nodeRes.order_id && paymentMeta && paymentMeta.paymentId) {
             var verifyPayload = JSON.stringify({
               order_id: nodeRes.order_id,
-              razorpay_order_id: paymentMeta.orderId || ('order_' + nodeRes.order_id),
+              order_number: orderNum,
+              razorpay_order_id: paymentMeta.orderId || '',
               razorpay_payment_id: paymentMeta.paymentId,
               razorpay_signature: paymentMeta.signature || ''
             });
@@ -2686,12 +2717,8 @@ function adjustModalQty(productId, delta) {
 
 function addModalItemToCart(productId) {
   addToCart(productId, modalQty);
-  const post = document.getElementById('modalPostActions');
-  const cta = document.getElementById('modalCtaRow');
-  if (post && cta) {
-    cta.style.display = 'none';
-    post.style.display = 'grid';
-  }
+  closeDetailModal();
+  openCart();
 }
 
 function buyModalItemNow(productId) {

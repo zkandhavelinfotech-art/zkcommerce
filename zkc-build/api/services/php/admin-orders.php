@@ -46,15 +46,27 @@ $revenue = 0;
 $filter = in_array($_GET['status'] ?? '', ZKC_STATUSES, true) ? $_GET['status'] : '';
 $q = trim((string)($_GET['q'] ?? ''));
 if ($pdo) {
-    $sql = 'SELECT o.*, i.invoice_number FROM orders o LEFT JOIN invoices i ON i.order_id = o.id WHERE o.store_id = ?';
-    $args = [STORE_ID];
+    $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+    $hasStoreId = true;
+    try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+    $whereStore = $hasStoreId ? 'o.store_id = ?' : '1=1';
+    $args = $hasStoreId ? [STORE_ID] : [];
+    
+    $sql = "SELECT o.*, COALESCE(i.invoice_number, si.invoice_number, CONCAT('ZK-2-', o.id)) AS invoice_number
+            FROM `{$tbl}` o
+            LEFT JOIN invoices i ON i.order_id = o.id
+            LEFT JOIN smeram_invoices si ON si.order_id = o.id
+            WHERE {$whereStore}";
     if ($filter !== '') { $sql .= ' AND o.order_status = ?'; $args[] = $filter; }
-    if ($q !== '') { $sql .= ' AND (o.order_number LIKE ? OR o.customer_name LIKE ? OR o.customer_phone LIKE ? OR o.tracking_number LIKE ?)'; array_push($args, "%$q%", "%$q%", "%$q%", "%$q%"); }
+    if ($q !== '') {
+        $sql .= ' AND (o.order_number LIKE ? OR o.customer_name LIKE ? OR o.customer_phone LIKE ?)';
+        array_push($args, "%$q%", "%$q%", "%$q%");
+    }
     $stmt = $pdo->prepare($sql . ' ORDER BY o.id DESC LIMIT 300');
     $stmt->execute($args);
     $orders = $stmt->fetchAll();
     // Revenue counts only money that is in or due: COD orders and paid online orders.
-    foreach ($orders as $o) if (!in_array($o['order_status'], ['cancelled', 'returned'], true) && in_array($o['payment_status'], ['cod', 'paid'], true)) $revenue += (float)$o['total_amount'];
+    foreach ($orders as $o) if (!in_array($o['order_status'] ?? '', ['cancelled', 'returned'], true) && in_array($o['payment_status'] ?? '', ['cod', 'paid'], true)) $revenue += (float)($o['total_amount'] ?? 0);
 }
 $csrf = zkcCsrf();
 ?>
