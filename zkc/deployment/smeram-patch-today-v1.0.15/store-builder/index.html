@@ -26,6 +26,54 @@
 .env-code-box{background:#0f172a;color:#38bdf8;font-family:monospace;font-size:11.5px;line-height:1.5;padding:12px 14px;border-radius:8px;max-height:150px;overflow:auto;margin:0;white-space:pre-wrap;word-break:break-all}
 .pub-badge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 9px;border-radius:99px;background:#10b981;color:#ffffff}
 
+
+/* Sticky Product Actions in Store Builder */
+#productTable {
+  overflow-x: auto;
+  max-width: 100%;
+}
+#productTable table {
+  min-width: 950px;
+  width: 100%;
+  border-collapse: collapse;
+}
+#productTable th, #productTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+#productTable th:last-child,
+#productTable td:last-child {
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  box-shadow: -4px 0 8px rgba(0,0,0,0.06);
+  z-index: 2;
+  text-align: right;
+  white-space: nowrap;
+}
+#productTable thead th:last-child {
+  background: #f8fafc;
+  z-index: 3;
+}
+.modal.modal-lg {
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+.modal.modal-lg .modal-body {
+  overflow-y: auto !important;
+  flex: 1 !important;
+}
+.modal.modal-lg .modal-foot {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: #fff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  z-index: 10 !important;
+  flex-shrink: 0 !important;
+}
+
 </style><style>
 .workspace-nav{display:flex;align-items:center;gap:2px;padding:3px;background:#f1f2f3;border-radius:8px}.workspace-tab{border:0;background:transparent;color:#616a70;border-radius:6px;padding:7px 9px;font:600 11px inherit;cursor:pointer}.workspace-tab.active{background:white;color:#202223;box-shadow:0 1px 3px #1a1a1a1a}
 @media(max-width:720px){.topbar{gap:5px;padding:0 7px;overflow-x:auto}.workspace-nav,.template-control,.top-actions{flex:none}.workspace-tab{padding:7px 5px;font-size:10px}.store-select{min-width:95px;max-width:115px}.template-select{max-width:105px}.product-select{max-width:82px}.top-actions{gap:3px}.top-actions .btn{padding:0 6px;font-size:10px}.top-actions a{display:none}}
@@ -715,7 +763,7 @@ function renderStoreSettings(){const host=document.getElementById('storeSettings
 async function saveDraft(){if(!store||!dirty)return;try{const data=await api('/stores/'+store.id+'/draft',{method:'PUT',body:JSON.stringify({theme_config:themeConfig})});store=data.store;dirty=false;document.getElementById('saveState').textContent='Saved';renderTree();refreshPreview()}catch(e){document.getElementById('saveState').textContent='Save failed';toast(e.message,true)}}
 async function saveNow(){clearTimeout(saveTimer);if(!dirty){toast('Everything is saved');return}await saveDraft();if(!dirty)toast('Draft saved')}
 async function publish(){try{if(dirty)await saveDraft();if(dirty)throw Error('The draft could not be saved. Fix the save error before publishing.');const r=await api('/stores/'+store.id+'/publish',{method:'POST',body:JSON.stringify({})});store={...store,...r.store};document.getElementById('saveState').textContent='Published';const liveUrl=ZK.storeUrl(store.slug);toast('Published snapshot is live: '+liveUrl)}catch(e){toast(e.message,true)}}
-function renderProducts(){const host=document.getElementById('productTable');const rows=products.map(p=>{const badges=[];if(p.additional_note)badges.push('GST Note');if(p.user_instructions)badges.push('Instructions');if(p.benefits)badges.push('Benefits');const badgeHtml=badges.map(b=>'<span class="param-badge">'+b+'</span>').join('');return '<tr><td><strong>'+esc(p.name)+'</strong>'+(badgeHtml?'<div style="margin-top:4px">'+badgeHtml+'</div>':'')+'</td><td>'+esc(p.category_name||'Uncategorized')+'</td><td>'+esc(p.product_size||p.size||'—')+'</td><td><strong style="color:'+((p.quantity||0)>0?'#059669':'#dc2626')+'">'+(p.quantity!==undefined?p.quantity:100)+'</strong> <small style="color:#64748b">units</small></td><td>'+esc(p.sku||'—')+'</td><td>₹'+Number(p.price||0).toLocaleString('en-IN')+'</td><td>'+(!p.active?'Draft':p.unlisted?'<span title="Not listed in the shop; open it from its link">Hidden · link only</span>':'Active')+'</td><td>'+((p.quantity>0&&p.in_stock!==false)?'<span style="color:#059669;font-weight:600">● In stock</span>':'<span style="color:#dc2626;font-weight:600">○ Sold out</span>')+'</td><td><button class="btn btn-primary" data-edit-product="'+p.id+'">Edit</button>'+(p.unlisted&&p.active?'<button class="btn" data-copy-link="'+p.id+'" title="Hidden products open only from this link">Copy link</button>':'')+'<button class="btn" data-delete-product="'+p.id+'">Archive</button></td></tr>'}).join('');host.innerHTML=rows?'<table><thead><tr><th>Product</th><th>Category</th><th>Size</th><th>Stock Qty</th><th>SKU</th><th>Price</th><th>Status</th><th>Stock Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>':'<div class="page-empty">No products yet. Add your first product. A category is optional.</div>';host.querySelectorAll('[data-edit-product]').forEach(b=>b.onclick=()=>openProduct(products.find(p=>String(p.id)===b.dataset.editProduct)));host.querySelectorAll('[data-copy-link]').forEach(b=>b.onclick=async()=>{const p=products.find(x=>String(x.id)===b.dataset.copyLink);const url=(store.custom_domain?'https://'+store.custom_domain:location.origin+'/store/'+store.slug)+'/products/'+encodeURIComponent(p.slug);try{await navigator.clipboard.writeText(url);toast('Link copied: '+url+' (publish first if the product is new)')}catch(e){prompt('Copy this link',url)}});host.querySelectorAll('[data-delete-product]').forEach(b=>b.onclick=()=>deleteProduct(b.dataset.deleteProduct))}
+function renderProducts(){const host=document.getElementById('productTable');const rows=products.map(p=>{const badges=[];if(p.additional_note)badges.push('GST Note');if(p.user_instructions)badges.push('Instructions');if(p.benefits)badges.push('Benefits');const badgeHtml=badges.map(b=>'<span class="param-badge">'+b+'</span>').join('');return '<tr><td><strong>'+esc(p.name)+'</strong>'+(badgeHtml?'<div style="margin-top:4px">'+badgeHtml+'</div>':'')+'</td><td>'+esc(p.category_name||'Uncategorized')+'</td><td>'+esc(p.product_size||p.size||'—')+'</td><td><strong style="color:'+((p.quantity||0)>0?'#059669':'#dc2626')+'">'+(p.quantity!==undefined?p.quantity:100)+'</strong> <small style="color:#64748b">units</small></td><td>'+esc(p.sku||'—')+'</td><td>₹'+Number(p.price||0).toLocaleString('en-IN')+'</td><td>'+(!p.active?'Draft':p.unlisted?'<span title="Not listed in the shop; open it from its link">Hidden · link only</span>':'Active')+'</td><td>'+((p.quantity>0&&p.in_stock!==false)?'<span style="color:#059669;font-weight:600">● In stock</span>':'<span style="color:#dc2626;font-weight:600">○ Sold out</span>')+'</td><td><button class="btn btn-primary" data-edit-product="'+p.id+'">Edit</button>'+(p.unlisted&&p.active?'<button class="btn" data-copy-link="'+p.id+'" title="Hidden products open only from this link">Copy link</button>':'')+'<button class="btn" data-delete-product="'+p.id+'">Archive</button></td></tr>'}).join('');host.innerHTML=rows?'<table><thead><tr><th>Product</th><th>Category</th><th>Size</th><th>Stock Qty</th><th>SKU</th><th>Price</th><th>Status</th><th>Stock Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>'+rows+'</tbody></table>':'<div class="page-empty">No products yet. Add your first product. A category is optional.</div>';host.querySelectorAll('[data-edit-product]').forEach(b=>b.onclick=()=>openProduct(products.find(p=>String(p.id)===String(b.dataset.editProduct)||Number(p.id)===Number(b.dataset.editProduct))));host.querySelectorAll('[data-copy-link]').forEach(b=>b.onclick=async()=>{const p=products.find(x=>String(x.id)===b.dataset.copyLink);const url=(store.custom_domain?'https://'+store.custom_domain:location.origin+'/store/'+store.slug)+'/products/'+encodeURIComponent(p.slug);try{await navigator.clipboard.writeText(url);toast('Link copied: '+url+' (publish first if the product is new)')}catch(e){prompt('Copy this link',url)}});host.querySelectorAll('[data-delete-product]').forEach(b=>b.onclick=()=>deleteProduct(b.dataset.deleteProduct))}
 function renderCategories(){
   const select=document.getElementById('productCategory');
   if(select){
@@ -789,7 +837,7 @@ function updateSbGst() {
   if (fEl) fEl.innerHTML = 'Formula: Taxable = ' + p + ' × 100 / ' + (100 + r) + ' = <strong>₹' + taxable.toFixed(2) + '</strong> (GST: <strong>₹' + gst.toFixed(2) + '</strong>)';
 }
 
-function openProduct(p){editingProduct=p||null;const f=document.getElementById('productForm');f.reset();renderCategories();f.elements.id.value=p?.id||'';f.elements.name.value=p?.name||'';f.elements.sku.value=p?.sku||'';f.elements.price.value=p?.price!==undefined?p.price:'';f.elements.compare_price.value=(p?.compare_price!==undefined&&p?.compare_price!==null)?p.compare_price:'';f.elements.product_size.value=p?.product_size||p?.size||'';if(f.elements.gst_rate)f.elements.gst_rate.value=p?.gst_rate!=null?p.gst_rate:5;if(f.elements.hsn_code)f.elements.hsn_code.value=p?.hsn_code||(p?.gst_rate==18?'33049990':'30049013');updateSbGst();if(f.elements.quantity)f.elements.quantity.value=(p?.quantity!==undefined&&p?.quantity!==null)?p.quantity:100;f.elements.net_quantity_value.value=p?.net_quantity_value!=null?Number(p.net_quantity_value):'';f.elements.net_quantity_unit.value=p?.net_quantity_unit||'';f.elements.low_stock_threshold.value=p?.low_stock_threshold!=null?p.low_stock_threshold:'';renderVariantRows((p?.variants||[]).filter(v=>v&&typeof v==='object'&&v.id));f.elements.offer_text.value=p?.offer_text||p?.offer||'';f.elements.show_offer.value=p?.show_offer===true?'show':p?.show_offer===false?'hide':'';f.elements.description.value=p?.description||'';f.elements.category_id.value=p?.category_id||'';f.elements.images.value=(p?.images||[]).join('\n');f.elements.badge_text.value=p?.badge_text||'';f.elements.ingredients.value=p?.ingredients||'';renderProductPhotos();f.elements.in_stock.value=String(p?.in_stock!==false);f.elements.active.value=p?.active===false?'false':p?.unlisted?'hidden':'true';
+function openProduct(p){try{editingProduct=p||null;const f=document.getElementById('productForm');if(!f)return;f.reset();if(typeof renderCategories==='function')renderCategories();if(f.elements.id)f.elements.id.value=p?.id||'';f.elements.name.value=p?.name||'';f.elements.sku.value=p?.sku||'';f.elements.price.value=p?.price!==undefined?p.price:'';f.elements.compare_price.value=(p?.compare_price!==undefined&&p?.compare_price!==null)?p.compare_price:'';f.elements.product_size.value=p?.product_size||p?.size||'';if(f.elements.gst_rate)f.elements.gst_rate.value=p?.gst_rate!=null?p.gst_rate:5;if(f.elements.hsn_code)f.elements.hsn_code.value=p?.hsn_code||(p?.gst_rate==18?'33049990':'30049013');updateSbGst();if(f.elements.quantity)f.elements.quantity.value=(p?.quantity!==undefined&&p?.quantity!==null)?p.quantity:100;f.elements.net_quantity_value.value=p?.net_quantity_value!=null?Number(p.net_quantity_value):'';f.elements.net_quantity_unit.value=p?.net_quantity_unit||'';f.elements.low_stock_threshold.value=p?.low_stock_threshold!=null?p.low_stock_threshold:'';renderVariantRows((p?.variants||[]).filter(v=>v&&typeof v==='object'&&v.id));f.elements.offer_text.value=p?.offer_text||p?.offer||'';f.elements.show_offer.value=p?.show_offer===true?'show':p?.show_offer===false?'hide':'';f.elements.description.value=p?.description||'';f.elements.category_id.value=p?.category_id||'';f.elements.images.value=(p?.images||[]).join('\n');f.elements.badge_text.value=p?.badge_text||'';f.elements.ingredients.value=p?.ingredients||'';renderProductPhotos();f.elements.in_stock.value=String(p?.in_stock!==false);f.elements.active.value=p?.active===false?'false':p?.unlisted?'hidden':'true';
 const isHairOil=(p?.name&&/hair\s*oil/i.test(p.name))||(store?.slug&&/smeram/i.test(store.slug))||(p?.slug&&/hair-oil/i.test(p.slug));
 const chkNote=document.getElementById('chk_additional_note'),inputNote=document.getElementById('input_additional_note'),wrapNote=document.getElementById('wrap_additional_note'),previewBadge=document.getElementById('preview_additional_note_badge'),cardNote=document.getElementById('card_additional_note');
 const defaultNote='Inclusive of GST and free shipping.';const noteVal=(p&&p.additional_note!==undefined&&p.additional_note!==null)?p.additional_note:defaultNote;inputNote.value=noteVal||defaultNote;previewBadge.textContent=noteVal||defaultNote;const hasNote=p?(p.additional_note!==null&&p.additional_note!==''):true;chkNote.checked=hasNote;wrapNote.style.display=hasNote?'block':'none';if(cardNote)cardNote.classList.toggle('checked',hasNote);
@@ -800,7 +848,7 @@ const chkBen=document.getElementById('chk_benefits'),inputBen=document.getElemen
 let defaultBen=isHairOil?'• Stimulates healthy hair growth from dormant follicles\n• 100% Dandruff control & soothing itchy scalp\n• Reduces hair fall & strengthens roots from base\n• Enriched with Brahmi, Amla, Bhringraj & 12 cold-infused herbs':'';
 const benVal=p?.benefits||(isHairOil?defaultBen:'');inputBen.value=benVal;const hasBen=!!(benVal&&benVal.trim());chkBen.checked=hasBen;wrapBen.style.display=hasBen?'block':'none';if(cardBen)cardBen.classList.toggle('checked',hasBen);
 if(!f.elements.description.value&&isHairOil){f.elements.description.value='- Double Boiled & Double Infused\n- Hair Growth Promoter from Roots\n- 100% Dandruff Control & Scalp Cooling\n- 100% Natural, Vegan & Cruelty-Free\n\nCrafted according to the traditional Sneha - Kalka - Drava method. Fresh botanical herbs are slowly infused into cold-pressed virgin coconut oil over 72 hours to preserve potent phytochemicals.'}
-document.getElementById('productModalTitle').textContent=p?'Edit Product and Product details':'Add Product';document.getElementById('productModal').classList.add('open')}
+const titleEl=document.getElementById('productModalTitle');if(titleEl)titleEl.textContent=p?'Edit Product and Product details':'Add Product';const m=document.getElementById('productModal');if(m)m.classList.add('open')}catch(err){console.error('Error in openProduct:',err);const m=document.getElementById('productModal');if(m)m.classList.add('open')}}
 function productPhotoList(){return document.getElementById('productForm').elements.images.value.split(/\n/).map(x=>x.trim()).filter(x=>/^https:\/\//i.test(x)||/^\/assets\/[a-z0-9._\/-]+$/i.test(x))}
 function renderProductPhotos(){const host=document.getElementById('productPhotoPreview');host.innerHTML=productPhotoList().map((u,i)=>'<span style="position:relative"><img src="'+esc(u)+'" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #c9cccf"><button type="button" data-remove-photo="'+i+'" title="Remove" style="position:absolute;top:-6px;right:-6px;border:0;border-radius:50%;width:20px;height:20px;background:#d72c0d;color:#fff;cursor:pointer">×</button></span>').join('');host.querySelectorAll('[data-remove-photo]').forEach(b=>b.onclick=()=>{const list=productPhotoList();list.splice(Number(b.dataset.removePhoto),1);document.getElementById('productForm').elements.images.value=list.join('\n');renderProductPhotos()})}
 async function uploadProductPhotos(input){const files=Array.from(input.files||[]).slice(0,10);if(!files.length)return;const box=document.getElementById('productForm').elements.images;try{for(const file of files){const form=new FormData();form.append('file',file);form.append('scope','products');const d=await api('/upload/'+store.id,{method:'POST',body:form});box.value=[...productPhotoList(),d.url].join('\n');renderProductPhotos()}toast('Photos uploaded. Save the product to keep them.')}catch(e){toast(e.message,true)}input.value=''}

@@ -87,7 +87,57 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   gap: 20px;
   background: var(--zk-chalk);
 }
+
+/* Responsive Product Table & Sticky Actions */
+.zk-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid var(--zk-border);
+  border-radius: 12px;
+  background: #fff;
+  margin-top: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  -webkit-overflow-scrolling: touch;
+}
+.zk-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+.zk-table th, .zk-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--zk-border);
+  vertical-align: middle;
+}
+.zk-table th:last-child,
+.zk-table td:last-child {
+  position: sticky;
+  right: 0;
+  background: #ffffff;
+  box-shadow: -5px 0 10px rgba(0,0,0,0.05);
+  z-index: 2;
+  text-align: right;
+  white-space: nowrap;
+}
+.zk-table thead th:last-child {
+  background: #f8fafc;
+  z-index: 3;
+}
 .modal-footer {
+  padding: 16px 28px;
+  border-top: 1px solid var(--zk-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+/* original footer */
+.modal-footer-orig {
   padding: 16px 28px;
   border-top: 1px solid var(--zk-border);
   display: flex;
@@ -625,212 +675,6 @@ body{background:var(--zk-chalk);overflow-x:hidden}
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="editProductModal" onclick="handleBackdropClick(event)">
-  <div class="modal-card" onclick="event.stopPropagation()">
-    
-    <!-- Modal Header -->
-    <div class="modal-header">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:20px">✏️</span>
-          <h2 style="font-family:var(--font-display);font-size:18px;font-weight:800;margin:0">Edit Product and Product details</h2>
-          <span class="badge badge-green" id="modal-status-badge">Active</span>
-        </div>
-        <div style="font-size:12px;color:var(--zk-muted);margin-top:4px">Update product specifications, description, and optional customer highlights</div>
-      </div>
-      <button onclick="closeEditModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--zk-muted);padding:4px 8px;border-radius:6px">✕</button>
-    </div>
-
-    <!-- Modal Form Body -->
-    <div class="modal-body">
-      <input type="hidden" id="edit-prod-id">
-
-      <!-- Section 1: Basic Information -->
-      <div class="modal-section">
-        <div class="modal-sec-title">
-          <span>📦 Basic Information</span>
-          <span style="font-size:11px;font-weight:600;color:var(--zk-dim)">* Required fields</span>
-        </div>
-        <div class="field-group" style="margin-bottom:14px">
-          <label class="field-label">Product Name *</label>
-          <input type="text" class="field" id="modal-pname" placeholder="e.g. Smeram 100% Natural Herbal Hair Oil (200ml)" style="font-weight:600;font-size:14px">
-        </div>
-
-        <!-- Description: Increased Height & Width -->
-        <div class="field-group" style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <label class="field-label" style="margin-bottom:0">Product Description *</label>
-            <span style="font-size:11px;color:var(--zk-muted)">Expanded writing area for ingredients, origin & formulation</span>
-          </div>
-          <textarea class="desc-textarea" id="modal-pdesc" placeholder="Comprehensive product description, active ayurvedic herbs, cold-pressed extraction method, texture, aroma, and results..."></textarea>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="field-group">
-            <label class="field-label">Category</label>
-            <select class="field" id="modal-pcat">
-              <option value="Hair Care">Hair Care</option>
-              <option value="Natural & Herbal">Natural & Herbal</option>
-              <option value="Skin Care">Skin Care</option>
-              <option value="Sarees">Sarees</option>
-              <option value="Kurtas">Kurtas</option>
-              <option value="Accessories">Accessories</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Brand</label>
-            <input type="text" class="field" id="modal-pbrand" placeholder="e.g. Smeram Naturals">
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 2: Pricing & Inventory with Smeram GST Breakup -->
-      <div class="modal-section">
-        <div class="modal-sec-title">
-          <span>💰 Pricing, Inventory &amp; Inclusive GST</span>
-          <span class="badge badge-green" style="font-size:11px">Smeram Industries Inclusive GST</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-          <div class="field-group">
-            <label class="field-label">Selling Price (Gross ₹) *</label>
-            <input type="number" class="field" id="modal-pprice" placeholder="349" style="font-weight:700" oninput="updateModalGstBreakdown()">
-            <div style="font-size:11px;color:var(--zk-muted);margin-top:2px">Inclusive of all taxes</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">MRP / Compare Price (₹)</label>
-            <input type="number" class="field" id="modal-pmrp" placeholder="499">
-          </div>
-          <div class="field-group">
-            <label class="field-label">Stock Quantity (Units) *</label>
-            <input type="number" class="field" id="modal-pstock" placeholder="120" style="font-weight:700">
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-          <div class="field-group">
-            <label class="field-label">GST Rate (%) *</label>
-            <select class="field" id="modal-pgrate" onchange="updateModalGstBreakdown()" style="font-weight:600">
-              <option value="5">5% — Pain Oil &amp; Hair Oil (Ayurvedic/Siddha)</option>
-              <option value="18">18% — Face Pack &amp; Health Mix (Cosmetics/Food)</option>
-              <option value="0">0% — Nil / Exempted</option>
-              <option value="12">12% — Standard Goods</option>
-              <option value="28">28% — Luxury Goods</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label">HSN / SAC Code *</label>
-            <input type="text" class="field" id="modal-phsn" placeholder="30049013" style="font-weight:600">
-            <div style="font-size:11px;color:var(--zk-muted);margin-top:2px">e.g. 30049013 / 33059019</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Status</label>
-            <select class="field" id="modal-pstatus">
-              <option value="published">Published (Active on Store)</option>
-              <option value="draft">Draft (Hidden)</option>
-              <option value="archived">Archived</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Live Inclusive GST Breakdown Card -->
-        <div id="modal-gst-calc-box" style="background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:14px 16px;margin-top:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:12.5px;font-weight:800;color:#166534;display:flex;align-items:center;gap:6px">
-              <span>🧾</span>
-              <span>Inclusive GST Breakdown Preview</span>
-            </div>
-            <span class="badge badge-green" id="modal-calc-rate-badge" style="font-weight:800">5% GST</span>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;font-size:12px;background:#fff;padding:10px 14px;border-radius:8px;border:1px solid #BBF7D0">
-            <div>
-              <div style="color:#64748B;font-size:11px;margin-bottom:2px">Gross Selling Price</div>
-              <div style="font-weight:800;font-size:14px;color:#0F172A" id="modal-calc-gross">₹349.00</div>
-            </div>
-            <div>
-              <div style="color:#64748B;font-size:11px;margin-bottom:2px">Taxable Base Value</div>
-              <div style="font-weight:800;font-size:14px;color:#1E40AF" id="modal-calc-taxable">₹332.38</div>
-            </div>
-            <div>
-              <div style="color:#64748B;font-size:11px;margin-bottom:2px">CGST + SGST (TN 33)</div>
-              <div style="font-weight:800;font-size:13px;color:#059669" id="modal-calc-cgst-sgst">₹8.31 + ₹8.31</div>
-            </div>
-            <div>
-              <div style="color:#64748B;font-size:11px;margin-bottom:2px">Total GST Tax</div>
-              <div style="font-weight:800;font-size:14px;color:#059669" id="modal-calc-total-gst">₹16.62</div>
-            </div>
-          </div>
-          <div style="font-size:11px;color:#166534;margin-top:8px;line-height:1.4" id="modal-calc-formula">
-            Formula: Taxable = Product Price × 100 / (100 + Rate) = ₹349.00 × 100 / 105 = <strong>₹332.38</strong> (GST: <strong>₹16.62</strong>)
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Section 3: Additional Parameters (Optional Check Fields) -->
-      <div class="modal-section">
-        <div class="modal-sec-title">
-          <span>✨ Additional Parameters (Optional Check Fields)</span>
-          <span class="badge badge-green" style="font-size:11px">Storefront Highlights</span>
-        </div>
-
-        <!-- 1. Additional Note (Inclusive of GST and free shipping) -->
-        <div class="param-box">
-          <label class="param-label">
-            <input type="checkbox" id="modal-chk-note" checked onchange="toggleModalParam('note')">
-            <span>🏷️ Additional Note (e.g. Inclusive of GST and free shipping)</span>
-          </label>
-          <div id="modal-box-note">
-            <input type="text" class="field" id="modal-pnote" value="Inclusive of GST and free shipping." placeholder="e.g. Inclusive of GST and free shipping.">
-            <div class="trust-badge-preview" id="modal-note-preview">
-              <span>🚚</span>
-              <span id="modal-note-preview-text">Inclusive of GST and free shipping.</span>
-            </div>
-            <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Renders as a trust badge right below the price on your storefront.</div>
-          </div>
-        </div>
-
-        <!-- 2. User Instructions -->
-        <div class="param-box">
-          <label class="param-label">
-            <input type="checkbox" id="modal-chk-instructions" onchange="toggleModalParam('instructions')">
-            <span>📋 User Instructions (How to use / Application)</span>
-          </label>
-          <div id="modal-box-instructions" style="display:none">
-            <textarea class="param-textarea" id="modal-pinstructions" placeholder="e.g. Take 5-10 ml of Smeram Herbal Hair Oil. Warm gently between palms. Massage into scalp with circular fingertip motions for 10 minutes. Leave on for at least 1-2 hours or overnight. Wash off with mild herbal shampoo. Recommended 3 times weekly."></textarea>
-            <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Appears under the dedicated 'How to Use / Instructions' tab on your product details page.</div>
-          </div>
-        </div>
-
-        <!-- 3. Benefits -->
-        <div class="param-box">
-          <label class="param-label">
-            <input type="checkbox" id="modal-chk-benefits" onchange="toggleModalParam('benefits')">
-            <span>⭐ Key Benefits / Bullet Highlights</span>
-          </label>
-          <div id="modal-box-benefits" style="display:none">
-            <textarea class="param-textarea" id="modal-pbenefits" placeholder="e.g. • Clinically proven to reduce hair fall and strengthen root follicles&#10;• Deeply conditions scalp, eliminating dandruff and flaking&#10;• 100% cold-pressed pure herbal formulation with 18 vital herbs&#10;• Free from mineral oil, silicones, artificial fragrance & parabens"></textarea>
-            <div style="font-size:11px;color:var(--zk-muted);margin-top:4px">Appears as featured bullet points in the 'Key Benefits' tab on the storefront.</div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- Modal Footer -->
-    <div class="modal-footer">
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="btn btn-secondary btn-sm" onclick="closeEditModal()">Cancel</button>
-        <a id="modal-full-edit-link" href="#" class="btn btn-ghost btn-sm" style="color:var(--zk-indigo)">Open full-page editor ↗</a>
-      </div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-primary btn-sm" id="modal-save-btn" onclick="saveProductFromModal()" style="font-size:13px;padding:9px 22px">💾 Save Changes</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 <script src="../assets/js/app.js"></script>
 <script>
 var API_BASE = ZK.api;
@@ -1002,7 +846,7 @@ function renderProductsTable(products) {
       + '<td>'
       +   '<div style="display:flex;align-items:center;gap:12px">'
       +     '<div style="width:42px;height:42px;border-radius:9px;background:' + (rate === 5 ? '#DCFCE7' : '#FEF3C7') + ';display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">'
-      +       (p.category_name.includes('Hair') ? '🌿' : (p.category_name.includes('Joint') || p.category_name.includes('Pain') ? '🩹' : (p.category_name.includes('Skin') || p.category_name.includes('Face') ? '✨' : '🌾')))
+      +       ((String(p.category_name||'')).includes('Hair') ? '🌿' : ((String(p.category_name||'')).includes('Joint') || (String(p.category_name||'')).includes('Pain') ? '🩹' : ((String(p.category_name||'')).includes('Skin') || (String(p.category_name||'')).includes('Face') ? '✨' : '🌾')))
       +     '</div>'
       +     '<div>'
       +       '<div style="font-weight:700;font-size:13.5px;color:var(--zk-text)">' + p.name + '</div>'
