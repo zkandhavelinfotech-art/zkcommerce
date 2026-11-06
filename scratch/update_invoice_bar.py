@@ -36,3 +36,4 @@ for p in files:
             print(f"Could not find closing </div> in {p}")
     else:
         print(f"Could not find <div class=\"bar\"> in {p}")
+

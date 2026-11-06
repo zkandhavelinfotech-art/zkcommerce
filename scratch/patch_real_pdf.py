@@ -195,3 +195,4 @@ if __name__ == '__main__':
 
     for p in ['zkc/merchant/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/index.html']:
         patch_merchant_index(p)
+

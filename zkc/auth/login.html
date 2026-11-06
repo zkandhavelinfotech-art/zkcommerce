@@ -100,7 +100,7 @@ body{font-family:'Inter',sans-serif;background:#0D0D1A;color:#fff;min-height:100
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="password" value="demo1234" placeholder="Your password" autocomplete="current-password">
+      <input type="password" id="password" value="Smeram2026!" placeholder="Your password" autocomplete="current-password">
     </div>
     <a href="forgot-password.html" class="forgot">Forgot password?</a>
     <button class="btn-primary" onclick="doLogin()">Continue with email →</button>
@@ -111,7 +111,7 @@ body{font-family:'Inter',sans-serif;background:#0D0D1A;color:#fff;min-height:100
     <div class="demo-choice" style="background:#fdf2f8;border:1.5px solid #fbcfe8;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
       <div>
         <span style="font-weight:700;color:#9d174d;font-size:13px;display:block">Smeram Naturals</span>
-        <small style="color:#be185d;font-size:11.5px;font-weight:600">merchant@smeramnaturals.in · demo1234</small>
+        <small style="color:#be185d;font-size:11.5px;font-weight:600">merchant@smeramnaturals.in · Smeram2026!</small>
       </div>
       <button type="button" onclick="demoLogin('merchant@smeramnaturals.in')" style="background:#db2777;color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;box-shadow:0 2px 8px rgba(219,39,119,0.3)">Fill &amp; Sign in</button>
     </div>
@@ -179,7 +179,7 @@ var isLocalPort3000 = location.port === '3000';
 var fallbackApi = localPage ? (isLocalPort3000 ? location.origin + '/api' : 'http://localhost:3000/api') : (location.origin + '/api');
 var API_BASE = (typeof ZK !== 'undefined' && ZK && ZK.api) ? ZK.api : fallbackApi;
 if(['localhost','127.0.0.1'].includes(location.hostname))document.getElementById('demo-logins').classList.add('visible');
-function demoLogin(email){document.getElementById('email').value=email;document.getElementById('password').value='demo1234';doLogin();}
+function demoLogin(email){document.getElementById('email').value=email;document.getElementById('password').value=(email==='merchant@smeramnaturals.in'?'Smeram2026!':'demo1234');doLogin();}
 
 function showWA(){
   document.getElementById('email-form').style.display='none';

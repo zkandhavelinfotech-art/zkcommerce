@@ -5,7 +5,7 @@
  * 1. Drops all existing database tables cleanly (disabling foreign keys).
  * 2. Recreates all core tables up to the latest release schema (v1.0.12).
  * 3. Seeds complete production data for Smeram Naturals:
- *    - Merchants & Admin credentials (admin@zkcommerce.in, merchant@smeramnaturals.in / demo1234)
+ *    - Merchants & Admin credentials (admin@zkcommerce.in, merchant@smeramnaturals.in / Smeram2026!)
  *    - Smeram Naturals store configuration, theme_config, colors, contact details
  *    - Categories with images (Hair Care Oil, Orthocare, Ayurgold Face Care, Health Foods)
  *    - Products with full Siddha descriptions, 13 herbs, instructions, benefits, pricing & stock
@@ -435,7 +435,8 @@ if ($isAuthed && (isset($_POST['execute_reset']) || (isset($_GET['confirm']) && 
             $merchantIns = $pdo->prepare("INSERT INTO `merchants` (`id`, `name`, `email`, `phone`, `password_hash`, `role`, `store_id`) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)");
             $merchantIns->execute([1, 'ZKCommerce Product Owner', 'admin@zkcommerce.in', '+91 90000 00001', $defaultPasswordHash, 'admin', NULL]);
-            $merchantIns->execute([2, 'Smeram Store Owner', 'merchant@smeramnaturals.in', '+91 75399 72026', $defaultPasswordHash, 'merchant', 2]);
+            $smeramPasswordHash = '$2y$10$PDWeLPpe7A5ijPBv9rzPdO/7zcN6zPlcWkiJDQoxdWViLj6TDTi8O'; // Smeram2026!
+            $merchantIns->execute([2, 'Smeram Store Owner', 'merchant@smeramnaturals.in', '+91 75399 72026', $smeramPasswordHash, 'merchant', 2]);
             $merchantIns->execute([3, 'Miliro Store Owner', 'merchant@miliro.in', '+91 44 75399 72026', $defaultPasswordHash, 'merchant', 1]);
             $merchantIns->execute([4, 'Demo Store Owner', 'merchant@zkdemo.in', '+91 90000 00002', $defaultPasswordHash, 'merchant', 3]);
             $logs[] = "Seeded 4 Merchant & Admin accounts (Password: demo1234).";
