@@ -198,3 +198,4 @@ if os.path.exists('zkc/deployment/smeram-godaddy/favicon.ico'):
     shutil.copy2('zkc/deployment/smeram-godaddy/favicon.ico', 'zkc/favicon.ico')
     shutil.copy2('zkc/deployment/smeram-godaddy/favicon.ico', 'zkc/deployment/smeram-patch-today-v1.0.15/favicon.ico')
     print("Copied favicon.ico")
+

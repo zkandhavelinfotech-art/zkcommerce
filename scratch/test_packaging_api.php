@@ -7,3 +7,4 @@ $_GET['stage'] = 'ready';
 $_GET['store_id'] = '2';
 
 require __DIR__ . '/../zkc/api/services/php/api.php';
+
