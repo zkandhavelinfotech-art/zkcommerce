@@ -1801,7 +1801,7 @@
             <td><span class="badge badge-${(i.payment_status === 'paid' || i.payment_method === 'cod') ? 'paid' : 'unpaid'}">${(i.payment_method || 'Online').toUpperCase()} · ${(i.payment_status || 'PAID').toUpperCase()}</span></td>
             <td>
               <div style="display:flex;gap:6px">
-                <a class="btn-outline btn-sm" style="text-decoration:none" href="../api.php?route=invoices/${i.id}/pdf" target="_blank" rel="noopener">📥 Open PDF</a>
+                <a class="btn-outline btn-sm" style="text-decoration:none" href="../api.php?route=invoices/${i.id}/pdf&download=1" target="_blank" rel="noopener">📥 Download PDF</a>
                 <a class="btn-outline btn-sm" style="text-decoration:none" href="../invoice.php?id=${i.id}&print=1" target="_blank" rel="noopener">🖨 Print View</a>
               </div>
             </td>

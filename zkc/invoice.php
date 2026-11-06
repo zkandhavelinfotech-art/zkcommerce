@@ -587,13 +587,20 @@ body {
     margin: 10mm;
   }
 }
+@media print {
+  .no-print, .bar { display: none !important; }
+}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
-<div class="bar">
-  <a href="admin-orders.php" class="btn btn-back">← Orders Dashboard</a>
-  <button type="button" class="btn btn-primary" onclick="window.print()">🖨 Print / Save as PDF</button>
+<div class="bar no-print">
+  <a href="javascript:history.back()" class="btn btn-back">← Back</a>
+  <div style="display:flex;gap:8px">
+    <button type="button" id="btnDownloadPdf" class="btn btn-primary" onclick="downloadPdfDocument()">📥 Download PDF Document (.pdf)</button>
+    <button type="button" class="btn btn-back" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  </div>
 </div>
 
 <div class="invoice-sheet">
@@ -805,13 +812,56 @@ body {
 
 </div>
 
-<?php if ($autoPrint): ?>
 <script>
+function downloadPdfDocument() {
+  var btn = document.getElementById('btnDownloadPdf');
+  var origText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = '⏳ Generating PDF...';
+    btn.disabled = true;
+  }
+
+  if (typeof html2pdf !== 'undefined') {
+    var element = document.querySelector('.invoice-sheet');
+    var opt = {
+      margin:       [8, 8, 8, 8],
+      filename:     'Invoice-<?= h($invNum) ?>.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save().then(function() {
+      if (btn) {
+        btn.innerHTML = '✓ PDF Downloaded!';
+        setTimeout(function() { btn.innerHTML = origText; btn.disabled = false; }, 3000);
+      }
+    }).catch(function(err) {
+      console.warn('html2pdf fallback to print:', err);
+      if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+      window.print();
+    });
+  } else {
+    if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+    window.print();
+  }
+}
+
 window.addEventListener('load', function() {
-  setTimeout(function() { window.print(); }, 400);
+  var params = new URLSearchParams(window.location.search);
+  var shouldDownload = params.get('download') === '1' || window.location.href.indexOf('/pdf') !== -1;
+  var shouldPrint = params.get('print') === '1';
+
+  if (shouldDownload) {
+    setTimeout(function() {
+      downloadPdfDocument();
+    }, 600);
+  } else if (shouldPrint) {
+    setTimeout(function() {
+      window.print();
+    }, 400);
+  }
 });
 </script>
-<?php endif; ?>
 
 </body>
 </html>

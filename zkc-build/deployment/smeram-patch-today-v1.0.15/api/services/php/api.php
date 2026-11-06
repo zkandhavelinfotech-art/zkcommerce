@@ -1204,7 +1204,44 @@ if (preg_match('#^invoices/(\d+)$#', $route, $m) && $method === 'POST') {
 if (preg_match('#^invoices/(\d+)/pdf/?$#', $route, $m) && $method === 'GET') {
     $orderId = (int)$m[1];
     $_GET['id'] = $orderId;
-    if (!isset($_GET['print'])) $_GET['print'] = '1';
+    if (!isset($_GET['download'])) $_GET['download'] = '1';
+
+    // Support pure binary PDF stream if requested: ?format=pdf
+    if (isset($_GET['format']) && $_GET['format'] === 'pdf') {
+        $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+        $o = ($pdo && function_exists('zkcOrderById')) ? zkcOrderById($pdo, $orderId) : null;
+        if (!$o && $pdo) {
+            try {
+                $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id = ?");
+                $stmt->execute([$orderId]);
+                $o = $stmt->fetch(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {}
+        }
+        $invNum = 'SM-' . str_pad($orderId, 2, '0', STR_PAD_LEFT);
+        $lines = [
+            "TAX INVOICE - SMERAM INDUSTRIES",
+            "Billing Entity: Smeram Industries | Trade Name: Smeram Naturals",
+            "GSTIN: 33DVRPR1801M1Z6 | State: Tamil Nadu (Code 33)",
+            "Invoice No: " . $invNum . "   Date: " . date('d M Y', strtotime($o['created_at'] ?? 'now')),
+            "Order No: " . ($o['order_number'] ?? 'ORD-' . $orderId),
+            "--------------------------------------------------------------------------------",
+            "BILL TO & SHIP TO:",
+            "Customer: " . ($o['customer_name'] ?? 'Customer'),
+            "Phone: " . ($o['customer_phone'] ?? '-') . " | Email: " . ($o['customer_email'] ?? '-'),
+            "Address: " . ($o['shipping_address'] ?? '') . ", " . ($o['city'] ?? '') . ", " . ($o['state'] ?? '') . " " . ($o['pincode'] ?? ''),
+            "--------------------------------------------------------------------------------",
+            "Amount: INR " . number_format((float)($o['total_amount'] ?? 0), 2) . " (Inclusive of GST)",
+            "Payment Status: " . strtoupper($o['payment_status'] ?? 'paid') . " | Method: " . ($o['payment_method'] ?? 'Online'),
+            "--------------------------------------------------------------------------------",
+            "For Smeram Industries - Authorized Signatory (Authenticated GST Invoice)"
+        ];
+        $pdf = zkcMakePdf($lines);
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="' . $invNum . '.pdf"');
+        header('Content-Length: ' . strlen($pdf));
+        echo $pdf;
+        exit;
+    }
     
     $candidates = [
         __DIR__ . '/invoice.php',
