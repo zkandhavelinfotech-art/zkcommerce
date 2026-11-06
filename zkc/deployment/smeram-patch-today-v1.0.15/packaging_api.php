@@ -48,13 +48,13 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
     $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
     if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
 
-    if ($route === 'admin/packaging' && $method === 'GET') {
+    if (($route === 'admin/packaging' || $route === 'orders/packaging' || $route === 'packaging') && $method === 'GET') {
         $today = date('Y-m-d');
         $last7 = date('Y-m-d', strtotime('-7 days'));
         $from = zkcDateParam($_GET['from'] ?? '', $last7);
         $to = zkcDateParam($_GET['to'] ?? '', $today);
         if ($from > $to) respond(['error' => '"From" date must be on or before "To" date'], 400);
-        $stages = ['ready' => "o.order_status IN ('new','confirmed')", 'packed' => "o.order_status = 'processing'", 'shipped' => "o.order_status = 'shipped'", 'all' => "o.order_status NOT IN ('pending','cancelled')"];
+        $stages = ['ready' => "(o.order_status IN ('new','confirmed','paid') OR (o.payment_status = 'paid' AND o.order_status NOT IN ('cancelled','delivered','shipped','processing')) OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped','processing')))", 'packed' => "o.order_status = 'processing'", 'shipped' => "o.order_status = 'shipped'", 'all' => "o.order_status NOT IN ('cancelled')"];
         $stage = isset($stages[$_GET['stage'] ?? '']) ? $_GET['stage'] : 'ready';
         $stmt = $pdo->prepare("SELECT o.* FROM `{$tbl}` o WHERE " . $stages[$stage] . " AND DATE(o.created_at) BETWEEN ? AND ? ORDER BY o.created_at ASC LIMIT 1000");
         $stmt->execute([$from, $to]);
@@ -86,7 +86,7 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         ]);
     }
 
-    if ($route === 'admin/mark-packed' && $method === 'POST') {
+    if (($route === 'admin/mark-packed' || $route === 'orders/packaging/mark-packed' || $route === 'packaging/mark-packed') && $method === 'POST') {
         $ids = array_slice(array_values(array_filter(array_map('intval', (array)($body['order_ids'] ?? [])), function ($n) { return $n > 0; })), 0, 1000);
         if (!$ids) respond(['error' => 'Select at least one order'], 400);
         $marks = implode(',', array_fill(0, count($ids), '?'));
@@ -97,7 +97,7 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
 
     try {
         // ── Shipments (Ekart AWBs, labels, shipped / delivered) ──
-        if ($route === 'admin/shipments' && $method === 'GET') {
+        if (($route === 'admin/shipments' || $route === 'shipments/orders' || $route === 'shipments') && $method === 'GET') {
             $stages = ['ready' => "o.order_status IN ('new','confirmed','processing')", 'shipped' => "o.order_status = 'shipped'", 'delivered' => "o.order_status = 'delivered'", 'all' => "o.order_status IN ('new','confirmed','processing','shipped','delivered')"];
             $stage = isset($stages[$_GET['stage'] ?? '']) ? $_GET['stage'] : 'ready';
             $sql = "SELECT o.* FROM `{$tbl}` o WHERE " . $stages[$stage];
@@ -113,14 +113,16 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
                 'orders' => array_map('zkcAdminOrderJson', $stmt->fetchAll()),
             ]);
         }
-        if ($route === 'admin/awb' && $method === 'PUT') {
-            $o = zkcAssignAwb($pdo, (int)($body['order_id'] ?? 0), $body['awb'] ?? null, $body['courier'] ?? '');
+        if (($route === 'admin/awb' || preg_match('#^shipments/orders/(\\d+)/awb#', $route, $m)) && $method === 'PUT') {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? 0);
+            $o = zkcAssignAwb($pdo, $oid, $body['awb'] ?? null, $body['courier'] ?? '');
             if (!$o) respond(['error' => 'Order not found'], 404);
             respond(['order' => zkcAdminOrderJson($o)]);
         }
-        if ($route === 'admin/status' && $method === 'PUT') {
+        if (($route === 'admin/status' || preg_match('#^orders/(\\d+)/status#', $route, $m)) && $method === 'PUT') {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? 0);
             $status = ($body['status'] ?? '') === 'confirmed' ? 'new' : (string)($body['status'] ?? '');
-            $r = zkcChangeStatus($pdo, (int)($body['order_id'] ?? 0), $status, $body['tracking_number'] ?? null);
+            $r = zkcChangeStatus($pdo, $oid, $status, $body['tracking_number'] ?? null);
             respond(['order' => zkcAdminOrderJson($r['order']), 'whatsapp' => $r['whatsapp']]);
         }
         if ($route === 'admin/book') respond(['error' => 'Ekart API is not connected yet. Book the AWB on the Ekart portal and enter or scan it here.'], 501);

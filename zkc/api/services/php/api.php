@@ -354,7 +354,7 @@ if (!$pdo && !in_array($route, $dbOptionalRoutes) && !$isProductRoute && !$isInv
 if ($pdo) { try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Exception $e) { /* keep the server default */ } }
 
 // Merchant tools (packaging labels, shipments, stock), behind the admin-orders.php login.
-if (strpos($route, 'admin/') === 0 || strpos($route, 'orders/packaging') === 0 || ($route === 'shipments/orders') || preg_match('#^shipments/orders/\d+/awb#', $route)) zkcHandleAdminRoute($pdo, $route, $method, $body);
+if (strpos($route, 'admin/') === 0 || strpos($route, 'orders/packaging') === 0 || strpos($route, 'packaging') === 0 || strpos($route, 'shipments') === 0 || preg_match('#^orders/\d+/status#', $route)) zkcHandleAdminRoute($pdo, $route, $method, $body);
 
 // Stores info for GoDaddy merchant dashboard
 if ($route === 'stores' && $method === 'GET') {

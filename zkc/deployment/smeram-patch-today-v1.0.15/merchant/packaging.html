@@ -115,10 +115,15 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
 <div id="printArea"></div>
 
 <script>
-// Two hosts share this page: the Node dashboard (login token) and the PHP package's packaging.php (admin session, api.php).
-const PHP_MODE = !!window.ZKC_PACKAGING_PHP;
-const API = '/api', token = PHP_MODE ? '' : localStorage.getItem('zk_token');
-const PHP_ROUTES = { '/orders/packaging': 'admin/packaging', '/orders/packaging/mark-packed': 'admin/mark-packed' };
+// Dual-host support: Node dashboard (/api/...) and PHP GoDaddy deployment (../api.php?route=...)
+const PHP_MODE = !!window.ZKC_PACKAGING_PHP || !location.port || location.port === '80' || location.port === '443' || location.pathname.endsWith('.php') || !localStorage.getItem('zk_token');
+const API = '/api', token = localStorage.getItem('zk_token');
+const PHP_ROUTES = {
+  '/orders/packaging': 'admin/packaging',
+  '/orders/packaging/mark-packed': 'admin/mark-packed',
+  'orders/packaging': 'admin/packaging',
+  'orders/packaging/mark-packed': 'admin/mark-packed'
+};
 const storeId = new URLSearchParams(location.search).get('store_id');
 let data = { orders: [], store: {} }, selected = new Set();
 
@@ -133,13 +138,49 @@ const status = (t, color) => { const el = document.getElementById('status'); el.
 const withStore = p => p + (storeId ? (p.includes('?') ? '&' : '?') + 'store_id=' + encodeURIComponent(storeId) : '');
 
 async function api(path, opts = {}) {
-  let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
-  if (PHP_MODE) {
-    const [p, q] = path.split('?');
-    url = 'api.php?route=' + encodeURIComponent(PHP_ROUTES[p] || p.replace(/^\//, '')) + (q ? '&' + q : '');
-    headers = { 'Content-Type': 'application/json' };
+  const parts = path.replace(/^\//, '').split('?');
+  const cleanRoute = parts[0];
+  const qs = parts[1] ? '&' + parts[1] : '';
+  const storeParam = storeId ? (qs.includes('store_id=') ? '' : '&store_id=' + encodeURIComponent(storeId)) : '';
+
+  const phpRouteName = PHP_ROUTES['/' + cleanRoute] || PHP_ROUTES[cleanRoute] || cleanRoute;
+  const phpBase = location.pathname.includes('/merchant/') ? '../api.php' : 'api.php';
+  const phpUrl = phpBase + '?route=' + encodeURIComponent(phpRouteName) + qs + storeParam;
+  const nodeUrl = API + withStore(path);
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: 'Bearer ' + token } : {}),
+    ...(opts.headers || {})
+  };
+
+  let r;
+  // If in PHP environment or no token, try PHP endpoint first
+  if (PHP_MODE || !token) {
+    try {
+      r = await fetch(phpUrl, { ...opts, credentials: 'same-origin', headers });
+    } catch (_) {}
   }
-  const r = await fetch(url, { ...opts, credentials: 'same-origin', headers });
+
+  // If PHP was not tried or failed, try Node endpoint
+  if (!r || !r.ok) {
+    try {
+      const nodeRes = await fetch(nodeUrl, { ...opts, credentials: 'same-origin', headers });
+      if (nodeRes && nodeRes.ok) r = nodeRes;
+      else if (!r) r = nodeRes;
+    } catch (_) {}
+  }
+
+  // If Node also failed or wasn't tried, and PHP was not successful, fallback to PHP
+  if (!r || !r.ok) {
+    try {
+      const phpRes = await fetch(phpUrl, { ...opts, credentials: 'same-origin', headers });
+      if (phpRes && phpRes.ok) r = phpRes;
+      else if (!r) r = phpRes;
+    } catch (_) {}
+  }
+
+  if (!r) throw Error('Network request failed');
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw Error(d.error || 'Request failed (' + r.status + ')');
   return d;

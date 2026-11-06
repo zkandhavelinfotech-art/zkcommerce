@@ -3,18 +3,24 @@ import shutil, os, zipfile
 files_to_sync = [
     ('zkc/api/services/php/api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/api.php'),
     ('zkc/api/services/php/api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api.php'),
+    ('zkc/api/services/php/packaging_api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/packaging_api.php'),
+    ('zkc/api/services/php/packaging_api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/packaging_api.php'),
     ('zkc/api/services/php/invoice.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/invoice.php'),
     ('zkc/api/services/php/invoice.php', 'zkc/deployment/smeram-patch-today-v1.0.15/invoice.php'),
     ('zkc/invoice.php', 'zkc/deployment/smeram-patch-today-v1.0.15/invoice.php'),
     ('zkc/merchant/products.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/products.html'),
     ('zkc/merchant/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/index.html'),
+    ('zkc/merchant/packaging.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/packaging.html'),
+    ('zkc/merchant/shipments.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/shipments.html'),
+    ('zkc/favicon.ico', 'zkc/deployment/smeram-patch-today-v1.0.15/favicon.ico'),
     ('zkc/store-builder/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/store-builder/index.html')
 ]
 
 for src, dst in files_to_sync:
-    os.makedirs(os.path.dirname(dst), exist_ok=True)
-    shutil.copy2(src, dst)
-    print(f"Copied {src} -> {dst}")
+    if os.path.exists(src):
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copy2(src, dst)
+        print(f"Copied {src} -> {dst}")
 
 # Rebuild smeram-patch-today-v1.0.15.zip
 patch_dir = 'zkc/deployment/smeram-patch-today-v1.0.15'
