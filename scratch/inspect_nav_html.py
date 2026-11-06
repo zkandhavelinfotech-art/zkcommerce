@@ -7,3 +7,4 @@ with open('zkc/merchant/index.html', 'r', encoding='utf-8') as f:
 idx = text.find('<nav')
 idx_end = text.find('</nav>')
 print(text[idx:idx_end+10])
+

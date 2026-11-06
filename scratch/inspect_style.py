@@ -7,3 +7,4 @@ with open('zkc/merchant/products.html', 'r', encoding='utf-8') as f:
 idx = text.find('<style')
 idx_end = text.find('</style>')
 print(text[idx:idx+1500])
+

@@ -8,3 +8,4 @@ idx = text.find('<aside class="sidebar')
 if idx == -1:
     idx = text.find('sidebar')
 print(text[idx-50:idx+2500])
+

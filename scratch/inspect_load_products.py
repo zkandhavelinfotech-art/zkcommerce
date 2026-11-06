@@ -8,3 +8,4 @@ idx = text.find('function loadProducts')
 if idx == -1:
     idx = text.find('loadProducts')
 print(text[idx-50:idx+2000])
+

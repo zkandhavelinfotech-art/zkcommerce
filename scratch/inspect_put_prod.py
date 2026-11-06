@@ -6,3 +6,4 @@ with open('zkc/api/services/php/api.php', 'r', encoding='utf-8') as f:
 
 idx = text.find("preg_match('#^products/(\\d+)$#', $route")
 print(text[idx-50:idx+2500])
+

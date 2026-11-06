@@ -5,3 +5,4 @@ count = text.count('id="editProductModal"')
 print('Count of editProductModal IDs:', count)
 assert count == 1, f"Expected 1, got {count}"
 print("VERIFICATION PASSED!")
+

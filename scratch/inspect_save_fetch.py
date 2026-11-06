@@ -6,3 +6,4 @@ with open('zkc/merchant/products.html', 'r', encoding='utf-8') as f:
 
 idx = text.find('saveProductFromModal')
 print(text[idx+2500:idx+4500])
+

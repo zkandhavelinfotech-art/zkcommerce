@@ -390,3 +390,4 @@ with open(path, 'w', encoding='utf-8') as f:
     f.write(content_norm)
 
 print("Updated zkc/merchant/index.html")
+

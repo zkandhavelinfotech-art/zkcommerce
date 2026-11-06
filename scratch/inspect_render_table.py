@@ -6,3 +6,4 @@ with open('zkc/merchant/products.html', 'r', encoding='utf-8') as f:
 
 idx = text.find('function renderProductsTable')
 print(text[idx-50:idx+2500])
+

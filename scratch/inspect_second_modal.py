@@ -15,3 +15,4 @@ print('\n--- Second modal preview (first 500 chars) ---')
 print(text[m2:m2+500])
 print('\n--- Second modal preview (last 500 chars) ---')
 print(text[script_idx-500:script_idx])
+

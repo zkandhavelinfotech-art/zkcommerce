@@ -7,3 +7,4 @@ with open('zkc/merchant/index.html', 'r', encoding='utf-8') as f:
 idx = text.find('/* Sidebar */')
 idx_end = text.find('/* Main Area */', idx)
 print(text[idx:idx_end])
+

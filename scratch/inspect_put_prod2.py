@@ -9,3 +9,4 @@ if idx == -1:
     idx = text.find("products/(\\d+)")
 print('idx:', idx)
 print(text[idx-50:idx+2500])
+

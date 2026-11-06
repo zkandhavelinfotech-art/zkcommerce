@@ -12,3 +12,4 @@ ids = [
 for i in ids:
     count = text.count(f'id="{i}"') + text.count(f"id='{i}'")
     print(f'{i}: {count}')
+

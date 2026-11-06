@@ -6,3 +6,4 @@ with open('zkc/store-builder/index.html', 'r', encoding='utf-8') as f:
 
 pos = 133385
 print(text[pos-40:pos+2500])
+

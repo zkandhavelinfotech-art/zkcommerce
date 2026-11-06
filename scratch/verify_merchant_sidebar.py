@@ -22,3 +22,4 @@ for c in checks:
     print(f"Verified: {c}")
 
 print("\nALL MERCHANT SIDEBAR CHECKS PASSED SUCCESSFULLY!")
+

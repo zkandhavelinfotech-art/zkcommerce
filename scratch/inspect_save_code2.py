@@ -6,3 +6,4 @@ with open('zkc/merchant/products.html', 'r', encoding='utf-8') as f:
 
 pos = 68665 + 2300
 print(text[pos:pos+2500])
+

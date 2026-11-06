@@ -9,3 +9,4 @@ for m in re.finditer(r'saveProductFromModal', text):
     pos = m.start()
     print('--- AT', pos, '---')
     print(text[max(0, pos-40):pos+120])
+

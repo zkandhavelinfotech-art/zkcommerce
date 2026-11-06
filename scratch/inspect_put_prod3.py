@@ -6,3 +6,4 @@ with open('zkc/api/services/php/api.php', 'r', encoding='utf-8') as f:
 
 pos = 38859 + 1800
 print(text[pos:pos+1500])
+

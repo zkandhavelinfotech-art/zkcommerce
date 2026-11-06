@@ -6,3 +6,4 @@ with open('zkc/merchant/index.html', 'r', encoding='utf-8') as f:
 
 idx = text.find('function switchView(')
 print(text[idx-50:idx+1200])
+

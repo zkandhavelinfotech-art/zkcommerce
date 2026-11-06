@@ -10,3 +10,4 @@ if idx != -1:
     print(text[idx-50:idx+800])
 else:
     print('view-products not found')
+

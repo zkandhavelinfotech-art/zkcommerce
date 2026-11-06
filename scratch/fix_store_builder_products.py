@@ -98,3 +98,4 @@ with open(path, 'w', encoding='utf-8') as f:
     f.write(content)
 
 print("zkc/store-builder/index.html updated successfully")
+

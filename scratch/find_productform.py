@@ -10,3 +10,4 @@ print('productForm found at positions:', matches)
 for pos in matches:
     print('--- AT', pos, '---')
     print(text[max(0, pos-40):pos+120])
+

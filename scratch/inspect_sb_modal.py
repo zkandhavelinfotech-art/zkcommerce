@@ -6,3 +6,4 @@ with open('zkc/store-builder/index.html', 'r', encoding='utf-8') as f:
 
 idx = text.find('id="productModal"')
 print(text[idx-50:idx+1500])
+
