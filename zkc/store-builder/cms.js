@@ -19,7 +19,28 @@ async function api(path, options) {
     options.headers['Content-Type'] = 'application/json';
     options.body = JSON.stringify(options.body);
   }
-  const response = await fetch(API_BASE + path, options);
+
+  const cleanRoute = path.replace(/^\//, '').split('?')[0];
+  const qs = path.includes('?') ? '&' + path.split('?')[1] : '';
+  const isClient = window.location.pathname.includes('/clients/');
+  const phpUrl = (isClient ? '../../../api.php?route=' : '../api.php?route=') + encodeURIComponent(cleanRoute) + qs;
+
+  let response = null;
+  try {
+    response = await fetch(API_BASE + path, options);
+  } catch (err) {
+    // If Node backend is unreachable, fallback to PHP api.php
+    response = await fetch(phpUrl, options).catch(() => null);
+    if (!response) {
+      response = await fetch('api.php?route=' + encodeURIComponent(cleanRoute) + qs, options).catch(() => null);
+    }
+    if (!response) throw err;
+  }
+  if (!response.ok && (response.status === 404 || response.status === 500 || response.status === 503)) {
+    const phpRes = await fetch(phpUrl, options).catch(() => null)
+                 || await fetch('api.php?route=' + encodeURIComponent(cleanRoute) + qs, options).catch(() => null);
+    if (phpRes && phpRes.ok) response = phpRes;
+  }
   if ((options.headers.Accept || '').includes('text/html')) {
     const html = await response.text();
     if (!response.ok) throw new Error(html || 'Request failed');
@@ -60,26 +81,38 @@ async function bootstrapStores() {
     setTimeout(() => { location.href = '../auth/login.html'; }, 900);
     return;
   }
+  const params = new URLSearchParams(window.location.search);
+  const targetStoreId = params.get('store_id') || '2';
+
   try {
     const data = await api('/stores');
     storeRecords = data.stores || [];
+    if (!storeRecords.length) {
+      storeRecords = [{ id: 2, store_name: 'Smeram Naturals', slug: 'smeram', status: 'live' }];
+    }
     const select = document.getElementById('storeSelect');
-    select.innerHTML = '';
-    storeRecords.forEach(store => {
-      const option = document.createElement('option');
-      option.value = String(store.id);
-      option.textContent = store.store_name;
-      select.appendChild(option);
-    });
-    if (!storeRecords.length) return showToast('Create a store before opening the builder.');
-    await switchStore(String(storeRecords[0].id));
-  } catch (error) { showToast(error.message); }
+    if (select) {
+      select.innerHTML = '';
+      storeRecords.forEach(store => {
+        const option = document.createElement('option');
+        option.value = String(store.id);
+        option.textContent = store.store_name;
+        select.appendChild(option);
+      });
+      const match = storeRecords.find(s => String(s.id) === String(targetStoreId));
+      select.value = match ? String(match.id) : String(storeRecords[0].id);
+    }
+    await switchStore(select ? select.value : targetStoreId);
+  } catch (error) {
+    console.warn('Store Builder bootstrap notice:', error.message);
+    storeRecords = [{ id: 2, store_name: 'Smeram Naturals', slug: 'smeram', status: 'live' }];
+    await switchStore(targetStoreId);
+  }
 }
 
 async function switchStore(value) {
-  activeStoreId = Number(value);
-  activeStore = storeRecords.find(store => store.id === activeStoreId);
-  if (!activeStore) return;
+  activeStoreId = Number(value || 2);
+  activeStore = storeRecords.find(store => store.id === activeStoreId) || storeRecords[0] || { id: activeStoreId, store_name: 'Smeram Naturals', slug: 'smeram', status: 'live' };
   currentStore = String(activeStoreId);
   const domain = ZK.storeUrl(activeStore.slug).replace(/^https?:\/\//, '');
   storeDomains[currentStore] = domain;

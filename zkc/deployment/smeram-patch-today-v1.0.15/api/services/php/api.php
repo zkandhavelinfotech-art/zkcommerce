@@ -320,21 +320,21 @@ if ($route === 'auth/login' && $method === 'POST') {
         error_log('[api.php auth/login] ' . $e->getMessage());
         respond(['error' => 'Authentication error. Please try again.'], 500);
     }
-     = ( && password_verify(, (string)(['password_hash'] ?? '')));
-    if (! && ) {
+    $validPass = ($merchant && password_verify($pass, (string)($merchant['password_hash'] ?? '')));
+    if (!$validPass && $merchant) {
         // Support both Smeram2026! and demo1234
-        if ( === 'Smeram2026!' ||  === 'demo1234') {
-             = true;
-            if ( === 'Smeram2026!') {
+        if ($pass === 'Smeram2026!' || $pass === 'demo1234') {
+            $validPass = true;
+            if ($pass === 'Smeram2026!') {
                 try {
-                     = password_hash('Smeram2026!', PASSWORD_BCRYPT);
-                     = ->prepare('UPDATE merchants SET password_hash = ? WHERE id = ?');
-                    ->execute([, (int)['id']]);
-                } catch (Exception ) { /* ignore */ }
+                    $newHash = password_hash('Smeram2026!', PASSWORD_BCRYPT);
+                    $updateStmt = $pdo->prepare('UPDATE merchants SET password_hash = ? WHERE id = ?');
+                    $updateStmt->execute([$newHash, (int)$merchant['id']]);
+                } catch (Exception $e) { /* ignore */ }
             }
         }
     }
-    if (! || !) {
+    if (!$merchant || !$validPass) {
         respond(['error' => 'Invalid email or password.'], 401);
     }
     $token = bin2hex(random_bytes(24));
@@ -352,10 +352,12 @@ if ($route === 'auth/login' && $method === 'POST') {
 }
 
 // For routes requiring the database, verify connection
-$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores/templates', 'products', 'shipments/settings', 'webhooks/ekart', 'shipments/ekart/webhook'];
+$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'webhooks/ekart', 'shipments/ekart/webhook', 'categories'];
 $isProductRoute = ($route === 'products' || preg_match('#^products/#', $route) || preg_match('#^stores/(\\d+)/products#', $route));
+$isStoreRoute = ($route === 'stores' || preg_match('#^stores/(\\d+)#', $route) || $route === 'categories' || preg_match('#^stores/(\\d+)/categories#', $route));
 $isInvoiceRoute = ($route === 'invoices' || preg_match('#^invoices/#', $route));
-if (!$pdo && !in_array($route, $dbOptionalRoutes) && !$isProductRoute && !$isInvoiceRoute) {
+$isReadRoute = ($method === 'GET' && in_array($route, ['orders', 'orders/metrics', 'customers', 'coupons', 'shipping/rates', 'shipping-rates', 'inquiries']));
+if (!$pdo && !in_array($route, $dbOptionalRoutes) && !$isProductRoute && !$isStoreRoute && !$isInvoiceRoute && !$isReadRoute) {
     $connErr = function_exists('getDbConnectionError') ? getDbConnectionError() : ($GLOBALS['zkc_db_error'] ?? 'Unknown database error');
     respond([
         'error' => 'The store database is not reachable. Open test-db.php to check connection details and credentials.',
@@ -369,6 +371,9 @@ if ($pdo) { try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Exception $e)
 
 // Merchant tools (packaging labels, shipments, stock), behind the admin-orders.php login.
 if (strpos($route, 'admin/') === 0 || strpos($route, 'orders/packaging') === 0 || strpos($route, 'packaging') === 0 || strpos($route, 'shipments') === 0 || preg_match('#^orders/\d+/status#', $route)) zkcHandleAdminRoute($pdo, $route, $method, $body);
+
+// Alias shipping-rates to shipping/rates
+if ($route === 'shipping-rates') $route = 'shipping/rates';
 
 // Stores info for GoDaddy merchant dashboard
 if ($route === 'stores' && $method === 'GET') {
@@ -403,8 +408,9 @@ if (preg_match('#^stores/(\d+)$#', $route, $sm) && $method === 'GET') {
 
 // Category & Product & Page DB helpers for Store Builder & Merchant Dashboard
 function zkcGetCategories($pdo, $storeId = STORE_ID) {
-    try {
-        $pdo->query("SELECT 1 FROM `categories` LIMIT 1");
+    if ($pdo) {
+        try {
+            $pdo->query("SELECT 1 FROM `categories` LIMIT 1");
     } catch (Exception $e) {
         try {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `categories` (
@@ -433,6 +439,7 @@ function zkcGetCategories($pdo, $storeId = STORE_ID) {
             }, $rows);
         }
     } catch (Exception $e) {}
+    }
     return [
         ['id' => 1, 'store_id' => $storeId, 'name' => 'Hair Care', 'slug' => 'hair-care', 'image_url' => 'assets/themes/smeram/smeram-bottle-single.jpg', 'sort_order' => 1, 'active' => true],
         ['id' => 2, 'store_id' => $storeId, 'name' => 'Joint Care', 'slug' => 'joint-care', 'image_url' => 'assets/themes/smeram/ortho-pain.jpg', 'sort_order' => 2, 'active' => true],
@@ -544,13 +551,20 @@ function zkcGetProducts($pdo, $storeId = STORE_ID) {
 }
 
 function zkcGetPages($pdo, $storeId = STORE_ID) {
-    try {
-        $stmt = $pdo->prepare("SELECT * FROM `store_pages` WHERE store_id = ? ORDER BY sort_order ASC, id ASC");
-        $stmt->execute([$storeId]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        if (!empty($rows)) return $rows;
-    } catch (Exception $e) {}
-    return [];
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM `store_pages` WHERE store_id = ? ORDER BY sort_order ASC, id ASC");
+            $stmt->execute([$storeId]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            if (!empty($rows)) return $rows;
+        } catch (Exception $e) {}
+    }
+    return [
+        ['id' => 1, 'store_id' => $storeId, 'title' => 'About Us', 'slug' => 'about', 'body' => '<p>About Smeram Naturals</p>', 'sort_order' => 1],
+        ['id' => 2, 'store_id' => $storeId, 'title' => 'Contact Us', 'slug' => 'contact', 'body' => '<p>Contact Smeram Naturals</p>', 'sort_order' => 2],
+        ['id' => 3, 'store_id' => $storeId, 'title' => 'Privacy Policy', 'slug' => 'privacy', 'body' => '<p>Privacy policy</p>', 'sort_order' => 3],
+        ['id' => 4, 'store_id' => $storeId, 'title' => 'Terms of Service', 'slug' => 'terms', 'body' => '<p>Terms of service</p>', 'sort_order' => 4]
+    ];
 }
 
 // Store templates for theme switcher
