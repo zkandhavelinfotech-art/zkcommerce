@@ -15,12 +15,67 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS
     exit;
 }
 if (is_file(__DIR__ . '/store_config.php')) require_once __DIR__ . '/store_config.php';
-require_once __DIR__ . '/db_config.php';
-if (is_file(__DIR__ . '/payment_config.php')) require_once __DIR__ . '/payment_config.php';
-if (is_file(__DIR__ . '/whatsapp_config.php')) require_once __DIR__ . '/whatsapp_config.php';
-require_once __DIR__ . '/whatsapp_orders.php';
-require_once __DIR__ . '/commerce.php';
-require_once __DIR__ . '/packaging_api.php';
+
+// Resilient candidate loader for db_config.php
+$dbConfigCandidates = [
+    __DIR__ . '/db_config.php',
+    __DIR__ . '/api/services/php/db_config.php',
+    __DIR__ . '/smeram-backend-api-v1.0.4/db_config.php',
+    __DIR__ . '/smeram-backend-api/db_config.php',
+    __DIR__ . '/../db_config.php',
+    __DIR__ . '/../../db_config.php'
+];
+$dbConfigLoaded = false;
+foreach ($dbConfigCandidates as $p) {
+    if (is_file($p)) {
+        require_once $p;
+        $dbConfigLoaded = true;
+        break;
+    }
+}
+if (!$dbConfigLoaded) {
+    if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+    if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: 3306);
+    if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'smeram-naturals');
+    if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'root');
+    if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: '');
+    if (!defined('ADMIN_SECRET_KEY')) define('ADMIN_SECRET_KEY', 'Smeram2026!');
+    if (!defined('ADMIN_PASSWORD')) define('ADMIN_PASSWORD', 'Smeram2026!');
+    if (!function_exists('getDbConnection')) {
+        function getDbConnection() {
+            static $pdo = null;
+            if ($pdo !== null) return $pdo;
+            try {
+                $port = defined('DB_PORT') ? (int)DB_PORT : 3306;
+                $dsn = "mysql:host=" . DB_HOST . ";port=" . $port . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+                $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES   => false,
+                    PDO::ATTR_TIMEOUT            => 3
+                ]);
+                return $pdo;
+            } catch (Exception $e) {
+                $GLOBALS['zkc_db_error'] = $e->getMessage();
+                return null;
+            }
+        }
+    }
+    if (!function_exists('getDbConnectionError')) {
+        function getDbConnectionError() {
+            return $GLOBALS['zkc_db_error'] ?? null;
+        }
+    }
+}
+
+// Resilient loader for optional PHP support modules
+foreach (['payment_config.php', 'whatsapp_config.php', 'whatsapp_orders.php', 'commerce.php', 'packaging_api.php'] as $mod) {
+    if (is_file(__DIR__ . '/' . $mod)) {
+        require_once __DIR__ . '/' . $mod;
+    } elseif (is_file(__DIR__ . '/api/services/php/' . $mod)) {
+        require_once __DIR__ . '/api/services/php/' . $mod;
+    }
+}
 
 if (!defined('STORE_ID')) define('STORE_ID', 2);
 if (!defined('STORE_SLUG')) define('STORE_SLUG', 'smeram');
