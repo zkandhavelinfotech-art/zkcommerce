@@ -98,7 +98,7 @@ function phpRoute(path, opts) {
   let m, route = null, body = opts.body ? JSON.parse(opts.body) : {};
   if (p === '/shipments/orders' || p === 'shipments/orders') route = 'admin/shipments';
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/awb$/))) { route = 'admin/awb'; body.order_id = Number(m[1]); }
-  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) route = 'admin/book';
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); }
   else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); }
   if (!route) route = p.replace(/^\//, '');
   const phpBase = location.pathname.includes('/merchant/') ? '../api.php' : 'api.php';
@@ -185,7 +185,8 @@ function render() {
       <td class="addr"><b>${esc(o.customer_name)}</b> · ${esc(o.customer_phone || '')}<div class="muted">${esc([a.line1 || a.address, a.line2, a.city, a.state].filter(Boolean).join(', '))} <b>${esc(a.pincode || '')}</b></div></td>
       <td>${isCod(o) ? `<span class="pill cod">COD ${money(o.total_amount)}</span>` : `<span class="pill paid">Prepaid</span>`}</td>
       <td><input type="text" class="awb" data-awb="${o.id}" value="${esc(o.tracking_number || '')}" placeholder="Scan / type AWB" ${on ? '' : 'disabled'}>
-        ${o.tracking_url ? `<div><a class="muted" href="${esc(o.tracking_url)}" target="_blank" rel="noopener">Track ↗</a></div>` : ''}</td>
+        ${o.tracking_url ? `<div><a class="muted" href="${esc(o.tracking_url)}" target="_blank" rel="noopener">Track ↗</a></div>` : ''}
+        ${o.tracking_number ? `<div><a class="muted" href="../api.php?route=shipments/orders/${o.id}/label" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600">Ekart Label 📄</a></div>` : ''}</td>
       <td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.shipped_at ? `<div class="muted">Shipped ${new Date(o.shipped_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}${o.delivered_at ? `<div class="muted">Delivered ${new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}<div class="muted" data-wa="${o.id}"></div></td>
       <td style="display:flex;gap:6px;flex-wrap:wrap">
         ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'}>Book</button>` : ''}

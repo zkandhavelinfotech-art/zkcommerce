@@ -54,12 +54,25 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         $from = zkcDateParam($_GET['from'] ?? '', $last7);
         $to = zkcDateParam($_GET['to'] ?? '', $today);
         if ($from > $to) respond(['error' => '"From" date must be on or before "To" date'], 400);
-        $stages = ['ready' => "(o.order_status IN ('new','confirmed','paid') OR (o.payment_status = 'paid' AND o.order_status NOT IN ('cancelled','delivered','shipped','processing')) OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped','processing')))", 'packed' => "o.order_status = 'processing'", 'shipped' => "o.order_status = 'shipped'", 'all' => "o.order_status NOT IN ('cancelled')"];
+        $stages = [
+            'ready' => "(o.order_status IN ('new','confirmed','paid','processing') AND o.order_status NOT IN ('cancelled','delivered','shipped'))",
+            'packed' => "o.order_status = 'processing'",
+            'shipped' => "o.order_status = 'shipped'",
+            'all' => "o.order_status NOT IN ('cancelled')"
+        ];
         $stage = isset($stages[$_GET['stage'] ?? '']) ? $_GET['stage'] : 'ready';
         $stmt = $pdo->prepare("SELECT o.* FROM `{$tbl}` o WHERE " . $stages[$stage] . " AND DATE(o.created_at) BETWEEN ? AND ? ORDER BY o.created_at ASC LIMIT 1000");
         $stmt->execute([$from, $to]);
         $orders = [];
         foreach ($stmt->fetchAll() as $o) {
+            $invNum = $o['invoice_number'] ?? null;
+            if (!$invNum) {
+                try {
+                    $invStmt = $pdo->prepare("SELECT invoice_number FROM invoices WHERE order_id = ? LIMIT 1");
+                    $invStmt->execute([(int)$o['id']]);
+                    $invNum = $invStmt->fetchColumn() ?: null;
+                } catch (Exception $e) {}
+            }
             $orders[] = [
                 'id' => (int)$o['id'],
                 'order_number' => $o['order_number'],
@@ -73,7 +86,9 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
                 'payment_status' => $o['payment_status'],
                 'status' => $o['order_status'],
                 'tracking_number' => $o['tracking_number'] ?? null,
-                'invoice_number' => null,
+                'courier' => $o['courier'] ?? 'Ekart Logistics',
+                'tracking_url' => $o['tracking_url'] ?? null,
+                'invoice_number' => $invNum,
                 'created_at' => date('c', strtotime($o['created_at'])),
                 'whatsapp' => zkcOrderWhatsAppLinks($o),
             ];
@@ -109,7 +124,14 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
             $stmt->execute($args);
             respond([
                 'store' => zkcAdminStore(),
-                'settings' => ['enabled' => true, 'mode' => 'api', 'api_ready' => true, 'courier_name' => 'Ekart Logistics', 'tracking_url_template' => 'https://ekartlogistics.com/shipmenttrack/{tracking_number}', 'php' => true],
+                'settings' => [
+                    'enabled' => defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true,
+                    'mode' => defined('EKART_MODE') ? EKART_MODE : 'api',
+                    'api_ready' => true,
+                    'courier_name' => defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics',
+                    'tracking_url_template' => defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{tracking_number}',
+                    'php' => true
+                ],
                 'orders' => array_map('zkcAdminOrderJson', $stmt->fetchAll()),
             ]);
         }
@@ -125,7 +147,33 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
             $r = zkcChangeStatus($pdo, $oid, $status, $body['tracking_number'] ?? null);
             respond(['order' => zkcAdminOrderJson($r['order']), 'whatsapp' => $r['whatsapp']]);
         }
-        if ($route === 'admin/book') respond(['error' => 'Ekart API is not connected yet. Book the AWB on the Ekart portal and enter or scan it here.'], 501);
+        // Ekart API Booking
+        if (($route === 'admin/book' || preg_match('#^shipments/orders/(\\d+)/book#', $route, $m)) && $method === 'POST') {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+            if (!$oid) respond(['error' => 'Order ID is required to book Ekart shipment'], 400);
+            if (function_exists('zkcEkartCreateShipment')) {
+                $res = zkcEkartCreateShipment($pdo, $oid);
+                respond($res);
+            } else {
+                respond(['error' => 'Ekart API client is not initialized'], 500);
+            }
+        }
+        // Ekart PDF Shipping Label
+        if (($route === 'shipments/label' || preg_match('#^shipments/orders/(\\d+)/label#', $route, $m)) && ($method === 'GET' || $method === 'POST')) {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+            $awb = trim((string)($body['awb'] ?? ($_GET['awb'] ?? '')));
+            if (function_exists('zkcEkartDownloadLabel')) {
+                zkcEkartDownloadLabel($pdo, $oid, $awb);
+            }
+        }
+        // Ekart Tracking Checkpoint API
+        if (($route === 'shipments/track' || preg_match('#^shipments/orders/(\\d+)/track#', $route, $m) || preg_match('#^shipments/track/([^/]+)#', $route, $tm)) && $method === 'GET') {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($_GET['order_id'] ?? 0);
+            $trackingId = !empty($tm[1]) ? $tm[1] : trim((string)($_GET['tracking_id'] ?? ($_GET['awb'] ?? '')));
+            if (function_exists('zkcEkartTrack')) {
+                respond(zkcEkartTrack($pdo, $oid, $trackingId));
+            }
+        }
 
         // ── Stock ──
         if ($route === 'admin/stock' && $method === 'GET') respond(['rows' => zkcStockOverview($pdo), 'default_threshold' => (int)zkcConstOr('LOW_STOCK_THRESHOLD', 50)]);
@@ -136,5 +184,6 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         }
     } catch (Exception $e) { respondError($e); }
 
-    respond(['error' => 'Route not found', 'route' => $route], 404);
+    // If route was not handled here, return false to let api.php handle other endpoints
+    return false;
 }

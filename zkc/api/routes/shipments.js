@@ -55,7 +55,7 @@ router.put('/orders/:id/awb', auth, async (req, res) => {
   } catch (e) { fail(res, e); }
 });
 
-// Book through the Ekart API — answers 501 until the API is connected.
+// Book through the Ekart API (PUT /api/v1/package/create)
 router.post('/orders/:id/book', auth, async (req, res) => {
   try {
     const store = await storeFor(req);
@@ -63,8 +63,33 @@ router.post('/orders/:id/book', auth, async (req, res) => {
     const { rows: [order] } = await pool.query('SELECT * FROM orders WHERE id=$1 AND store_id=$2', [Number(req.params.id), store.id]);
     if (!order) return res.status(404).json({ error: 'Order not found' });
     const settings = await shipping.settingsFor(store.id);
-    const { awb } = await shipping.ekartApi.createShipment(settings, order, store);
-    res.json({ order: await shipping.assignAwb(store.id, order.id, { awb, courier: settings.courier_name }) });
+    const { awb, tracking_id, barcodes, vendor } = await shipping.ekartApi.createShipment(settings, order, store);
+    const updated = await shipping.assignAwb(store.id, order.id, { awb, courier: settings.courier_name });
+    res.json({ success: true, order: updated, awb, tracking_id, barcodes, vendor });
+  } catch (e) { fail(res, e); }
+});
+
+// Download Ekart label PDF
+router.get('/orders/:id/label', auth, async (req, res) => {
+  try {
+    const store = await storeFor(req);
+    if (!store) return res.status(404).json({ error: 'Store not found' });
+    const { rows: [order] } = await pool.query('SELECT * FROM orders WHERE id=$1 AND store_id=$2', [Number(req.params.id), store.id]);
+    if (!order || !order.tracking_number) return res.status(404).json({ error: 'Order or tracking number not found' });
+    const settings = await shipping.settingsFor(store.id);
+    const token = await shipping.ekartApi.getToken(settings);
+    const base = shipping.ekartApi.normalizeBaseUrl(settings.api.base_url);
+    const r = await fetch(`${base}/api/v1/package/label?json_only=false`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Accept: 'application/octet-stream, application/pdf' },
+      body: JSON.stringify({ ids: [order.tracking_number] }),
+      signal: AbortSignal.timeout(20000)
+    });
+    if (!r.ok) return res.status(502).json({ error: 'Ekart label download failed' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="ekart-label-${order.tracking_number}.pdf"`);
+    const buffer = Buffer.from(await r.arrayBuffer());
+    res.send(buffer);
   } catch (e) { fail(res, e); }
 });
 

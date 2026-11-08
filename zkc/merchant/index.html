@@ -893,14 +893,14 @@
               <div class="form-group"><label>How AWBs are created</label>
                 <select id="ekMode"><option value="api">Ekart API &amp; Webhooks — automated tracking &amp; status sync</option><option value="manual">Manual — book on Ekart portal, enter / scan AWB</option></select></div>
               <div class="form-group"><label>Courier name on labels</label><input id="ekCourier" placeholder="Ekart Logistics"></div>
-              <div class="form-group" style="grid-column:1/-1"><label>Tracking link ({awb} is replaced)</label><input id="ekTrack" placeholder="https://ekartlogistics.com/shipmenttrack/{awb}"></div>
+              <div class="form-group" style="grid-column:1/-1"><label>Tracking link ({awb} is replaced)</label><input id="ekTrack" placeholder="https://app.elite.ekartlogistics.in/track/{awb}"></div>
             </div>
             <details id="ekApiBox" style="margin:4px 0 10px"><summary style="cursor:pointer;font-size:13px;font-weight:700">Ekart API Credentials</summary>
               <div class="form-grid" style="margin-top:10px">
-                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="https://api.ekartlogistics.com"></div>
+                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="https://app.elite.ekartlogistics.in"></div>
                 <div class="form-group"><label>Client ID</label><input id="ekApiClient" value="EKART_6ad49aef2206ede3ee46d222"></div>
-                <div class="form-group"><label>Merchant code</label><input id="ekApiMerchant" value="SMERAM"></div>
-                <div class="form-group"><label>API key</label><input id="ekApiKey" type="password" placeholder="Leave blank to keep the saved key"></div>
+                <div class="form-group"><label>Merchant code</label><input id="ekApiMerchant" value="SMERAMx"></div>
+                <div class="form-group"><label>API key / Password / Bearer Token</label><input id="ekApiKey" type="password" placeholder="Leave blank to keep the saved key"></div>
               </div>
             </details>
           </div>

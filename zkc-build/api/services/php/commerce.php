@@ -369,6 +369,9 @@ function zkcAfterPaid($pdo, $orderId) {
     if ($o) { try { zkcEnsureInvoice($pdo, $o); } catch (Exception $e) { error_log('[Invoice] ' . $e->getMessage()); } }
     $wa = $o ? zkcNotifyOrderConfirmed($pdo, $o) : [];
     zkcNotifyLowStock($pdo, $low);
+    if (function_exists('zkcEkartAutoCreateShipment')) {
+        try { zkcEkartAutoCreateShipment($pdo, $orderId); } catch (Throwable $e) { error_log('[Ekart AfterPaid] ' . $e->getMessage()); }
+    }
     return ['order' => $o, 'whatsapp' => $wa];
 }
 
@@ -386,7 +389,7 @@ function zkcCleanAwb($awb) {
 }
 
 function zkcTrackingUrl($awb) {
-    return $awb ? str_replace('{awb}', rawurlencode($awb), (string)zkcConstOr('SHIP_TRACKING_URL', 'https://ekartlogistics.com/shipmenttrack/{awb}')) : null;
+    return $awb ? str_replace(['{awb}', '{tracking_number}', '{tracking_id}'], rawurlencode($awb), (string)zkcConstOr('SHIP_TRACKING_URL', 'https://app.elite.ekartlogistics.in/track/{awb}')) : null;
 }
 
 /** Save (or clear) the AWB of one order. */

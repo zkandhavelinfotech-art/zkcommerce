@@ -61,6 +61,17 @@ async function afterPaid(order) {
     if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, full, store).care_url;
     waSender.notifyOrderConfirmed(order.store_id, full, store);
     waSender.notifyLowStock(order.store_id, lowStock);
+
+    try {
+      const shipping = require('../services/shipping');
+      const shipSettings = await shipping.settingsFor(order.store_id);
+      if (shipSettings.enabled && shipSettings.mode === 'api' && shipping.ekartApi.ready(shipSettings)) {
+        const { awb } = await shipping.ekartApi.createShipment(shipSettings, full, store);
+        if (awb) await shipping.assignAwb(order.store_id, order.id, { awb, courier: shipSettings.courier_name });
+      }
+    } catch (shipErr) {
+      console.warn('[Payments AfterPaid] Ekart shipment warning:', shipErr.message);
+    }
   } catch (e) { console.warn('[Payment] after-paid steps failed:', e.message); }
   return { whatsappHandoffUrl };
 }

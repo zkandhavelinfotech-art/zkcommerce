@@ -132,7 +132,9 @@ function zkcEnsureOrderColumns($pdo, $tbl) {
         'stock_deducted' => 'TINYINT(1) DEFAULT 0',
         'paid_at' => 'DATETIME NULL',
         'shipped_at' => 'DATETIME NULL',
-        'delivered_at' => 'DATETIME NULL'
+        'delivered_at' => 'DATETIME NULL',
+        'ekart_shipment_data' => 'TEXT NULL',
+        'ekart_status' => 'VARCHAR(60) NULL'
     ];
     foreach ($cols as $col => $type) {
         try {
@@ -502,7 +504,12 @@ if (!$pdo && !in_array($route, $dbOptionalRoutes) && !$isProductRoute && !$isSto
 if ($pdo) { try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Exception $e) { /* keep the server default */ } }
 
 // Merchant tools (packaging labels, shipments, stock), behind the admin-orders.php login.
-if (strpos($route, 'admin/') === 0 || strpos($route, 'orders/packaging') === 0 || strpos($route, 'packaging') === 0 || strpos($route, 'shipments') === 0 || preg_match('#^orders/\d+/status#', $route)) zkcHandleAdminRoute($pdo, $route, $method, $body);
+if (strpos($route, 'admin/') === 0 || strpos($route, 'orders/packaging') === 0 || strpos($route, 'packaging') === 0 || strpos($route, 'shipments/orders') === 0 || $route === 'shipments' || preg_match('#^orders/\d+/status#', $route)) {
+    if (function_exists('zkcHandleAdminRoute')) {
+        $handled = zkcHandleAdminRoute($pdo, $route, $method, $body);
+        if ($handled !== false) exit;
+    }
+}
 
 // Alias shipping-rates to shipping/rates
 if ($route === 'shipping-rates') $route = 'shipping/rates';
@@ -2080,6 +2087,353 @@ if (preg_match('#^whatsapp/outbox/(\d+)/sent$#', $route, $m) && ($method === 'PO
     respond(['ok' => true]);
 }
 
+// ── Ekart Logistics (OpenAPI 3.1.0 Spec Aligned) ─────────
+function zkcEkartNormalizeBaseUrl($url) {
+    $u = trim((string)$url);
+    if ($u === '') $u = defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in';
+    $u = preg_replace('#/api/?$#i', '', $u);
+    return rtrim($u, '/');
+}
+
+function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $apiKey = '') {
+    if ($apiKey !== '' && ($username === '' || $password === '')) return $apiKey;
+    if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
+    $cacheKey = 'ekart_token_' . md5($clientId . ':' . $username);
+    if (!empty($_SESSION[$cacheKey]) && is_array($_SESSION[$cacheKey])) {
+        if (time() < ($_SESSION[$cacheKey]['expires_at'] ?? 0)) {
+            return $_SESSION[$cacheKey]['token'];
+        }
+    }
+    if ($username === '' || $password === '') {
+        if ($apiKey !== '') return $apiKey;
+        throw new Exception("Ekart credentials (username and password or API token) are required.");
+    }
+    $tokenUrl = $baseUrl . '/integrations/v2/auth/token/' . rawurlencode($clientId);
+    $payload = json_encode(['username' => $username, 'password' => $password]);
+    if (!function_exists('curl_init')) {
+        if ($apiKey !== '') return $apiKey;
+        throw new Exception("PHP curl extension required for Ekart API authentication.");
+    }
+    $ch = curl_init($tokenUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Accept: application/json'],
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_SSL_VERIFYPEER => false
+    ]);
+    $raw = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+    if ($raw === false) {
+        if ($apiKey !== '') return $apiKey;
+        throw new Exception("Ekart Auth Connection Error: " . $err);
+    }
+    $res = json_decode($raw, true);
+    if ($httpCode >= 400 || empty($res['access_token'])) {
+        if ($apiKey !== '') return $apiKey;
+        $msg = $res['remark'] ?? $res['message'] ?? $res['error'] ?? "HTTP $httpCode";
+        throw new Exception("Ekart Auth Failed ($httpCode): $msg");
+    }
+    $token = $res['access_token'];
+    $expiresIn = isset($res['expires_in']) ? (int)$res['expires_in'] : 86400;
+    $_SESSION[$cacheKey] = [
+        'token' => $token,
+        'expires_at' => time() + max(60, $expiresIn - 120)
+    ];
+    return $token;
+}
+
+function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
+    if (is_array($orderIdOrOrder)) {
+        $order = $orderIdOrOrder;
+        $orderId = (int)$order['id'];
+    } else {
+        $orderId = (int)$orderIdOrOrder;
+        $order = function_exists('zkcOrderById') ? zkcOrderById($pdo, $orderId) : null;
+        if (!$order && $pdo) {
+            $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+            $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id = ? LIMIT 1");
+            $stmt->execute([$orderId]);
+            $order = $stmt->fetch();
+        }
+    }
+    if (!$order) throw new Exception("Order not found: ID $orderId");
+
+    $baseUrl = zkcEkartNormalizeBaseUrl(defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
+    $clientId = defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222';
+    $merchantCode = defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx';
+    $apiKey = defined('EKART_API_KEY') ? EKART_API_KEY : '';
+    $username = defined('EKART_USERNAME') ? EKART_USERNAME : $clientId;
+    $password = defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey;
+
+    $token = zkcEkartGetToken($baseUrl, $clientId, $username, $password, $apiKey);
+
+    $rawItems = $order['items_json'] ?? ($order['items'] ?? '[]');
+    $items = is_string($rawItems) ? json_decode($rawItems, true) : (array)$rawItems;
+    if (!is_array($items)) $items = [];
+
+    $totalQty = 0;
+    $descParts = [];
+    foreach ($items as $it) {
+        $q = max(1, (int)($it['quantity'] ?? 1));
+        $totalQty += $q;
+        $descParts[] = ($it['name'] ?? 'Product') . ' (x' . $q . ')';
+    }
+    $totalQty = max(1, $totalQty);
+    $productsDesc = mb_substr(implode(', ', $descParts) ?: 'General Goods', 0, 200);
+
+    $totalAmount = (float)($order['total_amount'] ?? 0);
+    $gstAmount = (float)($order['gst_amount'] ?? 0);
+    $taxable = max(1.0, round($totalAmount - $gstAmount, 2));
+    $isCod = (strtolower((string)($order['payment_method'] ?? '')) === 'cod');
+    $paymentMode = $isCod ? 'COD' : 'Prepaid';
+    $codAmount = $isCod ? $totalAmount : 0.0;
+
+    $addr = [];
+    if (!empty($order['shipping_address'])) {
+        $a = $order['shipping_address'];
+        $addr = is_string($a) && (strpos($a, '{') === 0) ? json_decode($a, true) : ['line1' => $a];
+    }
+    $consigneeName = trim((string)($order['customer_name'] ?? 'Customer'));
+    $phoneDigits = preg_replace('/\D/', '', (string)($order['customer_phone'] ?? '9876543210'));
+    $cleanPhone = (int)substr($phoneDigits ?: '9876543210', -10);
+    if ($cleanPhone < 1000000000) $cleanPhone = 9876543210;
+
+    $pincodeDigits = preg_replace('/\D/', '', (string)($order['pincode'] ?? ($addr['pincode'] ?? '641001')));
+    $cleanPin = (int)substr($pincodeDigits ?: '641001', 0, 6);
+
+    $customerAddressLine = trim(($addr['line1'] ?? ($addr['address'] ?? ($order['shipping_address'] ?? ''))) . ' ' . ($addr['line2'] ?? ''));
+    if ($customerAddressLine === '') $customerAddressLine = 'Customer address';
+
+    $customerCity = trim((string)($order['city'] ?? ($addr['city'] ?? 'Coimbatore')));
+    $customerState = trim((string)($order['state'] ?? ($addr['state'] ?? 'Tamil Nadu')));
+
+    $sellerName = defined('BILLING_NAME') ? BILLING_NAME : (defined('STORE_NAME') ? STORE_NAME : 'Smeram Industries');
+    $sellerAddress = defined('STORE_ADDRESS') ? STORE_ADDRESS : '61-A, V.C.V Layout, RS Puram';
+    $sellerCity = defined('STORE_CITY') ? STORE_CITY : 'Coimbatore';
+    $sellerState = defined('STORE_STATE') ? STORE_STATE : 'Tamil Nadu';
+    $sellerGst = defined('GSTIN') ? GSTIN : (defined('SELLER_GST') ? SELLER_GST : '33DVRPR1801M1Z6');
+    $sellerPin = (int)substr(preg_replace('/\D/', '', defined('STORE_PINCODE') ? STORE_PINCODE : '641002'), 0, 6) ?: 641002;
+    $sellerPhone = (int)substr(preg_replace('/\D/', '', defined('STORE_PHONE') ? STORE_PHONE : '9840012345'), -10) ?: 9840012345;
+
+    $invoiceNumber = !empty($order['invoice_number']) ? $order['invoice_number'] : $order['order_number'];
+    $invoiceDate = !empty($order['created_at']) ? date('Y-m-d', strtotime($order['created_at'])) : date('Y-m-d');
+
+    $shipmentPayload = [
+        'seller_name' => $sellerName,
+        'seller_address' => $sellerAddress,
+        'seller_gst_tin' => $sellerGst,
+        'seller_gst_amount' => $gstAmount,
+        'consignee_gst_amount' => 0.0,
+        'integrated_gst_amount' => 0.0,
+        'order_number' => (string)$order['order_number'],
+        'invoice_number' => (string)$invoiceNumber,
+        'invoice_date' => $invoiceDate,
+        'consignee_name' => $consigneeName,
+        'consignee_alternate_phone' => (string)$cleanPhone,
+        'products_desc' => $productsDesc,
+        'payment_mode' => $paymentMode,
+        'category_of_goods' => 'Personal Care & Cosmetics',
+        'total_amount' => max(1.0, round($totalAmount, 2)),
+        'tax_value' => round($gstAmount, 2),
+        'taxable_amount' => max(1.0, round($taxable, 2)),
+        'commodity_value' => number_format($taxable, 2, '.', ''),
+        'cod_amount' => round($codAmount, 2),
+        'quantity' => $totalQty,
+        'weight' => 500,
+        'length' => 15,
+        'height' => 10,
+        'width' => 10,
+        'return_reason' => '',
+        'service' => 'SURFACE',
+        'drop_location' => [
+            'name' => $consigneeName,
+            'address' => $customerAddressLine,
+            'pin' => $cleanPin,
+            'phone' => $cleanPhone,
+            'city' => $customerCity,
+            'state' => $customerState,
+            'country' => 'India',
+            'location_type' => 'Home'
+        ],
+        'pickup_location' => [
+            'name' => $sellerName,
+            'address' => $sellerAddress,
+            'pin' => $sellerPin,
+            'phone' => $sellerPhone,
+            'city' => $sellerCity,
+            'state' => $sellerState,
+            'country' => 'India',
+            'location_type' => 'Office'
+        ],
+        'return_location' => [
+            'name' => $sellerName,
+            'address' => $sellerAddress,
+            'pin' => $sellerPin,
+            'phone' => $sellerPhone,
+            'city' => $sellerCity,
+            'state' => $sellerState,
+            'country' => 'India',
+            'location_type' => 'Office'
+        ]
+    ];
+
+    $createUrl = $baseUrl . '/api/v1/package/create';
+    $ch = curl_init($createUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'PUT',
+        CURLOPT_POSTFIELDS => json_encode($shipmentPayload),
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $token,
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ],
+        CURLOPT_TIMEOUT => 25,
+        CURLOPT_SSL_VERIFYPEER => false
+    ]);
+    $raw = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+
+    if ($raw === false) {
+        throw new Exception("Ekart API Connection Error: " . $err);
+    }
+    $res = json_decode($raw, true);
+    if ($httpCode >= 400 || (isset($res['status']) && $res['status'] === false)) {
+        $msg = $res['remark'] ?? $res['message'] ?? $res['error'] ?? "HTTP $httpCode";
+        throw new Exception("Ekart Shipment Create Failed ($httpCode): $msg");
+    }
+
+    $trackingId = trim((string)($res['tracking_id'] ?? ($res['barcodes']['wbn'] ?? '')));
+    if ($trackingId === '') {
+        throw new Exception("Ekart response missing tracking_id: " . $raw);
+    }
+
+    $trackingUrl = "https://app.elite.ekartlogistics.in/track/{$trackingId}";
+
+    if ($pdo) {
+        $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+        if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
+        $updStmt = $pdo->prepare("UPDATE `{$tbl}` SET tracking_number = ?, courier = 'Ekart Logistics', tracking_url = ?, order_status = CASE WHEN order_status IN ('new','confirmed') THEN 'processing' ELSE order_status END WHERE id = ?");
+        $updStmt->execute([$trackingId, $trackingUrl, $orderId]);
+        try {
+            $pdo->prepare("UPDATE `{$tbl}` SET ekart_shipment_data = ?, ekart_status = 'Order Placed' WHERE id = ?")->execute([$raw, $orderId]);
+        } catch (Exception $ign) {}
+    }
+
+    $updatedOrder = function_exists('zkcOrderById') ? zkcOrderById($pdo, $orderId) : $order;
+    if ($updatedOrder) {
+        $updatedOrder['tracking_number'] = $trackingId;
+        $updatedOrder['courier'] = 'Ekart Logistics';
+        $updatedOrder['tracking_url'] = $trackingUrl;
+    }
+
+    return [
+        'success' => true,
+        'tracking_id' => $trackingId,
+        'vendor' => $res['vendor'] ?? null,
+        'barcodes' => $res['barcodes'] ?? [],
+        'tracking_url' => $trackingUrl,
+        'order' => function_exists('zkcAdminOrderJson') ? zkcAdminOrderJson($updatedOrder) : $updatedOrder
+    ];
+}
+
+function zkcEkartAutoCreateShipment($pdo, $orderId) {
+    if (!defined('EKART_ENABLED') || !EKART_ENABLED) return false;
+    if (defined('EKART_MODE') && EKART_MODE !== 'api') return false;
+    try {
+        return zkcEkartCreateShipment($pdo, $orderId);
+    } catch (Throwable $e) {
+        error_log("[Ekart AutoCreate Warning] Order $orderId: " . $e->getMessage());
+        return false;
+    }
+}
+
+function zkcEkartDownloadLabel($pdo, $orderId, $awb = '') {
+    $trackingId = trim($awb);
+    if ($trackingId === '' && $pdo && $orderId > 0) {
+        $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+        $stmt = $pdo->prepare("SELECT tracking_number FROM `{$tbl}` WHERE id = ? LIMIT 1");
+        $stmt->execute([(int)$orderId]);
+        $trackingId = trim((string)$stmt->fetchColumn());
+    }
+    if ($trackingId === '') respond(['error' => 'No tracking number found for label'], 400);
+
+    $baseUrl = zkcEkartNormalizeBaseUrl(defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
+    $clientId = defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222';
+    $apiKey = defined('EKART_API_KEY') ? EKART_API_KEY : '';
+    $username = defined('EKART_USERNAME') ? EKART_USERNAME : $clientId;
+    $password = defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey;
+    $token = zkcEkartGetToken($baseUrl, $clientId, $username, $password, $apiKey);
+
+    $url = $baseUrl . '/api/v1/package/label?json_only=false';
+    $payload = json_encode(['ids' => [$trackingId]]);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $token,
+            'Content-Type: application/json',
+            'Accept: application/octet-stream, application/pdf'
+        ],
+        CURLOPT_TIMEOUT => 25,
+        CURLOPT_SSL_VERIFYPEER => false
+    ]);
+    $raw = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($raw && $httpCode === 200 && strpos($raw, '%PDF') === 0) {
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="ekart-label-' . $trackingId . '.pdf"');
+        header('Content-Length: ' . strlen($raw));
+        echo $raw;
+        exit;
+    }
+    respond(['error' => 'Ekart label download failed or not ready', 'response' => json_decode($raw, true) ?: $raw], 502);
+}
+
+function zkcEkartTrack($pdo, $orderId, $trackingId = '') {
+    $tid = trim($trackingId);
+    if ($tid === '' && $pdo && $orderId > 0) {
+        $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+        $stmt = $pdo->prepare("SELECT tracking_number FROM `{$tbl}` WHERE id = ? LIMIT 1");
+        $stmt->execute([(int)$orderId]);
+        $tid = trim((string)$stmt->fetchColumn());
+    }
+    if ($tid === '') return ['error' => 'Tracking ID is required'];
+
+    $baseUrl = zkcEkartNormalizeBaseUrl(defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
+    $url = $baseUrl . '/api/v1/track/' . rawurlencode($tid);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => ['Accept: application/json'],
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_SSL_VERIFYPEER => false
+    ]);
+    $raw = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $data = json_decode((string)$raw, true);
+    return [
+        'success' => $httpCode === 200,
+        'tracking_id' => $tid,
+        'tracking_url' => "https://app.elite.ekartlogistics.in/track/{$tid}",
+        'data' => $data ?: $raw
+    ];
+}
+
 // Shipments / Ekart settings
 if ($route === 'shipments/settings') {
     $ekClientId = defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222';
@@ -2094,11 +2448,11 @@ if ($route === 'shipments/settings') {
                 'enabled' => !empty($body['enabled']),
                 'mode' => (string)($body['mode'] ?? 'api'),
                 'courier_name' => (string)($body['courier_name'] ?? 'Ekart Logistics'),
-                'tracking_url_template' => (string)($body['tracking_url_template'] ?? 'https://ekartlogistics.com/shipmenttrack/{tracking_number}'),
+                'tracking_url_template' => (string)($body['tracking_url_template'] ?? 'https://app.elite.ekartlogistics.in/track/{tracking_number}'),
                 'api' => [
-                    'base_url' => (string)($body['api']['base_url'] ?? 'https://api.ekartlogistics.com'),
+                    'base_url' => zkcEkartNormalizeBaseUrl($body['api']['base_url'] ?? (defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in')),
                     'client_id' => (string)($body['api']['client_id'] ?? $ekClientId),
-                    'merchant_code' => (string)($body['api']['merchant_code'] ?? 'SMERAM'),
+                    'merchant_code' => (string)($body['api']['merchant_code'] ?? 'SMERAMx'),
                     'has_api_key' => !empty($body['api']['api_key']) || (defined('EKART_API_KEY') && EKART_API_KEY !== ''),
                     'webhook_url' => $ekWebhookUrl,
                     'webhook_secret' => $ekWebhookSecret,
@@ -2113,11 +2467,11 @@ if ($route === 'shipments/settings') {
             'enabled' => defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true,
             'mode' => defined('EKART_MODE') ? EKART_MODE : 'api',
             'courier_name' => defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics',
-            'tracking_url_template' => defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://ekartlogistics.com/shipmenttrack/{tracking_number}',
+            'tracking_url_template' => defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{tracking_number}',
             'api' => [
-                'base_url' => defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://api.ekartlogistics.com',
+                'base_url' => defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in',
                 'client_id' => $ekClientId,
-                'merchant_code' => defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAM',
+                'merchant_code' => defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx',
                 'has_api_key' => defined('EKART_API_KEY') && EKART_API_KEY !== '',
                 'webhook_url' => $ekWebhookUrl,
                 'webhook_secret' => $ekWebhookSecret,
@@ -2126,6 +2480,30 @@ if ($route === 'shipments/settings') {
             ]
         ]
     ]);
+}
+
+// Ekart Shipment Actions (Book, Label, Track)
+if (($route === 'shipments/orders/book' || preg_match('#^shipments/orders/(\\d+)/book#', $route, $m) || $route === 'admin/book' || $route === 'shipments/ekart/create') && $method === 'POST') {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    if (!$oid) respond(['error' => 'order_id is required to book Ekart shipment'], 400);
+    try {
+        $res = zkcEkartCreateShipment($pdo, $oid);
+        respond($res);
+    } catch (Exception $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
+}
+
+if (($route === 'shipments/label' || preg_match('#^shipments/orders/(\\d+)/label#', $route, $m)) && ($method === 'GET' || $method === 'POST')) {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    $awb = trim((string)($body['awb'] ?? ($_GET['awb'] ?? '')));
+    zkcEkartDownloadLabel($pdo, $oid, $awb);
+}
+
+if (($route === 'shipments/track' || preg_match('#^shipments/orders/(\\d+)/track#', $route, $m) || preg_match('#^shipments/track/([^/]+)#', $route, $tm)) && $method === 'GET') {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($_GET['order_id'] ?? 0);
+    $trackingId = !empty($tm[1]) ? $tm[1] : trim((string)($_GET['tracking_id'] ?? ($_GET['awb'] ?? '')));
+    respond(zkcEkartTrack($pdo, $oid, $trackingId));
 }
 
 // Store standard legal & policy pages
@@ -2277,6 +2655,9 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
         if (function_exists('zkcHandoffUrl')) $handoff = zkcHandoffUrl($order);
         if (function_exists('zkcNotifyOrderConfirmed')) $wa = zkcNotifyOrderConfirmed($pdo, $order);
         if (function_exists('zkcNotifyLowStock')) zkcNotifyLowStock($pdo, $low);
+        if (function_exists('zkcEkartAutoCreateShipment')) {
+            try { zkcEkartAutoCreateShipment($pdo, $orderId); } catch (Throwable $e) { error_log('[Ekart AutoCreate] ' . $e->getMessage()); }
+        }
     }
     respond(['order_id' => $orderId, 'order_number' => $orderNumber, 'subtotal' => $subtotal, 'discount_amount' => $discount, 'gst_rate' => $gstRate,
         'gst_amount' => $gst, 'shipping_amount' => $shipping, 'total_amount' => $total, 'total' => $total, 'coupon_code' => $coupon ? $coupon['code'] : null,

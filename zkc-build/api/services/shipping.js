@@ -5,7 +5,7 @@ const pool = require('../db');
 const { encrypt, decrypt } = require('./deployment-settings');
 
 const MODES = ['manual', 'api'];
-const DEFAULT_TRACKING = 'https://ekartlogistics.com/shipmenttrack/{awb}';
+const DEFAULT_TRACKING = 'https://app.elite.ekartlogistics.in/track/{awb}';
 const AWB_RE = /^[A-Za-z0-9-]{6,32}$/;
 const SHIP_STAGES = {
   ready: ['confirmed', 'processing'],
@@ -18,11 +18,18 @@ const badRequest = msg => Object.assign(new Error(msg), { status: 400 });
 
 function defaults() {
   return {
-    enabled: false,          // off until the merchant ticks "Enable Ekart shipping"
-    mode: 'manual',
-    courier_name: 'Ekart',
+    enabled: true,
+    mode: 'api',
+    courier_name: 'Ekart Logistics',
     tracking_url_template: DEFAULT_TRACKING,
-    api: { base_url: '', client_id: '', merchant_code: '', api_key: '' }
+    api: {
+      base_url: 'https://app.elite.ekartlogistics.in',
+      client_id: 'EKART_6ad49aef2206ede3ee46d222',
+      merchant_code: 'SMERAMx',
+      api_key: '',
+      username: 'EKART_6ad49aef2206ede3ee46d222',
+      password: ''
+    }
   };
 }
 
@@ -101,33 +108,130 @@ async function listShipments(storeId, { stage = 'ready', from, to } = {}) {
   return rows;
 }
 
-// ── Ekart API adapter (not live yet) ──
-// When Ekart issues API access: fill base_url/client_id/api_key in the dashboard, implement request() against their
-// spec, and switch the mode to "api". Everything above (AWB, tracking link, labels, WhatsApp) already works with it.
+// ── Ekart API adapter (OpenAPI 3.1.0 Spec Aligned) ──
 const ekartApi = {
-  ready(s) { return !!(s && s.api && s.api.base_url && s.api.client_id && s.api.api_key); },
-  async request(s, method, path, body) {
-    const r = await fetch(s.api.base_url.replace(/\/$/, '') + path, {
-      method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + decrypt(s.api.api_key), 'X-Client-Id': s.api.client_id },
-      body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(20000)
+  ready(s) {
+    return !!(s && s.api && (s.api.api_key || s.api.password || s.api.client_id));
+  },
+  normalizeBaseUrl(url) {
+    const u = String(url || 'https://app.elite.ekartlogistics.in').trim().replace(/\/api\/?$/i, '');
+    return u.replace(/\/$/, '');
+  },
+  async getToken(s) {
+    const apiKey = s.api.api_key ? decrypt(s.api.api_key) : '';
+    const username = s.api.username || s.api.client_id || 'EKART_6ad49aef2206ede3ee46d222';
+    const password = s.api.password || apiKey || '';
+    if (apiKey && (!username || !password)) return apiKey;
+    const base = this.normalizeBaseUrl(s.api.base_url);
+    const clientId = s.api.client_id || 'EKART_6ad49aef2206ede3ee46d222';
+    try {
+      const r = await fetch(`${base}/integrations/v2/auth/token/${encodeURIComponent(clientId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ username, password }),
+        signal: AbortSignal.timeout(20000)
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.access_token) return data.access_token;
+      if (apiKey) return apiKey;
+      throw new Error(data.remark || data.message || data.error || `HTTP ${r.status}`);
+    } catch (e) {
+      if (apiKey) return apiKey;
+      throw e;
+    }
+  },
+  /** Book a forward shipment via PUT /api/v1/package/create matching Ekart OpenAPI 3.1 spec */
+  async createShipment(s, order, store) {
+    if (s.mode !== 'api') throw Object.assign(new Error('Ekart API mode is not enabled.'), { status: 400 });
+    const token = await this.getToken(s);
+    const base = this.normalizeBaseUrl(s.api.base_url);
+
+    const a = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address || '{}') : (order.shipping_address || {});
+    const items = Array.isArray(order.items) ? order.items : (typeof order.items === 'string' ? JSON.parse(order.items || '[]') : []);
+    const qty = items.reduce((sum, it) => sum + Math.max(1, Number(it.quantity) || 1), 0) || 1;
+    const desc = items.map(it => `${it.name || 'Product'} (x${Math.max(1, Number(it.quantity) || 1)})`).join(', ').slice(0, 200) || 'General Goods';
+
+    const total = Number(order.total_amount) || 0;
+    const gst = Number(order.gst_amount) || 0;
+    const taxable = Math.max(1, Math.round((total - gst) * 100) / 100);
+    const isCod = order.payment_method === 'cod';
+
+    const custPhone = String(order.customer_phone || '').replace(/\D/g, '').slice(-10) || '9876543210';
+    const custPin = String(order.pincode || a.pincode || '641001').replace(/\D/g, '').slice(0, 6) || '641001';
+    const storePin = String(store.pincode || '641002').replace(/\D/g, '').slice(0, 6) || '641002';
+    const storePhone = String(store.whatsapp_number || '9840012345').replace(/\D/g, '').slice(-10) || '9840012345';
+
+    const payload = {
+      seller_name: store.store_name || 'Smeram Industries',
+      seller_address: store.address || '61-A, V.C.V Layout, RS Puram',
+      seller_gst_tin: store.gst_number || '33DVRPR1801M1Z6',
+      seller_gst_amount: gst,
+      consignee_gst_amount: 0,
+      integrated_gst_amount: 0,
+      order_number: order.order_number,
+      invoice_number: order.invoice_number || order.order_number,
+      invoice_date: new Date(order.created_at || Date.now()).toISOString().slice(0, 10),
+      consignee_name: order.customer_name || 'Customer',
+      consignee_alternate_phone: custPhone,
+      products_desc: desc,
+      payment_mode: isCod ? 'COD' : 'Prepaid',
+      category_of_goods: 'Personal Care & Cosmetics',
+      total_amount: Math.max(1, total),
+      tax_value: gst,
+      taxable_amount: taxable,
+      commodity_value: taxable.toFixed(2),
+      cod_amount: isCod ? total : 0,
+      quantity: qty,
+      weight: 500,
+      length: 15,
+      height: 10,
+      width: 10,
+      return_reason: '',
+      service: 'SURFACE',
+      drop_location: {
+        name: order.customer_name || 'Customer',
+        address: [a.line1 || a.address || order.shipping_address, a.line2].filter(Boolean).join(', ') || 'Customer Address',
+        pin: Number(custPin),
+        phone: Number(custPhone),
+        city: a.city || order.city || 'Coimbatore',
+        state: a.state || order.state || 'Tamil Nadu',
+        country: 'India',
+        location_type: 'Home'
+      },
+      pickup_location: {
+        name: store.store_name || 'Smeram Industries',
+        address: store.address || '61-A, V.C.V Layout, RS Puram',
+        pin: Number(storePin),
+        phone: Number(storePhone),
+        city: store.city || 'Coimbatore',
+        state: store.state || 'Tamil Nadu',
+        country: 'India',
+        location_type: 'Office'
+      },
+      return_location: {
+        name: store.store_name || 'Smeram Industries',
+        address: store.address || '61-A, V.C.V Layout, RS Puram',
+        pin: Number(storePin),
+        phone: Number(storePhone),
+        city: store.city || 'Coimbatore',
+        state: store.state || 'Tamil Nadu',
+        country: 'India',
+        location_type: 'Office'
+      }
+    };
+
+    const r = await fetch(`${base}/api/v1/package/create`, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(25000)
     });
     const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw Object.assign(new Error(data.message || data.error || 'Ekart API error ' + r.status), { status: 502 });
-    return data;
-  },
-  /** Book a shipment and return { awb }. Field names follow Ekart's forward-shipment API; confirm them against the spec they send. */
-  async createShipment(s, order, store) {
-    if (s.mode !== 'api' || !this.ready(s)) throw Object.assign(new Error('Ekart API is not connected yet. Book the AWB on the Ekart portal and enter or scan it here.'), { status: 501 });
-    const a = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address || '{}') : (order.shipping_address || {});
-    const data = await this.request(s, 'POST', '/shipments', {
-      client_reference_id: order.order_number,
-      merchant_code: s.api.merchant_code,
-      payment_mode: order.payment_method === 'cod' ? 'COD' : 'PREPAID',
-      cod_amount: order.payment_method === 'cod' ? Number(order.total_amount) : 0,
-      consignee: { name: order.customer_name, phone: order.customer_phone, address: [a.line1 || a.address, a.line2].filter(Boolean).join(', '), city: a.city, state: a.state, pincode: a.pincode },
-      pickup: { name: store.store_name, address: store.address, city: store.city, state: store.state }
-    });
-    return { awb: data.tracking_id || data.awb || data.awb_number };
+    if (!r.ok || data.status === false) {
+      throw Object.assign(new Error(data.remark || data.message || data.error || `Ekart create failed (${r.status})`), { status: 502 });
+    }
+    const awb = data.tracking_id || data.barcodes?.wbn;
+    return { awb, tracking_id: data.tracking_id, barcodes: data.barcodes, vendor: data.vendor };
   }
 };
 

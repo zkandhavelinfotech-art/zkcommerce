@@ -129,6 +129,18 @@ router.post('/:slug/checkout',async(req,res)=>{
         } catch (invErr) {
           console.warn('[Storefront Checkout] Invoice creation error:', invErr.message);
         }
+
+        // Auto-create Ekart shipment & packaging record if Ekart API mode is active
+        try {
+          const shipping = require('../services/shipping');
+          const shipSettings = await shipping.settingsFor(storeId);
+          if (shipSettings.enabled && shipSettings.mode === 'api' && shipping.ekartApi.ready(shipSettings)) {
+            const { awb } = await shipping.ekartApi.createShipment(shipSettings, fullOrder, storeInfo);
+            if (awb) await shipping.assignAwb(storeId, order.id, { awb, courier: shipSettings.courier_name });
+          }
+        } catch (shipErr) {
+          console.warn('[Storefront Checkout] Ekart shipment warning:', shipErr.message);
+        }
       } catch (waErr) {
         console.warn('[Storefront Checkout] WhatsApp alert warning:', waErr.message);
       }
