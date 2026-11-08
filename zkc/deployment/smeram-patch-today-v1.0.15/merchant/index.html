@@ -1326,6 +1326,54 @@
           </div>
           <a class="btn-primary btn-sm" id="btnOpenPortal" target="_blank" rel="noopener" style="text-decoration:none">🚀 Open Deployment Portal ↗</a>
         </div>
+
+        <!-- Database Engine & SQL Schema Packages Card -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head">
+            <div>
+              <h2 style="font-size:15px;margin:0 0 4px">Database Engine &amp; SQL Schema Packages</h2>
+              <p style="margin:0;font-size:13px;color:var(--muted)">Download up-to-date installation, migration patch, full reset, or targeted password SQL for MySQL (GoDaddy/cPanel) or PostgreSQL (Neon/Railway).</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:12px;font-weight:700;color:var(--muted)">Target Engine:</span>
+              <select id="merchantSqlEngine" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-weight:600">
+                <option value="mysql">MySQL / MariaDB (GoDaddy / cPanel)</option>
+                <option value="postgres">PostgreSQL (Neon / Supabase / Railway)</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;margin-top:14px">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+              <div>
+                <strong style="font-size:13px">📦 Full Installation SQL</strong>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Creates all 18 tables and seeds store catalog &amp; admin defaults from scratch.</p>
+              </div>
+              <button type="button" class="btn-primary btn-sm" onclick="downloadMerchantSql('full')">Download Full Install</button>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+              <div>
+                <strong style="font-size:13px">🔄 Migration / Patch SQL</strong>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Safe for existing databases. Adds missing tables and modern columns without losing any orders or customers.</p>
+              </div>
+              <button type="button" class="btn-outline btn-sm" onclick="downloadMerchantSql('migration')">Download Migration Patch</button>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+              <div>
+                <strong style="font-size:13px">⚠️ Full Database Reset</strong>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Drops existing tables and runs a clean fresh install with complete Smeram seed data.</p>
+              </div>
+              <button type="button" class="btn-outline btn-sm" style="color:#b91c1c;border-color:#fca5a5" onclick="downloadMerchantSql('reset')">Download Reset SQL</button>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+              <div>
+                <strong style="font-size:13px">🔑 Password Update SQL</strong>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Targeted single query to change merchant password to Smeram2026! without altering any data.</p>
+              </div>
+              <button type="button" class="btn-outline btn-sm" onclick="downloadMerchantSql('password')">Download Password SQL</button>
+            </div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="toolbar-row" style="margin-bottom:12px">
             <label style="font-size:12px;font-weight:700;color:var(--muted)">Save downloads to
@@ -2397,6 +2445,18 @@
         }).join('');
         tbody.querySelectorAll('[data-dl]').forEach(b => b.onclick = () => downloadPackageFile(b.dataset.dl));
       } catch (e) { tbody.innerHTML = `<tr><td colspan="7" style="color:#b91c1c">${escHtml(e.message)}</td></tr>`; }
+    }
+
+    function downloadMerchantSql(action) {
+      const engineEl = document.getElementById('merchantSqlEngine');
+      const engine = engineEl ? engineEl.value : 'mysql';
+      const sid = currentStoreId || 2;
+      const isPhp = window.location.pathname.endsWith('.php') || window.location.href.includes('api.php') || (window.ZK && window.ZK.siteUrl && !window.ZK.siteUrl.includes(':3000'));
+      const url = isPhp
+        ? `${(window.ZK && window.ZK.siteUrl) || '..'}/api.php?route=stores/${sid}/schema-sql&engine=${engine}&action=${action}`
+        : `/api/stores/${sid}/schema-sql?engine=${engine}&action=${action}`;
+      toast(`Downloading ${engine.toUpperCase()} (${action}) SQL...`);
+      window.location.href = url;
     }
 
     // ── WhatsApp sender (ZKWAConnect / Gupshup / one-click) ──

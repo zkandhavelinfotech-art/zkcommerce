@@ -194,7 +194,7 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
             <small>Standard for GoDaddy cPanel, phpMyAdmin &amp; AWS RDS</small>
           </div>
         </label>
-        <label class="db-type-card" id="dbTypePostgresCard" style="display:none">
+        <label class="db-type-card" id="dbTypePostgresCard">
           <input type="radio" name="portal_db_type" value="postgres" style="accent-color:#008060">
           <div>
             <strong>PostgreSQL</strong>
@@ -237,8 +237,11 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px">
         <span id="dbSaveMsg" style="font-size:11.5px;font-weight:600;color:#64748b">Not saved for this environment</span>
-        <div style="display:flex;gap:6px">
-          <button type="button" class="btn" id="copySqlSeedBtn" style="font-size:11px;height:28px">📋 Copy MySQL SQL Seed</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn" id="dlFullSqlBtn" style="font-size:11px;height:28px">📦 Full Install SQL</button>
+          <button type="button" class="btn" id="dlMigrateSqlBtn" style="font-size:11px;height:28px">🔄 Migration / Patch</button>
+          <button type="button" class="btn" id="dlResetSqlBtn" style="font-size:11px;height:28px">⚠️ Reset DB</button>
+          <button type="button" class="btn" id="dlPasswordSqlBtn" style="font-size:11px;height:28px">🔑 Password SQL</button>
           <button type="button" class="btn btn-primary" id="saveDbBtn" style="font-size:11px;height:28px;font-weight:600">💾 Save Database Settings</button>
         </div>
       </div>
@@ -1190,7 +1193,7 @@ function applyEnvToForm() {
   document.querySelectorAll('#envTabs button').forEach(b => b.classList.toggle('active', b.dataset.env === selectedEnv));
   const e = envSettings();
   const db = e.db || {};
-  const type = 'mysql';
+  const type = (db.type || selectedDbType || 'mysql').toLowerCase();
   selectedDbType = type;
   document.querySelector('input[name="portal_db_type"][value="' + type + '"]').checked = true;
   document.getElementById('dbTypeMysqlCard').classList.toggle('active', type === 'mysql');
@@ -1459,7 +1462,7 @@ function packageRequest(part) {
     part,
     version: document.getElementById('pub_version').value.trim() || undefined,
     provider: selectedProvider,
-    db_type: 'mysql',
+    db_type: selectedDbType || 'mysql',
     db_host: document.getElementById('pub_db_host').value.trim(),
     db_port: document.getElementById('pub_db_port').value.trim(),
     db_name: document.getElementById('pub_db_name').value.trim(),
@@ -1718,15 +1721,26 @@ function bindPublishPortal() {
     toast('Downloaded .env');
   };
 
-  // Copy SQL Seed
-  document.getElementById('copySqlSeedBtn').onclick = async () => {
-    try {
-      const res = await api('/stores/' + store.id + '/builder');
-      toast('SQL Seed available in database/seed-' + selectedDbType + '.sql');
-    } catch(e) {
-      toast(e.message, true);
-    }
-  };
+  // Download SQL Packages (Full, Migration, Reset, Password)
+  function downloadSchemaSql(action) {
+    const engine = selectedDbType || 'mysql';
+    const sid = (store && store.id) || 2;
+    const isPhp = window.location.pathname.endsWith('.php') || window.location.href.includes('api.php') || (window.ZK && window.ZK.siteUrl && !window.ZK.siteUrl.includes(':3000'));
+    const url = isPhp
+      ? `${(window.ZK && window.ZK.siteUrl) || '..'}/api.php?route=stores/${sid}/schema-sql&engine=${engine}&action=${action}`
+      : `/api/stores/${sid}/schema-sql?engine=${engine}&action=${action}`;
+    toast(`Downloading ${engine.toUpperCase()} (${action}) SQL...`);
+    window.location.href = url;
+  }
+
+  const fullBtn = document.getElementById('dlFullSqlBtn');
+  if (fullBtn) fullBtn.onclick = () => downloadSchemaSql('full');
+  const migBtn = document.getElementById('dlMigrateSqlBtn');
+  if (migBtn) migBtn.onclick = () => downloadSchemaSql('migration');
+  const resetBtn = document.getElementById('dlResetSqlBtn');
+  if (resetBtn) resetBtn.onclick = () => downloadSchemaSql('reset');
+  const passBtn = document.getElementById('dlPasswordSqlBtn');
+  if (passBtn) passBtn.onclick = () => downloadSchemaSql('password');
 
   // Test FTP
   document.getElementById('testFtpBtn').onclick = async () => {

@@ -6,7 +6,7 @@ ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name,password_hash=EXCLUDED.pass
 -- Local/demo-only merchant logins (password: demo1234). Do not use these defaults in production.
 INSERT INTO merchants (name,email,password_hash,role) VALUES
  ('Miliro Store Owner','merchant@miliro.in','$2a$12$Oxy6/jhpllDdPnQTRzFi3ObAhOukEaTNFWqI7nO/Q8eo7Eouz3gDS','merchant'),
- ('Smeram Store Owner','merchant@smeramnaturals.in','$2a$12$Oxy6/jhpllDdPnQTRzFi3ObAhOukEaTNFWqI7nO/Q8eo7Eouz3gDS','merchant'),
+ ('Smeram Store Owner','merchant@smeramnaturals.in','$2a$10$wYY5x8DqxIVBzHhuz6gEmugczJ3YyUHCaqszpKhxoMdjp4tzokilK','merchant'),
  ('Demo Store Owner','merchant@zkdemo.in','$2a$12$Oxy6/jhpllDdPnQTRzFi3ObAhOukEaTNFWqI7nO/Q8eo7Eouz3gDS','merchant')
 ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name,role='merchant';
 

@@ -35,7 +35,7 @@ try {
 }
 
 // Bcrypt hash for Smeram2026! (compatible with both PHP and Node.js bcryptjs)
-$newHash = '$2a$10$qEOTbLvxlOjvdTU12jzsD.Ur.c7siQw5V1WcHKTxTpiEMnyFIDNwO';
+$newHash = '$2a$10$wYY5x8DqxIVBzHhuz6gEmugczJ3YyUHCaqszpKhxoMdjp4tzokilK';
 
 $stmt = $pdo->prepare("UPDATE `merchants` SET `password_hash` = ? WHERE `email` = 'merchant@smeramnaturals.in' OR `id` = 2");
 $stmt->execute([$newHash]);

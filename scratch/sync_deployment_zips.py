@@ -13,7 +13,15 @@ files_to_sync = [
     ('zkc/merchant/packaging.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/packaging.html'),
     ('zkc/merchant/shipments.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/shipments.html'),
     ('zkc/favicon.ico', 'zkc/deployment/smeram-patch-today-v1.0.15/favicon.ico'),
-    ('zkc/store-builder/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/store-builder/index.html')
+    ('zkc/store-builder/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/store-builder/index.html'),
+    ('zkc/database/migration-mysql.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/migration-mysql.sql'),
+    ('zkc/database/migration-postgres.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/migration-postgres.sql'),
+    ('zkc/database/schema-mysql.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/schema-mysql.sql'),
+    ('zkc/database/schema-postgres.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/schema-postgres.sql'),
+    ('zkc/database/smeram_full_reset_and_seed.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/smeram_full_reset_and_seed.sql'),
+    ('zkc/database/smeram_full_reset_and_seed_postgres.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/smeram_full_reset_and_seed_postgres.sql'),
+    ('zkc/database/update-smeram-password.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/update-smeram-password.sql'),
+    ('zkc/update-password.php', 'zkc/deployment/smeram-patch-today-v1.0.15/update-password.php')
 ]
 
 for src, dst in files_to_sync:

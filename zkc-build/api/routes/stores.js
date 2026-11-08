@@ -499,6 +499,70 @@ router.get('/:id/deployment-zip', auth, async (req, res) => {
   } catch (e) { sendError(res, e); }
 });
 
+// GET /api/stores/:id/schema-sql?engine=mysql|postgres&action=full|migration|patch|reset|password
+router.get('/:id/schema-sql', auth, async (req, res) => {
+  try {
+    const rawEngine = (req.query.engine || 'mysql').toLowerCase();
+    const engine = (rawEngine === 'postgres' || rawEngine === 'postgresql') ? 'postgres' : 'mysql';
+    const action = (req.query.action || 'full').toLowerCase();
+    const dbDirs = [
+      path.join(__dirname, '..', '..', 'database'),
+      path.join(__dirname, '..', 'services', 'php', 'database'),
+      path.join(__dirname, '..', '..', '..', 'database')
+    ];
+    let possibleNames = [];
+    let outFileName = `zkcommerce-${engine}-${action}.sql`;
+    if (action === 'password') {
+      possibleNames = ['update-smeram-password.sql', 'update-password.sql'];
+      outFileName = 'update-smeram-password.sql';
+    } else if (engine === 'postgres') {
+      if (action === 'migration' || action === 'patch') {
+        possibleNames = ['migration-postgres.sql', 'schema-postgres.sql'];
+        outFileName = 'migration-postgres.sql';
+      } else if (action === 'reset') {
+        possibleNames = ['smeram_full_reset_and_seed_postgres.sql', 'schema-postgres.sql'];
+        outFileName = 'smeram_full_reset_and_seed_postgres.sql';
+      } else {
+        possibleNames = ['smeram_full_reset_and_seed_postgres.sql', 'schema-postgres.sql', 'schema.sql'];
+        outFileName = 'smeram_full_reset_and_seed_postgres.sql';
+      }
+    } else {
+      if (action === 'migration' || action === 'patch') {
+        possibleNames = ['migration-mysql.sql', 'schema-mysql.sql'];
+        outFileName = 'migration-mysql.sql';
+      } else if (action === 'reset') {
+        possibleNames = ['smeram_full_reset_and_seed.sql', 'schema-mysql.sql'];
+        outFileName = 'smeram_full_reset_and_seed.sql';
+      } else {
+        possibleNames = ['smeram_full_reset_and_seed.sql', 'schema-mysql.sql'];
+        outFileName = 'smeram_full_reset_and_seed.sql';
+      }
+    }
+    let targetFile = null;
+    for (const d of dbDirs) {
+      for (const name of possibleNames) {
+        const fullPath = path.join(d, name);
+        if (fs.existsSync(fullPath)) {
+          targetFile = fullPath;
+          break;
+        }
+      }
+      if (targetFile) break;
+    }
+    if (!targetFile) return res.status(404).json({ error: `SQL schema file not found for ${engine} (${action})` });
+    if (req.query.format === 'json') {
+      return res.json({
+        success: true,
+        engine,
+        action,
+        filename: outFileName,
+        sql: fs.readFileSync(targetFile, 'utf8')
+      });
+    }
+    res.download(targetFile, outFileName);
+  } catch (e) { sendError(res, e); }
+});
+
 // POST /api/stores/:id/deployment-zip/save { file } — copy a built ZIP into deployment/<client>/downloads on this server
 router.post('/:id/deployment-zip/save', auth, async (req, res) => {
   try {

@@ -356,10 +356,10 @@ CREATE TABLE `gst_settings` (
 
 -- ── 3. SEED INITIAL DATA ──
 
--- Merchants (password: demo1234)
+-- Merchants (password for merchant@smeramnaturals.in is: Smeram2026!)
 INSERT INTO `merchants` (`id`, `name`, `email`, `phone`, `password_hash`, `role`, `store_id`) VALUES
 (1, 'ZKCommerce Product Owner', 'admin@zkcommerce.in', '+91 90000 00001', '$2a$12$Oxy6/jhpllDdPnQTRzFi3ObAhOukEaTNFWqI7nO/Q8eo7Eouz3gDS', 'admin', NULL),
-(2, 'Smeram Store Owner', 'merchant@smeramnaturals.in', '+91 75399 72026', '$2y$10$PDWeLPpe7A5ijPBv9rzPdO/7zcN6zPlcWkiJDQoxdWViLj6TDTi8O', 'merchant', 2),
+(2, 'Smeram Store Owner', 'merchant@smeramnaturals.in', '+91 75399 72026', '$2a$10$wYY5x8DqxIVBzHhuz6gEmugczJ3YyUHCaqszpKhxoMdjp4tzokilK', 'merchant', 2),
 (3, 'Miliro Store Owner', 'merchant@miliro.in', '+91 44 75399 72026', '$2a$12$Oxy6/jhpllDdPnQTRzFi3ObAhOukEaTNFWqI7nO/Q8eo7Eouz3gDS', 'merchant', 1),
 (4, 'Demo Store Owner', 'merchant@zkdemo.in', '+91 90000 00002', '$2a$12$Oxy6/jhpllDdPnQTRzFi3ObAhOukEaTNFWqI7nO/Q8eo7Eouz3gDS', 'merchant', 3);
 

@@ -295,6 +295,83 @@ if ($route === 'reset-db') {
     }
 }
 
+// ── Database Schema & Migration SQL Downloads (MySQL & PostgreSQL) ──
+if (preg_match('#^(?:stores/(\d+)/)?schema-sql$#', $route, $sqlMatch) || $route === 'schema-sql') {
+    $rawEngine = strtolower(trim($_GET['engine'] ?? 'mysql'));
+    $engine = ($rawEngine === 'postgres' || $rawEngine === 'postgresql') ? 'postgres' : 'mysql';
+    $action = strtolower(trim($_GET['action'] ?? 'full'));
+
+    $searchDirs = [
+        __DIR__ . '/database',
+        __DIR__ . '/../../database',
+        __DIR__ . '/../../../database',
+        dirname(__DIR__, 2) . '/database',
+        dirname(__DIR__, 3) . '/database'
+    ];
+
+    $targetFile = null;
+    $filename = "zkcommerce-{$engine}-{$action}.sql";
+
+    if ($action === 'password') {
+        $filename = "update-smeram-password.sql";
+        $possibleNames = ['update-smeram-password.sql', 'update-password.sql'];
+    } elseif ($engine === 'postgres') {
+        if ($action === 'migration' || $action === 'patch') {
+            $filename = "migration-postgres.sql";
+            $possibleNames = ['migration-postgres.sql', 'schema-postgres.sql'];
+        } elseif ($action === 'reset') {
+            $filename = "smeram_full_reset_and_seed_postgres.sql";
+            $possibleNames = ['smeram_full_reset_and_seed_postgres.sql', 'schema-postgres.sql'];
+        } else {
+            $filename = "smeram_full_reset_and_seed_postgres.sql";
+            $possibleNames = ['smeram_full_reset_and_seed_postgres.sql', 'schema-postgres.sql', 'schema.sql'];
+        }
+    } else {
+        if ($action === 'migration' || $action === 'patch') {
+            $filename = "migration-mysql.sql";
+            $possibleNames = ['migration-mysql.sql', 'schema-mysql.sql'];
+        } elseif ($action === 'reset') {
+            $filename = "smeram_full_reset_and_seed.sql";
+            $possibleNames = ['smeram_full_reset_and_seed.sql', 'schema-mysql.sql'];
+        } else {
+            $filename = "smeram_full_reset_and_seed.sql";
+            $possibleNames = ['smeram_full_reset_and_seed.sql', 'schema-mysql.sql'];
+        }
+    }
+
+    foreach ($searchDirs as $dir) {
+        foreach ($possibleNames as $pName) {
+            $path = $dir . '/' . $pName;
+            if (is_file($path)) {
+                $targetFile = $path;
+                break 2;
+            }
+        }
+    }
+
+    if (!$targetFile || !is_file($targetFile)) {
+        http_response_code(404);
+        respond(['error' => 'SQL file not found for engine: ' . $engine . ', action: ' . $action]);
+    }
+
+    if (isset($_GET['format']) && $_GET['format'] === 'json') {
+        $content = file_get_contents($targetFile);
+        respond([
+            'success' => true,
+            'engine' => $engine,
+            'action' => $action,
+            'filename' => $filename,
+            'sql' => $content
+        ]);
+    }
+
+    header('Content-Type: text/plain; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . filesize($targetFile));
+    readfile($targetFile);
+    exit;
+}
+
 // ── Health Check ──
 if ($route === 'health') {
     respond([
