@@ -233,7 +233,7 @@ function zkcGetThemeConfig() {
 }
 
 // 1. Check query parameter route
-$route = trim($_GET['route'] ?? '', '/');
+$route = trim(urldecode($_GET['route'] ?? ''), '/');
 // 2. If route is empty (e.g. called via /api/auth/login or /api/orders directly), parse REQUEST_URI
 if ($route === '') {
     $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
@@ -246,6 +246,8 @@ if (strpos($route, '?') !== false) {
     parse_str($qs, $extraGet);
     $_GET = array_merge($_GET, $extraGet);
 }
+// 4. Always urldecode route in case slashes or tokens were percent-encoded (e.g. shipments%2Fsettings)
+$route = trim(urldecode($route), '/');
 
 $method = $_SERVER['REQUEST_METHOD'];
 $raw    = file_get_contents('php://input');

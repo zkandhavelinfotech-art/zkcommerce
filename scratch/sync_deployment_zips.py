@@ -3,6 +3,8 @@ import shutil, os, zipfile
 files_to_sync = [
     ('zkc/api/services/php/api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/api.php'),
     ('zkc/api/services/php/api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api.php'),
+    ('zkc/api/services/php/store_config.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/store_config.php'),
+    ('zkc/api/services/php/store_config.php', 'zkc/deployment/smeram-patch-today-v1.0.15/store_config.php'),
     ('zkc/api/services/php/packaging_api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/packaging_api.php'),
     ('zkc/api/services/php/packaging_api.php', 'zkc/deployment/smeram-patch-today-v1.0.15/packaging_api.php'),
     ('zkc/api/services/php/invoice.php', 'zkc/deployment/smeram-patch-today-v1.0.15/api/services/php/invoice.php'),
@@ -12,6 +14,8 @@ files_to_sync = [
     ('zkc/merchant/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/index.html'),
     ('zkc/merchant/packaging.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/packaging.html'),
     ('zkc/merchant/shipments.html', 'zkc/deployment/smeram-patch-today-v1.0.15/merchant/shipments.html'),
+    ('zkc/clients/smeram/merchant/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/clients/smeram/merchant/index.html'),
+    ('zkc/clients/smeram/merchant/shipments.html', 'zkc/deployment/smeram-patch-today-v1.0.15/clients/smeram/merchant/shipments.html'),
     ('zkc/favicon.ico', 'zkc/deployment/smeram-patch-today-v1.0.15/favicon.ico'),
     ('zkc/store-builder/index.html', 'zkc/deployment/smeram-patch-today-v1.0.15/store-builder/index.html'),
     ('zkc/database/migration-mysql.sql', 'zkc/deployment/smeram-patch-today-v1.0.15/database/migration-mysql.sql'),

@@ -103,7 +103,8 @@ function phpRoute(path, opts) {
   if (!route) route = p.replace(/^\//, '');
   const phpBase = location.pathname.includes('/merchant/') ? '../api.php' : 'api.php';
   const storeParam = storeId ? (q && q.includes('store_id=') ? '' : '&store_id=' + encodeURIComponent(storeId)) : '';
-  return { url: phpBase + '?route=' + encodeURIComponent(route) + (q ? '&' + q : '') + storeParam, opts: { ...opts, body: opts.body || opts.method === 'PUT' ? JSON.stringify(body) : undefined } };
+  const safeRoute = route.split('/').map(encodeURIComponent).join('/');
+  return { url: phpBase + '?route=' + safeRoute + (q ? '&' + q : '') + storeParam, opts: { ...opts, body: opts.body || opts.method === 'PUT' ? JSON.stringify(body) : undefined } };
 }
 async function api(path, opts = {}) {
   let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };

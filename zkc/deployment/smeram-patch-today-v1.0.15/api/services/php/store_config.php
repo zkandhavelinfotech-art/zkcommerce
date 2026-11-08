@@ -49,13 +49,15 @@ if (!defined('GST_RATE')) define('GST_RATE', 5);
 if (!defined('ADMIN_SECRET_KEY')) define('ADMIN_SECRET_KEY', 'ZKCommerce@Admin2026!');
 if (!defined('ADMIN_PASSWORD')) define('ADMIN_PASSWORD', 'demo1234');
 
-// Ekart Logistics & Webhook Configuration
+// Ekart Logistics & Webhook Configuration (OpenAPI 3.1 spec aligned)
 if (!defined('EKART_ENABLED')) define('EKART_ENABLED', true);
 if (!defined('EKART_MODE')) define('EKART_MODE', 'api');
 if (!defined('EKART_CLIENT_ID')) define('EKART_CLIENT_ID', 'EKART_6ad49aef2206ede3ee46d222');
+if (!defined('EKART_MERCHANT_CODE')) define('EKART_MERCHANT_CODE', 'SMERAMx');
 if (!defined('EKART_ALERT_EMAIL')) define('EKART_ALERT_EMAIL', 'smeramindustries@gmail.com');
 if (!defined('EKART_WEBHOOK_SECRET')) define('EKART_WEBHOOK_SECRET', 'ek_sec_984f1801m1z6_smeram');
-if (!defined('EKART_BASE_URL')) define('EKART_BASE_URL', 'https://api.ekartlogistics.com');
-if (!defined('EKART_MERCHANT_CODE')) define('EKART_MERCHANT_CODE', 'SMERAM');
+if (!defined('EKART_BASE_URL')) define('EKART_BASE_URL', 'https://app.elite.ekartlogistics.in');
+if (!defined('EKART_USERNAME')) define('EKART_USERNAME', 'EKART_6ad49aef2206ede3ee46d222');
+if (!defined('EKART_PASSWORD')) define('EKART_PASSWORD', '');
 if (!defined('SHIP_COURIER')) define('SHIP_COURIER', 'Ekart Logistics');
-if (!defined('SHIP_TRACKING_URL')) define('SHIP_TRACKING_URL', 'https://ekartlogistics.com/shipmenttrack/{awb}');
+if (!defined('SHIP_TRACKING_URL')) define('SHIP_TRACKING_URL', 'https://app.elite.ekartlogistics.in/track/{awb}');
