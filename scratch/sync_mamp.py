@@ -31,3 +31,4 @@ for src, dst in files_to_sync:
         print(f"Copied {src} -> {dst}")
 
 print("MAMP sync complete!")
+

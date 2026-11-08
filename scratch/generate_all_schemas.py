@@ -1185,3 +1185,4 @@ with open('zkc/database/migration-mysql.sql', 'w', encoding='utf-8') as f:
     f.write(mysql_migration)
 
 print("Generated zkc/database/migration-mysql.sql")
+

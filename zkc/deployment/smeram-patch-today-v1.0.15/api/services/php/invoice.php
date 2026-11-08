@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: text/html; charset=utf-8');
 /**
  * Smeram Industries — Compliant B2C GST Tax Invoice
  * Billing Entity: Smeram Industries
