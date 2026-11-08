@@ -1079,125 +1079,168 @@ function uploadModalPhotos(input) {
   input.value = '';
 }
 
+// ─── MODAL CONTROLS & EVENT HANDLERS ────────────────────────────
+function toggleModalParam(type) {
+  var chk = document.getElementById('modal-chk-' + type);
+  var box = document.getElementById('modal-box-' + type);
+  if (chk && box) {
+    box.style.display = chk.checked ? 'block' : 'none';
+  }
+}
+
+function closeEditModal() {
+  var modal = document.getElementById('editProductModal');
+  if (modal) {
+    modal.classList.remove('open');
+  }
+  document.body.style.overflow = '';
+}
+
+function handleBackdropClick(event) {
+  if (event && event.target && event.target.id === 'editProductModal') {
+    closeEditModal();
+  }
+}
+
 // ─── OPEN EDIT MODAL (COMPLETE STORE BUILDER + GST SYNC) ─────────
 function openEditModal(prodId) {
-  if (prodId === undefined || prodId === null || prodId === '') {
-    if (PRODUCTS_LIST && PRODUCTS_LIST.length > 0) prodId = PRODUCTS_LIST[0].id;
-  }
+  try {
+    if (prodId === undefined || prodId === null || prodId === '') {
+      if (PRODUCTS_LIST && PRODUCTS_LIST.length > 0) prodId = PRODUCTS_LIST[0].id;
+    }
 
-  // Find by string or number comparison
-  var p = PRODUCTS_LIST.find(function(item) {
-    return String(item.id) === String(prodId) || Number(item.id) === Number(prodId);
-  });
-
-  // If not found, try SKU or slug
-  if (!p && typeof prodId === 'string') {
-    p = PRODUCTS_LIST.find(function(item) {
-      return (item.sku && item.sku.toLowerCase() === prodId.toLowerCase())
-          || (item.slug && item.slug.toLowerCase() === prodId.toLowerCase());
+    // Find by string or number comparison
+    var p = PRODUCTS_LIST.find(function(item) {
+      return String(item.id) === String(prodId) || Number(item.id) === Number(prodId);
     });
-  }
 
-  // If still not found and prodId is 1-based index
-  if (!p) {
-    var idx = parseInt(prodId, 10);
-    if (!isNaN(idx) && idx >= 1 && idx <= PRODUCTS_LIST.length) {
-      p = PRODUCTS_LIST[idx - 1];
+    // If not found, try SKU or slug
+    if (!p && typeof prodId === 'string') {
+      p = PRODUCTS_LIST.find(function(item) {
+        return (item.sku && item.sku.toLowerCase() === prodId.toLowerCase())
+            || (item.slug && item.slug.toLowerCase() === prodId.toLowerCase());
+      });
+    }
+
+    // If still not found and prodId is 1-based index
+    if (!p) {
+      var idx = parseInt(prodId, 10);
+      if (!isNaN(idx) && idx >= 1 && idx <= PRODUCTS_LIST.length) {
+        p = PRODUCTS_LIST[idx - 1];
+      }
+    }
+
+    // Fallback to first product
+    if (!p && PRODUCTS_LIST.length > 0) {
+      p = PRODUCTS_LIST[0];
+    }
+
+    if (!p) {
+      toast.error('Product not found: ' + prodId);
+      return;
+    }
+
+    var setVal = function(id, val) {
+      var el = document.getElementById(id);
+      if (el) el.value = val != null ? val : '';
+    };
+
+    setVal('edit-prod-id', p.id);
+    var titleEl = document.getElementById('productModalTitle');
+    if (titleEl) titleEl.textContent = 'Edit Product and Product details';
+
+    // Section 1: Basic info
+    setVal('modal-pname', p.name || '');
+    setVal('modal-psku', p.sku || ('SM-0' + p.id));
+    setVal('modal-pcat', p.category_name || 'Joint Care & Pain Relief');
+    setVal('modal-pbrand', p.brand || 'Smeram Naturals');
+    setVal('modal-psize', p.product_size || p.size || '');
+    setVal('modal-pnet-value', p.net_quantity_value != null ? p.net_quantity_value : '');
+    setVal('modal-pnet-unit', p.net_quantity_unit || 'ml');
+
+    // Section 2: Pricing, Stock & GST
+    setVal('modal-pprice', p.price || '');
+    setVal('modal-pmrp', p.compare_price != null ? p.compare_price : (p.mrp != null ? p.mrp : ''));
+    var stockVal = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100);
+    setVal('modal-pstock', stockVal);
+    setVal('modal-plow-stock', p.low_stock_threshold != null ? p.low_stock_threshold : 20);
+
+    var rate = (p.gst_rate !== undefined && p.gst_rate !== null) ? p.gst_rate : 5;
+    setVal('modal-pgrate', rate);
+    setVal('modal-phsn', p.hsn_code || (rate == 5 ? '30049013' : '33049990'));
+    setVal('modal-pinstock', String(p.in_stock !== false));
+    setVal('modal-pstatus', p.status || (p.active !== false ? 'published' : 'draft'));
+    var badgeEl = document.getElementById('modal-status-badge');
+    if (badgeEl) badgeEl.textContent = (p.status === 'published' || p.active !== false ? 'Active' : 'Draft');
+
+    // Section 3: Sizes & Variants
+    var rawVars = p.variants;
+    if (typeof rawVars === 'string') {
+      try { rawVars = JSON.parse(rawVars); } catch(e) { rawVars = []; }
+    }
+    if (!Array.isArray(rawVars)) rawVars = [];
+    p.variants = rawVars;
+    renderModalVariantRows(rawVars);
+
+    // Section 4: Marketing & Badges
+    setVal('modal-poffer-text', p.offer_text || p.offer || '');
+    setVal('modal-pshow-offer', p.show_offer === true ? 'show' : p.show_offer === false ? 'hide' : (p.show_offer || ''));
+    setVal('modal-pbadge-text', p.badge_text || '');
+
+    // Section 5: Description & Ingredients
+    setVal('modal-pdesc', p.description || '');
+    setVal('modal-pingredients', p.ingredients || '');
+
+    // Section 6: Additional Parameters
+    var chkNote = document.getElementById('modal-chk-note');
+    var noteVal = (p.additional_note !== undefined && p.additional_note !== null) ? p.additional_note : 'Inclusive of GST and free shipping.';
+    setVal('modal-pnote', noteVal);
+    var notePrev = document.getElementById('modal-note-preview-text');
+    if (notePrev) notePrev.textContent = noteVal || 'Inclusive of GST and free shipping.';
+    if (chkNote) chkNote.checked = (p.additional_note !== null && p.additional_note !== '');
+    toggleModalParam('note');
+
+    var chkInst = document.getElementById('modal-chk-instructions');
+    setVal('modal-pinstructions', p.user_instructions || '');
+    if (chkInst) chkInst.checked = !!(p.user_instructions && p.user_instructions.trim());
+    toggleModalParam('instructions');
+
+    var chkBen = document.getElementById('modal-chk-benefits');
+    setVal('modal-pbenefits', p.benefits || '');
+    if (chkBen) chkBen.checked = !!(p.benefits && p.benefits.trim());
+    toggleModalParam('benefits');
+
+    // Section 7: Photos
+    var imgs = p.images || [];
+    if (typeof imgs === 'string') {
+      try { imgs = JSON.parse(imgs); } catch(e) { imgs = [imgs]; }
+    }
+    if (!Array.isArray(imgs)) imgs = imgs ? [imgs] : [];
+    p.images = imgs;
+    setVal('modal-pimages', imgs.join('\n'));
+    renderModalPhotoThumbnails();
+
+    // Full page edit link
+    var fullLink = document.getElementById('modal-full-edit-link');
+    if (fullLink) fullLink.href = 'products-add.html?id=' + p.id;
+
+    // Live GST breakdown update
+    if (typeof updateModalGstBreakdown === 'function') updateModalGstBreakdown();
+
+    // Open modal
+    var modal = document.getElementById('editProductModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  } catch (err) {
+    console.error('Error opening product modal:', err);
+    var modal = document.getElementById('editProductModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
   }
-
-  // Fallback to first product
-  if (!p && PRODUCTS_LIST.length > 0) {
-    p = PRODUCTS_LIST[0];
-  }
-
-  if (!p) {
-    toast.error('Product not found: ' + prodId);
-    return;
-  }
-
-  document.getElementById('edit-prod-id').value = p.id;
-  document.getElementById('productModalTitle').textContent = 'Edit Product and Product details';
-
-  // Section 1: Basic info
-  document.getElementById('modal-pname').value       = p.name || '';
-  document.getElementById('modal-psku').value        = p.sku || ('SM-0' + p.id);
-  document.getElementById('modal-pcat').value        = p.category_name || 'Joint Care & Pain Relief';
-  document.getElementById('modal-pbrand').value      = p.brand || 'Smeram Naturals';
-  document.getElementById('modal-psize').value       = p.product_size || p.size || '';
-  document.getElementById('modal-pnet-value').value  = p.net_quantity_value != null ? p.net_quantity_value : '';
-  document.getElementById('modal-pnet-unit').value   = p.net_quantity_unit || 'ml';
-
-  // Section 2: Pricing, Stock & GST
-  document.getElementById('modal-pprice').value      = p.price || '';
-  document.getElementById('modal-pmrp').value        = (p.compare_price != null ? p.compare_price : (p.mrp != null ? p.mrp : ''));
-  var stockVal = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100);
-  document.getElementById('modal-pstock').value      = stockVal;
-  document.getElementById('modal-plow-stock').value  = p.low_stock_threshold != null ? p.low_stock_threshold : 20;
-
-  var rate = (p.gst_rate !== undefined && p.gst_rate !== null) ? p.gst_rate : 5;
-  document.getElementById('modal-pgrate').value      = rate;
-  document.getElementById('modal-phsn').value        = p.hsn_code || (rate == 5 ? '30049013' : '33049990');
-  document.getElementById('modal-pinstock').value    = String(p.in_stock !== false);
-  document.getElementById('modal-pstatus').value    = p.status || (p.active !== false ? 'published' : 'draft');
-  document.getElementById('modal-status-badge').textContent = (p.status === 'published' || p.active !== false ? 'Active' : 'Draft');
-
-  // Section 3: Sizes & Variants
-  var rawVars = p.variants;
-  if (typeof rawVars === 'string') {
-    try { rawVars = JSON.parse(rawVars); } catch(e) { rawVars = []; }
-  }
-  if (!Array.isArray(rawVars)) rawVars = [];
-  p.variants = rawVars;
-  renderModalVariantRows(rawVars);
-
-  // Section 4: Marketing & Badges
-  document.getElementById('modal-poffer-text').value  = p.offer_text || p.offer || '';
-  document.getElementById('modal-pshow-offer').value  = p.show_offer === true ? 'show' : p.show_offer === false ? 'hide' : (p.show_offer || '');
-  document.getElementById('modal-pbadge-text').value  = p.badge_text || '';
-
-  // Section 5: Description & Ingredients
-  document.getElementById('modal-pdesc').value        = p.description || '';
-  document.getElementById('modal-pingredients').value = p.ingredients || '';
-
-  // Section 6: Additional Parameters
-  var chkNote = document.getElementById('modal-chk-note');
-  var noteVal = (p.additional_note !== undefined && p.additional_note !== null) ? p.additional_note : 'Inclusive of GST and free shipping.';
-  document.getElementById('modal-pnote').value = noteVal;
-  document.getElementById('modal-note-preview-text').textContent = noteVal || 'Inclusive of GST and free shipping.';
-  chkNote.checked = (p.additional_note !== null && p.additional_note !== '');
-  toggleModalParam('note');
-
-  var chkInst = document.getElementById('modal-chk-instructions');
-  document.getElementById('modal-pinstructions').value = p.user_instructions || '';
-  chkInst.checked = !!(p.user_instructions && p.user_instructions.trim());
-  toggleModalParam('instructions');
-
-  var chkBen = document.getElementById('modal-chk-benefits');
-  document.getElementById('modal-pbenefits').value = p.benefits || '';
-  chkBen.checked = !!(p.benefits && p.benefits.trim());
-  toggleModalParam('benefits');
-
-  // Section 7: Photos
-  var imgs = p.images || [];
-  if (typeof imgs === 'string') {
-    try { imgs = JSON.parse(imgs); } catch(e) { imgs = [imgs]; }
-  }
-  if (!Array.isArray(imgs)) imgs = imgs ? [imgs] : [];
-  p.images = imgs;
-  document.getElementById('modal-pimages').value = imgs.join('\n');
-  renderModalPhotoThumbnails();
-
-  // Full page edit link
-  document.getElementById('modal-full-edit-link').href = 'products-add.html?id=' + p.id;
-
-  // Live GST breakdown update
-  updateModalGstBreakdown();
-
-  // Open modal
-  var modal = document.getElementById('editProductModal');
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
 }
 
 // ─── SAVE PRODUCT FROM MODAL (STORE BUILDER & API COMPATIBLE) ───
