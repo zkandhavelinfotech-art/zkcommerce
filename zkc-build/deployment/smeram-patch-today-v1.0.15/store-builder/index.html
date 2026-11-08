@@ -892,18 +892,86 @@ function updateSbGst() {
   if (fEl) fEl.innerHTML = 'Formula: Taxable = ' + p + ' × 100 / ' + (100 + r) + ' = <strong>₹' + taxable.toFixed(2) + '</strong> (GST: <strong>₹' + gst.toFixed(2) + '</strong>)';
 }
 
-function openProduct(p){try{editingProduct=p||null;const f=document.getElementById('productForm');if(!f)return;f.reset();if(typeof renderCategories==='function')renderCategories();if(f.elements.id)f.elements.id.value=p?.id||'';f.elements.name.value=p?.name||'';f.elements.sku.value=p?.sku||'';f.elements.price.value=p?.price!==undefined?p.price:'';f.elements.compare_price.value=(p?.compare_price!==undefined&&p?.compare_price!==null)?p.compare_price:'';f.elements.product_size.value=p?.product_size||p?.size||'';if(f.elements.gst_rate)f.elements.gst_rate.value=p?.gst_rate!=null?p.gst_rate:5;if(f.elements.hsn_code)f.elements.hsn_code.value=p?.hsn_code||(p?.gst_rate==18?'33049990':'30049013');updateSbGst();if(f.elements.quantity)f.elements.quantity.value=(p?.quantity!==undefined&&p?.quantity!==null)?p.quantity:100;f.elements.net_quantity_value.value=p?.net_quantity_value!=null?Number(p.net_quantity_value):'';f.elements.net_quantity_unit.value=p?.net_quantity_unit||'';f.elements.low_stock_threshold.value=p?.low_stock_threshold!=null?p.low_stock_threshold:'';renderVariantRows((p?.variants||[]).filter(v=>v&&typeof v==='object'&&v.id));f.elements.offer_text.value=p?.offer_text||p?.offer||'';f.elements.show_offer.value=p?.show_offer===true?'show':p?.show_offer===false?'hide':'';f.elements.description.value=p?.description||'';f.elements.category_id.value=p?.category_id||'';f.elements.images.value=(p?.images||[]).join('\n');f.elements.badge_text.value=p?.badge_text||'';f.elements.ingredients.value=p?.ingredients||'';renderProductPhotos();f.elements.in_stock.value=String(p?.in_stock!==false);f.elements.active.value=p?.active===false?'false':p?.unlisted?'hidden':'true';
-const isHairOil=(p?.name&&/hair\s*oil/i.test(p.name))||(store?.slug&&/smeram/i.test(store.slug))||(p?.slug&&/hair-oil/i.test(p.slug));
-const chkNote=document.getElementById('chk_additional_note'),inputNote=document.getElementById('input_additional_note'),wrapNote=document.getElementById('wrap_additional_note'),previewBadge=document.getElementById('preview_additional_note_badge'),cardNote=document.getElementById('card_additional_note');
-const defaultNote='Inclusive of GST and free shipping.';const noteVal=(p&&p.additional_note!==undefined&&p.additional_note!==null)?p.additional_note:defaultNote;inputNote.value=noteVal||defaultNote;previewBadge.textContent=noteVal||defaultNote;const hasNote=p?(p.additional_note!==null&&p.additional_note!==''):true;chkNote.checked=hasNote;wrapNote.style.display=hasNote?'block':'none';if(cardNote)cardNote.classList.toggle('checked',hasNote);
-const chkInst=document.getElementById('chk_user_instructions'),inputInst=document.getElementById('input_user_instructions'),wrapInst=document.getElementById('wrap_user_instructions'),cardInst=document.getElementById('card_user_instructions');
-let defaultInst=isHairOil?'Take 5-10 ml of Smeram Herbal Hair Oil. Warm gently between palms and apply directly to scalp and roots. Massage gently with circular fingertip motions for 10 minutes to stimulate blood circulation. Leave on for at least 1-2 hours or overnight for deep root nourishment. Wash off thoroughly with a mild herbal shampoo. Recommended 3 times weekly.':'';
-const instVal=p?.user_instructions||(isHairOil?defaultInst:'');inputInst.value=instVal;const hasInst=!!(instVal&&instVal.trim());chkInst.checked=hasInst;wrapInst.style.display=hasInst?'block':'none';if(cardInst)cardInst.classList.toggle('checked',hasInst);
-const chkBen=document.getElementById('chk_benefits'),inputBen=document.getElementById('input_benefits'),wrapBen=document.getElementById('wrap_benefits'),cardBen=document.getElementById('card_benefits');
-let defaultBen=isHairOil?'• Stimulates healthy hair growth from dormant follicles\n• 100% Dandruff control & soothing itchy scalp\n• Reduces hair fall & strengthens roots from base\n• Enriched with Brahmi, Amla, Bhringraj & 12 cold-infused herbs':'';
-const benVal=p?.benefits||(isHairOil?defaultBen:'');inputBen.value=benVal;const hasBen=!!(benVal&&benVal.trim());chkBen.checked=hasBen;wrapBen.style.display=hasBen?'block':'none';if(cardBen)cardBen.classList.toggle('checked',hasBen);
-if(!f.elements.description.value&&isHairOil){f.elements.description.value='- Double Boiled & Double Infused\n- Hair Growth Promoter from Roots\n- 100% Dandruff Control & Scalp Cooling\n- 100% Natural, Vegan & Cruelty-Free\n\nCrafted according to the traditional Sneha - Kalka - Drava method. Fresh botanical herbs are slowly infused into cold-pressed virgin coconut oil over 72 hours to preserve potent phytochemicals.'}
-const titleEl=document.getElementById('productModalTitle');if(titleEl)titleEl.textContent=p?'Edit Product and Product details':'Add Product';const m=document.getElementById('productModal');if(m)m.classList.add('open')}catch(err){console.error('Error in openProduct:',err);const m=document.getElementById('productModal');if(m)m.classList.add('open')}}
+function openProduct(p){
+  try {
+    editingProduct=p||null;
+    const f=document.getElementById('productForm');
+    if(!f)return;
+    f.reset();
+    if(typeof renderCategories==='function')renderCategories();
+    if(f.elements.id)f.elements.id.value=p?.id||'';
+    f.elements.name.value=p?.name||'';
+    f.elements.sku.value=p?.sku||'';
+    f.elements.price.value=p?.price!==undefined?p.price:'';
+    f.elements.compare_price.value=(p?.compare_price!==undefined&&p?.compare_price!==null)?p.compare_price:'';
+    f.elements.product_size.value=p?.product_size||p?.size||'';
+    if(f.elements.gst_rate)f.elements.gst_rate.value=p?.gst_rate!=null?p.gst_rate:5;
+    if(f.elements.hsn_code)f.elements.hsn_code.value=p?.hsn_code||(p?.gst_rate==18?'33049990':'30049013');
+    updateSbGst();
+    if(f.elements.quantity)f.elements.quantity.value=(p?.quantity!==undefined&&p?.quantity!==null)?p.quantity:100;
+    f.elements.net_quantity_value.value=p?.net_quantity_value!=null?Number(p.net_quantity_value):'';
+    f.elements.net_quantity_unit.value=p?.net_quantity_unit||'';
+    f.elements.low_stock_threshold.value=p?.low_stock_threshold!=null?p.low_stock_threshold:'';
+
+    // Safely parse variants if string
+    let vars = p?.variants;
+    if (typeof vars === 'string') {
+      try { vars = JSON.parse(vars); } catch(e) { vars = []; }
+    }
+    if (!Array.isArray(vars)) vars = [];
+    renderVariantRows(vars.filter(v=>v&&typeof v==='object'&&v.id));
+
+    f.elements.offer_text.value=p?.offer_text||p?.offer||'';
+    f.elements.show_offer.value=p?.show_offer===true?'show':p?.show_offer===false?'hide':'';
+    f.elements.description.value=p?.description||'';
+    f.elements.category_id.value=p?.category_id||'';
+
+    // Safely parse images if string
+    let imgs = p?.images;
+    if (typeof imgs === 'string') {
+      try { imgs = JSON.parse(imgs); } catch(e) { imgs = [imgs]; }
+    }
+    if (!Array.isArray(imgs)) imgs = imgs ? [imgs] : [];
+    f.elements.images.value=imgs.join('\n');
+
+    f.elements.badge_text.value=p?.badge_text||'';
+    f.elements.ingredients.value=p?.ingredients||'';
+    renderProductPhotos();
+    f.elements.in_stock.value=String(p?.in_stock!==false);
+    f.elements.active.value=p?.active===false?'false':p?.unlisted?'hidden':'true';
+    const isHairOil=(p?.name&&/hair\s*oil/i.test(p.name))||(store?.slug&&/smeram/i.test(store.slug))||(p?.slug&&/hair-oil/i.test(p.slug));
+    const chkNote=document.getElementById('chk_additional_note'),inputNote=document.getElementById('input_additional_note'),wrapNote=document.getElementById('wrap_additional_note'),previewBadge=document.getElementById('preview_additional_note_badge'),cardNote=document.getElementById('card_additional_note');
+    const defaultNote='Inclusive of GST and free shipping.';const noteVal=(p&&p.additional_note!==undefined&&p.additional_note!==null)?p.additional_note:defaultNote;
+    if (inputNote) inputNote.value=noteVal||defaultNote;
+    if (previewBadge) previewBadge.textContent=noteVal||defaultNote;
+    const hasNote=p?(p.additional_note!==null&&p.additional_note!==''):true;
+    if (chkNote) chkNote.checked=hasNote;
+    if (wrapNote) wrapNote.style.display=hasNote?'block':'none';
+    if (cardNote) cardNote.classList.toggle('checked',hasNote);
+    const chkInst=document.getElementById('chk_user_instructions'),inputInst=document.getElementById('input_user_instructions'),wrapInst=document.getElementById('wrap_user_instructions'),cardInst=document.getElementById('card_user_instructions');
+    let defaultInst=isHairOil?'Take 5-10 ml of Smeram Herbal Hair Oil. Warm gently between palms and apply directly to scalp and roots. Massage gently with circular fingertip motions for 10 minutes to stimulate blood circulation. Leave on for at least 1-2 hours or overnight for deep root nourishment. Wash off thoroughly with a mild herbal shampoo. Recommended 3 times weekly.':'';
+    const instVal=p?.user_instructions||(isHairOil?defaultInst:'');
+    if (inputInst) inputInst.value=instVal;
+    const hasInst=!!(instVal&&instVal.trim());
+    if (chkInst) chkInst.checked=hasInst;
+    if (wrapInst) wrapInst.style.display=hasInst?'block':'none';
+    if (cardInst) cardInst.classList.toggle('checked',hasInst);
+    const chkBen=document.getElementById('chk_benefits'),inputBen=document.getElementById('input_benefits'),wrapBen=document.getElementById('wrap_benefits'),cardBen=document.getElementById('card_benefits');
+    let defaultBen=isHairOil?'• Stimulates healthy hair growth from dormant follicles\n• 100% Dandruff control & soothing itchy scalp\n• Reduces hair fall & strengthens roots from base\n• Enriched with Brahmi, Amla, Bhringraj & 12 cold-infused herbs':'';
+    const benVal=p?.benefits||(isHairOil?defaultBen:'');
+    if (inputBen) inputBen.value=benVal;
+    const hasBen=!!(benVal&&benVal.trim());
+    if (chkBen) chkBen.checked=hasBen;
+    if (wrapBen) wrapBen.style.display=hasBen?'block':'none';
+    if (cardBen) cardBen.classList.toggle('checked',hasBen);
+    if(!f.elements.description.value&&isHairOil){f.elements.description.value='- Double Boiled & Double Infused\n- Hair Growth Promoter from Roots\n- 100% Dandruff Control & Scalp Cooling\n- 100% Natural, Vegan & Cruelty-Free\n\nCrafted according to the traditional Sneha - Kalka - Drava method. Fresh botanical herbs are slowly infused into cold-pressed virgin coconut oil over 72 hours to preserve potent phytochemicals.'}
+    const titleEl=document.getElementById('productModalTitle');if(titleEl)titleEl.textContent=p?'Edit Product and Product details':'Add Product';
+    const m=document.getElementById('productModal');if(m)m.classList.add('open');
+  } catch(err) {
+    console.error('Error in openProduct:',err);
+    const m=document.getElementById('productModal');if(m)m.classList.add('open');
+  }
+}
 function productPhotoList(){return document.getElementById('productForm').elements.images.value.split(/\n/).map(x=>x.trim()).filter(x=>/^https:\/\//i.test(x)||/^\/assets\/[a-z0-9._\/-]+$/i.test(x))}
 function renderProductPhotos(){const host=document.getElementById('productPhotoPreview');host.innerHTML=productPhotoList().map((u,i)=>'<span style="position:relative"><img src="'+esc(u)+'" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #c9cccf"><button type="button" data-remove-photo="'+i+'" title="Remove" style="position:absolute;top:-6px;right:-6px;border:0;border-radius:50%;width:20px;height:20px;background:#d72c0d;color:#fff;cursor:pointer">×</button></span>').join('');host.querySelectorAll('[data-remove-photo]').forEach(b=>b.onclick=()=>{const list=productPhotoList();list.splice(Number(b.dataset.removePhoto),1);document.getElementById('productForm').elements.images.value=list.join('\n');renderProductPhotos()})}
 async function uploadProductPhotos(input){const files=Array.from(input.files||[]).slice(0,10);if(!files.length)return;const box=document.getElementById('productForm').elements.images;try{for(const file of files){const form=new FormData();form.append('file',file);form.append('scope','products');const d=await api('/upload/'+store.id,{method:'POST',body:form});box.value=[...productPhotoList(),d.url].join('\n');renderProductPhotos()}toast('Photos uploaded. Save the product to keep them.')}catch(e){toast(e.message,true)}input.value=''}

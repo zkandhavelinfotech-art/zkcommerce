@@ -199,14 +199,25 @@ async function loadProductForEdit(id) {
   try {
     var r = await fetch(API_BASE + '/products/' + id, {
       headers: { 'Authorization': 'Bearer ' + token }
-    });
-    var d = await r.json();
+    }).catch(function() { return null; });
+
+    if (!r || !r.ok) {
+      r = await fetch('../api.php?route=' + encodeURIComponent('products/' + id), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(function() { return null; })
+      || await fetch('api.php?route=' + encodeURIComponent('products/' + id), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(function() { return null; });
+    }
+
+    if (!r || !r.ok) return;
+    var d = await r.json().catch(function() { return {}; });
     if (d.product) {
       var p = d.product;
       setVal('pname',  p.name);
       setVal('pdesc',  p.description || '');
       setVal('sprice', p.price);
-      setVal('pmrp',   p.mrp || '');
+      setVal('pmrp',   p.mrp || p.compare_price || '');
       setVal('pcost',  p.cost_price || '');
       setVal('pstock', (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock !== undefined ? p.stock : 100));
       setVal('grate',  p.gst_rate || '12');
@@ -302,8 +313,23 @@ async function doPublish(status) {
       method:  method,
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body:    JSON.stringify(payload)
-    });
-    var d = await r.json();
+    }).catch(function() { return null; });
+
+    if (!r || !r.ok) {
+      var phpRoute = EDIT_ID ? ('products/' + EDIT_ID) : 'products';
+      r = await fetch('../api.php?route=' + encodeURIComponent(phpRoute), {
+        method:  method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body:    JSON.stringify(payload)
+      }).catch(function() { return null; })
+      || await fetch('api.php?route=' + encodeURIComponent(phpRoute), {
+        method:  method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body:    JSON.stringify(payload)
+      }).catch(function() { return null; });
+    }
+
+    var d = r ? await r.json().catch(function() { return {}; }) : {};
     if (d.product) {
       toast.success(EDIT_ID ? 'Product updated!' : (status === 'draft' ? 'Draft saved!' : 'Product published!'));
       setTimeout(function(){ window.location.href = 'products.html'; }, 1200);
@@ -311,7 +337,7 @@ async function doPublish(status) {
       toast.error(d.error || d.message || 'Failed to save product');
     }
   } catch(e) {
-    toast.error('Server error — is npm run dev running?');
+    toast.error('Server error — please try again');
   }
   btnLoading(btn, false);
 }

@@ -1143,7 +1143,13 @@ function openEditModal(prodId) {
   document.getElementById('modal-status-badge').textContent = (p.status === 'published' || p.active !== false ? 'Active' : 'Draft');
 
   // Section 3: Sizes & Variants
-  renderModalVariantRows(p.variants || []);
+  var rawVars = p.variants;
+  if (typeof rawVars === 'string') {
+    try { rawVars = JSON.parse(rawVars); } catch(e) { rawVars = []; }
+  }
+  if (!Array.isArray(rawVars)) rawVars = [];
+  p.variants = rawVars;
+  renderModalVariantRows(rawVars);
 
   // Section 4: Marketing & Badges
   document.getElementById('modal-poffer-text').value  = p.offer_text || p.offer || '';
@@ -1174,7 +1180,12 @@ function openEditModal(prodId) {
 
   // Section 7: Photos
   var imgs = p.images || [];
-  document.getElementById('modal-pimages').value = Array.isArray(imgs) ? imgs.join('\n') : imgs;
+  if (typeof imgs === 'string') {
+    try { imgs = JSON.parse(imgs); } catch(e) { imgs = [imgs]; }
+  }
+  if (!Array.isArray(imgs)) imgs = imgs ? [imgs] : [];
+  p.images = imgs;
+  document.getElementById('modal-pimages').value = imgs.join('\n');
   renderModalPhotoThumbnails();
 
   // Full page edit link
@@ -1293,10 +1304,27 @@ async function saveProductFromModal() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify(payload)
-      });
-      var data = await r.json();
-      if (data.product) {
-        Object.assign(p, data.product);
+      }).catch(function() { return null; });
+
+      if (!r || !r.ok) {
+        // Fallback to PHP endpoint if Node is not running
+        r = await fetch('../api.php?route=' + encodeURIComponent('products/' + id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        }).catch(function() { return null; })
+        || await fetch('api.php?route=' + encodeURIComponent('products/' + id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        }).catch(function() { return null; });
+      }
+
+      if (r && r.ok) {
+        var data = await r.json().catch(function() { return {}; });
+        if (data.product) {
+          Object.assign(p, data.product);
+        }
       }
     } catch(e) { console.warn('API update failed, saving locally:', e); }
   }
@@ -1347,11 +1375,23 @@ async function loadProductsFromAPI() {
   try {
     var r = await fetch(qUrl, {
       headers: { 'Authorization': 'Bearer ' + token }
-    });
-    var d = await r.json();
-    if (d.products && d.products.length) {
-      PRODUCTS_LIST = d.products;
-      renderProductsTable(PRODUCTS_LIST);
+    }).catch(function() { return null; });
+
+    if (!r || !r.ok) {
+      r = await fetch('../api.php?route=products' + (currentStoreId ? '&store_id=' + encodeURIComponent(currentStoreId) : ''), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(function() { return null; })
+      || await fetch('api.php?route=products' + (currentStoreId ? '&store_id=' + encodeURIComponent(currentStoreId) : ''), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(function() { return null; });
+    }
+
+    if (r && r.ok) {
+      var d = await r.json();
+      if (d.products && d.products.length) {
+        PRODUCTS_LIST = d.products;
+        renderProductsTable(PRODUCTS_LIST);
+      }
     }
   } catch(e) {
     console.warn('API products load error:', e);

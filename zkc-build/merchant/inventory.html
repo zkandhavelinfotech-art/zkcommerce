@@ -99,22 +99,35 @@ async function loadInventory() {
   try {
     var r = await fetch(API_BASE + '/products?limit=100', {
       headers: { 'Authorization': 'Bearer ' + token }
-    });
-    var data = await r.json();
-    var tbody = document.getElementById('inventory-tbody');
-    if (!tbody || !data.products) return;
+    }).catch(function() { return null; });
 
-    var products = data.products;
+    if (!r || !r.ok) {
+      r = await fetch('../api.php?route=products&limit=100', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(function() { return null; })
+      || await fetch('api.php?route=products&limit=100', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(function() { return null; });
+    }
+
+    if (!r || !r.ok) return;
+    var data = await r.json().catch(function() { return {}; });
+    var tbody = document.getElementById('inventory-tbody');
+    var rawProducts = data.products || data.inventory || (Array.isArray(data) ? data : []);
+    if (!tbody || !Array.isArray(rawProducts)) return;
+
+    var products = rawProducts;
     tbody.innerHTML = products.map(function(p) {
       var currentStock = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock || 0);
-      var stockColor = currentStock === 0 ? '#DC2626' : (currentStock <= p.low_stock_alert ? '#D97706' : '#16A34A');
-      var badge = currentStock === 0 ? 'Out of stock' : (currentStock <= p.low_stock_alert ? 'Low stock' : 'In stock');
-      var badgeClass = currentStock === 0 ? 'badge-red' : (currentStock <= p.low_stock_alert ? 'badge-amber' : 'badge-green');
+      var threshold = p.low_stock_threshold || p.low_stock_alert || 15;
+      var stockColor = currentStock === 0 ? '#DC2626' : (currentStock <= threshold ? '#D97706' : '#16A34A');
+      var badge = currentStock === 0 ? 'Out of stock' : (currentStock <= threshold ? 'Low stock' : 'In stock');
+      var badgeClass = currentStock === 0 ? 'badge-red' : (currentStock <= threshold ? 'badge-amber' : 'badge-green');
       return '<tr>'
         + '<td class="col-primary">' + p.name + '</td>'
         + '<td>' + (p.sku || '—') + '</td>'
         + '<td><span style="font-size:18px;font-weight:800;font-family:var(--font-display);color:' + stockColor + '">' + currentStock + ' units</span></td>'
-        + '<td>' + p.low_stock_alert + '</td>'
+        + '<td>' + threshold + '</td>'
         + '<td><span class="badge ' + badgeClass + '">' + badge + '</span></td>'
         + '<td><div style="display:flex;gap:6px;align-items:center">'
         + '<input type="number" id="stock-' + p.id + '" value="' + currentStock + '" style="width:75px;padding:5px 8px;border:1px solid var(--zk-border);border-radius:6px;font-size:13px;font-weight:700" min="0">'
@@ -123,9 +136,10 @@ async function loadInventory() {
         + '</tr>';
     }).join('');
 
-    var lowCount = products.filter(function(p){ 
+    var lowCount = (products || []).filter(function(p){ 
       var s = (p.quantity !== undefined && p.quantity !== null) ? p.quantity : (p.stock || 0);
-      return s <= p.low_stock_alert && p.status==='published'; 
+      var threshold = p.low_stock_threshold || p.low_stock_alert || 15;
+      return s <= threshold && (p.status === 'published' || p.active !== false); 
     }).length;
     var lsEl = document.getElementById('low-stock-count');
     if (lsEl) lsEl.textContent = lowCount;
@@ -141,10 +155,21 @@ async function updateStock(productId) {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ stock: newStock, quantity: newStock })
-    });
-    var data = await r.json();
-    if (data.product) { toast.success('Stock quantity updated to ' + newStock + ' units'); }
-    else toast.error(data.error || 'Update failed');
+    }).catch(function() { return null; });
+
+    if (!r || !r.ok) {
+      r = await fetch('../api.php?route=' + encodeURIComponent('inventory/' + productId + '/stock'), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ quantity: newStock })
+      }).catch(function() { return null; });
+    }
+
+    if (r && r.ok) {
+      toast.success('Stock quantity updated to ' + newStock + ' units');
+    } else {
+      toast.error('Update failed');
+    }
   } catch(e) { toast.error('Server error'); }
 }
 

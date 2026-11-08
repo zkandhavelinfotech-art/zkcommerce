@@ -484,7 +484,7 @@ if ($route === 'auth/login' && $method === 'POST') {
 }
 
 // For routes requiring the database, verify connection
-$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'webhooks/ekart', 'shipments/ekart/webhook', 'categories'];
+$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'webhooks/ekart', 'shipments/ekart/webhook', 'categories', 'inventory', 'inventory/movements', 'inventory/settings'];
 $isProductRoute = ($route === 'products' || preg_match('#^products/#', $route) || preg_match('#^stores/(\\d+)/products#', $route));
 $isStoreRoute = ($route === 'stores' || preg_match('#^stores/(\\d+)#', $route) || $route === 'categories' || preg_match('#^stores/(\\d+)/categories#', $route));
 $isInvoiceRoute = ($route === 'invoices' || preg_match('#^invoices/#', $route));
@@ -580,18 +580,55 @@ function zkcGetCategories($pdo, $storeId = STORE_ID) {
     ];
 }
 
-function zkcGetProducts($pdo, $storeId = STORE_ID) {
+function zkcGetProducts($pdo, $storeId = null) {
+    if (!$storeId) {
+        $storeId = isset($_GET['store_id']) && (int)$_GET['store_id'] > 0 ? (int)$_GET['store_id'] : (defined('STORE_ID') ? STORE_ID : 2);
+    }
     if ($pdo) {
         try {
-            $stmt = $pdo->prepare("SELECT p.*, c.name AS category_name FROM `products` p LEFT JOIN `categories` c ON c.id = p.category_id WHERE p.store_id = ? ORDER BY p.created_at DESC");
+            $stmt = $pdo->prepare("SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id WHERE p.store_id = ? ORDER BY p.id ASC");
             $stmt->execute([$storeId]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
             if (!empty($rows)) {
-                return array_map(function($r) {
+                return array_map(function($r) use ($storeId) {
                     $r['id'] = (int)$r['id'];
+                    $r['store_id'] = (int)($r['store_id'] ?? $storeId);
                     $r['price'] = (float)$r['price'];
+                    $r['compare_price'] = isset($r['compare_price']) && $r['compare_price'] !== null && $r['compare_price'] !== '' ? (float)$r['compare_price'] : null;
+                    $r['mrp'] = $r['compare_price'];
+                    $r['quantity'] = isset($r['quantity']) && $r['quantity'] !== null ? (int)$r['quantity'] : 100;
+                    $r['stock'] = $r['quantity'];
+                    $r['gst_rate'] = isset($r['gst_rate']) && $r['gst_rate'] !== null ? (float)$r['gst_rate'] : 5.0;
+                    $r['low_stock_threshold'] = isset($r['low_stock_threshold']) && $r['low_stock_threshold'] !== null ? (int)$r['low_stock_threshold'] : 15;
                     $r['in_stock'] = (bool)($r['in_stock'] ?? 1);
                     $r['active'] = (bool)($r['active'] ?? 1);
+                    $r['unlisted'] = isset($r['unlisted']) ? (bool)$r['unlisted'] : false;
+                    $r['category_id'] = isset($r['category_id']) && $r['category_id'] !== null ? (int)$r['category_id'] : null;
+                    $r['net_quantity_value'] = isset($r['net_quantity_value']) && $r['net_quantity_value'] !== null && $r['net_quantity_value'] !== '' ? (float)$r['net_quantity_value'] : null;
+
+                    // Safely decode JSON variants into a clean PHP array
+                    if (isset($r['variants'])) {
+                        if (is_string($r['variants'])) {
+                            $decoded = json_decode($r['variants'], true);
+                            $r['variants'] = is_array($decoded) ? $decoded : [];
+                        } elseif (!is_array($r['variants'])) {
+                            $r['variants'] = [];
+                        }
+                    } else {
+                        $r['variants'] = [];
+                    }
+
+                    // Safely decode JSON images into a clean PHP array
+                    if (isset($r['images'])) {
+                        if (is_string($r['images'])) {
+                            $decoded = json_decode($r['images'], true);
+                            $r['images'] = is_array($decoded) ? $decoded : [];
+                        } elseif (!is_array($r['images'])) {
+                            $r['images'] = [];
+                        }
+                    } else {
+                        $r['images'] = [];
+                    }
                     return $r;
                 }, $rows);
             }
@@ -901,114 +938,231 @@ if (preg_match('#^categories/(\d+)$#', $route, $cm) && $method === 'DELETE') {
 }
 
 // ── Products CRUD & Inclusive GST Calculations ───────────────────
-if (($route === 'products' || preg_match('#^stores/(\\d+)/products$#', $route)) && $method === 'GET') {
-    $storeId = STORE_ID;
-    if (isset($_GET['store_id'])) $storeId = (int)$_GET['store_id'];
-    elseif (preg_match('#^stores/(\\d+)/products$#', $route, $pm)) $storeId = (int)$pm[1];
+$isProductCrudRoute = preg_match('#^(?:stores/(\d+)/)?products(?:/(\d+))?$#', $route, $pcm);
+if ($isProductCrudRoute) {
+    $routeStoreId = !empty($pcm[1]) ? (int)$pcm[1] : (isset($_GET['store_id']) ? (int)$_GET['store_id'] : (isset($body['store_id']) ? (int)$body['store_id'] : (defined('STORE_ID') ? STORE_ID : 2)));
+    $prodId = !empty($pcm[2]) ? (int)$pcm[2] : (!empty($body['id']) ? (int)$body['id'] : null);
 
-    $products = zkcGetProducts($pdo, $storeId);
-    foreach ($products as &$p) {
-        $rate = (float)($p['gst_rate'] ?? 5.0);
-        $price = (float)($p['price'] ?? 0);
+    if ($method === 'GET') {
+        if ($prodId) {
+            $products = zkcGetProducts($pdo, $routeStoreId);
+            $found = null;
+            foreach ($products as $p) {
+                if ((int)$p['id'] === $prodId) { $found = $p; break; }
+            }
+            if (!$found) respond(['error' => 'Product not found'], 404);
+            $rate = (float)($found['gst_rate'] ?? 5.0);
+            $price = (float)($found['price'] ?? 0);
+            $taxable = round($price * 100.0 / (100.0 + $rate), 2);
+            $gstAmt = round($price - $taxable, 2);
+            $found['taxable_value'] = $taxable;
+            $found['gst_amount'] = $gstAmt;
+            $found['cgst_amount'] = round($gstAmt / 2.0, 2);
+            $found['sgst_amount'] = round($gstAmt - round($gstAmt / 2.0, 2), 2);
+            respond(['product' => $found]);
+        } else {
+            $products = zkcGetProducts($pdo, $routeStoreId);
+            foreach ($products as &$p) {
+                $rate = (float)($p['gst_rate'] ?? 5.0);
+                $price = (float)($p['price'] ?? 0);
+                $taxable = round($price * 100.0 / (100.0 + $rate), 2);
+                $gstAmt = round($price - $taxable, 2);
+                $p['taxable_value'] = $taxable;
+                $p['gst_amount'] = $gstAmt;
+                $p['cgst_amount'] = round($gstAmt / 2.0, 2);
+                $p['sgst_amount'] = round($gstAmt - round($gstAmt / 2.0, 2), 2);
+                if (empty($p['hsn_code'])) {
+                    $p['hsn_code'] = ($rate == 5.0 ? '30049013' : '33049990');
+                }
+                $p['stock'] = (int)($p['quantity'] ?? ($p['stock'] ?? 100));
+            }
+            respond(['products' => $products, 'total' => count($products)]);
+        }
+    }
+
+    if ($method === 'PUT' || $method === 'POST') {
+        $name = trim((string)($body['name'] ?? ''));
+        if ($name === '') respond(['error' => 'Product name is required'], 400);
+
+        $price = (float)($body['price'] ?? 0.0);
+        $comparePrice = isset($body['compare_price']) && $body['compare_price'] !== null && $body['compare_price'] !== '' ? (float)$body['compare_price'] : (isset($body['mrp']) && $body['mrp'] !== null && $body['mrp'] !== '' ? (float)$body['mrp'] : null);
+        $sku = !empty($body['sku']) ? trim((string)$body['sku']) : null;
+        $categoryId = !empty($body['category_id']) ? (int)$body['category_id'] : null;
+        $brand = !empty($body['brand']) ? trim((string)$body['brand']) : 'Smeram Naturals';
+        $productSize = !empty($body['product_size']) ? trim((string)$body['product_size']) : null;
+        $netValue = isset($body['net_quantity_value']) && $body['net_quantity_value'] !== null && $body['net_quantity_value'] !== '' ? (float)$body['net_quantity_value'] : null;
+        $netUnit = !empty($body['net_quantity_unit']) ? trim((string)$body['net_quantity_unit']) : null;
+        $rate = isset($body['gst_rate']) ? (float)$body['gst_rate'] : 5.0;
+        $hsnCode = !empty($body['hsn_code']) ? trim((string)$body['hsn_code']) : ($rate == 5.0 ? '30049013' : '33049990');
+        $lowStock = isset($body['low_stock_threshold']) && $body['low_stock_threshold'] !== null && $body['low_stock_threshold'] !== '' ? (int)$body['low_stock_threshold'] : 15;
+        $offerText = !empty($body['offer_text']) ? trim((string)$body['offer_text']) : null;
+        $showOffer = !empty($body['show_offer']) ? trim((string)$body['show_offer']) : null;
+        $badgeText = !empty($body['badge_text']) ? trim((string)$body['badge_text']) : null;
+        $description = isset($body['description']) ? trim((string)$body['description']) : '';
+        $ingredients = isset($body['ingredients']) ? trim((string)$body['ingredients']) : null;
+        $instructions = isset($body['user_instructions']) ? trim((string)$body['user_instructions']) : null;
+        $benefits = isset($body['benefits']) ? trim((string)$body['benefits']) : null;
+        $note = isset($body['additional_note']) ? trim((string)$body['additional_note']) : null;
+        $inStock = isset($body['in_stock']) ? (bool)$body['in_stock'] : true;
+        $active = isset($body['active']) ? (bool)$body['active'] : true;
+        $unlisted = isset($body['unlisted']) ? (bool)$body['unlisted'] : false;
+
+        // Variants
+        $rawVars = $body['variants'] ?? [];
+        if (is_string($rawVars)) { $rawVars = json_decode($rawVars, true) ?: []; }
+        $variants = is_array($rawVars) ? array_values($rawVars) : [];
+
+        // Images
+        $rawImgs = $body['images'] ?? [];
+        if (is_string($rawImgs)) {
+            $rawImgs = json_decode($rawImgs, true) ?: array_filter(array_map('trim', explode("\n", $rawImgs)));
+        }
+        $images = is_array($rawImgs) ? array_values($rawImgs) : [];
+
+        // Recalculate quantity if variants present
+        if (!empty($variants)) {
+            $totStock = 0;
+            foreach ($variants as $var) { $totStock += (int)($var['quantity'] ?? 0); }
+            $quantity = $totStock;
+            $inStock = $quantity > 0;
+        } else {
+            $quantity = isset($body['quantity']) ? max(0, (int)$body['quantity']) : (isset($body['stock']) ? max(0, (int)$body['stock']) : 100);
+        }
+
+        $variantsJson = json_encode($variants, JSON_UNESCAPED_UNICODE);
+        $imagesJson = json_encode($images, JSON_UNESCAPED_UNICODE);
+
+        if ($pdo) {
+            try {
+                if ($prodId) {
+                    // Update existing
+                    $sql = "UPDATE products SET 
+                        name = ?, sku = ?, price = ?, compare_price = ?, quantity = ?, 
+                        gst_rate = ?, hsn_code = ?, product_size = ?, net_quantity_value = ?, net_quantity_unit = ?, 
+                        low_stock_threshold = ?, category_id = ?, in_stock = ?, active = ?, unlisted = ?,
+                        badge_text = ?, offer_text = ?, show_offer = ?, description = ?, ingredients = ?, 
+                        user_instructions = ?, benefits = ?, additional_note = ?, variants = ?, images = ?, 
+                        updated_at = NOW() 
+                        WHERE id = ? AND store_id = ?";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([
+                        $name, $sku, $price, $comparePrice, $quantity,
+                        $rate, $hsnCode, $productSize, $netValue, $netUnit,
+                        $lowStock, $categoryId, $inStock ? 1 : 0, $active ? 1 : 0, $unlisted ? 1 : 0,
+                        $badgeText, $offerText, $showOffer, $description, $ingredients,
+                        $instructions, $benefits, $note, $variantsJson, $imagesJson,
+                        $prodId, $routeStoreId
+                    ]);
+                } else {
+                    // Insert new
+                    $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
+                    $sql = "INSERT INTO products (
+                        store_id, name, slug, sku, price, compare_price, quantity, 
+                        gst_rate, hsn_code, product_size, net_quantity_value, net_quantity_unit, 
+                        low_stock_threshold, category_id, in_stock, active, unlisted,
+                        badge_text, offer_text, show_offer, description, ingredients, 
+                        user_instructions, benefits, additional_note, variants, images, 
+                        created_at, updated_at
+                    ) VALUES (
+                        ?, ?, ?, ?, ?, ?, ?, 
+                        ?, ?, ?, ?, ?, 
+                        ?, ?, ?, ?, ?, 
+                        ?, ?, ?, ?, ?, 
+                        ?, ?, ?, ?, ?, 
+                        NOW(), NOW()
+                    )";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([
+                        $routeStoreId, $name, $slug, $sku, $price, $comparePrice, $quantity,
+                        $rate, $hsnCode, $productSize, $netValue, $netUnit,
+                        $lowStock, $categoryId, $inStock ? 1 : 0, $active ? 1 : 0, $unlisted ? 1 : 0,
+                        $badgeText, $offerText, $showOffer, $description, $ingredients,
+                        $instructions, $benefits, $note, $variantsJson, $imagesJson
+                    ]);
+                    $prodId = (int)$pdo->lastInsertId();
+                }
+            } catch (Throwable $e) {
+                // Resilient fallback update for simpler schemas
+                if ($prodId) {
+                    try {
+                        $fStmt = $pdo->prepare("UPDATE products SET name = ?, price = ?, quantity = ?, gst_rate = ?, hsn_code = ?, variants = ?, images = ? WHERE id = ?");
+                        $fStmt->execute([$name, $price, $quantity, $rate, $hsnCode, $variantsJson, $imagesJson, $prodId]);
+                    } catch (Throwable $e2) {
+                        error_log('[api.php product update error] ' . $e2->getMessage());
+                    }
+                }
+            }
+        }
+
+        // File-based backup
+        $overrideFile = __DIR__ . '/products_catalog.json';
+        $catalog = zkcGetProducts($pdo, $routeStoreId);
+        $foundIndex = -1;
+        if ($prodId) {
+            foreach ($catalog as $idx => $item) {
+                if ((int)$item['id'] === $prodId) { $foundIndex = $idx; break; }
+            }
+        } else {
+            $prodId = count($catalog) ? max(array_map(function($x){ return (int)$x['id']; }, $catalog)) + 1 : 1;
+        }
+
         $taxable = round($price * 100.0 / (100.0 + $rate), 2);
         $gstAmt = round($price - $taxable, 2);
-        $p['taxable_value'] = $taxable;
-        $p['gst_amount'] = $gstAmt;
-        $p['cgst_amount'] = round($gstAmt / 2.0, 2);
-        $p['sgst_amount'] = round($gstAmt - round($gstAmt / 2.0, 2), 2);
-        if (empty($p['hsn_code'])) {
-            $p['hsn_code'] = ($rate == 5.0 ? '30049013' : '33049990');
+        $savedProduct = [
+            'id' => $prodId,
+            'store_id' => $routeStoreId,
+            'name' => $name,
+            'sku' => $sku,
+            'price' => $price,
+            'compare_price' => $comparePrice,
+            'mrp' => $comparePrice,
+            'taxable_value' => $taxable,
+            'gst_amount' => $gstAmt,
+            'cgst_amount' => round($gstAmt / 2.0, 2),
+            'sgst_amount' => round($gstAmt - round($gstAmt / 2.0, 2), 2),
+            'gst_rate' => $rate,
+            'hsn_code' => $hsnCode,
+            'quantity' => $quantity,
+            'stock' => $quantity,
+            'in_stock' => $inStock,
+            'active' => $active,
+            'unlisted' => $unlisted,
+            'product_size' => $productSize,
+            'net_quantity_value' => $netValue,
+            'net_quantity_unit' => $netUnit,
+            'low_stock_threshold' => $lowStock,
+            'category_id' => $categoryId,
+            'badge_text' => $badgeText,
+            'offer_text' => $offerText,
+            'show_offer' => $showOffer,
+            'description' => $description,
+            'ingredients' => $ingredients,
+            'user_instructions' => $instructions,
+            'benefits' => $benefits,
+            'additional_note' => $note,
+            'variants' => $variants,
+            'images' => $images
+        ];
+
+        if ($foundIndex >= 0) {
+            $catalog[$foundIndex] = array_merge($catalog[$foundIndex], $savedProduct);
+        } else {
+            $catalog[] = $savedProduct;
         }
-        $p['stock'] = (int)($p['quantity'] ?? ($p['stock'] ?? 100));
+        @file_put_contents($overrideFile, json_encode($catalog, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        respond(['success' => true, 'product' => $savedProduct]);
     }
-    respond(['products' => $products, 'total' => count($products)]);
-}
 
-if (preg_match('#^products/(\\d+)$#', $route, $pm) && $method === 'GET') {
-    $prodId = (int)$pm[1];
-    $products = zkcGetProducts($pdo);
-    $found = null;
-    foreach ($products as $p) {
-        if ((int)$p['id'] === $prodId) { $found = $p; break; }
-    }
-    if (!$found) respond(['error' => 'Product not found'], 404);
-    $rate = (float)($found['gst_rate'] ?? 5.0);
-    $price = (float)($found['price'] ?? 0);
-    $taxable = round($price * 100.0 / (100.0 + $rate), 2);
-    $gstAmt = round($price - $taxable, 2);
-    $found['taxable_value'] = $taxable;
-    $found['gst_amount'] = $gstAmt;
-    $found['cgst_amount'] = round($gstAmt / 2.0, 2);
-    $found['sgst_amount'] = round($gstAmt - round($gstAmt / 2.0, 2), 2);
-    respond(['product' => $found]);
-}
-
-if (preg_match('#^products/(\\d+)$#', $route, $pm) && ($method === 'PUT' || $method === 'POST')) {
-    $prodId = (int)$pm[1];
-    $overrideFile = __DIR__ . '/products_catalog.json';
-    $catalog = zkcGetProducts($pdo);
-
-    $foundIndex = -1;
-    foreach ($catalog as $idx => $item) {
-        if ((int)$item['id'] === $prodId) {
-            $foundIndex = $idx;
-            break;
+    if ($method === 'DELETE' && $prodId) {
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("UPDATE products SET active = 0 WHERE id = ? AND store_id = ?");
+                $stmt->execute([$prodId, $routeStoreId]);
+            } catch (Throwable $e) {}
         }
+        respond(['ok' => true]);
     }
-
-    $item = ($foundIndex >= 0) ? $catalog[$foundIndex] : ['id' => $prodId];
-
-    // Merge incoming fields
-    foreach ($body as $k => $v) {
-        $item[$k] = $v;
-    }
-
-    $item['id'] = $prodId;
-    $rate = (float)($item['gst_rate'] ?? 5.0);
-    $price = (float)($item['price'] ?? 0.0);
-    $taxable = round($price * 100.0 / (100.0 + $rate), 2);
-    $gstAmt = round($price - $taxable, 2);
-    $item['taxable_value'] = $taxable;
-    $item['gst_amount'] = $gstAmt;
-    $item['cgst_amount'] = round($gstAmt / 2.0, 2);
-    $item['sgst_amount'] = round($gstAmt - round($gstAmt / 2.0, 2), 2);
-
-    if (empty($item['hsn_code'])) {
-        $item['hsn_code'] = ($rate == 5.0 ? '30049013' : '33049990');
-    }
-
-    // If variants exist, recalculate master stock quantity
-    if (!empty($item['variants']) && is_array($item['variants'])) {
-        $totStock = 0;
-        foreach ($item['variants'] as $var) {
-            $totStock += (int)($var['quantity'] ?? 0);
-        }
-        $item['quantity'] = $totStock;
-        $item['stock'] = $totStock;
-    } else {
-        $item['stock'] = (int)($item['quantity'] ?? ($item['stock'] ?? 100));
-    }
-
-    if ($foundIndex >= 0) {
-        $catalog[$foundIndex] = $item;
-    } else {
-        $catalog[] = $item;
-    }
-
-    @file_put_contents($overrideFile, json_encode($catalog, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-    // Also update SQL if database table exists
-    if ($pdo) {
-        try {
-            $stmt = $pdo->prepare("UPDATE `products` SET name = ?, price = ?, quantity = ?, gst_rate = ?, hsn_code = ? WHERE id = ?");
-            $stmt->execute([$item['name'] ?? '', $price, $item['quantity'], $rate, $item['hsn_code'], $prodId]);
-        } catch (Exception $e) {}
-    }
-
-    respond([
-        'success' => true,
-        'product' => $item
-    ]);
 }
 
 // Display settings
@@ -1069,20 +1223,149 @@ if (preg_match('#^storefront/([^/]+)$#', $route) && $method === 'GET') {
     ]);
 }
 
-// Inventory endpoint for merchant dashboard
+// ── Inventory endpoints for merchant dashboard ───────────────────
 if ($route === 'inventory' && $method === 'GET') {
-    $rows = [];
+    $storeId = isset($_GET['store_id']) && (int)$_GET['store_id'] > 0 ? (int)$_GET['store_id'] : (defined('STORE_ID') ? STORE_ID : 2);
+    $items = [];
+    $defaultThreshold = 50;
+
+    $products = zkcGetProducts($pdo, $storeId);
+    foreach ($products as $p) {
+        $threshold = isset($p['low_stock_threshold']) && $p['low_stock_threshold'] !== null ? (int)$p['low_stock_threshold'] : $defaultThreshold;
+        $variants = is_array($p['variants'] ?? null) ? $p['variants'] : [];
+        $active = !empty($p['active']);
+        $pId = (int)$p['id'];
+        $pName = $p['name'] ?? 'Unnamed Product';
+        $catName = $p['category_name'] ?? '';
+        $pSku = $p['sku'] ?? '';
+        $size = $p['product_size'] ?? '';
+        if (!$size && !empty($p['net_quantity_value'])) {
+            $size = $p['net_quantity_value'] . ' ' . ($p['net_quantity_unit'] ?? '');
+        }
+
+        if (!empty($variants)) {
+            foreach ($variants as $v) {
+                $vQty = (int)($v['quantity'] ?? 0);
+                $vLabel = $v['label'] ?? ($v['size_value'] ? ($v['size_value'] . ' ' . ($v['size_unit'] ?? '')) : '—');
+                $items[] = [
+                    'product_id' => $pId,
+                    'name' => $pName,
+                    'category_name' => $catName,
+                    'variant_id' => $v['id'] ?? null,
+                    'variant' => $vLabel,
+                    'sku' => $v['sku'] ?? $pSku,
+                    'quantity' => $vQty,
+                    'size' => $vLabel,
+                    'threshold' => $threshold,
+                    'active' => $active && (($v['active'] ?? true) !== false),
+                    'low' => $vQty <= $threshold,
+                    'last_movement' => null
+                ];
+            }
+        } else {
+            $pQty = (int)($p['quantity'] ?? ($p['stock'] ?? 0));
+            $items[] = [
+                'product_id' => $pId,
+                'name' => $pName,
+                'category_name' => $catName,
+                'variant_id' => null,
+                'variant' => null,
+                'sku' => $pSku,
+                'quantity' => $pQty,
+                'size' => $size ?: '—',
+                'threshold' => $threshold,
+                'active' => $active,
+                'low' => $pQty <= $threshold,
+                'last_movement' => null
+            ];
+        }
+    }
+
+    $lowCount = count(array_filter($items, function($i) { return !empty($i['active']) && !empty($i['low']); }));
+
+    respond([
+        'settings' => [
+            'low_stock_threshold' => $defaultThreshold,
+            'alerts_enabled' => true
+        ],
+        'items' => $items,
+        'inventory' => $items,
+        'low_count' => $lowCount
+    ]);
+}
+
+// Set stock of a product or variant
+if (preg_match('#^inventory/(\d+)/stock$#', $route, $im) && $method === 'PUT') {
+    $prodId = (int)$im[1];
+    $storeId = isset($_GET['store_id']) && (int)$_GET['store_id'] > 0 ? (int)$_GET['store_id'] : (defined('STORE_ID') ? STORE_ID : 2);
+    $varId = !empty($body['variant_id']) ? (string)$body['variant_id'] : null;
+    $targetQty = max(0, (int)($body['quantity'] ?? 0));
+    $note = !empty($body['note']) ? (string)$body['note'] : null;
+
     if ($pdo) {
         try {
-            $stmt = $pdo->prepare("SELECT p.id as product_id, p.name, p.quantity, p.low_stock_threshold FROM products p WHERE p.store_id = ? AND p.active = 1");
-            $stmt->execute([STORE_ID]);
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {}
+            $stmt = $pdo->prepare("SELECT id, quantity, variants FROM products WHERE id = ? AND store_id = ?");
+            $stmt->execute([$prodId, $storeId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $rawV = $row['variants'];
+                $vars = is_string($rawV) ? (json_decode($rawV, true) ?: []) : (is_array($rawV) ? $rawV : []);
+                if ($varId) {
+                    $found = false;
+                    foreach ($vars as &$v) {
+                        if (($v['id'] ?? '') === $varId) {
+                            $v['quantity'] = $targetQty;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if ($found) {
+                        $tot = 0;
+                        foreach ($vars as $v) { $tot += (int)($v['quantity'] ?? 0); }
+                        $upd = $pdo->prepare("UPDATE products SET variants = ?, quantity = ?, in_stock = ?, updated_at = NOW() WHERE id = ? AND store_id = ?");
+                        $upd->execute([json_encode($vars, JSON_UNESCAPED_UNICODE), $tot, $tot > 0 ? 1 : 0, $prodId, $storeId]);
+                    }
+                } else {
+                    $upd = $pdo->prepare("UPDATE products SET quantity = ?, in_stock = ?, updated_at = NOW() WHERE id = ? AND store_id = ?");
+                    $upd->execute([$targetQty, $targetQty > 0 ? 1 : 0, $prodId, $storeId]);
+                }
+                try {
+                    $mStmt = $pdo->prepare("INSERT INTO inventory_movements (store_id, product_id, variant_id, change_qty, quantity_after, reason, note, created_at) VALUES (?, ?, ?, ?, ?, 'adjust', ?, NOW())");
+                    $mStmt->execute([$storeId, $prodId, $varId, $targetQty - (int)$row['quantity'], $targetQty, $note]);
+                } catch (Throwable $me) {}
+            }
+        } catch (Throwable $e) {}
     }
-    respond([
-        'inventory' => $rows,
-        'settings' => ['low_stock_threshold' => 50, 'alerts_enabled' => true]
-    ]);
+    respond(['ok' => true, 'after' => $targetQty]);
+}
+
+// Inventory movements
+if ($route === 'inventory/movements' && $method === 'GET') {
+    $storeId = isset($_GET['store_id']) && (int)$_GET['store_id'] > 0 ? (int)$_GET['store_id'] : (defined('STORE_ID') ? STORE_ID : 2);
+    $prodId = isset($_GET['product_id']) ? (int)$_GET['product_id'] : null;
+    $movements = [];
+    if ($pdo) {
+        try {
+            $sql = "SELECT m.*, p.name AS product_name FROM inventory_movements m LEFT JOIN products p ON p.id = m.product_id WHERE m.store_id = ?";
+            $params = [$storeId];
+            if ($prodId) {
+                $sql .= " AND m.product_id = ?";
+                $params[] = $prodId;
+            }
+            $sql .= " ORDER BY m.created_at DESC LIMIT 50";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $movements = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (Throwable $e) {}
+    }
+    respond(['movements' => $movements]);
+}
+
+// Inventory settings
+if ($route === 'inventory/settings' && $method === 'PUT') {
+    $threshold = (int)($body['low_stock_threshold'] ?? 50);
+    $alerts = (bool)($body['alerts_enabled'] ?? true);
+    respond(['settings' => ['low_stock_threshold' => $threshold, 'alerts_enabled' => $alerts]]);
 }
 
 // Shipping rates

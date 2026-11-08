@@ -2544,17 +2544,45 @@
     async function loadInventory() {
       try {
         inventoryData = await req('/inventory?store_id=' + currentStoreId);
-        document.getElementById('invThreshold').value = inventoryData.settings.low_stock_threshold;
-        document.getElementById('invAlerts').checked = inventoryData.settings.alerts_enabled;
+        const s = (inventoryData && inventoryData.settings) || { low_stock_threshold: 50, alerts_enabled: true };
+        const th = document.getElementById('invThreshold');
+        if (th) th.value = s.low_stock_threshold ?? 50;
+        const al = document.getElementById('invAlerts');
+        if (al) al.checked = !!s.alerts_enabled;
+        const lowCount = (inventoryData && inventoryData.low_count != null) ? inventoryData.low_count : 0;
         const badge = document.getElementById('invLowBadge');
-        badge.textContent = inventoryData.low_count; badge.style.display = inventoryData.low_count ? '' : 'none';
+        if (badge) { badge.textContent = lowCount; badge.style.display = lowCount ? '' : 'none'; }
         renderInventory();
-      } catch (e) { document.querySelector('#inventoryTable tbody').innerHTML = `<tr><td colspan="7" style="color:#b91c1c">${escHtml(e.message)}</td></tr>`; }
+      } catch (e) {
+        const tb = document.querySelector('#inventoryTable tbody');
+        if (tb) tb.innerHTML = `<tr><td colspan="7" style="color:#b91c1c">${escHtml(e.message)}</td></tr>`;
+      }
     }
     function renderInventory() {
-      const lowOnly = document.getElementById('invLowOnly').checked;
-      const items = inventoryData.items.filter(i => !lowOnly || (i.active && i.low));
+      const lowOnlyEl = document.getElementById('invLowOnly');
+      const lowOnly = lowOnlyEl ? lowOnlyEl.checked : false;
+      const rawList = (inventoryData && (inventoryData.items || inventoryData.inventory || (Array.isArray(inventoryData) ? inventoryData : []))) || [];
+      const normalizedItems = rawList.map(i => {
+        const threshold = Number(i.threshold ?? i.low_stock_threshold ?? 50);
+        const qty = Number(i.quantity ?? 0);
+        const active = i.active !== false;
+        return {
+          product_id: i.product_id ?? i.id,
+          name: i.name || 'Unnamed Product',
+          category_name: i.category_name || '',
+          variant_id: i.variant_id || null,
+          variant: i.variant || i.size || '',
+          sku: i.sku || '',
+          quantity: qty,
+          threshold: threshold,
+          active: active,
+          low: i.low !== undefined ? Boolean(i.low) : (qty <= threshold),
+          last_movement: i.last_movement || null
+        };
+      });
+      const items = normalizedItems.filter(i => !lowOnly || (i.active && i.low));
       const tbody = document.querySelector('#inventoryTable tbody');
+      if (!tbody) return;
       if (!items.length) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--muted)">${lowOnly ? 'Nothing is low on stock 🎉' : 'No products yet.'}</td></tr>`; return; }
       tbody.innerHTML = items.map((i, n) => {
         const status = !i.active ? '<span class="badge">inactive</span>' : i.quantity < 0 ? '<span class="badge badge-cancelled">Oversold</span>' : i.quantity === 0 ? '<span class="badge badge-cancelled">Out of stock</span>' : i.low ? `<span class="badge badge-processing">LOW (≤ ${i.threshold})</span>` : '<span class="badge badge-delivered">OK</span>';
