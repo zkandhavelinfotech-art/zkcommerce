@@ -58,7 +58,7 @@ if (!defined('EKART_ALERT_EMAIL')) define('EKART_ALERT_EMAIL', 'smeramindustries
 if (!defined('EKART_WEBHOOK_SECRET')) define('EKART_WEBHOOK_SECRET', 'ek_sec_984f1801m1z6_smeram');
 if (!defined('EKART_BASE_URL')) define('EKART_BASE_URL', 'https://app.elite.ekartlogistics.in');
 if (!defined('EKART_USERNAME')) define('EKART_USERNAME', 'smeramindustries@gmail.com');
-if (!defined('EKART_PASSWORD')) define('EKART_PASSWORD', '');
+if (!defined('EKART_PASSWORD')) define('EKART_PASSWORD', 'Smera@999smera');
 if (!defined('SHIP_COURIER')) define('SHIP_COURIER', 'Ekart Logistics');
 if (!defined('SHIP_TRACKING_URL')) define('SHIP_TRACKING_URL', 'https://app.elite.ekartlogistics.in/track/{awb}');
 if (!defined('EKART_PORTAL_URL')) define('EKART_PORTAL_URL', 'https://app.elite.ekartlogistics.in/');

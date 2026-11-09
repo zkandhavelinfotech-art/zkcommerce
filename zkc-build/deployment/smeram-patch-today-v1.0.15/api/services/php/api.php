@@ -2125,6 +2125,53 @@ function zkcEkartGetSettings() {
     ];
 }
 
+function zkcEkartHttpReq($url, $method = 'POST', $payload = null, $headers = []) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        $opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 25,
+            CURLOPT_SSL_VERIFYPEER => false
+        ];
+        if ($payload !== null) {
+            $opts[CURLOPT_POSTFIELDS] = is_string($payload) ? $payload : json_encode($payload);
+        }
+        curl_setopt_array($ch, $opts);
+        $raw = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err = curl_error($ch);
+        curl_close($ch);
+        return ['body' => $raw, 'code' => $httpCode, 'error' => $err];
+    }
+    // Fallback: stream context
+    $opts = [
+        'http' => [
+            'method' => $method,
+            'header' => implode("\r\n", $headers) . "\r\n",
+            'ignore_errors' => true,
+            'timeout' => 25
+        ],
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false
+        ]
+    ];
+    if ($payload !== null) {
+        $opts['http']['content'] = is_string($payload) ? $payload : json_encode($payload);
+    }
+    $ctx = stream_context_create($opts);
+    $raw = @file_get_contents($url, false, $ctx);
+    $httpCode = 0;
+    if (isset($http_response_header) && is_array($http_response_header)) {
+        if (preg_match('#HTTP/\S+\s+(\d+)#', $http_response_header[0], $m)) {
+            $httpCode = (int)$m[1];
+        }
+    }
+    return ['body' => $raw, 'code' => $httpCode, 'error' => ($raw === false ? 'HTTP request failed' : '')];
+}
+
 function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $apiKey = '') {
     // If apiKey is explicitly a pre-generated Bearer/JWT token (e.g. starts with "ey" or > 60 chars) and no password given:
     $isDirectBearer = ($apiKey !== '' && (strpos($apiKey, 'ey') === 0 || strlen($apiKey) > 60) && ($password === '' || $password === $apiKey));
@@ -2144,32 +2191,18 @@ function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $
     }
     $tokenUrl = $baseUrl . '/integrations/v2/auth/token/' . rawurlencode($clientId);
     $payload = json_encode(['username' => $username, 'password' => $pass]);
-    if (!function_exists('curl_init')) {
-        throw new Exception("PHP curl extension required for Ekart API authentication.");
+    $res = zkcEkartHttpReq($tokenUrl, 'POST', $payload, ['Content-Type: application/json', 'Accept: application/json']);
+
+    if ($res['body'] === false || ($res['code'] === 0 && !empty($res['error']))) {
+        throw new Exception("Ekart Auth Connection Error: " . $res['error']);
     }
-    $ch = curl_init($tokenUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $payload,
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Accept: application/json'],
-        CURLOPT_TIMEOUT => 20,
-        CURLOPT_SSL_VERIFYPEER => false
-    ]);
-    $raw = curl_exec($ch);
-    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err = curl_error($ch);
-    curl_close($ch);
-    if ($raw === false) {
-        throw new Exception("Ekart Auth Connection Error: " . $err);
+    $data = json_decode((string)$res['body'], true);
+    if ($res['code'] >= 400 || empty($data['access_token'])) {
+        $msg = $data['description'] ?? $data['message'] ?? $data['remark'] ?? $data['error'] ?? "HTTP " . $res['code'];
+        throw new Exception("Ekart Auth Failed (" . $res['code'] . "): $msg");
     }
-    $res = json_decode($raw, true);
-    if ($httpCode >= 400 || empty($res['access_token'])) {
-        $msg = $res['description'] ?? $res['message'] ?? $res['remark'] ?? $res['error'] ?? "HTTP $httpCode";
-        throw new Exception("Ekart Auth Failed ($httpCode): $msg");
-    }
-    $token = $res['access_token'];
-    $expiresIn = isset($res['expires_in']) ? (int)$res['expires_in'] : 86400;
+    $token = $data['access_token'];
+    $expiresIn = isset($data['expires_in']) ? (int)$data['expires_in'] : 86400;
     $_SESSION[$cacheKey] = [
         'token' => $token,
         'expires_at' => time() + max(60, $expiresIn - 120)
@@ -2576,7 +2609,6 @@ if (($route === 'shipments/ekart/test' || $route === 'shipments/settings/test') 
             'error' => $e->getMessage()
         ], 400);
     }
-}
 }
 
 // Ekart Shipment Actions (Book, Label, Track)
