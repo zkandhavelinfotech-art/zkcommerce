@@ -93,20 +93,26 @@ const items = o => { const i = parse(o.items); return Array.isArray(i) ? i : [];
 const isCod = o => o.payment_method === 'cod';
 const status = (t, color) => { const el = document.getElementById('status'); el.textContent = t; el.style.color = color || '#64748b'; };
 const withStore = p => p + (storeId ? (p.includes('?') ? '&' : '?') + 'store_id=' + encodeURIComponent(storeId) : '');
-// Node paths → api.php admin routes (order id travels in the body there).
+// Node paths → api.php admin routes (order id travels in the body and query string).
 function phpRoute(path, opts) {
   const [p, q] = path.split('?');
   let m, route = null, body = opts.body ? JSON.parse(opts.body) : {};
+  let orderId = null;
   if (p === '/shipments/orders' || p === 'shipments/orders') route = 'admin/shipments';
-  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/awb$/))) { route = 'admin/awb'; body.order_id = Number(m[1]); }
-  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); }
-  else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); }
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/awb$/))) { route = 'admin/awb'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); orderId = m[1]; }
   if (!route) route = p.replace(/^\//, '');
   const isClient = location.pathname.includes('/clients/');
   const phpBase = isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php');
   const storeParam = storeId ? (q && q.includes('store_id=') ? '' : '&store_id=' + encodeURIComponent(storeId)) : '';
+  const orderParam = orderId ? '&order_id=' + encodeURIComponent(orderId) : '';
   const safeRoute = route.split('/').map(encodeURIComponent).join('/');
-  return { url: phpBase + '?route=' + safeRoute + (q ? '&' + q : '') + storeParam, opts: { ...opts, body: opts.body || opts.method === 'PUT' ? JSON.stringify(body) : undefined } };
+  const hasBody = Boolean(opts.body || (body && Object.keys(body).length > 0) || opts.method === 'PUT' || opts.method === 'POST');
+  return {
+    url: phpBase + '?route=' + safeRoute + orderParam + (q ? '&' + q : '') + storeParam,
+    opts: { ...opts, body: hasBody ? JSON.stringify(body) : undefined }
+  };
 }
 async function api(path, opts = {}) {
   let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
@@ -225,9 +231,11 @@ function render() {
 
 function labelHtml(o) {
   const a = addr(o), s = data.store, its = items(o);
+  const mainBarcode = o.tracking_number || o.order_number;
+  const mainCodeDisplay = o.tracking_number ? esc(o.tracking_number) : `<span style="color:#d97706;font-size:11px;font-weight:700">AWB PENDING · ${esc(o.order_number)}</span>`;
   return `<div class="lbl">
-    <div class="top"><span class="courier">${esc(o.courier || data.settings.courier_name || 'Ekart')}</span><span class="mode">${isCod(o) ? 'COD ' + money(o.total_amount) : 'PREPAID'}</span></div>
-    <div class="bc">${barcodeSvg(o.tracking_number)}<div class="code">${esc(o.tracking_number)}</div></div>
+    <div class="top"><span class="courier">${esc(o.courier || (data.settings && data.settings.courier_name) || 'Ekart Logistics')}</span><span class="mode">${isCod(o) ? 'COD ' + money(o.total_amount) : 'PREPAID'}</span></div>
+    <div class="bc">${barcodeSvg(mainBarcode)}<div class="code">${mainCodeDisplay}</div></div>
     <div class="to"><div class="muted" style="color:#000;font-weight:700">SHIP TO</div><b class="n">${esc(o.customer_name)}</b><br>${esc([a.line1 || a.address, a.line2].filter(Boolean).join(', '))}<br>${esc([a.city, a.state].filter(Boolean).join(', '))}
       <div class="pin">PIN ${esc(a.pincode || '')}</div>📞 ${esc(o.customer_phone || '')}</div>
     <div class="meta"><span>Order <b>${esc(o.order_number)}</b></span><span>${its.reduce((n, i) => n + Number(i.quantity || 1), 0)} item(s)</span></div>
@@ -235,10 +243,10 @@ function labelHtml(o) {
     <div class="from"><b>From:</b> ${esc(s.store_name || '')}, ${esc([s.address, s.city, s.state].filter(Boolean).join(', '))}${s.whatsapp_number ? ' · ' + esc(s.whatsapp_number) : ''}</div>
   </div>`;
 }
-const printable = () => data.orders.filter(o => selected.has(o.id) && o.tracking_number);
+const printable = () => data.orders.filter(o => selected.has(o.id));
 function renderPreview() {
   const list = printable();
-  document.getElementById('preview').innerHTML = list.length ? list.slice(0, 6).map(labelHtml).join('') + (list.length > 6 ? `<div class="muted">+ ${list.length - 6} more</div>` : '') : '<div class="empty">Select orders with an AWB to preview labels.</div>';
+  document.getElementById('preview').innerHTML = list.length ? list.slice(0, 6).map(labelHtml).join('') + (list.length > 6 ? `<div class="muted">+ ${list.length - 6} more</div>` : '') : '<div class="empty">Select orders above to preview labels.</div>';
 }
 
 async function saveAwb(id, input) {
@@ -317,19 +325,32 @@ if (autoBookBtn) {
   autoBookBtn.onclick = async () => {
     const unbooked = data.orders.filter(o => !o.tracking_number && ['confirmed', 'processing', 'new', 'paid'].includes(o.status));
     if (!unbooked.length) return status('All ready orders already have an AWB.', 'var(--brand)');
+    autoBookBtn.disabled = true;
+    autoBookBtn.textContent = 'Booking…';
     status(`Booking ${unbooked.length} order(s) with Ekart…`, '#475569');
     let booked = 0;
+    let lastErr = '';
     for (const o of unbooked) {
       try {
         const d = await api('/shipments/orders/' + o.id + '/book', { method: 'POST' });
         Object.assign(o, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: 'https://app.elite.ekartlogistics.in/track/' + d.tracking_id });
+        selected.add(o.id);
         booked++;
       } catch (err) {
-        status(`❌ Order ${o.order_number}: ${err.message}`, 'var(--err)');
+        lastErr = err.message || 'Booking failed';
+        console.error('Ekart booking error:', err);
       }
     }
+    autoBookBtn.disabled = false;
+    autoBookBtn.textContent = '⚡ Auto-book with Ekart';
     render();
-    status(`✓ ${booked} of ${unbooked.length} order(s) booked with Ekart!`, 'var(--brand)');
+    if (booked === unbooked.length) {
+      status(`✓ All ${booked} order(s) booked with Ekart!`, 'var(--brand)');
+    } else if (booked > 0) {
+      status(`⚠️ Booked ${booked} of ${unbooked.length} order(s). Failed: ${lastErr}`, 'var(--warn)');
+    } else {
+      status(`❌ Ekart booking failed: ${lastErr}`, 'var(--err)');
+    }
   };
 }
 document.getElementById('selAll').onchange = e => { selected = new Set(e.target.checked ? data.orders.map(o => o.id) : []); render(); };
@@ -340,7 +361,7 @@ document.getElementById('shipSelBtn').onclick = () => {
 };
 document.getElementById('printBtn').onclick = () => {
   const list = printable();
-  if (!list.length) return status('Select orders with an AWB to print.', 'var(--warn)');
+  if (!list.length) return status('Select orders from the checkbox to print labels.', 'var(--warn)');
   document.getElementById('printArea').innerHTML = list.map(labelHtml).join('');
   window.print();
 };

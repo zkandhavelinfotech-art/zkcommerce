@@ -2097,6 +2097,33 @@ function zkcEkartNormalizeBaseUrl($url) {
     return rtrim($u, '/');
 }
 
+function zkcEkartGetSettings() {
+    $settingsFile = __DIR__ . '/ekart_settings.json';
+    $saved = [];
+    if (file_exists($settingsFile)) {
+        $saved = json_decode(@file_get_contents($settingsFile), true) ?: [];
+    }
+    $api = is_array($saved['api'] ?? null) ? $saved['api'] : [];
+    $rawBase = !empty($api['base_url']) ? $api['base_url'] : (defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
+    $clientId = !empty($api['client_id']) ? $api['client_id'] : (defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222');
+    $merchantCode = !empty($api['merchant_code']) ? $api['merchant_code'] : (defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx');
+    $apiKey = !empty($api['api_key']) ? (string)$api['api_key'] : (defined('EKART_API_KEY') ? (string)EKART_API_KEY : '');
+    $username = !empty($api['username']) ? $api['username'] : (defined('EKART_USERNAME') ? EKART_USERNAME : $clientId);
+    $password = !empty($api['password']) ? $api['password'] : (defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey);
+    $courier = !empty($saved['courier_name']) ? $saved['courier_name'] : (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics');
+    $trackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{awb}');
+    return [
+        'base_url' => zkcEkartNormalizeBaseUrl($rawBase),
+        'client_id' => $clientId,
+        'merchant_code' => $merchantCode,
+        'api_key' => $apiKey,
+        'username' => $username,
+        'password' => $password,
+        'courier_name' => $courier,
+        'tracking_url_template' => $trackTpl
+    ];
+}
+
 function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $apiKey = '') {
     if ($apiKey !== '' && ($username === '' || $password === '')) return $apiKey;
     if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
@@ -2108,7 +2135,7 @@ function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $
     }
     if ($username === '' || $password === '') {
         if ($apiKey !== '') return $apiKey;
-        throw new Exception("Ekart credentials (username and password or API token) are required.");
+        throw new Exception("Ekart API credentials missing. Enter Client ID and API Key / Password in Merchant Dashboard -> Shipping -> Ekart.");
     }
     $tokenUrl = $baseUrl . '/integrations/v2/auth/token/' . rawurlencode($clientId);
     $payload = json_encode(['username' => $username, 'password' => $password]);
@@ -2164,12 +2191,13 @@ function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
     }
     if (!$order) throw new Exception("Order not found: ID $orderId");
 
-    $baseUrl = zkcEkartNormalizeBaseUrl(defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
-    $clientId = defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222';
-    $merchantCode = defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx';
-    $apiKey = defined('EKART_API_KEY') ? EKART_API_KEY : '';
-    $username = defined('EKART_USERNAME') ? EKART_USERNAME : $clientId;
-    $password = defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey;
+    $cfg = zkcEkartGetSettings();
+    $baseUrl = $cfg['base_url'];
+    $clientId = $cfg['client_id'];
+    $merchantCode = $cfg['merchant_code'];
+    $apiKey = $cfg['api_key'];
+    $username = $cfg['username'];
+    $password = $cfg['password'];
 
     $token = zkcEkartGetToken($baseUrl, $clientId, $username, $password, $apiKey);
 
@@ -2346,8 +2374,10 @@ function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
 }
 
 function zkcEkartAutoCreateShipment($pdo, $orderId) {
-    if (!defined('EKART_ENABLED') || !EKART_ENABLED) return false;
-    if (defined('EKART_MODE') && EKART_MODE !== 'api') return false;
+    $cfg = function_exists('zkcEkartGetSettings') ? zkcEkartGetSettings() : [];
+    $enabled = isset($cfg['enabled']) ? $cfg['enabled'] : (defined('EKART_ENABLED') ? EKART_ENABLED : true);
+    $mode = !empty($cfg['mode']) ? $cfg['mode'] : (defined('EKART_MODE') ? EKART_MODE : 'api');
+    if (!$enabled || $mode !== 'api') return false;
     try {
         return zkcEkartCreateShipment($pdo, $orderId);
     } catch (Throwable $e) {
@@ -2366,11 +2396,12 @@ function zkcEkartDownloadLabel($pdo, $orderId, $awb = '') {
     }
     if ($trackingId === '') respond(['error' => 'No tracking number found for label'], 400);
 
-    $baseUrl = zkcEkartNormalizeBaseUrl(defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
-    $clientId = defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222';
-    $apiKey = defined('EKART_API_KEY') ? EKART_API_KEY : '';
-    $username = defined('EKART_USERNAME') ? EKART_USERNAME : $clientId;
-    $password = defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey;
+    $cfg = zkcEkartGetSettings();
+    $baseUrl = $cfg['base_url'];
+    $clientId = $cfg['client_id'];
+    $apiKey = $cfg['api_key'];
+    $username = $cfg['username'];
+    $password = $cfg['password'];
     $token = zkcEkartGetToken($baseUrl, $clientId, $username, $password, $apiKey);
 
     $url = $baseUrl . '/api/v1/package/label?json_only=false';
@@ -2413,7 +2444,8 @@ function zkcEkartTrack($pdo, $orderId, $trackingId = '') {
     }
     if ($tid === '') return ['error' => 'Tracking ID is required'];
 
-    $baseUrl = zkcEkartNormalizeBaseUrl(defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
+    $cfg = zkcEkartGetSettings();
+    $baseUrl = $cfg['base_url'];
     $url = $baseUrl . '/api/v1/track/' . rawurlencode($tid);
 
     $ch = curl_init($url);
@@ -2511,7 +2543,7 @@ if (($route === 'shipments/orders/book' || preg_match('#^shipments/orders/(\\d+)
     try {
         $res = zkcEkartCreateShipment($pdo, $oid);
         respond($res);
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         respond(['error' => $e->getMessage()], 400);
     }
 }

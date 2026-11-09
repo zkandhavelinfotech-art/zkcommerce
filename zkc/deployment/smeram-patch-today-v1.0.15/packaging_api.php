@@ -175,8 +175,12 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
             $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
             if (!$oid) respond(['error' => 'Order ID is required to book Ekart shipment'], 400);
             if (function_exists('zkcEkartCreateShipment')) {
-                $res = zkcEkartCreateShipment($pdo, $oid);
-                respond($res);
+                try {
+                    $res = zkcEkartCreateShipment($pdo, $oid);
+                    respond($res);
+                } catch (Throwable $e) {
+                    respond(['error' => $e->getMessage()], 400);
+                }
             } else {
                 respond(['error' => 'Ekart API client is not initialized'], 500);
             }

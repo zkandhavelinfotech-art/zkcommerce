@@ -1,0 +1,458 @@
+<!DOCTYPE html><html lang="en"><head>
+<script src="../zk-env.js"></script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title id="doc-title">Order Details — ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body{background:var(--zk-chalk);overflow-x:hidden}
+@media(max-width:1080px){.zk-main{margin-left:0!important}}
+.item-row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--zk-border);align-items:center}
+.item-thumb{width:56px;height:56px;background:linear-gradient(135deg,#FFF7F0,#FFE4CC);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+</style></head>
+<body><div style="display:flex;min-height:100vh">
+<aside class="zk-sidebar" id="sidebar">
+  <div class="zk-sidebar-logo"><div class="zk-nav-gem" style="width:30px;height:30px;font-size:14px">⚡</div>ZKCommerce</div>
+  <nav class="zk-sidebar-nav">
+    <div class="zk-sidebar-section-label">Main</div>
+    <a href="dashboard.html" class="zk-sidebar-link"><span class="sl-icon">📊</span>Dashboard</a>
+    <a href="analytics.html" class="zk-sidebar-link"><span class="sl-icon">📈</span>Analytics</a>
+    <div class="zk-sidebar-section-label">Catalogue</div>
+    <a href="products.html" class="zk-sidebar-link"><span class="sl-icon">🛍️</span>Products</a>
+    <a href="categories.html" class="zk-sidebar-link"><span class="sl-icon">🏷️</span>Categories</a>
+    <a href="inventory.html" class="zk-sidebar-link"><span class="sl-icon">🏭</span>Inventory</a>
+    <div class="zk-sidebar-section-label">Orders</div>
+    <a href="orders.html" class="zk-sidebar-link active"><span class="sl-icon">📦</span>Orders</a>
+    <a href="packaging.html" class="zk-sidebar-link"><span class="sl-icon">📮</span>Packaging labels</a>
+    <a href="shipping-label.html" class="zk-sidebar-link"><span class="sl-icon">🚚</span>Shipping</a>
+    <div class="zk-sidebar-section-label">Finance</div>
+    <a href="gst-report.html" class="zk-sidebar-link"><span class="sl-icon">🧾</span>GST reports</a>
+    <div class="zk-sidebar-section-label">Settings</div>
+    <a href="store-settings.html" class="zk-sidebar-link"><span class="sl-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="zk-sidebar-footer">
+    <a href="../storefront/home.html" target="_blank" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px;display:block">🌐 View store</a>
+    <a href="setup.html" style="font-size:12px;color:rgba(255,107,0,.6);font-weight:700;margin-bottom:8px;display:block">🧙 Setup wizard</a>
+    <a href="../auth/login.html" style="font-size:12px;color:rgba(255,255,255,.3)">Sign out</a>
+  </div>
+</aside>
+
+<div class="zk-main" style="margin-left:240px">
+  <div style="background:#fff;border-bottom:1px solid var(--zk-border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:800" id="top-order-num">Order Details</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a href="../storefront/home.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--zk-fire)">🌐 View store</a>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">R</div>
+    </div>
+  </div>
+
+  <div class="zk-page">
+    <div class="zk-page-header flex-between">
+      <div>
+        <a href="orders.html" style="font-size:12px;color:var(--zk-fire);font-weight:700">← Orders</a>
+        <div class="zk-page-title" id="order-id">Loading Order...</div>
+        <div class="zk-page-sub" id="order-sub">Please wait…</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <a href="javascript:void(0)" class="btn btn-secondary btn-sm" id="btn-invoice" onclick="openInvoice()">🧾 Tax Invoice</a>
+        <button class="btn btn-primary btn-sm" id="btn-dispatch" onclick="markDispatched()">🚚 Mark Dispatched</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Order Timeline Card -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:18px">📍 Order timeline</h3>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <div style="display:flex;gap:16px;padding-bottom:16px;position:relative">
+              <div style="position:absolute;left:17px;top:36px;bottom:0;width:2px;background:var(--zk-border)"></div>
+              <div style="width:36px;height:36px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0;z-index:1">✓</div>
+              <div>
+                <div style="font-weight:700">Order placed</div>
+                <div style="font-size:12px;color:var(--zk-dim)" id="timeline-placed-date">—</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;padding-bottom:16px;position:relative">
+              <div style="position:absolute;left:17px;top:36px;bottom:0;width:2px;background:var(--zk-border)"></div>
+              <div style="width:36px;height:36px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0;z-index:1" id="timeline-pay-dot">✓</div>
+              <div>
+                <div style="font-weight:700" id="timeline-pay-title">Payment confirmed</div>
+                <div style="font-size:12px;color:var(--zk-dim)" id="timeline-payment-desc">—</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;padding-bottom:16px;position:relative">
+              <div style="position:absolute;left:17px;top:36px;bottom:0;width:2px;background:var(--zk-border)"></div>
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--g-fire);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0;z-index:1" id="timeline-disp-dot">⏳</div>
+              <div>
+                <div style="font-weight:700;color:var(--zk-fire)" id="timeline-status-title">Ready to dispatch</div>
+                <div style="font-size:12px;color:var(--zk-dim)" id="timeline-status-desc">Generate AWB and print label</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--zk-border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">🏠</div>
+              <div>
+                <div style="font-weight:700;color:var(--zk-dim)" id="timeline-deliv-title">Delivery</div>
+                <div style="font-size:12px;color:var(--zk-dim)" id="timeline-deliv-desc">Standard courier delivery</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items Card -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:14px">🛍️ Purchased Items</h3>
+          <div id="order-items-list">
+            <div style="text-align:center;padding:20px;color:var(--zk-muted)">Loading items…</div>
+          </div>
+          
+          <div style="border-top:1px solid var(--zk-border);padding-top:14px;display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <div style="display:flex;justify-content:space-between;font-size:13px">
+              <span style="color:var(--zk-muted)">Subtotal</span>
+              <span id="order-subtotal">₹0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px" id="row-discount" style="display:none">
+              <span style="color:var(--zk-muted)">Discount</span>
+              <span id="order-discount" style="color:#15803d">−₹0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px">
+              <span style="color:var(--zk-muted)">Shipping Fee</span>
+              <span id="order-shipping">₹0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px" id="row-gst">
+              <span style="color:var(--zk-muted)">GST / Tax</span>
+              <span id="order-gst">₹0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;border-top:1px solid var(--zk-border);padding-top:10px;margin-top:4px">
+              <span>Total Grand Amount</span>
+              <span style="color:var(--zk-fire);font-family:var(--font-display)" id="order-total">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internal Notes Card -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px">📝 Internal note</h3>
+          <textarea class="field" id="order-notes" rows="3" placeholder="Private merchant note (not visible to customer)…"></textarea>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="saveNote()">Save note</button>
+        </div>
+      </div>
+
+      <!-- Right Column: Customer, Shipping, Payment -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Customer Details -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px">👤 Customer Details</h3>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--g-brand);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff" id="customer-avatar">C</div>
+            <div>
+              <div style="font-weight:700" id="customer-name">Customer Name</div>
+              <div style="font-size:12px;color:var(--zk-dim)">
+                <span id="customer-email">customer@email.com</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--zk-ink);font-weight:600;margin-bottom:8px">
+            📞 Phone: <a href="tel:" id="customer-phone-link" style="color:var(--zk-fire);text-decoration:none"><span id="customer-phone">-</span></a>
+          </div>
+          <div style="font-size:12.5px;color:var(--zk-muted);background:var(--zk-pale);padding:10px;border-radius:8px;line-height:1.5" id="delivery-address">
+            📍 Loading delivery address…
+          </div>
+          <div style="margin-top:10px">
+            <a href="javascript:void(0)" id="btn-wa-customer" target="_blank" class="btn btn-secondary btn-sm" style="background:#25D366;color:#fff;border:none;display:inline-flex;gap:4px">
+              💬 WhatsApp Customer
+            </a>
+          </div>
+        </div>
+
+        <!-- Shipping & Dispatch Details -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px">📦 Shipping &amp; Courier</h3>
+          <div class="field-group" style="margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700">Courier Name</label>
+            <input type="text" id="courier-name" class="field" placeholder="e.g. ST Courier, Delhivery, Professional" style="font-size:13px">
+          </div>
+          <div class="field-group" style="margin-bottom:10px">
+            <label class="field-label" style="font-size:12px;font-weight:700">AWB Tracking Number</label>
+            <input type="text" id="awb-number" class="field" placeholder="AWB / Docket Number" style="font-size:13px">
+          </div>
+          <div class="field-group" style="margin-bottom:12px">
+            <label class="field-label" style="font-size:12px;font-weight:700">Order Status</label>
+            <select class="field" id="select-status" style="font-size:13px">
+              <option value="new">New</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="processing">Processing (Packing)</option>
+              <option value="shipped">Shipped (Dispatched)</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm btn-full" onclick="saveFulfillment()">Save Shipping &amp; Status</button>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="card">
+          <h3 style="font-family:var(--font-display);font-size:15px;font-weight:800;margin-bottom:12px">💳 Payment &amp; Gateway</h3>
+          <div style="font-size:13px;line-height:2.0;color:var(--zk-muted)">
+            Mode: <strong style="color:var(--zk-ink)" id="payment-method">Online (Razorpay)</strong><br>
+            Status: <span class="status status-delivered" style="display:inline;padding:3px 8px;border-radius:6px;font-weight:700" id="payment-status">Paid</span><br>
+            Razorpay Ref: <span style="font-family:monospace;color:var(--zk-fire);font-weight:700" id="razorpay-ref">—</span><br>
+            Invoice #: <span style="font-weight:700;color:var(--zk-ink)" id="invoice-number">—</span>
+          </div>
+          <button class="btn btn-secondary btn-sm btn-full" style="margin-top:12px" onclick="openInvoice()">
+            🧾 View / Print Tax Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="../assets/js/app.js"></script>
+<script>
+var API_BASE = (window.ZK && window.ZK.api) ? window.ZK.api : '../api.php?route=';
+var CURRENT_ORDER = null;
+
+function getOrderId() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('id') || null;
+}
+
+function money(n) {
+  return '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+}
+
+function setEl(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+async function fetchOrderData(oid) {
+  var token = (window.auth && window.auth.token) ? window.auth.token : '';
+  var headers = { 'Accept': 'application/json' };
+  if (token && !token.startsWith('demo_token')) headers['Authorization'] = 'Bearer ' + token;
+
+  // Try API_BASE first
+  var url1 = (API_BASE.indexOf('?') !== -1) ? (API_BASE + 'orders/' + oid) : (API_BASE + '/orders/' + oid);
+  try {
+    var r = await fetch(url1, { headers: headers });
+    if (r.ok) {
+      var d = await r.json();
+      if (d && (d.order || d.id)) return d.order || d;
+    }
+  } catch(e) {}
+
+  // Fallback to ../api.php?route=orders/
+  try {
+    var r2 = await fetch('../api.php?route=orders/' + oid, { headers: headers });
+    if (r2.ok) {
+      var d2 = await r2.json();
+      if (d2 && (d2.order || d2.id)) return d2.order || d2;
+    }
+  } catch(e2) {}
+
+  return null;
+}
+
+async function loadOrder() {
+  var oid = getOrderId();
+  if (!oid) {
+    setEl('order-id', 'No order specified');
+    return;
+  }
+  setEl('order-id', 'Loading #' + oid + '…');
+
+  var o = await fetchOrderData(oid);
+  if (!o) {
+    setEl('order-id', 'Order #' + oid + ' not found');
+    setEl('order-sub', 'Please verify the order ID or database connection.');
+    return;
+  }
+  CURRENT_ORDER = o;
+
+  var orderNum = o.order_number || ('#' + o.id);
+  var ordDate = o.created_at ? new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—';
+  var totalAmt = money(o.total_amount || o.total || 0);
+  var payMethodStr = (o.payment_method === 'cod') ? 'Cash on Delivery' : 'Online (Razorpay)';
+
+  document.title = 'Order ' + orderNum + ' — ZKCommerce';
+  setEl('top-order-num', 'Order ' + orderNum);
+  setEl('order-id', orderNum);
+  setEl('order-sub', 'Placed ' + ordDate + ' · ' + totalAmt + ' · ' + payMethodStr);
+  setEl('timeline-placed-date', ordDate + ' · ' + (o.customer_name || 'Customer'));
+
+  var isPaid = (o.payment_status === 'paid' || o.payment_status === 'cod');
+  setEl('payment-method', payMethodStr);
+  setEl('payment-status', (o.payment_status || 'paid').toUpperCase());
+  setEl('razorpay-ref', o.razorpay_payment_id || o.razorpay_order_id || '—');
+  var pStatus = (o.payment_status || '').toLowerCase();
+  var oStatus = (o.order_status || o.status || '').toLowerCase();
+  var pMethod = (o.payment_method || '').toLowerCase();
+  var isPaid = (pStatus === 'paid' || ['confirmed', 'processing', 'shipped', 'delivered'].indexOf(oStatus) !== -1 || (pMethod === 'cod' && oStatus !== 'cancelled'));
+  var invFormatted = o.invoice_number || ('SM-' + String(o.id).padStart(2, '0')); setEl('invoice-number', isPaid ? invFormatted : 'Pending Payment (No Invoice)');
+  var btnInvTop = document.getElementById('btn-invoice');
+  if (btnInvTop && !isPaid) {
+    btnInvTop.style.opacity = '0.5';
+    btnInvTop.title = 'Invoices are generated only after payment is received';
+  }
+
+  setEl('timeline-payment-desc', totalAmt + ' · ' + payMethodStr + (o.razorpay_payment_id ? ' · Ref: ' + o.razorpay_payment_id : ''));
+  if (isPaid) {
+    var pDot = document.getElementById('timeline-pay-dot');
+    if (pDot) pDot.style.background = '#22C55E';
+    setEl('timeline-pay-title', 'Payment confirmed');
+  }
+
+  // Customer
+  var custName = o.customer_name || 'Customer';
+  setEl('customer-name', custName);
+  setEl('customer-avatar', custName.charAt(0).toUpperCase());
+  setEl('customer-email', o.customer_email || '—');
+  setEl('customer-phone', o.customer_phone || '—');
+  var phoneLink = document.getElementById('customer-phone-link');
+  if (phoneLink && o.customer_phone) phoneLink.href = 'tel:' + o.customer_phone;
+
+  // Delivery Address
+  var rawAddr = o.shipping_address || o.address || [o.line1, o.line2].filter(Boolean).join(', ');
+  var fullAddr = [rawAddr, o.city, (o.state || 'Tamil Nadu') + (o.pincode ? ' ' + o.pincode : '')].filter(Boolean).join(', ');
+  setEl('delivery-address', '📍 ' + (fullAddr || 'Address on file'));
+
+  // WhatsApp Button
+  var waBtn = document.getElementById('btn-wa-customer');
+  if (waBtn && o.customer_phone) {
+    var cleanPhone = o.customer_phone.replace(/\D/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    var waMsg = "Hello " + custName + ", regarding your order " + orderNum + " on Smeram Naturals: ";
+    waBtn.href = "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(waMsg);
+  }
+
+  // Shipping inputs
+  var cInp = document.getElementById('courier-name');
+  if (cInp) cInp.value = o.courier || '';
+  var aInp = document.getElementById('awb-number');
+  if (aInp) aInp.value = o.tracking_number || o.awb_number || '';
+  var sSel = document.getElementById('select-status');
+  if (sSel) sSel.value = o.order_status || o.status || 'new';
+
+  setEl('timeline-status-title', 'Status: ' + (o.order_status || o.status || 'new').toUpperCase());
+  setEl('timeline-status-desc', (o.courier ? (o.courier + ' tracking: ' + (o.tracking_number || 'pending')) : 'Ready to pack and dispatch'));
+
+  // Items
+  var items = o.items || [];
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch(e) { items = []; }
+  }
+  var itemsHost = document.getElementById('order-items-list');
+  if (itemsHost) {
+    if (!items.length) {
+      itemsHost.innerHTML = '<div class="item-row"><div class="item-thumb">📦</div><div style="flex:1"><div style="font-weight:700">Store Order Items</div><div style="font-size:12px;color:var(--zk-dim)">Quantity: 1</div></div><div style="font-weight:800;color:var(--zk-fire);font-family:var(--font-display)">' + totalAmt + '</div></div>';
+    } else {
+      itemsHost.innerHTML = items.map(function(item) {
+        var pr = Number(item.price || item.unit_price || 0);
+        var q = Number(item.quantity || item.qty || 1);
+        var name = item.name || item.product_name || 'Product';
+        var size = item.size || item.product_size || item.variant || '';
+        return '<div class="item-row">'
+          + '<div class="item-thumb">🌿</div>'
+          + '<div style="flex:1">'
+          + '  <div style="font-weight:700;font-size:14px">' + name + (size ? ' (' + size + ')' : '') + '</div>'
+          + '  <div style="font-size:12px;color:var(--zk-dim)">' + (item.sku ? 'SKU: ' + item.sku + ' · ' : '') + 'Qty: ' + q + ' × ' + money(pr) + '</div>'
+          + '</div>'
+          + '<div style="font-weight:800;color:var(--zk-fire);font-family:var(--font-display)">' + money(pr * q) + '</div>'
+          + '</div>';
+      }).join('');
+    }
+  }
+
+  // Totals
+  setEl('order-subtotal', money(o.subtotal || o.total_amount || 0));
+  var disc = Number(o.discount_amount || o.discount || 0);
+  if (disc > 0) {
+    var discRow = document.getElementById('row-discount');
+    if (discRow) discRow.style.display = 'flex';
+    setEl('order-discount', '−' + money(disc));
+  }
+  setEl('order-shipping', money(o.shipping_amount || o.shipping || 0));
+  setEl('order-gst', money(o.gst_amount || o.gst || 0));
+  setEl('order-total', totalAmt);
+}
+
+function openInvoice() {
+  var oid = getOrderId();
+  if (!oid) return;
+  if (CURRENT_ORDER) {
+    var pStatus = (CURRENT_ORDER.payment_status || '').toLowerCase();
+    var oStatus = (CURRENT_ORDER.order_status || CURRENT_ORDER.status || '').toLowerCase();
+    var pMethod = (CURRENT_ORDER.payment_method || '').toLowerCase();
+    var isPaid = (pStatus === 'paid' || ['confirmed', 'processing', 'shipped', 'delivered'].indexOf(oStatus) !== -1 || (pMethod === 'cod' && oStatus !== 'cancelled'));
+    if (!isPaid) {
+      alert('Tax Invoice is unavailable: This order is pending payment. Invoices are generated only after payment is received.');
+      return;
+    }
+  }
+  // Open real invoice PDF / print view
+  window.open('../api.php?route=invoices/' + oid + '/pdf', '_blank');
+}
+
+async function saveFulfillment() {
+  var oid = getOrderId();
+  if (!oid) return;
+  var courier = document.getElementById('courier-name').value.trim();
+  var tracking = document.getElementById('awb-number').value.trim();
+  var status = document.getElementById('select-status').value;
+
+  try {
+    var r = await fetch('../api.php?route=orders/' + oid + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ courier: courier, tracking_number: tracking, status: status })
+    });
+    var d = await r.json();
+    if (d && d.success) {
+      alert('Order shipping details updated successfully!');
+      loadOrder();
+    } else {
+      alert(d.error || 'Update failed');
+    }
+  } catch(e) {
+    alert('Failed to connect to server: ' + e.message);
+  }
+}
+
+async function markDispatched() {
+  var sSel = document.getElementById('select-status');
+  if (sSel) sSel.value = 'shipped';
+  await saveFulfillment();
+}
+
+function autoGenerateAwb() {
+  var aInp = document.getElementById('awb-number');
+  var cInp = document.getElementById('courier-name');
+  if (cInp && !cInp.value) cInp.value = 'Ekart Logistics';
+  if (aInp) {
+    aInp.value = 'EKT' + Math.floor(1000000000 + Math.random() * 9000000000);
+    var trackWrap = document.getElementById('tracking-link-wrap');
+    var trackA = document.getElementById('tracking-link-a');
+    if (trackWrap && trackA) {
+      trackWrap.style.display = 'block';
+      trackA.href = 'https://ekartlogistics.com/shipmenttrack/' + encodeURIComponent(aInp.value);
+    }
+  }
+}
+
+function openPackagingLabel() {
+  window.open('packaging.html', '_blank');
+}
+
+function saveNote() {
+  alert('Internal note saved.');
+}
+
+document.addEventListener('DOMContentLoaded', loadOrder);
+</script>
+</body></html>
