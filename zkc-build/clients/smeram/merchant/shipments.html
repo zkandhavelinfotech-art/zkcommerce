@@ -73,6 +73,7 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
       <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="selAll"> Select all</label>
       <button class="btn blue" id="printBtn">🖨 Print labels (4×6)</button>
       <button class="btn primary" id="autoBookAllBtn" style="background:#059669;color:#fff;border-color:#059669" title="Book all unbooked ready orders with Ekart automatically">⚡ Auto-book with Ekart</button>
+      <button class="btn" id="syncStatusBtn" style="border-color:#0284c7;color:#0284c7;font-weight:600" title="Check live tracking and cancellation status of shipments in Ekart">🔄 Sync from Ekart</button>
       <button class="btn" id="shipSelBtn">Mark selected shipped</button>
       <span class="status" id="status"></span>
     </div>
@@ -111,6 +112,8 @@ function phpRoute(path, opts) {
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/rebook$/))) { route = 'shipments/orders/' + m[1] + '/rebook'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/cancel$/))) { route = 'shipments/orders/' + m[1] + '/cancel'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if (p === '/shipments/orders/sync-status' || p === 'shipments/orders/sync-status') route = 'shipments/orders/sync-status';
+  else if (p === '/shipments/orders/sync-all' || p === 'shipments/orders/sync-all') route = 'shipments/orders/sync-all';
   else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); orderId = m[1]; }
   if (!route) route = p.replace(/^\//, '');
   const isClient = location.pathname.includes('/clients/');
@@ -233,11 +236,12 @@ function render() {
       <td class="addr"><b>${esc(o.customer_name)}</b> · ${esc(o.customer_phone || '')}<div class="muted">${esc([a.line1 || a.address, a.line2, a.city, a.state].filter(Boolean).join(', '))} <b>${esc(a.pincode || '')}</b></div></td>
       <td>${isCod(o) ? `<span class="pill cod">COD ${money(o.total_amount)}</span>` : `<span class="pill paid">Prepaid</span>`}</td>
       <td><input type="text" class="awb" data-awb="${o.id}" value="${esc(o.tracking_number || '')}" placeholder="Scan / type AWB" ${on ? '' : 'disabled'}>
+        ${o.ekart_status === 'Cancelled' ? `<div style="font-size:11px;color:#b91c1c;font-weight:700">🔴 Ekart: Cancelled</div>` : (o.tracking_number ? `<div style="font-size:11px;color:#047857;font-weight:700">🟢 Ekart: Active</div>` : '')}
         ${o.tracking_url ? `<div><a class="muted" href="${esc(o.tracking_url)}" target="_blank" rel="noopener">Track ↗</a></div>` : ''}
         ${o.tracking_number ? `<div><a class="muted" href="${location.pathname.includes('/clients/') ? '../../../api.php' : '../api.php'}?route=shipments/orders/${o.id}/label" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600">Ekart Label 📄</a></div>` : ''}</td>
       <td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.shipped_at ? `<div class="muted">Shipped ${new Date(o.shipped_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}${o.delivered_at ? `<div class="muted">Delivered ${new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}<div class="muted" data-wa="${o.id}"></div></td>
       <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'}>⚡ Book</button>` : ''}
+        ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'} style="border-color:#10b981;color:#047857;font-weight:700">${o.ekart_status === 'Cancelled' ? '⚡ Activate / Book' : '⚡ Book'}</button>` : ''}
         ${api && o.tracking_number ? `<button class="btn sm" data-rebook="${o.id}" ${on ? '' : 'disabled'} title="Cancelled or need fresh tracking label? Generate a new active Ekart AWB" style="border-color:#3b82f6;color:#1d4ed8;font-weight:600">🔄 Re-book</button>` : ''}
         ${api && o.tracking_number && !['delivered', 'cancelled'].includes(o.status) ? `<button class="btn sm" data-cancel="${o.id}" ${on ? '' : 'disabled'} title="Cancel shipment in Ekart" style="border-color:#fca5a5;color:#b91c1c">✖ Cancel</button>` : ''}
         ${['confirmed', 'processing'].includes(o.status) ? `<button class="btn sm primary" data-ship="${o.id}" ${on && o.tracking_number ? '' : 'disabled'} title="${o.tracking_number ? 'Mark shipped and send the tracking link' : 'Enter the AWB first'}">Shipped</button>` : ''}
@@ -329,10 +333,12 @@ document.getElementById('shipTable').addEventListener('click', async e => {
       const d = await api('/shipments/orders/' + b.dataset.book + '/book', { method: 'POST' });
       const target = data.orders.find(x => x.id === Number(b.dataset.book));
       if (target) {
-        Object.assign(target, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: 'https://app.elite.ekartlogistics.in/track/' + d.tracking_id });
+        Object.assign(target, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: 'https://ekartlogistics.com/shipmenttrack/' + d.tracking_id });
+        target.ekart_status = 'Order Placed';
+        selected.add(target.id);
       }
       render();
-      status('✓ Booked with Ekart! AWB: ' + (d.tracking_id || (d.order && d.order.tracking_number) || 'Generated'), 'var(--brand)');
+      status('✓ Booked with Ekart! Active AWB: ' + (d.tracking_id || (d.order && d.order.tracking_number) || 'Generated'), 'var(--brand)');
     } catch (err) {
       btn.disabled = false;
       btn.textContent = '⚡ Book';
@@ -350,6 +356,7 @@ document.getElementById('shipTable').addEventListener('click', async e => {
       const d = await api('/shipments/orders/' + oid + '/rebook', { method: 'POST' });
       if (target) {
         Object.assign(target, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: d.tracking_url });
+        target.ekart_status = 'Order Placed';
         selected.add(oid);
       }
       render();
@@ -373,9 +380,10 @@ document.getElementById('shipTable').addEventListener('click', async e => {
       if (target) {
         target.tracking_number = null;
         target.tracking_url = null;
+        target.ekart_status = 'Cancelled';
       }
       render();
-      status('✓ Shipment cancelled in Ekart. You can re-book whenever ready.', 'var(--brand)');
+      status('✓ Shipment cancelled in Ekart. You can re-activate / re-book whenever ready.', 'var(--brand)');
     } catch (err) {
       btn.disabled = false;
       btn.textContent = '✖ Cancel';
@@ -413,6 +421,28 @@ if (autoBookBtn) {
       status(`⚠️ Booked ${booked} of ${unbooked.length} order(s). Failed: ${lastErr}`, 'var(--warn)');
     } else {
       status(`❌ Ekart booking failed: ${lastErr}`, 'var(--err)');
+    }
+  };
+}
+const syncStatusBtn = document.getElementById('syncStatusBtn');
+if (syncStatusBtn) {
+  syncStatusBtn.onclick = async () => {
+    syncStatusBtn.disabled = true;
+    syncStatusBtn.textContent = 'Syncing status…';
+    status('Checking live status from Ekart…', '#475569');
+    try {
+      const res = await api('/shipments/orders/sync-status', { method: 'POST' });
+      await load();
+      if (res.updated_count > 0) {
+        status(`✓ Synced from Ekart: ${res.updated_count} order(s) updated!`, 'var(--brand)');
+      } else {
+        status(`✓ Synced: checked ${res.checked_count || 0} shipment(s) with Ekart. All up-to-date!`, 'var(--brand)');
+      }
+    } catch (e) {
+      status('❌ Sync failed: ' + e.message, 'var(--err)');
+    } finally {
+      syncStatusBtn.disabled = false;
+      syncStatusBtn.textContent = '🔄 Sync from Ekart';
     }
   };
 }

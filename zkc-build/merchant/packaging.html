@@ -83,8 +83,10 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
       <div class="row">
         <button class="btn sm" id="selAll">Select all</button>
         <button class="btn sm" id="selNone">Clear</button>
+        <button class="btn sm primary" id="syncEkartBtn" style="background:#059669;border-color:#059669;color:#fff;font-weight:700" title="Book and sync selected orders with Ekart immediately">⚡ Sync selected to Ekart</button>
         <button class="btn sm" id="csvBtn">⬇ CSV (Ekart bulk upload)</button>
         <button class="btn sm" id="packedBtn">✔ Mark selected as packed</button>
+        <a class="btn sm" href="shipments.html" style="text-decoration:none;border-color:#0284c7;color:#0284c7;font-weight:600">🚚 Shipments &amp; AWBs →</a>
       </div>
     </div>
     <div class="status" id="status" style="margin-top:8px"></div>
@@ -129,7 +131,9 @@ const PHP_ROUTES = {
   '/orders/packaging': 'admin/packaging',
   '/orders/packaging/mark-packed': 'admin/mark-packed',
   'orders/packaging': 'admin/packaging',
-  'orders/packaging/mark-packed': 'admin/mark-packed'
+  'orders/packaging/mark-packed': 'admin/mark-packed',
+  '/shipments/orders/sync-all': 'shipments/orders/sync-all',
+  'shipments/orders/sync-all': 'shipments/orders/sync-all'
 };
 const storeId = new URLSearchParams(location.search).get('store_id');
 let data = { orders: [], store: {} }, selected = new Set();
@@ -263,6 +267,8 @@ function renderSummary() {
   const head = document.getElementById('headCheck');
   head.checked = !!data.orders.length && sel.length === data.orders.length;
   head.indeterminate = sel.length > 0 && sel.length < data.orders.length;
+  const syncBtn = document.getElementById('syncEkartBtn');
+  if (syncBtn) syncBtn.disabled = !sel.length;
   document.getElementById('printBtn').disabled = document.getElementById('csvBtn').disabled = document.getElementById('packedBtn').disabled = !sel.length;
 }
 
@@ -340,6 +346,35 @@ async function markPacked() {
   catch (e) { status('❌ ' + e.message, 'var(--err)'); }
 }
 
+async function syncToEkart() {
+  const ids = [...selected];
+  if (!ids.length) return status('Select orders to sync with Ekart', 'var(--err)');
+  if (!confirm(`Sync and book ${ids.length} selected order(s) directly with Ekart?\n\nThis will generate official active Ekart AWBs and register them in both portals.`)) return;
+  const btn = document.getElementById('syncEkartBtn');
+  btn.disabled = true;
+  btn.textContent = 'Syncing to Ekart…';
+  status(`Syncing ${ids.length} order(s) with Ekart…`, '#475569');
+  try {
+    const r = await api('/shipments/orders/sync-all', {
+      method: 'POST',
+      body: JSON.stringify({ order_ids: ids })
+    });
+    await load();
+    if (r.synced_count > 0) {
+      status(`✓ ${r.synced_count} order(s) successfully synced with Ekart! AWBs created and active.`, 'var(--brand)');
+    } else if (r.failed_count > 0) {
+      status(`❌ Sync error: ${r.failed[0]?.error || 'Check Ekart connection'}`, 'var(--err)');
+    } else {
+      status('No un-synced orders found in selection.', 'var(--brand)');
+    }
+  } catch (e) {
+    status('❌ ' + e.message, 'var(--err)');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ Sync selected to Ekart';
+  }
+}
+
 // Inside the merchant dashboard (iframe) the dashboard already has the store name and navigation.
 if (new URLSearchParams(location.search).get('embed')) document.querySelector('header').style.display = 'none';
 if (PHP_MODE) { const back = document.querySelector('header a'); back.href = 'admin-orders.php'; back.textContent = '← Orders'; }
@@ -369,6 +404,8 @@ document.getElementById('headCheck').onchange = e => { selected = e.target.check
 document.getElementById('printBtn').onclick = printLabels;
 document.getElementById('csvBtn').onclick = downloadCsv;
 document.getElementById('packedBtn').onclick = markPacked;
+const syncBtnEl = document.getElementById('syncEkartBtn');
+if (syncBtnEl) syncBtnEl.onclick = syncToEkart;
 load();
 </script>
 </body>

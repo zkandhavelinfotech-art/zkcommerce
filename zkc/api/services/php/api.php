@@ -2115,6 +2115,8 @@ function zkcEkartGetSettings() {
     $trackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://ekartlogistics.com/shipmenttrack/{awb}');
     $pickupAlias = !empty($api['pickup_alias']) ? $api['pickup_alias'] : (defined('EKART_PICKUP_ALIAS') ? EKART_PICKUP_ALIAS : 'Smeram Primary Hub');
     return [
+        'enabled' => isset($saved['enabled']) ? (bool)$saved['enabled'] : (defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true),
+        'mode' => !empty($saved['mode']) ? $saved['mode'] : (defined('EKART_MODE') ? EKART_MODE : 'api'),
         'base_url' => zkcEkartNormalizeBaseUrl($rawBase),
         'client_id' => $clientId,
         'merchant_code' => $merchantCode,
@@ -2546,6 +2548,12 @@ function zkcEkartCancelShipment($pdo, $orderId, $awb = '') {
     $err = curl_error($ch);
     curl_close($ch);
 
+    $respData = json_decode((string)$raw, true);
+    $isAlreadyCancelled = false;
+    if (is_array($respData) && isset($respData['description']) && stripos($respData['description'], 'Cancelled') !== false) {
+        $isAlreadyCancelled = true;
+    }
+
     if ($pdo && $orderId > 0) {
         $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
         $stmt = $pdo->prepare("UPDATE `{$tbl}` SET tracking_number = NULL, tracking_url = NULL, ekart_status = 'Cancelled' WHERE id = ?");
@@ -2553,10 +2561,10 @@ function zkcEkartCancelShipment($pdo, $orderId, $awb = '') {
     }
 
     return [
-        'success' => ($httpCode === 200 || $httpCode === 204),
+        'success' => ($httpCode === 200 || $httpCode === 204 || $isAlreadyCancelled),
         'cancelled_awb' => $trackingId,
         'http_code' => $httpCode,
-        'response' => json_decode((string)$raw, true) ?: $raw
+        'response' => $respData ?: $raw
     ];
 }
 
@@ -2738,6 +2746,92 @@ if (($route === 'shipments/track' || preg_match('#^shipments/orders/(\\d+)/track
     } catch (Throwable $e) {
         respond(['error' => $e->getMessage()], 400);
     }
+}
+
+// Bulk Sync all existing unbooked ready orders to Ekart
+if (($route === 'shipments/orders/sync-all' || $route === 'admin/shipments/sync-all' || $route === 'shipments/sync-all') && $method === 'POST') {
+    if (!$pdo) respond(['error' => 'Database connection required'], 500);
+    $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+    if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
+
+    $rawIds = (array)($body['order_ids'] ?? ($_POST['order_ids'] ?? []));
+    $orderIds = array_values(array_filter(array_map('intval', $rawIds), function($x) { return $x > 0; }));
+
+    if (!empty($orderIds)) {
+        $marks = implode(',', array_fill(0, count($orderIds), '?'));
+        $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id IN ($marks) ORDER BY id ASC");
+        $stmt->execute($orderIds);
+    } else {
+        $stmt = $pdo->query("SELECT * FROM `{$tbl}` WHERE (tracking_number IS NULL OR tracking_number = '' OR ekart_status = 'Cancelled') AND order_status NOT IN ('cancelled', 'delivered') ORDER BY id ASC LIMIT 50");
+    }
+    $candidates = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $synced = [];
+    $failed = [];
+    foreach ($candidates as $ord) {
+        $oid = (int)$ord['id'];
+        try {
+            $res = zkcEkartCreateShipment($pdo, $ord);
+            $synced[] = [
+                'order_id' => $oid,
+                'order_number' => $ord['order_number'] ?? '#' . $oid,
+                'awb' => $res['tracking_id'] ?? ''
+            ];
+        } catch (Throwable $e) {
+            $failed[] = [
+                'order_id' => $oid,
+                'order_number' => $ord['order_number'] ?? '#' . $oid,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    respond([
+        'success' => true,
+        'total' => count($candidates),
+        'synced_count' => count($synced),
+        'failed_count' => count($failed),
+        'synced' => $synced,
+        'failed' => $failed
+    ]);
+}
+
+// Sync tracking & cancellation statuses from Ekart back to Merchant Portal
+if (($route === 'shipments/orders/sync-status' || $route === 'admin/shipments/sync-status' || $route === 'shipments/sync-status') && ($method === 'POST' || $method === 'GET')) {
+    if (!$pdo) respond(['error' => 'Database connection required'], 500);
+    $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+    if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
+
+    $stmt = $pdo->query("SELECT id, order_number, tracking_number, order_status, ekart_status FROM `{$tbl}` WHERE tracking_number IS NOT NULL AND tracking_number != '' AND order_status NOT IN ('delivered') ORDER BY id DESC LIMIT 50");
+    $ordersWithAwb = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $updated = [];
+    foreach ($ordersWithAwb as $ord) {
+        $oid = (int)$ord['id'];
+        $awb = trim($ord['tracking_number']);
+        try {
+            $trackRes = zkcEkartTrack($pdo, $oid, $awb);
+            $data = $trackRes['data'] ?? [];
+            $trackInfo = is_array($data) ? ($data['track'] ?? $data) : [];
+            $liveStatus = strtolower((string)($trackInfo['status'] ?? ($data['status'] ?? '')));
+
+            if (strpos($liveStatus, 'cancel') !== false) {
+                $pdo->prepare("UPDATE `{$tbl}` SET ekart_status = 'Cancelled' WHERE id = ?")->execute([$oid]);
+                $updated[] = ['order_id' => $oid, 'order_number' => $ord['order_number'], 'awb' => $awb, 'status' => 'Cancelled in Ekart'];
+            } elseif (strpos($liveStatus, 'deliver') !== false) {
+                $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'delivered', ekart_status = 'Delivered', delivered_at = COALESCE(delivered_at, NOW()) WHERE id = ?")->execute([$oid]);
+                $updated[] = ['order_id' => $oid, 'order_number' => $ord['order_number'], 'awb' => $awb, 'status' => 'Delivered'];
+            } elseif (strpos($liveStatus, 'transit') !== false || strpos($liveStatus, 'pickup') !== false || strpos($liveStatus, 'shipped') !== false || strpos($liveStatus, 'out_for_delivery') !== false) {
+                $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'shipped', ekart_status = 'In Transit', shipped_at = COALESCE(shipped_at, NOW()) WHERE id = ?")->execute([$oid]);
+                $updated[] = ['order_id' => $oid, 'order_number' => $ord['order_number'], 'awb' => $awb, 'status' => 'In Transit'];
+            }
+        } catch (Throwable $e) {}
+    }
+    respond([
+        'success' => true,
+        'checked_count' => count($ordersWithAwb),
+        'updated_count' => count($updated),
+        'updated' => $updated
+    ]);
 }
 
 // Store standard legal & policy pages
@@ -2987,6 +3081,8 @@ if ($route === 'webhooks/ekart' || $route === 'shipments/ekart/webhook') {
             $newStatus = 'shipped';
         } elseif (strpos($topic, 'rto') !== false || strpos($topic, 'returned') !== false || strpos($topic, 'fail') !== false || strpos($statusRaw, 'rto') !== false || strpos($statusRaw, 'return') !== false) {
             $newStatus = 'returned';
+        } elseif (strpos($topic, 'cancel') !== false || strpos($statusRaw, 'cancel') !== false) {
+            $newStatus = 'cancelled';
         }
 
         $updated = false;
@@ -3008,6 +3104,9 @@ if ($route === 'webhooks/ekart' || $route === 'shipments/ekart/webhook') {
 
             if ($order) {
                 $orderId = (int)$order['id'];
+                if ($newStatus === 'cancelled') {
+                    $pdo->prepare("UPDATE `{$tbl}` SET ekart_status = 'Cancelled' WHERE id = ?")->execute([$orderId]);
+                }
                 if ($awb !== '' && empty($order['tracking_number']) && function_exists('zkcAssignAwb')) {
                     try {
                         zkcAssignAwb($pdo, $orderId, $awb, 'Ekart Logistics');
