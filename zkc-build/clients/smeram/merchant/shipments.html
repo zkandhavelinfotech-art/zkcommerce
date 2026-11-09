@@ -63,10 +63,10 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
       <label class="f">To<input type="date" id="toDate"></label>
       <button class="btn" id="loadBtn">Load</button>
       <span style="flex:1"></span>
-      <a class="btn primary" id="ekartPortal" href="https://app.elite.ekartlogistics.in/" target="_blank" rel="noopener" style="background:#0284c7;color:#fff;border-color:#0284c7">🌐 EKart Portal ↗</a>
+      <a class="btn primary" id="ekartPortal" href="https://app.elite.ekartlogistics.in/ship/forward" target="_blank" rel="noopener" style="background:#0284c7;color:#fff;border-color:#0284c7" title="Open Ekart Forward Shipments list">🌐 Ekart Forward Shipments ↗</a>
       <a class="btn" id="ekartTrack" href="https://ekartlogistics.com/ekartlogistics-web/" target="_blank" rel="noopener">🔍 EKart Track Order ↗</a>
     </div>
-    <p class="muted" style="margin:10px 0 0" id="modeNote">Book each shipment on the Ekart portal, then type or scan its AWB below (Enter saves and moves to the next order).</p>
+    <p class="muted" style="margin:10px 0 0" id="modeNote">Orders booked via API are automatically packaged with active AWBs and appear in Ekart under <b>Ship → Forward</b> (<a href="https://app.elite.ekartlogistics.in/ship/forward" target="_blank" style="color:var(--brand);font-weight:600">/ship/forward</a>) with status <i>Consignment Manifested / Order Placed</i> under warehouse <b>Smeram Primary Hub</b>. They bypass the manual Ekart <code>/orders/OPEN</code> and <code>/packaging</code> queues because packaging &amp; AWB generation are already completed here.</p>
   </div>
   <div class="card">
     <div class="row" style="margin-bottom:10px">
