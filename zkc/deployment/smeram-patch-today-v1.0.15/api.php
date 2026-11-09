@@ -2112,7 +2112,8 @@ function zkcEkartGetSettings() {
     $username = !empty($api['username']) ? $api['username'] : (defined('EKART_USERNAME') ? EKART_USERNAME : 'smeramindustries@gmail.com');
     $password = !empty($api['password']) ? $api['password'] : (defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey);
     $courier = !empty($saved['courier_name']) ? $saved['courier_name'] : (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics');
-    $trackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{awb}');
+    $trackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://ekartlogistics.com/shipmenttrack/{awb}');
+    $pickupAlias = !empty($api['pickup_alias']) ? $api['pickup_alias'] : (defined('EKART_PICKUP_ALIAS') ? EKART_PICKUP_ALIAS : 'Smeram Primary Hub');
     return [
         'base_url' => zkcEkartNormalizeBaseUrl($rawBase),
         'client_id' => $clientId,
@@ -2120,6 +2121,7 @@ function zkcEkartGetSettings() {
         'api_key' => $apiKey,
         'username' => $username,
         'password' => $password,
+        'pickup_alias' => $pickupAlias,
         'courier_name' => $courier,
         'tracking_url_template' => $trackTpl
     ];
@@ -2276,13 +2278,30 @@ function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
     $customerCity = trim((string)($order['city'] ?? ($addr['city'] ?? 'Coimbatore')));
     $customerState = trim((string)($order['state'] ?? ($addr['state'] ?? 'Tamil Nadu')));
 
+    $pickupAlias = !empty($cfg['pickup_alias']) ? $cfg['pickup_alias'] : 'Smeram Primary Hub';
     $sellerName = defined('BILLING_NAME') ? BILLING_NAME : (defined('STORE_NAME') ? STORE_NAME : 'Smeram Industries');
-    $sellerAddress = defined('STORE_ADDRESS') ? STORE_ADDRESS : '61-A, V.C.V Layout, RS Puram';
-    $sellerCity = defined('STORE_CITY') ? STORE_CITY : 'Coimbatore';
+    $sellerAddress = defined('STORE_ADDRESS') ? STORE_ADDRESS : 'FLAT NO 5, FIRST FLOOR, 22/13, RAJAVEEDHI STREET, CHOOLAIMEDU';
+    $sellerCity = defined('STORE_CITY') ? STORE_CITY : 'Chennai';
     $sellerState = defined('STORE_STATE') ? STORE_STATE : 'Tamil Nadu';
     $sellerGst = defined('GSTIN') ? GSTIN : (defined('SELLER_GST') ? SELLER_GST : '33DVRPR1801M1Z6');
-    $sellerPin = (int)substr(preg_replace('/\D/', '', defined('STORE_PINCODE') ? STORE_PINCODE : '641002'), 0, 6) ?: 641002;
-    $sellerPhone = (int)substr(preg_replace('/\D/', '', defined('STORE_PHONE') ? STORE_PHONE : '9840012345'), -10) ?: 9840012345;
+    $sellerPin = (int)substr(preg_replace('/\D/', '', defined('STORE_PINCODE') ? STORE_PINCODE : '600094'), 0, 6) ?: 600094;
+    $sellerPhone = (int)substr(preg_replace('/\D/', '', defined('STORE_PHONE') ? STORE_PHONE : '8015918854'), -10) ?: 8015918854;
+
+    // Ekart requires consignee_alternate_phone to be 10 digits and distinct from drop_location.phone
+    $altPhone = '';
+    if (!empty($order['alternate_phone'])) {
+        $altDigits = preg_replace('/\D/', '', (string)$order['alternate_phone']);
+        $altClean = substr($altDigits, -10);
+        if (strlen($altClean) === 10 && (int)$altClean !== $cleanPhone) {
+            $altPhone = $altClean;
+        }
+    }
+    if ($altPhone === '') {
+        $altPhone = '8015918854';
+        if ((int)$altPhone === $cleanPhone) {
+            $altPhone = '9841723068';
+        }
+    }
 
     $invoiceNumber = !empty($order['invoice_number']) ? $order['invoice_number'] : $order['order_number'];
     $invoiceDate = !empty($order['created_at']) ? date('Y-m-d', strtotime($order['created_at'])) : date('Y-m-d');
@@ -2298,7 +2317,7 @@ function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
         'invoice_number' => (string)$invoiceNumber,
         'invoice_date' => $invoiceDate,
         'consignee_name' => $consigneeName,
-        'consignee_alternate_phone' => (string)$cleanPhone,
+        'consignee_alternate_phone' => (string)$altPhone,
         'products_desc' => $productsDesc,
         'payment_mode' => $paymentMode,
         'category_of_goods' => 'Personal Care & Cosmetics',
@@ -2325,24 +2344,10 @@ function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
             'location_type' => 'Home'
         ],
         'pickup_location' => [
-            'name' => $sellerName,
-            'address' => $sellerAddress,
-            'pin' => $sellerPin,
-            'phone' => $sellerPhone,
-            'city' => $sellerCity,
-            'state' => $sellerState,
-            'country' => 'India',
-            'location_type' => 'Office'
+            'name' => $pickupAlias
         ],
         'return_location' => [
-            'name' => $sellerName,
-            'address' => $sellerAddress,
-            'pin' => $sellerPin,
-            'phone' => $sellerPhone,
-            'city' => $sellerCity,
-            'state' => $sellerState,
-            'country' => 'India',
-            'location_type' => 'Office'
+            'name' => $pickupAlias
         ]
     ];
 
@@ -2379,7 +2384,7 @@ function zkcEkartCreateShipment($pdo, $orderIdOrOrder) {
         throw new Exception("Ekart response missing tracking_id: " . $raw);
     }
 
-    $trackingUrl = "https://app.elite.ekartlogistics.in/track/{$trackingId}";
+    $trackingUrl = "https://ekartlogistics.com/shipmenttrack/{$trackingId}";
 
     if ($pdo) {
         $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';

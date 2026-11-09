@@ -63,3 +63,4 @@ if (!defined('SHIP_COURIER')) define('SHIP_COURIER', 'Ekart Logistics');
 if (!defined('SHIP_TRACKING_URL')) define('SHIP_TRACKING_URL', 'https://app.elite.ekartlogistics.in/track/{awb}');
 if (!defined('EKART_PORTAL_URL')) define('EKART_PORTAL_URL', 'https://app.elite.ekartlogistics.in/');
 if (!defined('EKART_TRACK_PORTAL_URL')) define('EKART_TRACK_PORTAL_URL', 'https://ekartlogistics.com/ekartlogistics-web/');
+if (!defined('EKART_PICKUP_ALIAS')) define('EKART_PICKUP_ALIAS', 'Smeram Primary Hub');

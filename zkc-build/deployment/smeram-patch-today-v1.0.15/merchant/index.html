@@ -1019,31 +1019,6 @@
         </div>
       </section>
 
-        <div class="card">
-          <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
-          <form id="shippingRateForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Rate Name</label><input name="name" required placeholder="Standard Delivery"></div>
-              <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0" required></div>
-              <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0" placeholder="Optional (e.g. 499)"></div>
-              <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix" placeholder="All (or e.g. 600 for Chennai)"></div>
-              <div class="form-group"><label>Estimated Days</label><input name="estimated_days" placeholder="2–4 business days"></div>
-            </div>
-            <button class="btn-primary" type="submit">Save Shipping Rate</button>
-          </form>
-        </div>
-
-        <div class="card">
-          <div class="card-head"><h2>Configured Shipping Rates</h2></div>
-          <div class="table-wrap">
-            <table id="shippingRatesTable">
-              <thead><tr><th>Rate Name</th><th>Fee</th><th>Free Threshold</th><th>Pincode Prefix</th><th>Est. Delivery</th><th>Action</th></tr></thead>
-              <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading shipping rates…</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       <!-- VIEW: INBOX -->
       <section id="view-inbox" class="view-panel" style="display:none">
         <h1 class="page-title">Customer Inquiries & Restock Requests</h1>
