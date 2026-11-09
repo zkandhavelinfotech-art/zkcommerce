@@ -96,11 +96,12 @@ function respond($data, $status = 200) {
     exit;
 }
 
-/** JSON error for an exception: our own RuntimeExceptions carry the HTTP status as their code. */
+/** JSON error for an exception: return real exception message instead of masking */
 function respondError($e) {
-    $status = ($e instanceof RuntimeException && $e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
-    if ($status === 500) error_log('[api.php] ' . $e->getMessage());
-    respond(['error' => $status === 500 ? 'Something went wrong. Please try again.' : $e->getMessage()], $status);
+    $status = ($e instanceof RuntimeException && $e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 400;
+    $msg = $e->getMessage();
+    error_log('[api.php] ' . $msg);
+    respond(['error' => $msg ?: 'Something went wrong. Please try again.'], $status);
 }
 
 /**
@@ -2551,13 +2552,21 @@ if (($route === 'shipments/orders/book' || preg_match('#^shipments/orders/(\\d+)
 if (($route === 'shipments/label' || preg_match('#^shipments/orders/(\\d+)/label#', $route, $m)) && ($method === 'GET' || $method === 'POST')) {
     $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
     $awb = trim((string)($body['awb'] ?? ($_GET['awb'] ?? '')));
-    zkcEkartDownloadLabel($pdo, $oid, $awb);
+    try {
+        zkcEkartDownloadLabel($pdo, $oid, $awb);
+    } catch (Throwable $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
 }
 
 if (($route === 'shipments/track' || preg_match('#^shipments/orders/(\\d+)/track#', $route, $m) || preg_match('#^shipments/track/([^/]+)#', $route, $tm)) && $method === 'GET') {
     $oid = !empty($m[1]) ? (int)$m[1] : (int)($_GET['order_id'] ?? 0);
     $trackingId = !empty($tm[1]) ? $tm[1] : trim((string)($_GET['tracking_id'] ?? ($_GET['awb'] ?? '')));
-    respond(zkcEkartTrack($pdo, $oid, $trackingId));
+    try {
+        respond(zkcEkartTrack($pdo, $oid, $trackingId));
+    } catch (Throwable $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
 }
 
 // Store standard legal & policy pages
