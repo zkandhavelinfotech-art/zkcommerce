@@ -2616,6 +2616,22 @@ if (($route === 'shipments/ekart/test' || $route === 'shipments/settings/test') 
     }
 }
 
+// Save / Update AWB for an order
+if (($route === 'shipments/orders/awb' || preg_match('#^shipments/orders/(\\d+)/awb#', $route, $m) || $route === 'admin/awb') && ($method === 'PUT' || $method === 'POST')) {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    $awb = trim((string)($body['awb'] ?? ($body['tracking_number'] ?? '')));
+    $courier = trim((string)($body['courier'] ?? 'Ekart Logistics'));
+    $trackingUrl = $awb !== '' ? "https://ekartlogistics.com/shipmenttrack/{$awb}" : null;
+    if ($pdo && $oid > 0) {
+        $tbl = zkcGetOrdersTable($pdo);
+        zkcEnsureOrderColumns($pdo, $tbl);
+        $stmt = $pdo->prepare("UPDATE `{$tbl}` SET tracking_number = ?, courier = ?, tracking_url = ? WHERE id = ?");
+        $stmt->execute([$awb ?: null, $awb ? $courier : null, $trackingUrl, $oid]);
+    }
+    $updatedOrder = function_exists('zkcOrderById') ? zkcOrderById($pdo, $oid) : ['id' => $oid, 'tracking_number' => $awb];
+    respond(['success' => true, 'order' => function_exists('zkcAdminOrderJson') ? zkcAdminOrderJson($updatedOrder) : $updatedOrder]);
+}
+
 // Ekart Shipment Actions (Book, Label, Track)
 if (($route === 'shipments/orders/book' || preg_match('#^shipments/orders/(\\d+)/book#', $route, $m) || $route === 'admin/book' || $route === 'shipments/ekart/create') && $method === 'POST') {
     $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
