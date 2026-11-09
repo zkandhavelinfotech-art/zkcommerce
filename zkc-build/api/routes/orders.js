@@ -71,7 +71,12 @@ router.put('/whatsapp-settings', auth, async (req, res) => {
 
 // ── Packaging: delivery addresses for a date range, for printing labels (Ekart etc.) ──
 // stage: ready = confirmed (COD or paid online), packed = processing, shipped, all = everything except unpaid/cancelled
-const PACKAGING_STAGES = { ready: ['confirmed'], packed: ['processing'], shipped: ['shipped'], all: ['confirmed', 'processing', 'shipped', 'delivered'] };
+const PACKAGING_STAGES = {
+  ready: ['new', 'confirmed', 'paid', 'processing'],
+  packed: ['processing'],
+  shipped: ['shipped'],
+  all: ['new', 'confirmed', 'paid', 'processing', 'shipped', 'delivered']
+};
 const isoDate = v => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? String(v) : null);
 const todayIst = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
 
@@ -82,11 +87,14 @@ router.get('/packaging', auth, async (req, res) => {
     const from = isoDate(req.query.from) || todayIst(), to = isoDate(req.query.to) || from;
     if (from > to) return res.status(400).json({ error: '"From" date must be on or before "To" date' });
     const stage = PACKAGING_STAGES[req.query.stage] ? req.query.stage : 'ready';
+    const rangeSql = (stage === 'ready')
+      ? "AND ((o.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $3 AND $4 OR o.status IN ('new','confirmed','paid') OR o.payment_status = 'paid')"
+      : "AND (o.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $3 AND $4";
     const [{ rows }, { rows: [shop] }, waSettings] = await Promise.all([
       pool.query(`SELECT o.id, o.order_number, o.customer_name, o.customer_phone, o.customer_email, o.shipping_address, o.items,
           o.total_amount, o.payment_method, o.payment_status, o.status, o.tracking_number, o.courier, o.created_at, i.invoice_number
         FROM orders o LEFT JOIN invoices i ON i.order_id = o.id
-        WHERE o.store_id = $1 AND o.status = ANY($2) AND (o.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $3 AND $4
+        WHERE o.store_id = $1 AND (o.status = ANY($2) OR (o.payment_status = 'paid' AND o.status NOT IN ('cancelled', 'delivered', 'shipped'))) ${rangeSql}
         ORDER BY o.created_at ASC LIMIT 1000`, [store.id, PACKAGING_STAGES[stage], from, to]),
       pool.query('SELECT store_name, address, city, state, whatsapp_number, gst_number FROM stores WHERE id=$1', [store.id]),
       orderMessages.loadSettings(store.id)
@@ -103,7 +111,7 @@ router.post('/packaging/mark-packed', auth, async (req, res) => {
     if (!store) return res.status(404).json({ error: 'Store not found' });
     const ids = (Array.isArray(req.body.order_ids) ? req.body.order_ids : []).map(Number).filter(n => Number.isSafeInteger(n) && n > 0).slice(0, 1000);
     if (!ids.length) return res.status(400).json({ error: 'Select at least one order' });
-    const { rowCount } = await pool.query("UPDATE orders SET status='processing', updated_at=NOW() WHERE store_id=$1 AND id = ANY($2) AND status='confirmed'", [store.id, ids]);
+    const { rowCount } = await pool.query("UPDATE orders SET status='processing', updated_at=NOW() WHERE store_id=$1 AND id = ANY($2) AND status IN ('new', 'confirmed', 'paid')", [store.id, ids]);
     res.json({ updated: rowCount });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

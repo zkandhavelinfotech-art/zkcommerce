@@ -18,13 +18,14 @@ function zkcAdminOrderJson($o) {
         'total_amount' => (float)$o['total_amount'],
         'payment_method' => $o['payment_method'],
         'payment_status' => $o['payment_status'],
-        'status' => $o['order_status'] === 'new' ? 'confirmed' : $o['order_status'],
+        'status' => in_array($o['order_status'], ['new', 'paid']) ? 'confirmed' : $o['order_status'],
         'tracking_number' => $o['tracking_number'] ?? null,
-        'courier' => $o['courier'] ?? null,
+        'courier' => $o['courier'] ?? 'Ekart Logistics',
         'tracking_url' => $o['tracking_url'] ?? null,
         'shipped_at' => !empty($o['shipped_at']) ? date('c', strtotime($o['shipped_at'])) : null,
         'delivered_at' => !empty($o['delivered_at']) ? date('c', strtotime($o['delivered_at'])) : null,
         'created_at' => date('c', strtotime($o['created_at'])),
+        'whatsapp' => zkcOrderWhatsAppLinks($o),
     ];
 }
 
@@ -49,20 +50,29 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
     if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
 
     if (($route === 'admin/packaging' || $route === 'orders/packaging' || $route === 'packaging') && $method === 'GET') {
-        $today = date('Y-m-d');
-        $last7 = date('Y-m-d', strtotime('-7 days'));
-        $from = zkcDateParam($_GET['from'] ?? '', $last7);
-        $to = zkcDateParam($_GET['to'] ?? '', $today);
-        if ($from > $to) respond(['error' => '"From" date must be on or before "To" date'], 400);
+        $from = zkcDateParam($_GET['from'] ?? '', '');
+        $to = zkcDateParam($_GET['to'] ?? '', '');
+        if ($from !== '' && $to !== '' && $from > $to) respond(['error' => '"From" date must be on or before "To" date'], 400);
         $stages = [
-            'ready' => "(o.order_status IN ('new','confirmed','paid','processing') AND o.order_status NOT IN ('cancelled','delivered','shipped'))",
+            'ready' => "(o.order_status IN ('new','confirmed','paid','processing') OR o.payment_status = 'paid' OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped'))) AND o.order_status NOT IN ('cancelled','delivered','shipped')",
             'packed' => "o.order_status = 'processing'",
             'shipped' => "o.order_status = 'shipped'",
             'all' => "o.order_status NOT IN ('cancelled')"
         ];
         $stage = isset($stages[$_GET['stage'] ?? '']) ? $_GET['stage'] : 'ready';
-        $stmt = $pdo->prepare("SELECT o.* FROM `{$tbl}` o WHERE " . $stages[$stage] . " AND DATE(o.created_at) BETWEEN ? AND ? ORDER BY o.created_at ASC LIMIT 1000");
-        $stmt->execute([$from, $to]);
+        $sql = "SELECT o.* FROM `{$tbl}` o WHERE " . $stages[$stage];
+        $args = [];
+        if ($from !== '' && $to !== '') {
+            if ($stage === 'ready') {
+                $sql .= " AND (DATE(o.created_at) BETWEEN ? AND ? OR o.order_status IN ('new','confirmed','paid') OR o.payment_status = 'paid')";
+            } else {
+                $sql .= " AND DATE(o.created_at) BETWEEN ? AND ?";
+            }
+            $args[] = $from;
+            $args[] = $to;
+        }
+        $stmt = $pdo->prepare($sql . " ORDER BY o.created_at ASC LIMIT 1000");
+        $stmt->execute($args);
         $orders = [];
         foreach ($stmt->fetchAll() as $o) {
             $invNum = $o['invoice_number'] ?? null;
@@ -84,7 +94,7 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
                 'total_amount' => (float)$o['total_amount'],
                 'payment_method' => $o['payment_method'],
                 'payment_status' => $o['payment_status'],
-                'status' => $o['order_status'],
+                'status' => in_array($o['order_status'], ['new', 'paid']) ? 'confirmed' : $o['order_status'],
                 'tracking_number' => $o['tracking_number'] ?? null,
                 'courier' => $o['courier'] ?? 'Ekart Logistics',
                 'tracking_url' => $o['tracking_url'] ?? null,
@@ -105,7 +115,7 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         $ids = array_slice(array_values(array_filter(array_map('intval', (array)($body['order_ids'] ?? [])), function ($n) { return $n > 0; })), 0, 1000);
         if (!$ids) respond(['error' => 'Select at least one order'], 400);
         $marks = implode(',', array_fill(0, count($ids), '?'));
-        $stmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'processing' WHERE order_status IN ('new','confirmed') AND id IN ($marks)");
+        $stmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'processing' WHERE order_status IN ('new','confirmed','paid') AND id IN ($marks)");
         $stmt->execute($ids);
         respond(['updated' => $stmt->rowCount()]);
     }
@@ -113,13 +123,26 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
     try {
         // ── Shipments (Ekart AWBs, labels, shipped / delivered) ──
         if (($route === 'admin/shipments' || $route === 'shipments/orders' || $route === 'shipments') && $method === 'GET') {
-            $stages = ['ready' => "o.order_status IN ('new','confirmed','processing')", 'shipped' => "o.order_status = 'shipped'", 'delivered' => "o.order_status = 'delivered'", 'all' => "o.order_status IN ('new','confirmed','processing','shipped','delivered')"];
+            $stages = [
+                'ready' => "(o.order_status IN ('new','confirmed','paid','processing') OR o.payment_status = 'paid' OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped'))) AND o.order_status NOT IN ('cancelled','delivered','shipped')",
+                'shipped' => "o.order_status = 'shipped'",
+                'delivered' => "o.order_status = 'delivered'",
+                'all' => "o.order_status NOT IN ('cancelled')"
+            ];
             $stage = isset($stages[$_GET['stage'] ?? '']) ? $_GET['stage'] : 'ready';
             $sql = "SELECT o.* FROM `{$tbl}` o WHERE " . $stages[$stage];
             $args = [];
             $from = zkcDateParam($_GET['from'] ?? '', '');
             $to = zkcDateParam($_GET['to'] ?? '', '');
-            if ($from !== '' && $to !== '') { $sql .= ' AND DATE(o.created_at) BETWEEN ? AND ?'; $args[] = $from; $args[] = $to; }
+            if ($from !== '' && $to !== '') {
+                if ($stage === 'ready') {
+                    $sql .= " AND (DATE(o.created_at) BETWEEN ? AND ? OR o.order_status IN ('new','confirmed','paid') OR o.payment_status = 'paid')";
+                } else {
+                    $sql .= " AND DATE(o.created_at) BETWEEN ? AND ?";
+                }
+                $args[] = $from;
+                $args[] = $to;
+            }
             $stmt = $pdo->prepare($sql . ' ORDER BY o.created_at ASC LIMIT 1000');
             $stmt->execute($args);
             respond([

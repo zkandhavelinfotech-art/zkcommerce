@@ -50,3 +50,4 @@ if (isset($json['error']) && $json['error'] === 'Route not found') {
 }
 
 echo "\nALL LOCAL TESTS PASSED!\n";
+

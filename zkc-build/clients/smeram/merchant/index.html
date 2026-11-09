@@ -1039,30 +1039,45 @@
 
     async function req(path, options = {}) {
       const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(options.headers || {}) };
-      let res;
       const parts = path.replace(/^\//, '').split('?');
       const cleanRoute = parts[0];
       const qs = parts[1] ? '&' + parts[1] : '';
       const isClient = window.location.pathname.includes('/clients/');
-      const phpBase = isClient ? '../../../api.php?route=' : '../api.php?route=';
       const safeRoute = cleanRoute.split('/').map(encodeURIComponent).join('/');
-      const phpUrl = phpBase + safeRoute + qs;
 
-      try {
-        res = await fetch(api + path, { ...options, headers });
-      } catch (err) {
-        // Fallback to PHP endpoint if Node is not running on GoDaddy
-        res = await fetch(phpUrl, { ...options, headers }).catch(() => null)
-             || await fetch('api.php?route=' + safeRoute + qs, { ...options, headers }).catch(() => null)
-             || await fetch('/api.php?route=' + safeRoute + qs, { ...options, headers }).catch(() => null);
-        if (!res) throw err;
+      const candidateUrls = [
+        api + path,
+        isClient ? ('../../../api.php?route=' + safeRoute + qs) : ('../api.php?route=' + safeRoute + qs),
+        'api.php?route=' + safeRoute + qs,
+        '../api.php?route=' + safeRoute + qs,
+        '../../api.php?route=' + safeRoute + qs,
+        '../../../api.php?route=' + safeRoute + qs,
+        '/api.php?route=' + safeRoute + qs
+      ];
+      const uniqueUrls = [...new Set(candidateUrls)];
+
+      let res = null;
+      let lastErr = null;
+
+      for (const url of uniqueUrls) {
+        try {
+          const r = await fetch(url, { ...options, headers });
+          if (r.ok) {
+            res = r;
+            break;
+          }
+          if (!res || r.status !== 404) {
+            res = r;
+          }
+          if (r.status !== 404 && r.status !== 500 && r.status !== 502 && r.status !== 503) {
+            break;
+          }
+        } catch (err) {
+          lastErr = err;
+        }
       }
-      if (!res.ok && (res.status === 404 || res.status === 500 || res.status === 503)) {
-        const phpRes = await fetch(phpUrl, { ...options, headers }).catch(() => null)
-                     || await fetch('api.php?route=' + safeRoute + qs, { ...options, headers }).catch(() => null)
-                     || await fetch('/api.php?route=' + safeRoute + qs, { ...options, headers }).catch(() => null);
-        if (phpRes) res = phpRes;
-      }
+
+      if (!res) throw lastErr || new Error('Request failed');
       if (options.download) {
         if (!res.ok) throw Error('Download failed');
         return res.blob();
@@ -1576,11 +1591,12 @@
       frame.dataset.store = String(currentStoreId);
     }
     function loadShipmentsFrame() {
-      if (!currentStoreId || shipmentsStoreLoaded === currentStoreId) return;
-      const url = 'shipments.html?store_id=' + encodeURIComponent(currentStoreId);
+      const sid = currentStoreId || (new URLSearchParams(location.search).get('store_id')) || '2';
+      if (shipmentsStoreLoaded === sid) return;
+      const url = 'shipments.html?store_id=' + encodeURIComponent(sid);
       document.getElementById('shipmentsFrame').src = url + '&embed=1';
       document.getElementById('shipmentsNewTab').href = url;
-      shipmentsStoreLoaded = currentStoreId;
+      shipmentsStoreLoaded = sid;
     }
     // ── Ekart shipping (optional; off by default) ──
     function ekartShowFields() {
@@ -1622,11 +1638,12 @@
       } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
     }
     function loadPackagingFrame() {
-      if (!currentStoreId || packagingStoreLoaded === currentStoreId) return;
-      const url = 'packaging.html?store_id=' + encodeURIComponent(currentStoreId);
+      const sid = currentStoreId || (new URLSearchParams(location.search).get('store_id')) || '2';
+      if (packagingStoreLoaded === sid) return;
+      const url = 'packaging.html?store_id=' + encodeURIComponent(sid);
       document.getElementById('packagingFrame').src = url + '&embed=1';
       document.getElementById('packagingNewTab').href = url;
-      packagingStoreLoaded = currentStoreId;
+      packagingStoreLoaded = sid;
     }
 
     // ── WhatsApp order messages ──

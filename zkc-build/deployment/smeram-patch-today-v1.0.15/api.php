@@ -488,7 +488,7 @@ if ($route === 'auth/login' && $method === 'POST') {
 }
 
 // For routes requiring the database, verify connection
-$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'webhooks/ekart', 'shipments/ekart/webhook', 'categories', 'inventory', 'inventory/movements', 'inventory/settings'];
+$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'shipping/settings', 'admin/shipments/settings', 'settings/shipments', 'settings/ekart', 'webhooks/ekart', 'shipments/ekart/webhook', 'categories', 'inventory', 'inventory/movements', 'inventory/settings'];
 $isProductRoute = ($route === 'products' || preg_match('#^products/#', $route) || preg_match('#^stores/(\\d+)/products#', $route));
 $isStoreRoute = ($route === 'stores' || preg_match('#^stores/(\\d+)#', $route) || $route === 'categories' || preg_match('#^stores/(\\d+)/categories#', $route));
 $isInvoiceRoute = ($route === 'invoices' || preg_match('#^invoices/#', $route));
@@ -2437,48 +2437,68 @@ function zkcEkartTrack($pdo, $orderId, $trackingId = '') {
 }
 
 // Shipments / Ekart settings
-if ($route === 'shipments/settings') {
-    $ekClientId = defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222';
+if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route === 'admin/shipments/settings' || $route === 'settings/shipments' || $route === 'settings/ekart') {
+    $settingsFile = __DIR__ . '/ekart_settings.json';
+    $saved = [];
+    if (file_exists($settingsFile)) {
+        $saved = json_decode(@file_get_contents($settingsFile), true) ?: [];
+    }
+
+    $ekClientId = !empty($saved['api']['client_id']) ? $saved['api']['client_id'] : (defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222');
+    $ekMerchantCode = !empty($saved['api']['merchant_code']) ? $saved['api']['merchant_code'] : (defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx');
+    $ekBaseUrl = !empty($saved['api']['base_url']) ? $saved['api']['base_url'] : (defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
+    $ekCourier = !empty($saved['courier_name']) ? $saved['courier_name'] : (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics');
+    $ekTrackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{awb}');
     $ekAlertEmail = defined('EKART_ALERT_EMAIL') ? EKART_ALERT_EMAIL : 'smeramindustries@gmail.com';
     $ekWebhookSecret = defined('EKART_WEBHOOK_SECRET') ? EKART_WEBHOOK_SECRET : 'ek_sec_984f1801m1z6_smeram';
     $ekWebhookUrl = 'https://smeram-naturals.in/api.php?route=webhooks/ekart';
 
     if ($method === 'PUT') {
-        respond([
-            'success' => true,
-            'settings' => [
-                'enabled' => !empty($body['enabled']),
-                'mode' => (string)($body['mode'] ?? 'api'),
-                'courier_name' => (string)($body['courier_name'] ?? 'Ekart Logistics'),
-                'tracking_url_template' => (string)($body['tracking_url_template'] ?? 'https://app.elite.ekartlogistics.in/track/{tracking_number}'),
-                'api' => [
-                    'base_url' => zkcEkartNormalizeBaseUrl($body['api']['base_url'] ?? (defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in')),
-                    'client_id' => (string)($body['api']['client_id'] ?? $ekClientId),
-                    'merchant_code' => (string)($body['api']['merchant_code'] ?? 'SMERAMx'),
-                    'has_api_key' => !empty($body['api']['api_key']) || (defined('EKART_API_KEY') && EKART_API_KEY !== ''),
-                    'webhook_url' => $ekWebhookUrl,
-                    'webhook_secret' => $ekWebhookSecret,
-                    'alert_email' => $ekAlertEmail,
-                    'topics' => 'shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto'
-                ]
-            ]
-        ]);
-    }
-    respond([
-        'settings' => [
-            'enabled' => defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true,
-            'mode' => defined('EKART_MODE') ? EKART_MODE : 'api',
-            'courier_name' => defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics',
-            'tracking_url_template' => defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{tracking_number}',
+        $inApi = is_array($body['api'] ?? null) ? $body['api'] : [];
+        $newApiKey = trim((string)($inApi['api_key'] ?? ''));
+        $existingApiKey = (string)($saved['api']['api_key'] ?? (defined('EKART_API_KEY') ? EKART_API_KEY : ''));
+        $effectiveApiKey = ($newApiKey !== '') ? $newApiKey : $existingApiKey;
+
+        $newSettings = [
+            'enabled' => !empty($body['enabled']),
+            'mode' => (string)($body['mode'] ?? ($saved['mode'] ?? 'api')),
+            'courier_name' => (string)($body['courier_name'] ?? $ekCourier),
+            'tracking_url_template' => (string)($body['tracking_url_template'] ?? $ekTrackTpl),
             'api' => [
-                'base_url' => defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in',
-                'client_id' => $ekClientId,
-                'merchant_code' => defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx',
-                'has_api_key' => defined('EKART_API_KEY') && EKART_API_KEY !== '',
+                'base_url' => zkcEkartNormalizeBaseUrl($inApi['base_url'] ?? $ekBaseUrl),
+                'client_id' => (string)($inApi['client_id'] ?? $ekClientId),
+                'merchant_code' => (string)($inApi['merchant_code'] ?? $ekMerchantCode),
+                'api_key' => $effectiveApiKey,
+                'has_api_key' => ($effectiveApiKey !== ''),
                 'webhook_url' => $ekWebhookUrl,
                 'webhook_secret' => $ekWebhookSecret,
                 'alert_email' => $ekAlertEmail,
-                'topics' => 'shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto'
+                'topics' => 'track_updated, shipment_created, shipment_recreated'
+            ]
+        ];
+        @file_put_contents($settingsFile, json_encode($newSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        respond([
+            'success' => true,
+            'settings' => $newSettings
+        ]);
+    }
+
+    $hasKey = !empty($saved['api']['api_key']) || (defined('EKART_API_KEY') && EKART_API_KEY !== '');
+    respond([
+        'settings' => [
+            'enabled' => isset($saved['enabled']) ? (bool)$saved['enabled'] : (defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true),
+            'mode' => !empty($saved['mode']) ? $saved['mode'] : (defined('EKART_MODE') ? EKART_MODE : 'api'),
+            'courier_name' => $ekCourier,
+            'tracking_url_template' => $ekTrackTpl,
+            'api' => [
+                'base_url' => $ekBaseUrl,
+                'client_id' => $ekClientId,
+                'merchant_code' => $ekMerchantCode,
+                'has_api_key' => $hasKey,
+                'webhook_url' => $ekWebhookUrl,
+                'webhook_secret' => $ekWebhookSecret,
+                'alert_email' => $ekAlertEmail,
+                'topics' => 'track_updated, shipment_created, shipment_recreated'
             ]
         ]
     ]);
@@ -2743,8 +2763,8 @@ if ($route === 'webhooks/ekart' || $route === 'shipments/ekart/webhook') {
         $data = isset($payload['data']) && is_array($payload['data']) ? $payload['data'] : (isset($payload['payload']) && is_array($payload['payload']) ? $payload['payload'] : $payload);
 
         $topic = strtolower((string)($payload['topic'] ?? $payload['event'] ?? $payload['event_type'] ?? ($data['topic'] ?? ($data['event'] ?? ''))));
-        $awb = trim((string)($data['tracking_id'] ?? $data['awb'] ?? $data['awb_number'] ?? $data['waybill'] ?? $data['tracking_number'] ?? ($payload['tracking_id'] ?? ($payload['awb'] ?? ''))));
-        $orderRef = trim((string)($data['client_reference_id'] ?? $data['order_id'] ?? $data['order_number'] ?? $data['reference_id'] ?? ($payload['client_reference_id'] ?? ($payload['order_id'] ?? ''))));
+        $awb = trim((string)($data['tracking_id'] ?? $data['id'] ?? $data['wbn'] ?? $data['awb'] ?? $data['awb_number'] ?? $data['waybill'] ?? $data['tracking_number'] ?? ($payload['tracking_id'] ?? ($payload['id'] ?? ($payload['wbn'] ?? ($payload['awb'] ?? ''))))));
+        $orderRef = trim((string)($data['client_reference_id'] ?? $data['orderNumber'] ?? $data['order_id'] ?? $data['order_number'] ?? $data['reference_id'] ?? ($payload['client_reference_id'] ?? ($payload['orderNumber'] ?? ($payload['order_id'] ?? '')))));
         $statusRaw = strtolower((string)($data['status'] ?? $data['current_status'] ?? ($payload['status'] ?? '')));
 
         // Map topic/status to canonical order status
@@ -2826,6 +2846,9 @@ if ($route === 'payments/razorpay/webhook' && $method === 'POST') {
         if ($o && ($event['event'] ?? '') === 'payment.captured' && (int)($payment['amount'] ?? 0) === paise($o['total_amount'])) {
             if (function_exists('zkcMarkPaid') && zkcMarkPaid($pdo, $o['id'], (string)($payment['id'] ?? ''))) {
                 if (function_exists('zkcAfterPaid')) zkcAfterPaid($pdo, $o['id']);
+                if (function_exists('zkcEkartAutoCreateShipment')) {
+                    try { zkcEkartAutoCreateShipment($pdo, $o['id']); } catch (Throwable $e) { error_log('[Ekart Webhook] ' . $e->getMessage()); }
+                }
             }
         } elseif ($o && ($event['event'] ?? '') === 'payment.failed') {
             $stmt = $pdo->prepare("UPDATE `{$tbl}` SET payment_status = 'failed' WHERE id = ?");
@@ -2945,6 +2968,10 @@ if ($route === 'payments/razorpay/verify' && $method === 'POST') {
     // Deduct stock and trigger WhatsApp
     if (function_exists('zkcAfterPaid')) {
         try { zkcAfterPaid($pdo, $order['id']); } catch (Exception $ap) {}
+    }
+    // Auto-create Ekart shipment booking
+    if (function_exists('zkcEkartAutoCreateShipment')) {
+        try { zkcEkartAutoCreateShipment($pdo, $order['id']); } catch (Throwable $e) { error_log('[Ekart Verify] ' . $e->getMessage()); }
     }
 
     $updatedOrder = function_exists('zkcOrderById') ? zkcOrderById($pdo, $order['id']) : $order;

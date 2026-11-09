@@ -8,10 +8,10 @@ const MODES = ['manual', 'api'];
 const DEFAULT_TRACKING = 'https://app.elite.ekartlogistics.in/track/{awb}';
 const AWB_RE = /^[A-Za-z0-9-]{6,32}$/;
 const SHIP_STAGES = {
-  ready: ['confirmed', 'processing'],
+  ready: ['new', 'confirmed', 'paid', 'processing'],
   shipped: ['shipped'],
   delivered: ['delivered'],
-  all: ['confirmed', 'processing', 'shipped', 'delivered']
+  all: ['new', 'confirmed', 'paid', 'processing', 'shipped', 'delivered']
 };
 
 const badRequest = msg => Object.assign(new Error(msg), { status: 400 });
@@ -99,11 +99,16 @@ async function listShipments(storeId, { stage = 'ready', from, to } = {}) {
   const statuses = SHIP_STAGES[stage] || SHIP_STAGES.ready;
   const params = [storeId, statuses];
   let range = '';
-  if (from && to) { params.push(from, to); range = "AND (o.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $3 AND $4"; }
+  if (from && to) {
+    params.push(from, to);
+    range = (stage === 'ready')
+      ? "AND ((o.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $3 AND $4 OR o.status IN ('new','confirmed','paid') OR o.payment_status = 'paid')"
+      : "AND (o.created_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $3 AND $4";
+  }
   const { rows } = await pool.query(
     `SELECT o.id, o.order_number, o.customer_name, o.customer_phone, o.shipping_address, o.items, o.total_amount, o.payment_method,
             o.payment_status, o.status, o.tracking_number, o.courier, o.tracking_url, o.shipped_at, o.delivered_at, o.created_at
-       FROM orders o WHERE o.store_id=$1 AND o.status = ANY($2) ${range}
+       FROM orders o WHERE o.store_id=$1 AND (o.status = ANY($2) OR (o.payment_status = 'paid' AND o.status NOT IN ('cancelled', 'delivered', 'shipped'))) ${range}
       ORDER BY o.created_at ASC LIMIT 1000`, params);
   return rows;
 }

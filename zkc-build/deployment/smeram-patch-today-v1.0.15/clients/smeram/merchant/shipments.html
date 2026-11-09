@@ -64,6 +64,7 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
     <div class="row" style="margin-bottom:10px">
       <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="selAll"> Select all</label>
       <button class="btn blue" id="printBtn">🖨 Print labels (4×6)</button>
+      <button class="btn primary" id="autoBookAllBtn" style="background:#059669;color:#fff;border-color:#059669" title="Book all unbooked ready orders with Ekart automatically">⚡ Auto-book with Ekart</button>
       <button class="btn" id="shipSelBtn">Mark selected shipped</button>
       <span class="status" id="status"></span>
     </div>
@@ -101,7 +102,8 @@ function phpRoute(path, opts) {
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); }
   else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); }
   if (!route) route = p.replace(/^\//, '');
-  const phpBase = location.pathname.includes('/merchant/') ? '../api.php' : 'api.php';
+  const isClient = location.pathname.includes('/clients/');
+  const phpBase = isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php');
   const storeParam = storeId ? (q && q.includes('store_id=') ? '' : '&store_id=' + encodeURIComponent(storeId)) : '';
   const safeRoute = route.split('/').map(encodeURIComponent).join('/');
   return { url: phpBase + '?route=' + safeRoute + (q ? '&' + q : '') + storeParam, opts: { ...opts, body: opts.body || opts.method === 'PUT' ? JSON.stringify(body) : undefined } };
@@ -109,11 +111,27 @@ function phpRoute(path, opts) {
 async function api(path, opts = {}) {
   let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
   let r, optsCopy = { ...opts };
+  const isClient = location.pathname.includes('/clients/');
+  const bases = [
+    isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php'),
+    'api.php',
+    '../api.php',
+    '../../api.php',
+    '../../../api.php',
+    '/api.php'
+  ];
   if (PHP_MODE || !token) {
-    try {
-      const t = phpRoute(path, optsCopy);
-      r = await fetch(t.url, { ...t.opts, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
-    } catch (_) {}
+    for (const b of bases) {
+      try {
+        const t = phpRoute(path, optsCopy);
+        const u = b + t.url.slice(t.url.indexOf('?'));
+        const candidate = await fetch(u, { ...t.opts, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
+        if (candidate) {
+          r = candidate;
+          if (candidate.ok) break;
+        }
+      } catch (_) {}
+    }
   }
   if (!r || !r.ok) {
     try {
@@ -123,12 +141,17 @@ async function api(path, opts = {}) {
     } catch (_) {}
   }
   if (!r || !r.ok) {
-    try {
-      const t2 = phpRoute(path, optsCopy);
-      const phpRes = await fetch(t2.url, { ...t2.opts, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
-      if (phpRes && phpRes.ok) r = phpRes;
-      else if (!r) r = phpRes;
-    } catch (_) {}
+    for (const b of bases) {
+      try {
+        const t2 = phpRoute(path, optsCopy);
+        const u2 = b + t2.url.slice(t2.url.indexOf('?'));
+        const candidate = await fetch(u2, { ...t2.opts, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
+        if (candidate) {
+          r = candidate;
+          if (candidate.ok) break;
+        }
+      } catch (_) {}
+    }
   }
   if (!r) throw Error('Network request failed');
   const d = await r.json().catch(() => ({}));
@@ -187,7 +210,7 @@ function render() {
       <td>${isCod(o) ? `<span class="pill cod">COD ${money(o.total_amount)}</span>` : `<span class="pill paid">Prepaid</span>`}</td>
       <td><input type="text" class="awb" data-awb="${o.id}" value="${esc(o.tracking_number || '')}" placeholder="Scan / type AWB" ${on ? '' : 'disabled'}>
         ${o.tracking_url ? `<div><a class="muted" href="${esc(o.tracking_url)}" target="_blank" rel="noopener">Track ↗</a></div>` : ''}
-        ${o.tracking_number ? `<div><a class="muted" href="../api.php?route=shipments/orders/${o.id}/label" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600">Ekart Label 📄</a></div>` : ''}</td>
+        ${o.tracking_number ? `<div><a class="muted" href="${location.pathname.includes('/clients/') ? '../../../api.php' : '../api.php'}?route=shipments/orders/${o.id}/label" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600">Ekart Label 📄</a></div>` : ''}</td>
       <td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.shipped_at ? `<div class="muted">Shipped ${new Date(o.shipped_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}${o.delivered_at ? `<div class="muted">Delivered ${new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}<div class="muted" data-wa="${o.id}"></div></td>
       <td style="display:flex;gap:6px;flex-wrap:wrap">
         ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'}>Book</button>` : ''}
@@ -271,10 +294,44 @@ document.getElementById('shipTable').addEventListener('click', async e => {
   if (b.dataset.ship) ship([Number(b.dataset.ship)], 'shipped');
   if (b.dataset.deliver) ship([Number(b.dataset.deliver)], 'delivered');
   if (b.dataset.book) {
-    try { const d = await api('/shipments/orders/' + b.dataset.book + '/book', { method: 'POST' }); Object.assign(data.orders.find(x => x.id === Number(b.dataset.book)), d.order); render(); }
-    catch (err) { status('❌ ' + err.message, 'var(--err)'); }
+    const btn = b;
+    btn.disabled = true;
+    btn.textContent = 'Booking…';
+    try {
+      const d = await api('/shipments/orders/' + b.dataset.book + '/book', { method: 'POST' });
+      const target = data.orders.find(x => x.id === Number(b.dataset.book));
+      if (target) {
+        Object.assign(target, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: 'https://app.elite.ekartlogistics.in/track/' + d.tracking_id });
+      }
+      render();
+      status('✓ Booked with Ekart! AWB: ' + (d.tracking_id || (d.order && d.order.tracking_number) || 'Generated'), 'var(--brand)');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Book';
+      status('❌ ' + err.message, 'var(--err)');
+    }
   }
 });
+const autoBookBtn = document.getElementById('autoBookAllBtn');
+if (autoBookBtn) {
+  autoBookBtn.onclick = async () => {
+    const unbooked = data.orders.filter(o => !o.tracking_number && ['confirmed', 'processing', 'new', 'paid'].includes(o.status));
+    if (!unbooked.length) return status('All ready orders already have an AWB.', 'var(--brand)');
+    status(`Booking ${unbooked.length} order(s) with Ekart…`, '#475569');
+    let booked = 0;
+    for (const o of unbooked) {
+      try {
+        const d = await api('/shipments/orders/' + o.id + '/book', { method: 'POST' });
+        Object.assign(o, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: 'https://app.elite.ekartlogistics.in/track/' + d.tracking_id });
+        booked++;
+      } catch (err) {
+        status(`❌ Order ${o.order_number}: ${err.message}`, 'var(--err)');
+      }
+    }
+    render();
+    status(`✓ ${booked} of ${unbooked.length} order(s) booked with Ekart!`, 'var(--brand)');
+  };
+}
 document.getElementById('selAll').onchange = e => { selected = new Set(e.target.checked ? data.orders.map(o => o.id) : []); render(); };
 document.getElementById('shipSelBtn').onclick = () => {
   const ids = data.orders.filter(o => selected.has(o.id) && o.tracking_number && ['confirmed', 'processing'].includes(o.status)).map(o => o.id);

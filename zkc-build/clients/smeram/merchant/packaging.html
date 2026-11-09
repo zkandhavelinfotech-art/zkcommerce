@@ -61,11 +61,11 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
         </select>
       </label>
       <button class="btn primary" id="loadBtn">Show addresses</button>
-      <div class="chips">
-        <button class="btn sm" data-range="0">Today</button>
-        <button class="btn sm" data-range="1">Yesterday</button>
-        <button class="btn sm" data-range="7">Last 7 days</button>
-        <button class="btn sm" data-range="30">Last 30 days</button>
+      <div class="chips" id="rangeChips">
+        <button type="button" class="btn sm" data-range="all" style="background:#059669;color:#fff;font-weight:700;border:1px solid #047857;cursor:pointer">⭐ All Unpacked</button>
+        <button type="button" class="btn sm" data-range="0" style="background:#0284c7;color:#fff;font-weight:600;border:1px solid #0369a1;cursor:pointer">📅 Today</button>
+        <button type="button" class="btn sm" data-range="7" style="background:#4f46e5;color:#fff;font-weight:700;border:1px solid #3730a3;cursor:pointer">Last 7 days</button>
+        <button type="button" class="btn sm" data-range="30" style="background:#475569;color:#fff;font-weight:600;border:1px solid #334155;cursor:pointer">Last 30 days</button>
       </div>
     </div>
   </div>
@@ -115,10 +115,15 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
 <div id="printArea"></div>
 
 <script>
-// Two hosts share this page: the Node dashboard (login token) and the PHP package's packaging.php (admin session, api.php).
-const PHP_MODE = !!window.ZKC_PACKAGING_PHP;
-const API = '/api', token = PHP_MODE ? '' : localStorage.getItem('zk_token');
-const PHP_ROUTES = { '/orders/packaging': 'admin/packaging', '/orders/packaging/mark-packed': 'admin/mark-packed' };
+// Dual-host support: Node dashboard (/api/...) and PHP GoDaddy deployment (../api.php?route=...)
+const PHP_MODE = !!window.ZKC_PACKAGING_PHP || !location.port || location.port === '80' || location.port === '443' || location.pathname.endsWith('.php') || !localStorage.getItem('zk_token');
+const API = '/api', token = localStorage.getItem('zk_token');
+const PHP_ROUTES = {
+  '/orders/packaging': 'admin/packaging',
+  '/orders/packaging/mark-packed': 'admin/mark-packed',
+  'orders/packaging': 'admin/packaging',
+  'orders/packaging/mark-packed': 'admin/mark-packed'
+};
 const storeId = new URLSearchParams(location.search).get('store_id');
 let data = { orders: [], store: {} }, selected = new Set();
 
@@ -133,13 +138,67 @@ const status = (t, color) => { const el = document.getElementById('status'); el.
 const withStore = p => p + (storeId ? (p.includes('?') ? '&' : '?') + 'store_id=' + encodeURIComponent(storeId) : '');
 
 async function api(path, opts = {}) {
-  let url = API + withStore(path), headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
-  if (PHP_MODE) {
-    const [p, q] = path.split('?');
-    url = 'api.php?route=' + encodeURIComponent(PHP_ROUTES[p] || p.replace(/^\//, '')) + (q ? '&' + q : '');
-    headers = { 'Content-Type': 'application/json' };
+  const parts = path.replace(/^\//, '').split('?');
+  const cleanRoute = parts[0];
+  const qs = parts[1] ? '&' + parts[1] : '';
+  const storeParam = storeId ? (qs.includes('store_id=') ? '' : '&store_id=' + encodeURIComponent(storeId)) : '';
+
+  const phpRouteName = PHP_ROUTES['/' + cleanRoute] || PHP_ROUTES[cleanRoute] || cleanRoute;
+  const isClient = location.pathname.includes('/clients/');
+  const phpBases = [
+    isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php'),
+    'api.php',
+    '../api.php',
+    '../../api.php',
+    '../../../api.php',
+    '/api.php'
+  ];
+  const safeRoute = phpRouteName.split('/').map(encodeURIComponent).join('/');
+  const nodeUrl = API + withStore(path);
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: 'Bearer ' + token } : {}),
+    ...(opts.headers || {})
+  };
+
+  let r;
+  // If in PHP environment or no token, try PHP endpoint first
+  if (PHP_MODE || !token) {
+    for (const b of phpBases) {
+      try {
+        const candidate = await fetch(b + '?route=' + safeRoute + qs + storeParam, { ...opts, credentials: 'same-origin', headers });
+        if (candidate) {
+          r = candidate;
+          if (candidate.ok) break;
+        }
+      } catch (_) {}
+    }
   }
-  const r = await fetch(url, { ...opts, credentials: 'same-origin', headers });
+
+  // If PHP was not tried or failed, try Node endpoint
+  if (!r || !r.ok) {
+    try {
+      const nodeRes = await fetch(nodeUrl, { ...opts, credentials: 'same-origin', headers });
+      if (nodeRes && nodeRes.ok) r = nodeRes;
+      else if (!r) r = nodeRes;
+    } catch (_) {}
+  }
+
+  // If Node also failed or wasn't tried, and PHP was not successful, fallback to PHP
+  if (!r || !r.ok) {
+    for (const b of phpBases) {
+      try {
+        const candidate = await fetch(b + '?route=' + safeRoute + qs + storeParam, { ...opts, credentials: 'same-origin', headers });
+        if (candidate) {
+          r = candidate;
+          if (candidate.ok) break;
+        }
+      } catch (_) {}
+    }
+  }
+
+  if (!r) throw Error('Network request failed');
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw Error(d.error || 'Request failed (' + r.status + ')');
   return d;
@@ -149,7 +208,9 @@ async function load() {
   const from = document.getElementById('fromDate').value, to = document.getElementById('toDate').value, stage = document.getElementById('stage').value;
   status('Loading…');
   try {
-    data = await api('/orders/packaging?from=' + from + '&to=' + to + '&stage=' + stage);
+    const q = new URLSearchParams({ stage });
+    if (from && to) { q.set('from', from); q.set('to', to); }
+    data = await api('/orders/packaging?' + q);
     document.getElementById('storeName').textContent = data.store.store_name || '';
     selected = new Set(data.orders.map(o => o.id)); // everything selected by default; untick what you do not need
     renderRows();
@@ -164,7 +225,17 @@ function renderRows() {
     const a = addr(o), it = items(o);
     return `<tr class="${selected.has(o.id) ? 'sel' : ''}">
       <td><input type="checkbox" data-id="${o.id}" ${selected.has(o.id) ? 'checked' : ''} aria-label="Select ${esc(o.order_number)}"></td>
-      <td><b>${esc(o.order_number || '#' + o.id)}</b><div class="muted">${esc(new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }))}</div><div class="muted">${esc(o.status)}</div></td>
+      <td>
+        <b>${esc(o.order_number || '#' + o.id)}</b>
+        <div class="muted">${esc(new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }))}</div>
+        <div>
+          ${(o.status === 'confirmed' || o.status === 'new') 
+            ? '<span class="pill" style="background:#ecfdf5;color:#047857;border:1.5px solid #34d399;font-weight:800;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">📦 Ready to Pack</span>' 
+            : (o.status === 'processing' 
+              ? '<span class="pill" style="background:#eff6ff;color:#1e40af;border:1.5px solid #93c5fd;font-weight:700;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">✔ Packed</span>' 
+              : '<span class="pill" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;font-weight:700;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">' + esc(o.status) + '</span>')}
+        </div>
+      </td>
       <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div></td>
       <td class="addr">${esc([a.line1 || a.address, a.city, a.state].filter(Boolean).join(', '))}${a.pincode ? ' — <b>' + esc(a.pincode) + '</b>' : ''}</td>
       <td>${it.map(x => esc(x.name) + ' × ' + (Number(x.quantity) || 1)).join('<br>')}</td>
@@ -266,13 +337,22 @@ async function markPacked() {
 if (new URLSearchParams(location.search).get('embed')) document.querySelector('header').style.display = 'none';
 if (PHP_MODE) { const back = document.querySelector('header a'); back.href = 'admin-orders.php'; back.textContent = '← Orders'; }
 else if (!token) location.href = '../auth/login.html';
-document.getElementById('fromDate').value = document.getElementById('toDate').value = istDate(0);
+document.getElementById('fromDate').value = istDate(7);
+document.getElementById('toDate').value = istDate(0);
 document.getElementById('loadBtn').onclick = load;
 document.getElementById('stage').onchange = load;
 document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => {
-  const n = Number(b.dataset.range);
-  document.getElementById('fromDate').value = istDate(n === 1 ? 1 : n ? n - 1 : 0);
-  document.getElementById('toDate').value = istDate(n === 1 ? 1 : 0);
+  const r = b.dataset.range;
+  if (r === 'all') {
+    document.getElementById('fromDate').value = '';
+    document.getElementById('toDate').value = '';
+  } else {
+    const n = Number(r);
+    document.getElementById('fromDate').value = istDate(n === 1 ? 1 : n ? n : 0);
+    document.getElementById('toDate').value = istDate(n === 1 ? 1 : 0);
+  }
+  document.querySelectorAll('[data-range]').forEach(btn => btn.style.boxShadow = 'none');
+  b.style.boxShadow = '0 0 0 3px #fbbf24';
   load();
 });
 document.getElementById('selAll').onclick = () => { selected = new Set(data.orders.map(o => o.id)); renderRows(); };

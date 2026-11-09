@@ -62,9 +62,9 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
       </label>
       <button class="btn primary" id="loadBtn">Show addresses</button>
       <div class="chips" id="rangeChips">
-        <button type="button" class="btn sm" data-range="0" style="background:#059669;color:#fff;font-weight:700;border:1px solid #047857;cursor:pointer">📅 Today</button>
-        <button type="button" class="btn sm" data-range="1" style="background:#0284c7;color:#fff;font-weight:600;border:1px solid #0369a1;cursor:pointer">Yesterday</button>
-        <button type="button" class="btn sm" data-range="7" style="background:#4f46e5;color:#fff;font-weight:700;border:1px solid #3730a3;box-shadow:0 0 0 2px #c7d2fe;cursor:pointer">⭐ Last 7 days (Default)</button>
+        <button type="button" class="btn sm" data-range="all" style="background:#059669;color:#fff;font-weight:700;border:1px solid #047857;cursor:pointer">⭐ All Unpacked</button>
+        <button type="button" class="btn sm" data-range="0" style="background:#0284c7;color:#fff;font-weight:600;border:1px solid #0369a1;cursor:pointer">📅 Today</button>
+        <button type="button" class="btn sm" data-range="7" style="background:#4f46e5;color:#fff;font-weight:700;border:1px solid #3730a3;cursor:pointer">Last 7 days</button>
         <button type="button" class="btn sm" data-range="30" style="background:#475569;color:#fff;font-weight:600;border:1px solid #334155;cursor:pointer">Last 30 days</button>
       </div>
     </div>
@@ -144,8 +144,16 @@ async function api(path, opts = {}) {
   const storeParam = storeId ? (qs.includes('store_id=') ? '' : '&store_id=' + encodeURIComponent(storeId)) : '';
 
   const phpRouteName = PHP_ROUTES['/' + cleanRoute] || PHP_ROUTES[cleanRoute] || cleanRoute;
-  const phpBase = location.pathname.includes('/merchant/') ? '../api.php' : 'api.php';
-  const phpUrl = phpBase + '?route=' + encodeURIComponent(phpRouteName) + qs + storeParam;
+  const isClient = location.pathname.includes('/clients/');
+  const phpBases = [
+    isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php'),
+    'api.php',
+    '../api.php',
+    '../../api.php',
+    '../../../api.php',
+    '/api.php'
+  ];
+  const safeRoute = phpRouteName.split('/').map(encodeURIComponent).join('/');
   const nodeUrl = API + withStore(path);
 
   const headers = {
@@ -157,9 +165,15 @@ async function api(path, opts = {}) {
   let r;
   // If in PHP environment or no token, try PHP endpoint first
   if (PHP_MODE || !token) {
-    try {
-      r = await fetch(phpUrl, { ...opts, credentials: 'same-origin', headers });
-    } catch (_) {}
+    for (const b of phpBases) {
+      try {
+        const candidate = await fetch(b + '?route=' + safeRoute + qs + storeParam, { ...opts, credentials: 'same-origin', headers });
+        if (candidate) {
+          r = candidate;
+          if (candidate.ok) break;
+        }
+      } catch (_) {}
+    }
   }
 
   // If PHP was not tried or failed, try Node endpoint
@@ -173,11 +187,15 @@ async function api(path, opts = {}) {
 
   // If Node also failed or wasn't tried, and PHP was not successful, fallback to PHP
   if (!r || !r.ok) {
-    try {
-      const phpRes = await fetch(phpUrl, { ...opts, credentials: 'same-origin', headers });
-      if (phpRes && phpRes.ok) r = phpRes;
-      else if (!r) r = phpRes;
-    } catch (_) {}
+    for (const b of phpBases) {
+      try {
+        const candidate = await fetch(b + '?route=' + safeRoute + qs + storeParam, { ...opts, credentials: 'same-origin', headers });
+        if (candidate) {
+          r = candidate;
+          if (candidate.ok) break;
+        }
+      } catch (_) {}
+    }
   }
 
   if (!r) throw Error('Network request failed');
@@ -190,7 +208,9 @@ async function load() {
   const from = document.getElementById('fromDate').value, to = document.getElementById('toDate').value, stage = document.getElementById('stage').value;
   status('Loading…');
   try {
-    data = await api('/orders/packaging?from=' + from + '&to=' + to + '&stage=' + stage);
+    const q = new URLSearchParams({ stage });
+    if (from && to) { q.set('from', from); q.set('to', to); }
+    data = await api('/orders/packaging?' + q);
     document.getElementById('storeName').textContent = data.store.store_name || '';
     selected = new Set(data.orders.map(o => o.id)); // everything selected by default; untick what you do not need
     renderRows();
@@ -322,9 +342,15 @@ document.getElementById('toDate').value = istDate(0);
 document.getElementById('loadBtn').onclick = load;
 document.getElementById('stage').onchange = load;
 document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => {
-  const n = Number(b.dataset.range);
-  document.getElementById('fromDate').value = istDate(n === 1 ? 1 : n ? n : 0);
-  document.getElementById('toDate').value = istDate(n === 1 ? 1 : 0);
+  const r = b.dataset.range;
+  if (r === 'all') {
+    document.getElementById('fromDate').value = '';
+    document.getElementById('toDate').value = '';
+  } else {
+    const n = Number(r);
+    document.getElementById('fromDate').value = istDate(n === 1 ? 1 : n ? n : 0);
+    document.getElementById('toDate').value = istDate(n === 1 ? 1 : 0);
+  }
   document.querySelectorAll('[data-range]').forEach(btn => btn.style.boxShadow = 'none');
   b.style.boxShadow = '0 0 0 3px #fbbf24';
   load();
