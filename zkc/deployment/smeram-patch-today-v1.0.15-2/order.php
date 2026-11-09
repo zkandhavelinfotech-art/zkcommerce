@@ -1,0 +1,282 @@
+<?php
+/**
+ * Smeram Naturals — Order Receiver API for GoDaddy Windows Hosting
+ * Saves orders directly into GoDaddy MySQL database.
+ * Supports both 'orders' (standard schema) and 'smeram_orders' (client schema).
+ */
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+if (is_file(__DIR__ . '/db_config.php')) {
+    require_once __DIR__ . '/db_config.php';
+}
+if (is_file(__DIR__ . '/store_config.php')) {
+    require_once __DIR__ . '/store_config.php';
+}
+if (is_file(__DIR__ . '/whatsapp_orders.php')) {
+    require_once __DIR__ . '/whatsapp_orders.php';
+}
+
+function getOrdersTable($pdo) {
+    try {
+        $pdo->query("SELECT 1 FROM `orders` LIMIT 1");
+        return 'orders';
+    } catch (Exception $e) {}
+    try {
+        $pdo->query("SELECT 1 FROM `smeram_orders` LIMIT 1");
+        return 'smeram_orders';
+    } catch (Exception $e) {}
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `smeram_orders` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `order_number` VARCHAR(32) NOT NULL UNIQUE,
+          `customer_name` VARCHAR(120) NOT NULL,
+          `customer_phone` VARCHAR(20) NOT NULL,
+          `customer_email` VARCHAR(120) NULL,
+          `shipping_address` TEXT NOT NULL,
+          `city` VARCHAR(60) NOT NULL,
+          `state` VARCHAR(60) DEFAULT 'Tamil Nadu',
+          `pincode` VARCHAR(10) NOT NULL,
+          `items_json` TEXT NOT NULL,
+          `subtotal` DECIMAL(10,2) NOT NULL,
+          `discount_amount` DECIMAL(10,2) DEFAULT 0.00,
+          `shipping_amount` DECIMAL(10,2) DEFAULT 0.00,
+          `total_amount` DECIMAL(10,2) NOT NULL,
+          `payment_method` VARCHAR(30) DEFAULT 'cod',
+          `payment_status` VARCHAR(30) DEFAULT 'pending',
+          `order_status` VARCHAR(30) DEFAULT 'new',
+          `razorpay_order_id` VARCHAR(64) NULL,
+          `razorpay_payment_id` VARCHAR(64) NULL,
+          `razorpay_signature` VARCHAR(255) NULL,
+          `notes` TEXT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        return 'smeram_orders';
+    } catch (Exception $e) {}
+    return 'smeram_orders';
+}
+
+// Health / Connection Check: GET /order.php?ping=1
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ping'])) {
+    $pdo = function_exists('getDbConnection') ? getDbConnection() : null;
+    if ($pdo) {
+        $tbl = getOrdersTable($pdo);
+        $totalOrders = 0;
+        try {
+            $stmt = $pdo->query("SELECT COUNT(*) AS total_orders FROM `{$tbl}`");
+            $row = $stmt ? $stmt->fetch() : null;
+            $totalOrders = (int)($row['total_orders'] ?? 0);
+        } catch (Exception $e) {}
+        echo json_encode([
+            'status' => 'connected',
+            'database' => defined('DB_NAME') ? DB_NAME : 'unknown',
+            'table' => $tbl,
+            'total_orders' => $totalOrders
+        ], JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode([
+            'status' => 'disconnected',
+            'message' => 'Could not connect to GoDaddy MySQL. Check db_config.php'
+        ], JSON_UNESCAPED_UNICODE);
+    }
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed. Send POST JSON.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$rawInput = file_get_contents('php://input');
+$data = json_decode((string)$rawInput, true);
+
+if (!$data) {
+    $data = $_POST;
+}
+
+$name     = trim($data['customer_name'] ?? $data['name'] ?? '');
+$phone    = trim($data['customer_phone'] ?? $data['phone'] ?? '');
+$email    = trim($data['customer_email'] ?? $data['email'] ?? '');
+$address  = trim($data['shipping_address'] ?? $data['address'] ?? '');
+$city     = trim($data['city'] ?? '');
+$state    = trim($data['state'] ?? 'Tamil Nadu');
+$pincode  = trim($data['pincode'] ?? '');
+$method   = trim($data['payment_method'] ?? 'cod');
+$total    = floatval($data['total_amount'] ?? $data['grand_total'] ?? 0);
+$discount = floatval($data['discount_amount'] ?? 0);
+$shipping = floatval($data['shipping_amount'] ?? 0);
+$items    = $data['items'] ?? [];
+$notes    = trim($data['notes'] ?? '');
+
+if (empty($name) || empty($phone) || empty($address)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Customer name, phone number, and delivery address are required.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$orderNum = !empty($data['order_number']) ? trim($data['order_number']) : 'SM-' . date('Ymd') . '-' . rand(1000, 9999);
+$itemsJson = is_string($items) ? $items : json_encode($items, JSON_UNESCAPED_UNICODE);
+
+$pdo = function_exists('getDbConnection') ? getDbConnection() : null;
+$savedToDb = false;
+$orderId = null;
+$dbError = null;
+
+if ($pdo) {
+    try {
+        $tbl = getOrdersTable($pdo);
+        $subtotal = $total + $discount - $shipping;
+        $payStatus = !empty($data['payment_status']) ? trim($data['payment_status']) : (($method === 'razorpay') ? 'paid' : 'pending');
+        $ordStatus = ($payStatus === 'paid' || $method === 'cod') ? 'confirmed' : 'pending';
+        $rzpPaymentId = trim($data['razorpay_payment_id'] ?? '');
+        $rzpOrderId = trim($data['razorpay_order_id'] ?? '');
+        $rzpSig = trim($data['razorpay_signature'] ?? '');
+        if ($rzpPaymentId !== '') {
+            $notes = trim($notes . ' [Razorpay Payment ID: ' . $rzpPaymentId . ']');
+        }
+
+        $hasStoreId = true;
+        try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
+
+        if ($hasStoreId) {
+            $stmt = $pdo->prepare("
+                INSERT INTO `{$tbl}` 
+                (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json, subtotal, discount_amount, shipping_amount, total_amount, payment_method, payment_status, order_status, razorpay_order_id, razorpay_payment_id, razorpay_signature, notes)
+                VALUES (2, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $orderNum, $name, $phone, $email, $address, $city, $state, $pincode, $itemsJson,
+                $subtotal, $discount, $shipping, $total, $method, $payStatus, $ordStatus,
+                $rzpOrderId ?: null, $rzpPaymentId ?: null, $rzpSig ?: null, $notes
+            ]);
+        } else {
+            $stmt = $pdo->prepare("
+                INSERT INTO `{$tbl}` 
+                (order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json, subtotal, discount_amount, shipping_amount, total_amount, payment_method, payment_status, order_status, razorpay_order_id, razorpay_payment_id, razorpay_signature, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $orderNum, $name, $phone, $email, $address, $city, $state, $pincode, $itemsJson,
+                $subtotal, $discount, $shipping, $total, $method, $payStatus, $ordStatus,
+                $rzpOrderId ?: null, $rzpPaymentId ?: null, $rzpSig ?: null, $notes
+            ]);
+        }
+
+        $orderId = $pdo->lastInsertId();
+        $savedToDb = true;
+
+        // Auto-generate invoice in both standard and client invoice tables
+        $invNum = 'ZK-' . (defined('STORE_ID') ? STORE_ID : 2) . '-' . $orderId;
+        try {
+            $storeId = defined('STORE_ID') ? STORE_ID : 2;
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `invoices` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `store_id` INT DEFAULT {$storeId},
+                `order_id` INT NOT NULL UNIQUE,
+                `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
+                `issued_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX `idx_inv_order` (`order_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            $pdo->prepare("INSERT INTO `invoices` (`store_id`, `order_id`, `invoice_number`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `invoice_number`=VALUES(`invoice_number`)")
+                ->execute([$storeId, $orderId, $invNum]);
+        } catch (Exception $invE1) {}
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `smeram_invoices` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `order_id` INT NOT NULL UNIQUE,
+                `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
+                `issued_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX `idx_inv_order` (`order_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            $pdo->prepare("INSERT INTO `smeram_invoices` (`order_id`, `invoice_number`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `invoice_number`=VALUES(`invoice_number`)")
+                ->execute([$orderId, $invNum]);
+        } catch (Exception $invE2) {}
+
+        // Option 2: Server-side webhook alert to ZKWAConnect
+        try {
+            $zkwaWebhook = defined('ZKWA_WEBHOOK_URL') ? ZKWA_WEBHOOK_URL : '';
+            if (empty($zkwaWebhook) && is_file(__DIR__ . '/zkwa_config.json')) {
+                $zkwaCfg = json_decode(file_get_contents(__DIR__ . '/zkwa_config.json'), true);
+                $zkwaWebhook = $zkwaCfg['webhook_url'] ?? '';
+            }
+            if (!empty($zkwaWebhook)) {
+                $payloadData = [
+                    'event' => 'order.created',
+                    'order' => [
+                        'id' => $orderId,
+                        'order_number' => $orderNum,
+                        'customer' => ['name' => $name, 'phone' => $phone, 'email' => $email],
+                        'shipping_address' => ['line1' => $address, 'city' => $city, 'state' => $state, 'pincode' => $pincode],
+                        'items' => json_decode($itemsJson, true) ?: [],
+                        'total' => (float)$total,
+                        'payment_method' => $method,
+                        'payment_status' => $payStatus,
+                        'created_at' => date('c')
+                    ]
+                ];
+                $ch = curl_init($zkwaWebhook);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payloadData));
+                $headers = ['Content-Type: application/json'];
+                if (defined('ZKWA_API_KEY') && ZKWA_API_KEY !== '') {
+                    $headers[] = 'Authorization: Bearer ' . ZKWA_API_KEY;
+                }
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                @curl_exec($ch);
+                curl_close($ch);
+            }
+        } catch (Exception $wEx) {}
+    } catch (Exception $e) {
+        $dbError = $e->getMessage();
+        error_log("[Order Insert Error] " . $e->getMessage());
+    }
+}
+
+$waHandoff = null;
+$waCareUrl = null;
+$waCustomerUrl = null;
+if (function_exists('zkcOrderWhatsAppLinks')) {
+    $orderData = [
+        'id' => $orderId,
+        'order_number' => $orderNum,
+        'customer_name' => $name,
+        'customer_phone' => $phone,
+        'customer_email' => $email,
+        'shipping_address' => $address,
+        'city' => $city,
+        'state' => $state,
+        'pincode' => $pincode,
+        'items' => json_decode($itemsJson, true) ?: [],
+        'total_amount' => $total,
+        'payment_method' => $method,
+        'payment_status' => $payStatus ?? ($method === 'razorpay' ? 'paid' : 'pending'),
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+    $waLinks = zkcOrderWhatsAppLinks($orderData);
+    $waHandoff = $waLinks['care_url'] ?? null;
+    $waCareUrl = $waLinks['care_url'] ?? null;
+    $waCustomerUrl = $waLinks['customer_url'] ?? null;
+}
+
+echo json_encode([
+    'success' => true,
+    'order_id' => $orderId,
+    'order_number' => $orderNum,
+    'whatsapp_handoff_url' => $waHandoff,
+    'whatsapp_care_url' => $waCareUrl,
+    'whatsapp_customer_url' => $waCustomerUrl,
+    'saved_to_mysql' => $savedToDb,
+    'db_error' => $dbError,
+    'message' => 'Order registered successfully!'
+], JSON_UNESCAPED_UNICODE);

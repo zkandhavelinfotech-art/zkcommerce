@@ -899,8 +899,15 @@
               <div class="form-grid" style="margin-top:10px">
                 <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="https://app.elite.ekartlogistics.in"></div>
                 <div class="form-group"><label>Client ID</label><input id="ekApiClient" value="EKART_6ad49aef2206ede3ee46d222"></div>
-                <div class="form-group"><label>Merchant code</label><input id="ekApiMerchant" value="SMERAMx"></div>
-                <div class="form-group"><label>API key / Password / Bearer Token</label><input id="ekApiKey" type="password" placeholder="Leave blank to keep the saved key"></div>
+                <div class="form-group"><label>Merchant code / Name</label><input id="ekApiMerchant" value="SMERAMx"></div>
+                <div class="form-group"><label>Ekart Login Email / Username</label><input id="ekApiUser" placeholder="smeramindustries@gmail.com"></div>
+                <div class="form-group" style="grid-column:1/-1"><label>Ekart Account Password / API Key</label><input id="ekApiKey" type="password" placeholder="Password used to log in at app.elite.ekartlogistics.in"></div>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted,#64748b);margin-top:8px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0">
+                <span style="font-weight:600;color:#0f172a">💡 Ekart Credentials Guide:</span><br>
+                • <b>Merchant code / Name:</b> Default is <code>SMERAMx</code> (your seller account name on Ekart Elite).<br>
+                • <b>Login Email / Username:</b> <code>smeramindustries@gmail.com</code> (the email you use to sign in to <a href="https://app.elite.ekartlogistics.in" target="_blank" rel="noopener" style="color:#2563eb">app.elite.ekartlogistics.in</a>).<br>
+                • <b>Password / API Key:</b> Enter the password you use to log into your Ekart Elite portal (or a Bearer access token if provided). Ekart validates this with your Client ID &amp; Email to generate shipment tokens.
               </div>
             </details>
           </div>
@@ -2097,8 +2104,9 @@
         document.getElementById('ekApiBase').value = s.api.base_url || '';
         document.getElementById('ekApiClient').value = s.api.client_id || '';
         document.getElementById('ekApiMerchant').value = s.api.merchant_code || '';
+        if (document.getElementById('ekApiUser')) document.getElementById('ekApiUser').value = s.api.username || 'smeramindustries@gmail.com';
         document.getElementById('ekApiKey').value = '';
-        document.getElementById('ekApiKey').placeholder = s.api.has_api_key ? 'Saved — leave blank to keep' : 'From Ekart';
+        document.getElementById('ekApiKey').placeholder = s.api.has_api_key ? 'Saved — leave blank to keep' : 'Password for app.elite.ekartlogistics.in';
         document.getElementById('ekStatus').textContent = '';
         shipmentsStoreLoaded = null;
         ekartShowFields();
@@ -2107,13 +2115,20 @@
     }
     async function saveEkartSettings() {
       const st = document.getElementById('ekStatus'), key = document.getElementById('ekApiKey').value.trim();
+      const user = document.getElementById('ekApiUser') ? document.getElementById('ekApiUser').value.trim() : '';
       try {
         await req('/shipments/settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
           enabled: document.getElementById('ekEnabled').checked,
           mode: document.getElementById('ekMode').value,
           courier_name: document.getElementById('ekCourier').value,
           tracking_url_template: document.getElementById('ekTrack').value,
-          api: { base_url: document.getElementById('ekApiBase').value, client_id: document.getElementById('ekApiClient').value, merchant_code: document.getElementById('ekApiMerchant').value, ...(key ? { api_key: key } : {}) }
+          api: {
+            base_url: document.getElementById('ekApiBase').value,
+            client_id: document.getElementById('ekApiClient').value,
+            merchant_code: document.getElementById('ekApiMerchant').value,
+            username: user || 'smeramindustries@gmail.com',
+            ...(key ? { api_key: key } : {})
+          }
         }) });
         await loadEkartSettings();
         st.style.color = '#15803d';

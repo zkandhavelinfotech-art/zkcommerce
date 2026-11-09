@@ -2109,7 +2109,7 @@ function zkcEkartGetSettings() {
     $clientId = !empty($api['client_id']) ? $api['client_id'] : (defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222');
     $merchantCode = !empty($api['merchant_code']) ? $api['merchant_code'] : (defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx');
     $apiKey = !empty($api['api_key']) ? (string)$api['api_key'] : (defined('EKART_API_KEY') ? (string)EKART_API_KEY : '');
-    $username = !empty($api['username']) ? $api['username'] : (defined('EKART_USERNAME') ? EKART_USERNAME : $clientId);
+    $username = !empty($api['username']) ? $api['username'] : (defined('EKART_USERNAME') ? EKART_USERNAME : 'smeramindustries@gmail.com');
     $password = !empty($api['password']) ? $api['password'] : (defined('EKART_PASSWORD') ? EKART_PASSWORD : $apiKey);
     $courier = !empty($saved['courier_name']) ? $saved['courier_name'] : (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics');
     $trackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{awb}');
@@ -2479,6 +2479,7 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
 
     $ekClientId = !empty($saved['api']['client_id']) ? $saved['api']['client_id'] : (defined('EKART_CLIENT_ID') ? EKART_CLIENT_ID : 'EKART_6ad49aef2206ede3ee46d222');
     $ekMerchantCode = !empty($saved['api']['merchant_code']) ? $saved['api']['merchant_code'] : (defined('EKART_MERCHANT_CODE') ? EKART_MERCHANT_CODE : 'SMERAMx');
+    $ekUsername = !empty($saved['api']['username']) ? $saved['api']['username'] : (defined('EKART_USERNAME') ? EKART_USERNAME : 'smeramindustries@gmail.com');
     $ekBaseUrl = !empty($saved['api']['base_url']) ? $saved['api']['base_url'] : (defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
     $ekCourier = !empty($saved['courier_name']) ? $saved['courier_name'] : (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics');
     $ekTrackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{awb}');
@@ -2501,6 +2502,7 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
                 'base_url' => zkcEkartNormalizeBaseUrl($inApi['base_url'] ?? $ekBaseUrl),
                 'client_id' => (string)($inApi['client_id'] ?? $ekClientId),
                 'merchant_code' => (string)($inApi['merchant_code'] ?? $ekMerchantCode),
+                'username' => (string)($inApi['username'] ?? $ekUsername),
                 'api_key' => $effectiveApiKey,
                 'has_api_key' => ($effectiveApiKey !== ''),
                 'webhook_url' => $ekWebhookUrl,
@@ -2527,6 +2529,7 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
                 'base_url' => $ekBaseUrl,
                 'client_id' => $ekClientId,
                 'merchant_code' => $ekMerchantCode,
+                'username' => $ekUsername,
                 'has_api_key' => $hasKey,
                 'webhook_url' => $ekWebhookUrl,
                 'webhook_secret' => $ekWebhookSecret,
