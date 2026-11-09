@@ -37,6 +37,13 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
 .lbl .meta{display:flex;justify-content:space-between;font-size:11px}.lbl .from{font-size:10px;border-top:1px dashed #000;padding-top:2mm}
 .lbl .small svg{width:60%;height:9mm}
 #printArea{display:none}
+/* High visibility scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 8px; border: 2px solid #e2e8f0; }
+::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+* { scrollbar-color: #3b82f6 #e2e8f0; scrollbar-width: thin; }
+
 @media print{body *{visibility:hidden}#printArea,#printArea *{visibility:visible}#printArea{display:block;position:absolute;left:0;top:0}
   .lbl{page-break-after:always;break-after:page;border:none}@page{size:100mm 150mm;margin:0}}
 </style>
@@ -56,7 +63,8 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
       <label class="f">To<input type="date" id="toDate"></label>
       <button class="btn" id="loadBtn">Load</button>
       <span style="flex:1"></span>
-      <a class="btn" id="ekartPortal" href="https://seller.ekartlogistics.com/" target="_blank" rel="noopener">Ekart portal ↗</a>
+      <a class="btn primary" id="ekartPortal" href="https://app.elite.ekartlogistics.in/" target="_blank" rel="noopener" style="background:#0284c7;color:#fff;border-color:#0284c7">🌐 EKart Portal ↗</a>
+      <a class="btn" id="ekartTrack" href="https://ekartlogistics.com/ekartlogistics-web/" target="_blank" rel="noopener">🔍 EKart Track Order ↗</a>
     </div>
     <p class="muted" style="margin:10px 0 0" id="modeNote">Book each shipment on the Ekart portal, then type or scan its AWB below (Enter saves and moves to the next order).</p>
   </div>
@@ -195,6 +203,14 @@ async function load() {
     document.getElementById('storeName').textContent = data.store.store_name || '';
     document.getElementById('offNotice').hidden = !!data.settings.enabled;
     if (PHP_MODE) { document.getElementById('enableBtn').hidden = true; document.getElementById('offNotice').lastElementChild.insertAdjacentHTML('beforebegin', '<p>Turn it on in the ZKCommerce dashboard (Shipping → Ekart shipping) and upload the next package.</p>'); document.querySelector('header a').href = 'admin-orders.php'; }
+    if (data.settings) {
+      if (data.settings.portal_url && document.getElementById('ekartPortal')) {
+        document.getElementById('ekartPortal').href = data.settings.portal_url;
+      }
+      if (data.settings.track_url && document.getElementById('ekartTrack')) {
+        document.getElementById('ekartTrack').href = data.settings.track_url;
+      }
+    }
     document.getElementById('modeNote').textContent = data.settings.mode === 'api' && data.settings.api_ready
       ? 'Ekart API connected: use “Book” to get the AWB automatically, or type one from the portal.'
       : 'Book each shipment on the Ekart portal, then type or scan its AWB below (Enter saves and moves to the next order).';

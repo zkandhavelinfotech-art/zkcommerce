@@ -25,6 +25,13 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
 .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#eef2ff;color:#3730a3}.pill.cod{background:#fff7ed;color:#c2410c}.pill.paid{background:#ecfdf5;color:#047857}
 .status{font-size:12.5px;font-weight:600;min-height:18px}.empty{text-align:center;padding:40px;color:var(--muted)}
 #printArea{display:none}
+/* High visibility scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 8px; border: 2px solid #e2e8f0; }
+::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+* { scrollbar-color: #3b82f6 #e2e8f0; scrollbar-width: thin; }
+
 /* ── Labels ── */
 .sheet{display:grid;gap:0;page-break-after:always;break-after:page}
 .label{border:1.5px dashed #94a3b8;padding:10px 12px;font-size:12px;line-height:1.35;overflow:hidden;display:flex;flex-direction:column;gap:6px;color:#000;background:#fff}

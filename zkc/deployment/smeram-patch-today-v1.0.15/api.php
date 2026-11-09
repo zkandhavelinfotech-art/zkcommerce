@@ -489,7 +489,7 @@ if ($route === 'auth/login' && $method === 'POST') {
 }
 
 // For routes requiring the database, verify connection
-$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'shipping/settings', 'admin/shipments/settings', 'settings/shipments', 'settings/ekart', 'webhooks/ekart', 'shipments/ekart/webhook', 'categories', 'inventory', 'inventory/movements', 'inventory/settings'];
+$dbOptionalRoutes = ['orders/whatsapp-settings', 'whatsapp/sender', 'whatsapp/sender/test', 'stores', 'stores/templates', 'products', 'shipments/settings', 'shipping/settings', 'admin/shipments/settings', 'settings/shipments', 'settings/ekart', 'webhooks/ekart', 'shipments/ekart/webhook', 'shipments/ekart/test', 'categories', 'inventory', 'inventory/movements', 'inventory/settings'];
 $isProductRoute = ($route === 'products' || preg_match('#^products/#', $route) || preg_match('#^stores/(\\d+)/products#', $route));
 $isStoreRoute = ($route === 'stores' || preg_match('#^stores/(\\d+)#', $route) || $route === 'categories' || preg_match('#^stores/(\\d+)/categories#', $route));
 $isInvoiceRoute = ($route === 'invoices' || preg_match('#^invoices/#', $route));
@@ -2126,7 +2126,10 @@ function zkcEkartGetSettings() {
 }
 
 function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $apiKey = '') {
-    if ($apiKey !== '' && ($username === '' || $password === '')) return $apiKey;
+    // If apiKey is explicitly a pre-generated Bearer/JWT token (e.g. starts with "ey" or > 60 chars) and no password given:
+    $isDirectBearer = ($apiKey !== '' && (strpos($apiKey, 'ey') === 0 || strlen($apiKey) > 60) && ($password === '' || $password === $apiKey));
+    if ($isDirectBearer) return $apiKey;
+
     if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
     $cacheKey = 'ekart_token_' . md5($clientId . ':' . $username);
     if (!empty($_SESSION[$cacheKey]) && is_array($_SESSION[$cacheKey])) {
@@ -2134,14 +2137,14 @@ function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $
             return $_SESSION[$cacheKey]['token'];
         }
     }
-    if ($username === '' || $password === '') {
+    $pass = ($password !== '') ? $password : $apiKey;
+    if ($username === '' || $pass === '') {
         if ($apiKey !== '') return $apiKey;
-        throw new Exception("Ekart API credentials missing. Enter Client ID and API Key / Password in Merchant Dashboard -> Shipping -> Ekart.");
+        throw new Exception("Ekart API credentials missing. Enter Client ID and Password in Ekart Shipping Settings.");
     }
     $tokenUrl = $baseUrl . '/integrations/v2/auth/token/' . rawurlencode($clientId);
-    $payload = json_encode(['username' => $username, 'password' => $password]);
+    $payload = json_encode(['username' => $username, 'password' => $pass]);
     if (!function_exists('curl_init')) {
-        if ($apiKey !== '') return $apiKey;
         throw new Exception("PHP curl extension required for Ekart API authentication.");
     }
     $ch = curl_init($tokenUrl);
@@ -2158,13 +2161,11 @@ function zkcEkartGetToken($baseUrl, $clientId, $username = '', $password = '', $
     $err = curl_error($ch);
     curl_close($ch);
     if ($raw === false) {
-        if ($apiKey !== '') return $apiKey;
         throw new Exception("Ekart Auth Connection Error: " . $err);
     }
     $res = json_decode($raw, true);
     if ($httpCode >= 400 || empty($res['access_token'])) {
-        if ($apiKey !== '') return $apiKey;
-        $msg = $res['remark'] ?? $res['message'] ?? $res['error'] ?? "HTTP $httpCode";
+        $msg = $res['description'] ?? $res['message'] ?? $res['remark'] ?? $res['error'] ?? "HTTP $httpCode";
         throw new Exception("Ekart Auth Failed ($httpCode): $msg");
     }
     $token = $res['access_token'];
@@ -2483,6 +2484,8 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
     $ekBaseUrl = !empty($saved['api']['base_url']) ? $saved['api']['base_url'] : (defined('EKART_BASE_URL') ? EKART_BASE_URL : 'https://app.elite.ekartlogistics.in');
     $ekCourier = !empty($saved['courier_name']) ? $saved['courier_name'] : (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics');
     $ekTrackTpl = !empty($saved['tracking_url_template']) ? $saved['tracking_url_template'] : (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{awb}');
+    $ekPortalUrl = !empty($saved['portal_url']) ? $saved['portal_url'] : (defined('EKART_PORTAL_URL') ? EKART_PORTAL_URL : 'https://app.elite.ekartlogistics.in/');
+    $ekTrackPortalUrl = !empty($saved['track_url']) ? $saved['track_url'] : (defined('EKART_TRACK_PORTAL_URL') ? EKART_TRACK_PORTAL_URL : 'https://ekartlogistics.com/ekartlogistics-web/');
     $ekAlertEmail = defined('EKART_ALERT_EMAIL') ? EKART_ALERT_EMAIL : 'smeramindustries@gmail.com';
     $ekWebhookSecret = defined('EKART_WEBHOOK_SECRET') ? EKART_WEBHOOK_SECRET : 'ek_sec_984f1801m1z6_smeram';
     $ekWebhookUrl = 'https://smeram-naturals.in/api.php?route=webhooks/ekart';
@@ -2498,6 +2501,8 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
             'mode' => (string)($body['mode'] ?? ($saved['mode'] ?? 'api')),
             'courier_name' => (string)($body['courier_name'] ?? $ekCourier),
             'tracking_url_template' => (string)($body['tracking_url_template'] ?? $ekTrackTpl),
+            'portal_url' => (string)($body['portal_url'] ?? $ekPortalUrl),
+            'track_url' => (string)($body['track_url'] ?? $ekTrackPortalUrl),
             'api' => [
                 'base_url' => zkcEkartNormalizeBaseUrl($inApi['base_url'] ?? $ekBaseUrl),
                 'client_id' => (string)($inApi['client_id'] ?? $ekClientId),
@@ -2525,6 +2530,8 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
             'mode' => !empty($saved['mode']) ? $saved['mode'] : (defined('EKART_MODE') ? EKART_MODE : 'api'),
             'courier_name' => $ekCourier,
             'tracking_url_template' => $ekTrackTpl,
+            'portal_url' => $ekPortalUrl,
+            'track_url' => $ekTrackPortalUrl,
             'api' => [
                 'base_url' => $ekBaseUrl,
                 'client_id' => $ekClientId,
@@ -2538,6 +2545,38 @@ if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route 
             ]
         ]
     ]);
+}
+
+if (($route === 'shipments/ekart/test' || $route === 'shipments/settings/test') && $method === 'POST') {
+    $cfg = zkcEkartGetSettings();
+    $inApi = is_array($body['api'] ?? null) ? $body['api'] : [];
+    $baseUrl = zkcEkartNormalizeBaseUrl($inApi['base_url'] ?? $cfg['base_url']);
+    $clientId = trim((string)($inApi['client_id'] ?? $cfg['client_id']));
+    $username = trim((string)($inApi['username'] ?? $cfg['username']));
+    $apiKey = trim((string)($inApi['api_key'] ?? $cfg['api_key']));
+    $password = trim((string)($inApi['password'] ?? $cfg['password']));
+    if ($password === '' && $apiKey !== '') $password = $apiKey;
+
+    try {
+        if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
+        $cacheKey = 'ekart_token_' . md5($clientId . ':' . $username);
+        unset($_SESSION[$cacheKey]);
+
+        $token = zkcEkartGetToken($baseUrl, $clientId, $username, $password, $apiKey);
+        respond([
+            'success' => true,
+            'message' => 'Connected successfully! Ekart Elite authentication verified and access token received.',
+            'client_id' => $clientId,
+            'username' => $username,
+            'token_preview' => substr($token, 0, 10) . '...' . substr($token, -6)
+        ]);
+    } catch (Throwable $e) {
+        respond([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 400);
+    }
+}
 }
 
 // Ekart Shipment Actions (Book, Label, Track)

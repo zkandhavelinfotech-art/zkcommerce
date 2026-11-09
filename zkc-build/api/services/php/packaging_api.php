@@ -145,14 +145,17 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
             }
             $stmt = $pdo->prepare($sql . ' ORDER BY o.created_at ASC LIMIT 1000');
             $stmt->execute($args);
+            $ekSettings = function_exists('zkcEkartGetSettings') ? zkcEkartGetSettings() : [];
             respond([
                 'store' => zkcAdminStore(),
                 'settings' => [
-                    'enabled' => defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true,
-                    'mode' => defined('EKART_MODE') ? EKART_MODE : 'api',
+                    'enabled' => $ekSettings['enabled'] ?? (defined('EKART_ENABLED') ? (bool)EKART_ENABLED : true),
+                    'mode' => $ekSettings['mode'] ?? (defined('EKART_MODE') ? EKART_MODE : 'api'),
                     'api_ready' => true,
-                    'courier_name' => defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics',
-                    'tracking_url_template' => defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{tracking_number}',
+                    'courier_name' => $ekSettings['courier_name'] ?? (defined('SHIP_COURIER') ? SHIP_COURIER : 'Ekart Logistics'),
+                    'tracking_url_template' => $ekSettings['tracking_url_template'] ?? (defined('SHIP_TRACKING_URL') ? SHIP_TRACKING_URL : 'https://app.elite.ekartlogistics.in/track/{tracking_number}'),
+                    'portal_url' => $ekSettings['portal_url'] ?? (defined('EKART_PORTAL_URL') ? EKART_PORTAL_URL : 'https://app.elite.ekartlogistics.in/'),
+                    'track_url' => $ekSettings['track_url'] ?? (defined('EKART_TRACK_PORTAL_URL') ? EKART_TRACK_PORTAL_URL : 'https://ekartlogistics.com/ekartlogistics-web/'),
                     'php' => true
                 ],
                 'orders' => array_map('zkcAdminOrderJson', $stmt->fetchAll()),

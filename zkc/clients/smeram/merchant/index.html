@@ -77,25 +77,37 @@
       color: #fff;
       border-color: #3b82f6;
     }
+    /* High-contrast, easily visible scrollbars across the entire app */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; border: 2px solid #e2e8f0; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    * { scrollbar-color: #94a3b8 #e2e8f0; scrollbar-width: thin; }
+
+    /* High-contrast vibrant scrollbar for dark sidebar */
     .nav {
-      padding: 6px 10px 20px;
+      padding: 8px 10px 24px;
       display: flex;
       flex-direction: column;
       gap: 4px;
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
+      scrollbar-color: #3b82f6 #0b1329;
+      scrollbar-width: thin;
     }
-    .nav::-webkit-scrollbar { width: 5px; }
-    .nav::-webkit-scrollbar-thumb { background: #1e2e48; border-radius: 4px; }
-    .nav::-webkit-scrollbar-thumb:hover { background: #334155; }
+    .nav::-webkit-scrollbar { width: 9px; }
+    .nav::-webkit-scrollbar-track { background: #0b1329; border-radius: 8px; }
+    .nav::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 8px; border: 2px solid #0b1329; }
+    .nav::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
 
+    /* Redesigned modern sidebar navigation items */
     .nav-item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 9px 12px;
-      border-radius: 7px;
+      border-radius: 8px;
       color: #94a3b8;
       text-decoration: none;
       font-size: 13.5px;
@@ -105,22 +117,25 @@
       background: transparent;
       width: 100%;
       text-align: left;
-      transition: all 0.15s ease;
+      transition: all 0.18s ease;
+      position: relative;
     }
     .nav-item:hover {
-      background: var(--sidebar-hover);
-      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f8fafc;
+      transform: translateX(2px);
     }
     .nav-item.active {
-      background: var(--primary);
+      background: #2563eb;
       color: #fff;
       font-weight: 600;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
     }
-    .nav-icon { width: 18px; text-align: center; flex-shrink: 0; font-size: 14px; }
+    .nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 15px; }
 
     /* Collapsible Accordion Groups */
     .nav-group {
-      margin-top: 2px;
+      margin-top: 4px;
       border-radius: 8px;
       transition: background 0.15s;
     }
@@ -129,29 +144,32 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      padding: 9px 12px;
-      background: transparent;
-      border: 0;
-      border-radius: 7px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
       color: #cbd5e1;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       text-align: left;
       letter-spacing: 0.01em;
-      transition: all 0.15s;
+      transition: all 0.18s;
     }
     .nav-group-header:hover {
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
+      border-color: rgba(96, 165, 250, 0.4);
     }
     .nav-group.open > .nav-group-header {
       color: #60a5fa;
+      background: rgba(37, 99, 235, 0.12);
+      border-color: rgba(96, 165, 250, 0.3);
     }
     .nav-group-title {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
       flex: 1;
     }
     .nav-chevron {
@@ -163,29 +181,29 @@
     }
     .nav-group.open .nav-chevron {
       transform: rotate(90deg);
-      color: #94a3b8;
+      color: #60a5fa;
     }
     .nav-submenu {
       display: none;
       flex-direction: column;
-      gap: 2px;
-      padding-left: 14px;
-      margin: 3px 0 6px 14px;
-      border-left: 2px solid #1e2e48;
+      gap: 3px;
+      padding-left: 12px;
+      margin: 4px 0 6px 12px;
+      border-left: 2px solid #2563eb;
     }
     .nav-group.open .nav-submenu {
       display: flex;
     }
     .nav-submenu .nav-item {
-      padding: 8px 10px;
-      font-size: 12.5px;
-      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 7px;
     }
     .nav-submenu .nav-item.active {
-      background: #1e3a8a;
+      background: #1d4ed8;
       color: #fff;
       font-weight: 600;
-      box-shadow: inset 3px 0 0 #3b82f6;
+      box-shadow: 0 2px 6px rgba(29, 78, 216, 0.35);
     }
     .sidebar-footer {
       padding: 16px;
@@ -587,6 +605,7 @@
         <div class="nav-submenu">
           <button class="nav-item" data-view="checkout"><span class="nav-icon">🛒</span><span>Checkout &amp; Razorpay</span></button>
           <button class="nav-item" data-view="shipping"><span class="nav-icon">🚚</span><span>Shipping Rates &amp; Rules</span></button>
+          <button class="nav-item" data-view="ekart-settings"><span class="nav-icon">📦</span><span>Ekart Shipping</span></button>
           <button class="nav-item" data-view="theme"><span class="nav-icon">🎨</span><span>Theme &amp; Store Design</span></button>
           <button class="nav-item" data-view="display"><span class="nav-icon">👁️</span><span>Shop Display Settings</span></button>
           <button class="nav-item" data-view="pages"><span class="nav-icon">📄</span><span>Content &amp; Policy Pages</span></button>
@@ -828,32 +847,138 @@
 
       <!-- VIEW: SHIPPING RATES -->
       <section id="view-shipping" class="view-panel" style="display:none">
-        <h1 class="page-title">Shipping & Delivery Rates</h1>
+        <h1 class="page-title">Shipping &amp; Delivery Rates</h1>
         <p class="page-sub">Configure flat rates, free shipping thresholds, and pincode prefix rules.</p>
 
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <b style="color:#1e40af;font-size:14px">📦 Looking for Ekart Logistics API &amp; Webhooks?</b>
+            <p style="margin:3px 0 0;font-size:13px;color:#2563eb">Ekart credentials, portal URLs, automated AWB generation, and webhook tracking have moved to their own dedicated page.</p>
+          </div>
+          <button type="button" class="btn-primary btn-sm" onclick="switchView('ekart-settings')" style="padding:7px 14px;font-size:13px;font-weight:700">Open Ekart Shipping Settings →</button>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
+          <form id="shippingRateForm">
+            <div class="form-grid">
+              <div class="form-group"><label>Rate Name</label><input name="name" required placeholder="Standard Delivery"></div>
+              <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0" required></div>
+              <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0" placeholder="Optional (e.g. 499)"></div>
+              <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix" placeholder="All (or e.g. 600 for Chennai)"></div>
+              <div class="form-group"><label>Estimated Days</label><input name="estimated_days" placeholder="2–4 business days"></div>
+            </div>
+            <button class="btn-primary" type="submit">Save Shipping Rate</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Configured Shipping Rates</h2></div>
+          <div class="table-wrap">
+            <table id="shippingRatesTable">
+              <thead><tr><th>Rate Name</th><th>Fee</th><th>Free Above</th><th>Pincode Prefix</th><th>Est. Days</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: EKART SHIPPING SETTINGS -->
+      <section id="view-ekart-settings" class="view-panel" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div>
+            <h1 class="page-title" style="margin:0 0 4px">📦 Ekart Shipping Settings</h1>
+            <p class="page-sub" style="margin:0">Direct Ekart Elite API booking, automated AWB generation, real-time tracking &amp; webhook status sync.</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a id="btnEkartPortalLink" class="btn-primary" href="https://app.elite.ekartlogistics.in/" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
+              🌐 EKart Portal ↗
+            </a>
+            <a id="btnEkartTrackLink" class="btn-outline" href="https://ekartlogistics.com/ekartlogistics-web/" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
+              🔍 EKart Track Order ↗
+            </a>
+            <button type="button" class="btn-outline" onclick="switchView('shipments')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
+              🚚 Shipments &amp; AWBs ↗
+            </button>
+          </div>
+        </div>
+
         <div class="card" id="ekartCard">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
             <div>
-              <h2 style="font-size:16px;margin:0 0 4px">Ekart Shipping &amp; Webhook Integration</h2>
-              <p style="font-size:13px;color:var(--muted);margin:0">Direct courier integration for AWB tracking, barcode labels, and automated WhatsApp delivery notifications.</p>
+              <h2 style="font-size:16px;margin:0 0 4px">Ekart Elite Integration &amp; Configuration</h2>
+              <p style="font-size:13px;color:var(--muted);margin:0">Automated parcel booking with Ekart Elite and live customer tracking.</p>
             </div>
             <span class="badge" style="background:#e0f2fe;color:#0369a1;font-weight:700;padding:4px 10px;border-radius:12px;font-size:12px;border:1px solid #bae6fd">Client ID: EKART_6ad49aef2206ede3ee46d222</span>
           </div>
 
-          <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer;max-width:680px"><input type="checkbox" id="ekEnabled"><span><b>Enable Ekart shipping</b><br><small style="color:var(--muted)">When on, the <b>Shipments (Ekart)</b> page lets you scan AWBs, print labels and sync webhook tracking.</small></span></label>
+          <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer;max-width:680px"><input type="checkbox" id="ekEnabled"><span><b>Enable Ekart shipping</b><br><small style="color:var(--muted)">When active, you can book orders directly with Ekart Elite, generate AWBs and print shipping labels.</small></span></label>
 
           <div id="ekFields" style="margin-top:14px">
-            <!-- Ekart Webhook Integration Parameters Box -->
+            <!-- Portal & Tracking URL Settings -->
+            <div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:14px;margin-bottom:16px">
+              <h3 style="font-size:13px;font-weight:700;margin:0 0 8px;color:#0f172a">🔗 Ekart Portal &amp; Tracking URL Settings</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>EKart Portal URL</label>
+                  <input id="ekPortalUrl" value="https://app.elite.ekartlogistics.in/">
+                </div>
+                <div class="form-group">
+                  <label>EKart Track Order URL</label>
+                  <input id="ekTrackPortalUrl" value="https://ekartlogistics.com/ekartlogistics-web/">
+                </div>
+              </div>
+            </div>
+
+            <!-- General Shipping Preferences -->
+            <div class="form-grid">
+              <div class="form-group"><label>How AWBs are created</label>
+                <select id="ekMode"><option value="api">Ekart API &amp; Webhooks — automated tracking &amp; status sync</option><option value="manual">Manual — book on Ekart portal, enter / scan AWB</option></select></div>
+              <div class="form-group"><label>Courier name on labels</label><input id="ekCourier" placeholder="Ekart Logistics"></div>
+              <div class="form-group" style="grid-column:1/-1"><label>Tracking link template ({awb} is replaced)</label><input id="ekTrack" placeholder="https://app.elite.ekartlogistics.in/track/{awb}"></div>
+            </div>
+
+            <!-- API Credentials Card -->
+            <div style="background:#fff;border:1.5px solid #93c5fd;border-radius:10px;padding:16px;margin:16px 0">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                <h3 style="font-size:14px;font-weight:700;margin:0;color:#1e40af">🔑 Ekart API Credentials</h3>
+                <span style="font-size:11px;font-weight:700;background:#dbeafe;color:#1e40af;padding:3px 8px;border-radius:6px">Required for Auto-book</span>
+              </div>
+              <div class="form-grid">
+                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="https://app.elite.ekartlogistics.in"></div>
+                <div class="form-group"><label>Client ID</label><input id="ekApiClient" value="EKART_6ad49aef2206ede3ee46d222"></div>
+                <div class="form-group"><label>Merchant code / Name</label><input id="ekApiMerchant" value="SMERAMx"></div>
+                <div class="form-group"><label>Ekart Login Email / Username</label><input id="ekApiUser" placeholder="smeramindustries@gmail.com"></div>
+                <div class="form-group" style="grid-column:1/-1">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <label>Ekart Account Password / API Token</label>
+                    <a href="javascript:void(0)" onclick="toggleEkartPasswordVisibility()" style="font-size:12px;color:#2563eb;text-decoration:none" id="toggleEkartPwdBtn">👁️ Show Password</a>
+                  </div>
+                  <input id="ekApiKey" type="password" placeholder="Password used to log in at app.elite.ekartlogistics.in">
+                </div>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted,#64748b);margin-top:10px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0">
+                <span style="font-weight:600;color:#0f172a">💡 How to authenticate:</span><br>
+                • <b>Login Email:</b> <code>smeramindustries@gmail.com</code> (your login email for <a href="https://app.elite.ekartlogistics.in" target="_blank" rel="noopener" style="color:#2563eb">app.elite.ekartlogistics.in</a>).<br>
+                • <b>Password:</b> The password you use to sign in to your Ekart Elite account. Ekart validates this with your Client ID to grant access tokens for booking.
+              </div>
+              <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <button type="button" class="btn-outline" id="btnTestEkart" onclick="testEkartConnection()" style="border-color:#3b82f6;color:#1d4ed8;font-weight:700">🔌 Test Ekart Connection</button>
+                <span id="ekTestStatus" style="font-size:13px;font-weight:600"></span>
+              </div>
+            </div>
+
+            <!-- Ekart Webhook Integration Details Box -->
             <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:16px;margin-bottom:18px">
               <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
                 <div style="display:flex;align-items:center;gap:8px">
                   <span style="font-size:18px">⚡</span>
                   <div>
                     <h3 style="font-size:14px;font-weight:700;margin:0;color:#0f172a">Ekart Webhook Integration Details</h3>
-                    <p style="font-size:12px;color:#64748b;margin:2px 0 0">Enter these exact parameters in your Ekart Developer / Webhooks dashboard:</p>
+                    <p style="font-size:12px;color:#64748b;margin:2px 0 0">Verified webhook configuration for real-time tracking updates:</p>
                   </div>
                 </div>
-                <span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">Active Endpoint</span>
+                <span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">Active &amp; Verified</span>
               </div>
 
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
@@ -874,8 +999,8 @@
                 </div>
 
                 <div>
-                  <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">3. Alert Email</label>
-                  <input readonly value="smeramindustries@gmail.com" style="width:100%;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;font-weight:600" />
+                  <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">3. Webhook ID / Alert Email</label>
+                  <input readonly value="ID: mw3dn1mn · smeramindustries@gmail.com" style="width:100%;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;font-weight:600" />
                 </div>
 
                 <div style="grid-column:1/-1">
@@ -884,36 +1009,15 @@
                     <input id="ekWebhookTopicsDisplay" readonly value="shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto" style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1" />
                     <button type="button" class="btn-subtle" onclick="navigator.clipboard.writeText('shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto');alert('Topics copied!');" style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋 Copy Topics</button>
                   </div>
-                  <small style="color:#64748b;font-size:11px;margin-top:4px;display:block">Select all listed topics or tick <b>"Select All"</b> in the Ekart dashboard to receive status updates.</small>
                 </div>
               </div>
             </div>
 
-            <div class="form-grid">
-              <div class="form-group"><label>How AWBs are created</label>
-                <select id="ekMode"><option value="api">Ekart API &amp; Webhooks — automated tracking &amp; status sync</option><option value="manual">Manual — book on Ekart portal, enter / scan AWB</option></select></div>
-              <div class="form-group"><label>Courier name on labels</label><input id="ekCourier" placeholder="Ekart Logistics"></div>
-              <div class="form-group" style="grid-column:1/-1"><label>Tracking link ({awb} is replaced)</label><input id="ekTrack" placeholder="https://app.elite.ekartlogistics.in/track/{awb}"></div>
-            </div>
-            <details id="ekApiBox" style="margin:4px 0 10px"><summary style="cursor:pointer;font-size:13px;font-weight:700">Ekart API Credentials</summary>
-              <div class="form-grid" style="margin-top:10px">
-                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="https://app.elite.ekartlogistics.in"></div>
-                <div class="form-group"><label>Client ID</label><input id="ekApiClient" value="EKART_6ad49aef2206ede3ee46d222"></div>
-                <div class="form-group"><label>Merchant code / Name</label><input id="ekApiMerchant" value="SMERAMx"></div>
-                <div class="form-group"><label>Ekart Login Email / Username</label><input id="ekApiUser" placeholder="smeramindustries@gmail.com"></div>
-                <div class="form-group" style="grid-column:1/-1"><label>Ekart Account Password / API Key</label><input id="ekApiKey" type="password" placeholder="Password used to log in at app.elite.ekartlogistics.in"></div>
-              </div>
-              <div style="font-size:12px;color:var(--text-muted,#64748b);margin-top:8px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0">
-                <span style="font-weight:600;color:#0f172a">💡 Ekart Credentials Guide:</span><br>
-                • <b>Merchant code / Name:</b> Default is <code>SMERAMx</code> (your seller account name on Ekart Elite).<br>
-                • <b>Login Email / Username:</b> <code>smeramindustries@gmail.com</code> (the email you use to sign in to <a href="https://app.elite.ekartlogistics.in" target="_blank" rel="noopener" style="color:#2563eb">app.elite.ekartlogistics.in</a>).<br>
-                • <b>Password / API Key:</b> Enter the password you use to log into your Ekart Elite portal (or a Bearer access token if provided). Ekart validates this with your Client ID &amp; Email to generate shipment tokens.
-              </div>
-            </details>
           </div>
           <div id="ekStatus" style="font-size:13px;font-weight:600;margin:8px 0;min-height:18px"></div>
-          <button class="btn-primary" id="btnSaveEkart">Save Ekart settings</button>
+          <button class="btn-primary" id="btnSaveEkart" style="padding:10px 20px;font-size:14px">Save Ekart settings</button>
         </div>
+      </section>
 
         <div class="card">
           <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
@@ -2094,6 +2198,49 @@
       document.getElementById('ekFields').style.display = on ? '' : 'none';
       document.getElementById('navShipments').style.display = on ? '' : 'none';
     }
+    function toggleEkartPasswordVisibility() {
+      const inp = document.getElementById('ekApiKey');
+      const btn = document.getElementById('toggleEkartPwdBtn');
+      if (!inp) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        if (btn) btn.textContent = '🙈 Hide Password';
+      } else {
+        inp.type = 'password';
+        if (btn) btn.textContent = '👁️ Show Password';
+      }
+    }
+    async function testEkartConnection() {
+      const st = document.getElementById('ekTestStatus');
+      const key = document.getElementById('ekApiKey').value.trim();
+      const user = document.getElementById('ekApiUser') ? document.getElementById('ekApiUser').value.trim() : '';
+      if (st) {
+        st.style.color = '#0284c7';
+        st.textContent = '🔄 Testing connection to Ekart Elite API...';
+      }
+      try {
+        const res = await req('/shipments/ekart/test', {
+          method: 'POST',
+          body: JSON.stringify({
+            api: {
+              base_url: document.getElementById('ekApiBase').value,
+              client_id: document.getElementById('ekApiClient').value,
+              username: user || 'smeramindustries@gmail.com',
+              ...(key ? { api_key: key, password: key } : {})
+            }
+          })
+        });
+        if (st) {
+          st.style.color = '#15803d';
+          st.textContent = '✅ ' + (res.message || 'Connected successfully! Access token received.');
+        }
+      } catch (err) {
+        if (st) {
+          st.style.color = '#b91c1c';
+          st.textContent = '❌ ' + (err.message || 'Ekart connection test failed.');
+        }
+      }
+    }
     async function loadEkartSettings() {
       try {
         const { settings: s } = await req('/shipments/settings?store_id=' + currentStoreId);
@@ -2101,6 +2248,16 @@
         document.getElementById('ekMode').value = s.mode;
         document.getElementById('ekCourier').value = s.courier_name || '';
         document.getElementById('ekTrack').value = s.tracking_url_template || '';
+        if (document.getElementById('ekPortalUrl')) {
+          const pUrl = s.portal_url || 'https://app.elite.ekartlogistics.in/';
+          document.getElementById('ekPortalUrl').value = pUrl;
+          if (document.getElementById('btnEkartPortalLink')) document.getElementById('btnEkartPortalLink').href = pUrl;
+        }
+        if (document.getElementById('ekTrackPortalUrl')) {
+          const tUrl = s.track_url || 'https://ekartlogistics.com/ekartlogistics-web/';
+          document.getElementById('ekTrackPortalUrl').value = tUrl;
+          if (document.getElementById('btnEkartTrackLink')) document.getElementById('btnEkartTrackLink').href = tUrl;
+        }
         document.getElementById('ekApiBase').value = s.api.base_url || '';
         document.getElementById('ekApiClient').value = s.api.client_id || '';
         document.getElementById('ekApiMerchant').value = s.api.merchant_code || '';
@@ -2108,20 +2265,25 @@
         document.getElementById('ekApiKey').value = '';
         document.getElementById('ekApiKey').placeholder = s.api.has_api_key ? 'Saved — leave blank to keep' : 'Password for app.elite.ekartlogistics.in';
         document.getElementById('ekStatus').textContent = '';
+        if (document.getElementById('ekTestStatus')) document.getElementById('ekTestStatus').textContent = '';
         shipmentsStoreLoaded = null;
         ekartShowFields();
-        if (!s.enabled && document.getElementById('view-shipments').style.display === 'block') switchView('shipping');
+        if (!s.enabled && document.getElementById('view-shipments').style.display === 'block') switchView('ekart-settings');
       } catch (e) { console.warn('Ekart settings:', e.message); }
     }
     async function saveEkartSettings() {
       const st = document.getElementById('ekStatus'), key = document.getElementById('ekApiKey').value.trim();
       const user = document.getElementById('ekApiUser') ? document.getElementById('ekApiUser').value.trim() : '';
+      const portalUrl = document.getElementById('ekPortalUrl') ? document.getElementById('ekPortalUrl').value.trim() : '';
+      const trackPortalUrl = document.getElementById('ekTrackPortalUrl') ? document.getElementById('ekTrackPortalUrl').value.trim() : '';
       try {
         await req('/shipments/settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
           enabled: document.getElementById('ekEnabled').checked,
           mode: document.getElementById('ekMode').value,
           courier_name: document.getElementById('ekCourier').value,
           tracking_url_template: document.getElementById('ekTrack').value,
+          portal_url: portalUrl || 'https://app.elite.ekartlogistics.in/',
+          track_url: trackPortalUrl || 'https://ekartlogistics.com/ekartlogistics-web/',
           api: {
             base_url: document.getElementById('ekApiBase').value,
             client_id: document.getElementById('ekApiClient').value,
@@ -2705,6 +2867,7 @@
       if (target) target.style.display = 'block';
       if (viewName === 'packaging') loadPackagingFrame();
       if (viewName === 'shipments') loadShipmentsFrame();
+      if (viewName === 'ekart-settings') loadEkartSettings();
       if (target && target.classList.contains('cms-view')) loadCmsFrame(target);
       if (viewName === 'deploy') loadDeploy();
     }
