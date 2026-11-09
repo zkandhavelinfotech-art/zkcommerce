@@ -2503,8 +2503,60 @@ function zkcEkartTrack($pdo, $orderId, $trackingId = '') {
     return [
         'success' => $httpCode === 200,
         'tracking_id' => $tid,
-        'tracking_url' => "https://app.elite.ekartlogistics.in/track/{$tid}",
+        'tracking_url' => "https://ekartlogistics.com/shipmenttrack/{$tid}",
         'data' => $data ?: $raw
+    ];
+}
+
+function zkcEkartCancelShipment($pdo, $orderId, $awb = '') {
+    $trackingId = trim($awb);
+    if ($trackingId === '' && $pdo && $orderId > 0) {
+        $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+        $stmt = $pdo->prepare("SELECT tracking_number FROM `{$tbl}` WHERE id = ? LIMIT 1");
+        $stmt->execute([(int)$orderId]);
+        $trackingId = trim((string)$stmt->fetchColumn());
+    }
+    if ($trackingId === '') {
+        throw new Exception("No tracking number found to cancel");
+    }
+
+    $cfg = zkcEkartGetSettings();
+    $baseUrl = $cfg['base_url'];
+    $clientId = $cfg['client_id'];
+    $username = $cfg['username'];
+    $password = $cfg['password'];
+    $apiKey = $cfg['api_key'];
+    $token = zkcEkartGetToken($baseUrl, $clientId, $username, $password, $apiKey);
+
+    $cancelUrl = $baseUrl . '/api/v1/package/cancel?tracking_id=' . rawurlencode($trackingId);
+    $ch = curl_init($cancelUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'DELETE',
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $token,
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ],
+        CURLOPT_TIMEOUT => 25,
+        CURLOPT_SSL_VERIFYPEER => false
+    ]);
+    $raw = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+
+    if ($pdo && $orderId > 0) {
+        $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+        $stmt = $pdo->prepare("UPDATE `{$tbl}` SET tracking_number = NULL, tracking_url = NULL, ekart_status = 'Cancelled' WHERE id = ?");
+        $stmt->execute([(int)$orderId]);
+    }
+
+    return [
+        'success' => ($httpCode === 200 || $httpCode === 204),
+        'cancelled_awb' => $trackingId,
+        'http_code' => $httpCode,
+        'response' => json_decode((string)$raw, true) ?: $raw
     ];
 }
 
@@ -2632,12 +2684,36 @@ if (($route === 'shipments/orders/awb' || preg_match('#^shipments/orders/(\\d+)/
     respond(['success' => true, 'order' => function_exists('zkcAdminOrderJson') ? zkcAdminOrderJson($updatedOrder) : $updatedOrder]);
 }
 
-// Ekart Shipment Actions (Book, Label, Track)
+// Ekart Shipment Actions (Book, Rebook, Cancel, Label, Track)
 if (($route === 'shipments/orders/book' || preg_match('#^shipments/orders/(\\d+)/book#', $route, $m) || $route === 'admin/book' || $route === 'shipments/ekart/create') && $method === 'POST') {
     $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
     if (!$oid) respond(['error' => 'order_id is required to book Ekart shipment'], 400);
     try {
         $res = zkcEkartCreateShipment($pdo, $oid);
+        respond($res);
+    } catch (Throwable $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
+}
+
+// Re-book / Re-activate Ekart shipment (creates a fresh active waybill and updates order)
+if (($route === 'shipments/orders/rebook' || preg_match('#^shipments/orders/(\\d+)/rebook#', $route, $m) || $route === 'admin/rebook') && $method === 'POST') {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    if (!$oid) respond(['error' => 'order_id is required to re-book'], 400);
+    try {
+        $res = zkcEkartCreateShipment($pdo, $oid);
+        respond($res);
+    } catch (Throwable $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
+}
+
+// Cancel Ekart shipment
+if (($route === 'shipments/orders/cancel' || preg_match('#^shipments/orders/(\\d+)/cancel#', $route, $m) || $route === 'admin/cancel') && ($method === 'POST' || $method === 'DELETE')) {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    $awb = trim((string)($body['awb'] ?? ($_GET['awb'] ?? '')));
+    try {
+        $res = zkcEkartCancelShipment($pdo, $oid, $awb);
         respond($res);
     } catch (Throwable $e) {
         respond(['error' => $e->getMessage()], 400);

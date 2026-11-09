@@ -109,6 +109,8 @@ function phpRoute(path, opts) {
   if (p === '/shipments/orders' || p === 'shipments/orders') route = 'admin/shipments';
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/awb$/))) { route = 'admin/awb'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/rebook$/))) { route = 'shipments/orders/' + m[1] + '/rebook'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/cancel$/))) { route = 'shipments/orders/' + m[1] + '/cancel'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); orderId = m[1]; }
   if (!route) route = p.replace(/^\//, '');
   const isClient = location.pathname.includes('/clients/');
@@ -234,8 +236,10 @@ function render() {
         ${o.tracking_url ? `<div><a class="muted" href="${esc(o.tracking_url)}" target="_blank" rel="noopener">Track ↗</a></div>` : ''}
         ${o.tracking_number ? `<div><a class="muted" href="${location.pathname.includes('/clients/') ? '../../../api.php' : '../api.php'}?route=shipments/orders/${o.id}/label" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600">Ekart Label 📄</a></div>` : ''}</td>
       <td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.shipped_at ? `<div class="muted">Shipped ${new Date(o.shipped_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}${o.delivered_at ? `<div class="muted">Delivered ${new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}<div class="muted" data-wa="${o.id}"></div></td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap">
-        ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'}>Book</button>` : ''}
+      <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'}>⚡ Book</button>` : ''}
+        ${api && o.tracking_number ? `<button class="btn sm" data-rebook="${o.id}" ${on ? '' : 'disabled'} title="Cancelled or need fresh tracking label? Generate a new active Ekart AWB" style="border-color:#3b82f6;color:#1d4ed8;font-weight:600">🔄 Re-book</button>` : ''}
+        ${api && o.tracking_number && !['delivered', 'cancelled'].includes(o.status) ? `<button class="btn sm" data-cancel="${o.id}" ${on ? '' : 'disabled'} title="Cancel shipment in Ekart" style="border-color:#fca5a5;color:#b91c1c">✖ Cancel</button>` : ''}
         ${['confirmed', 'processing'].includes(o.status) ? `<button class="btn sm primary" data-ship="${o.id}" ${on && o.tracking_number ? '' : 'disabled'} title="${o.tracking_number ? 'Mark shipped and send the tracking link' : 'Enter the AWB first'}">Shipped</button>` : ''}
         ${o.status === 'shipped' ? `<button class="btn sm" data-deliver="${o.id}" ${on ? '' : 'disabled'}>Delivered</button>` : ''}
       </td></tr>`;
@@ -331,7 +335,50 @@ document.getElementById('shipTable').addEventListener('click', async e => {
       status('✓ Booked with Ekart! AWB: ' + (d.tracking_id || (d.order && d.order.tracking_number) || 'Generated'), 'var(--brand)');
     } catch (err) {
       btn.disabled = false;
-      btn.textContent = 'Book';
+      btn.textContent = '⚡ Book';
+      status('❌ ' + err.message, 'var(--err)');
+    }
+  }
+  if (b.dataset.rebook) {
+    const oid = Number(b.dataset.rebook);
+    const target = data.orders.find(x => x.id === oid);
+    if (!confirm('Re-book a fresh active Ekart AWB for order ' + (target ? target.order_number : oid) + '?\n\n(Use this if the shipment was cancelled or needs a new tracking number)')) return;
+    const btn = b;
+    btn.disabled = true;
+    btn.textContent = 'Re-booking…';
+    try {
+      const d = await api('/shipments/orders/' + oid + '/rebook', { method: 'POST' });
+      if (target) {
+        Object.assign(target, d.order || { tracking_number: d.tracking_id, courier: 'Ekart Logistics', tracking_url: d.tracking_url });
+        selected.add(oid);
+      }
+      render();
+      status('✓ Re-booked successfully! New active AWB: ' + (d.tracking_id || 'Generated'), 'var(--brand)');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '🔄 Re-book';
+      status('❌ ' + err.message, 'var(--err)');
+    }
+  }
+  if (b.dataset.cancel) {
+    const oid = Number(b.dataset.cancel);
+    const target = data.orders.find(x => x.id === oid);
+    const awb = target ? target.tracking_number : '';
+    if (!confirm('Cancel Ekart shipment ' + (awb || '') + ' for order ' + (target ? target.order_number : oid) + '?')) return;
+    const btn = b;
+    btn.disabled = true;
+    btn.textContent = 'Cancelling…';
+    try {
+      await api('/shipments/orders/' + oid + '/cancel', { method: 'POST' });
+      if (target) {
+        target.tracking_number = null;
+        target.tracking_url = null;
+      }
+      render();
+      status('✓ Shipment cancelled in Ekart. You can re-book whenever ready.', 'var(--brand)');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '✖ Cancel';
       status('❌ ' + err.message, 'var(--err)');
     }
   }
