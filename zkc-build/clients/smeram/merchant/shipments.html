@@ -58,7 +58,7 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
   </div>
   <div class="card">
     <div class="row">
-      <label class="f">Show<select id="stage"><option value="ready">Ready to ship</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="all">All</option></select></label>
+      <label class="f">Show<select id="stage"><option value="ready">Ready to ship</option><option value="on_hold">⏸ On Hold (Pickup Paused)</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="all">All</option></select></label>
       <label class="f">From<input type="date" id="fromDate"></label>
       <label class="f">To<input type="date" id="toDate"></label>
       <button class="btn" id="loadBtn">Load</button>
@@ -69,12 +69,14 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
     <p class="muted" style="margin:10px 0 0" id="modeNote">Orders booked via API are automatically packaged with active AWBs and appear in Ekart under <b>Ship → Forward</b> (<a href="https://app.elite.ekartlogistics.in/ship/forward" target="_blank" style="color:var(--brand);font-weight:600">/ship/forward</a>) with status <i>Consignment Manifested / Order Placed</i> under warehouse <b>Smeram Primary Hub</b>. They bypass the manual Ekart <code>/orders/OPEN</code> and <code>/packaging</code> queues because packaging &amp; AWB generation are already completed here.</p>
   </div>
   <div class="card">
-    <div class="row" style="margin-bottom:10px">
+    <div class="row" style="margin-bottom:10px;gap:8px;flex-wrap:wrap">
       <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="selAll"> Select all</label>
       <button class="btn blue" id="printBtn">🖨 Print labels (4×6)</button>
       <button class="btn" id="printManifestBtn" style="background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700" title="Generate consolidated Ekart daily pickup manifest handover sheet for courier driver signature">📋 Print Pickup Manifest (PDF)</button>
       <button class="btn primary" id="autoBookAllBtn" style="background:#059669;color:#fff;border-color:#059669" title="Book all unbooked ready orders with Ekart automatically">⚡ Auto-book with Ekart</button>
       <button class="btn" id="syncStatusBtn" style="border-color:#0284c7;color:#0284c7;font-weight:600" title="Check live tracking and cancellation status of shipments in Ekart">🔄 Sync from Ekart</button>
+      <button class="btn" id="holdSelBtn" style="border-color:#f59e0b;color:#b45309;font-weight:700" title="Put selected orders on hold and pause Ekart pickup">⏸ Put on Hold</button>
+      <button class="btn" id="releaseHoldSelBtn" style="border-color:#10b981;color:#047857;font-weight:700" title="Mark selected orders ready and schedule Ekart pickup">▶ Ready / Book Ekart</button>
       <button class="btn" id="shipSelBtn">Mark selected shipped</button>
       <span class="status" id="status"></span>
     </div>
@@ -112,7 +114,11 @@ function phpRoute(path, opts) {
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/awb$/))) { route = 'admin/awb'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/book$/))) { route = 'admin/book'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/rebook$/))) { route = 'shipments/orders/' + m[1] + '/rebook'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/hold$/))) { route = 'shipments/orders/' + m[1] + '/hold'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/release-hold$/))) { route = 'shipments/orders/' + m[1] + '/release-hold'; body.order_id = Number(m[1]); orderId = m[1]; }
   else if ((m = p.match(/^\/?shipments\/orders\/(\d+)\/cancel$/))) { route = 'shipments/orders/' + m[1] + '/cancel'; body.order_id = Number(m[1]); orderId = m[1]; }
+  else if (p === '/shipments/orders/bulk-hold' || p === 'shipments/orders/bulk-hold') route = 'shipments/orders/bulk-hold';
+  else if (p === '/shipments/orders/bulk-release' || p === 'shipments/orders/bulk-release') route = 'shipments/orders/bulk-release';
   else if (p === '/shipments/orders/sync-status' || p === 'shipments/orders/sync-status') route = 'shipments/orders/sync-status';
   else if (p === '/shipments/orders/sync-all' || p === 'shipments/orders/sync-all') route = 'shipments/orders/sync-all';
   else if ((m = p.match(/^\/?orders\/(\d+)\/status$/))) { route = 'admin/status'; body.order_id = Number(m[1]); orderId = m[1]; }
@@ -231,22 +237,33 @@ function render() {
   const body = document.querySelector('#shipTable tbody');
   body.innerHTML = data.orders.length ? data.orders.map(o => {
     const a = addr(o), n = items(o).reduce((s, i) => s + Number(i.quantity || 1), 0);
+    const isHold = o.status === 'on_hold' || o.ekart_status === 'On Hold';
     return `<tr data-id="${o.id}" class="${selected.has(o.id) ? 'sel' : ''}">
       <td><input type="checkbox" data-sel="${o.id}" ${selected.has(o.id) ? 'checked' : ''}></td>
       <td><b>${esc(o.order_number)}</b><div class="muted">${new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} · ${n} item${n === 1 ? '' : 's'}</div></td>
       <td class="addr"><b>${esc(o.customer_name)}</b> · ${esc(o.customer_phone || '')}<div class="muted">${esc([a.line1 || a.address, a.line2, a.city, a.state].filter(Boolean).join(', '))} <b>${esc(a.pincode || '')}</b></div></td>
       <td>${isCod(o) ? `<span class="pill cod">COD ${money(o.total_amount)}</span>` : `<span class="pill paid">Prepaid</span>`}</td>
-      <td><input type="text" class="awb" data-awb="${o.id}" value="${esc(o.tracking_number || '')}" placeholder="Scan / type AWB" ${on ? '' : 'disabled'}>
-        ${o.ekart_status === 'Cancelled' ? `<div style="font-size:11px;color:#b91c1c;font-weight:700">🔴 Ekart: Cancelled</div>` : (o.tracking_number ? `<div style="font-size:11px;color:#047857;font-weight:700">🟢 Ekart: Active</div>` : '')}
+      <td><input type="text" class="awb" data-awb="${o.id}" value="${esc(o.tracking_number || '')}" placeholder="${isHold ? 'On Hold (Pickup Paused)' : 'Scan / type AWB'}" ${on && !isHold ? '' : 'disabled'}>
+        ${isHold ? `<div style="font-size:11px;color:#d97706;font-weight:700">⏸ Ekart: On Hold (Pickup Paused)</div>` : (o.ekart_status === 'Cancelled' ? `<div style="font-size:11px;color:#b91c1c;font-weight:700">🔴 Ekart: Cancelled</div>` : (o.tracking_number ? `<div style="font-size:11px;color:#047857;font-weight:700">🟢 Ekart: Active</div>` : ''))}
         ${o.tracking_url ? `<div><a class="muted" href="${esc(o.tracking_url)}" target="_blank" rel="noopener">Track ↗</a></div>` : ''}
         ${o.tracking_number ? `<div><a class="muted" href="${location.pathname.includes('/clients/') ? '../../../api.php' : '../api.php'}?route=shipments/orders/${o.id}/label" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600">Ekart Label 📄</a></div>` : ''}</td>
-      <td><span class="pill ${esc(o.status)}">${esc(o.status)}</span>${o.shipped_at ? `<div class="muted">Shipped ${new Date(o.shipped_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}${o.delivered_at ? `<div class="muted">Delivered ${new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}<div class="muted" data-wa="${o.id}"></div></td>
+      <td>
+        ${isHold ? `<span class="pill" style="background:#fef3c7;color:#92400e;border:1.5px solid #f59e0b;font-weight:700">⏸ On Hold</span>` : `<span class="pill ${esc(o.status)}">${esc(o.status)}</span>`}
+        ${o.shipped_at ? `<div class="muted">Shipped ${new Date(o.shipped_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}
+        ${o.delivered_at ? `<div class="muted">Delivered ${new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>` : ''}
+        <div class="muted" data-wa="${o.id}"></div>
+      </td>
       <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'} style="border-color:#10b981;color:#047857;font-weight:700">${o.ekart_status === 'Cancelled' ? '⚡ Activate / Book' : '⚡ Book'}</button>` : ''}
-        ${api && o.tracking_number ? `<button class="btn sm" data-rebook="${o.id}" ${on ? '' : 'disabled'} title="Cancelled or need fresh tracking label? Generate a new active Ekart AWB" style="border-color:#3b82f6;color:#1d4ed8;font-weight:600">🔄 Re-book</button>` : ''}
-        ${api && o.tracking_number && !['delivered', 'cancelled'].includes(o.status) ? `<button class="btn sm" data-cancel="${o.id}" ${on ? '' : 'disabled'} title="Cancel shipment in Ekart" style="border-color:#fca5a5;color:#b91c1c">✖ Cancel</button>` : ''}
-        ${['confirmed', 'processing'].includes(o.status) ? `<button class="btn sm primary" data-ship="${o.id}" ${on && o.tracking_number ? '' : 'disabled'} title="${o.tracking_number ? 'Mark shipped and send the tracking link' : 'Enter the AWB first'}">Shipped</button>` : ''}
-        ${o.status === 'shipped' ? `<button class="btn sm" data-deliver="${o.id}" ${on ? '' : 'disabled'}>Delivered</button>` : ''}
+        ${isHold
+          ? `<button class="btn sm" data-release="${o.id}" ${on ? '' : 'disabled'} style="border-color:#10b981;color:#047857;font-weight:700" title="Item is packed and ready. Schedule Ekart pickup">▶ Ready / Book Ekart</button>`
+          : `
+            ${api && !o.tracking_number ? `<button class="btn sm" data-book="${o.id}" ${on ? '' : 'disabled'} style="border-color:#10b981;color:#047857;font-weight:700">${o.ekart_status === 'Cancelled' ? '⚡ Activate / Book' : '⚡ Book'}</button>` : ''}
+            ${api && o.tracking_number ? `<button class="btn sm" data-rebook="${o.id}" ${on ? '' : 'disabled'} title="Cancelled or need fresh tracking label? Generate a new active Ekart AWB" style="border-color:#3b82f6;color:#1d4ed8;font-weight:600">🔄 Re-book</button>` : ''}
+            ${!['shipped', 'delivered', 'cancelled'].includes(o.status) ? `<button class="btn sm" data-hold="${o.id}" ${on ? '' : 'disabled'} title="Package not ready. Hold pickup run so driver does not come" style="border-color:#f59e0b;color:#b45309">⏸ Put on Hold</button>` : ''}
+            ${api && o.tracking_number && !['delivered', 'cancelled'].includes(o.status) ? `<button class="btn sm" data-cancel="${o.id}" ${on ? '' : 'disabled'} title="Cancel shipment in Ekart" style="border-color:#fca5a5;color:#b91c1c">✖ Cancel</button>` : ''}
+            ${['confirmed', 'processing'].includes(o.status) ? `<button class="btn sm primary" data-ship="${o.id}" ${on && o.tracking_number ? '' : 'disabled'} title="${o.tracking_number ? 'Mark shipped and send the tracking link' : 'Enter the AWB first'}">Shipped</button>` : ''}
+            ${o.status === 'shipped' ? `<button class="btn sm" data-deliver="${o.id}" ${on ? '' : 'disabled'}>Delivered</button>` : ''}
+          `}
       </td></tr>`;
   }).join('') : `<tr><td colspan="7" class="empty">No orders.</td></tr>`;
   document.getElementById('selAll').checked = data.orders.length > 0 && data.orders.every(o => selected.has(o.id));
@@ -368,6 +385,53 @@ document.getElementById('shipTable').addEventListener('click', async e => {
       status('❌ ' + err.message, 'var(--err)');
     }
   }
+  if (b.dataset.hold) {
+    const oid = Number(b.dataset.hold);
+    const target = data.orders.find(x => x.id === oid);
+    if (!confirm('Put order ' + (target ? target.order_number : oid) + ' on hold?\n\nThis pauses/cancels the Ekart pickup run so the courier driver will NOT come to pick up until marked ready.')) return;
+    const btn = b;
+    btn.disabled = true;
+    btn.textContent = 'Holding…';
+    try {
+      await api('/shipments/orders/' + oid + '/hold', { method: 'POST' });
+      if (target) {
+        target.status = 'on_hold';
+        target.ekart_status = 'On Hold';
+        target.tracking_number = null;
+        target.tracking_url = null;
+      }
+      render();
+      status('⏸ Order put on hold. Ekart pickup paused — driver will not arrive.', '#d97706');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '⏸ Put on Hold';
+      status('❌ ' + err.message, 'var(--err)');
+    }
+  }
+  if (b.dataset.release) {
+    const oid = Number(b.dataset.release);
+    const target = data.orders.find(x => x.id === oid);
+    const btn = b;
+    btn.disabled = true;
+    btn.textContent = 'Booking…';
+    try {
+      const d = await api('/shipments/orders/' + oid + '/release-hold', { method: 'POST' });
+      if (target) {
+        target.status = 'confirmed';
+        target.ekart_status = 'Order Placed';
+        target.tracking_number = d.tracking_id || (d.shipment && d.shipment.tracking_id);
+        target.courier = 'Ekart Logistics';
+        target.tracking_url = 'https://ekartlogistics.com/shipmenttrack/' + target.tracking_number;
+        selected.add(oid);
+      }
+      render();
+      status('✓ Package marked ready! Scheduled with Ekart. Active AWB: ' + (target ? target.tracking_number : 'Generated'), 'var(--brand)');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '▶ Ready / Book Ekart';
+      status('❌ ' + err.message, 'var(--err)');
+    }
+  }
   if (b.dataset.cancel) {
     const oid = Number(b.dataset.cancel);
     const target = data.orders.find(x => x.id === oid);
@@ -392,11 +456,70 @@ document.getElementById('shipTable').addEventListener('click', async e => {
     }
   }
 });
+
+// Bulk Put on Hold
+const holdSelBtn = document.getElementById('holdSelBtn');
+if (holdSelBtn) {
+  holdSelBtn.onclick = async () => {
+    const candidates = data.orders.filter(o => selected.has(o.id) && o.status !== 'on_hold' && !['delivered', 'cancelled', 'shipped'].includes(o.status));
+    if (!candidates.length) return status('Select pending/confirmed orders to put on hold.', 'var(--warn)');
+    if (!confirm(`Put ${candidates.length} selected order(s) on hold?\n\nThis pauses/cancels Ekart pickup for all selected orders so courier driver will not collect them.`)) return;
+    holdSelBtn.disabled = true;
+    holdSelBtn.textContent = 'Holding…';
+    let count = 0;
+    for (const o of candidates) {
+      try {
+        await api('/shipments/orders/' + o.id + '/hold', { method: 'POST' });
+        o.status = 'on_hold';
+        o.ekart_status = 'On Hold';
+        o.tracking_number = null;
+        o.tracking_url = null;
+        count++;
+      } catch (e) {
+        console.error('Hold error:', e);
+      }
+    }
+    holdSelBtn.disabled = false;
+    holdSelBtn.textContent = '⏸ Put on Hold';
+    render();
+    status(`⏸ Put ${count} order(s) on hold. Ekart pickup paused.`, '#d97706');
+  };
+}
+
+// Bulk Release Hold / Ready for Shipment
+const releaseHoldSelBtn = document.getElementById('releaseHoldSelBtn');
+if (releaseHoldSelBtn) {
+  releaseHoldSelBtn.onclick = async () => {
+    const candidates = data.orders.filter(o => selected.has(o.id) && (o.status === 'on_hold' || o.ekart_status === 'On Hold'));
+    if (!candidates.length) return status('Select on-hold orders to mark ready & book with Ekart.', 'var(--warn)');
+    releaseHoldSelBtn.disabled = true;
+    releaseHoldSelBtn.textContent = 'Booking…';
+    let count = 0;
+    for (const o of candidates) {
+      try {
+        const d = await api('/shipments/orders/' + o.id + '/release-hold', { method: 'POST' });
+        o.status = 'confirmed';
+        o.ekart_status = 'Order Placed';
+        o.tracking_number = d.tracking_id || (d.shipment && d.shipment.tracking_id);
+        o.courier = 'Ekart Logistics';
+        o.tracking_url = 'https://ekartlogistics.com/shipmenttrack/' + o.tracking_number;
+        count++;
+      } catch (e) {
+        console.error('Release error:', e);
+      }
+    }
+    releaseHoldSelBtn.disabled = false;
+    releaseHoldSelBtn.textContent = '▶ Ready / Book Ekart';
+    render();
+    status(`✓ ${count} order(s) marked ready and scheduled with Ekart!`, 'var(--brand)');
+  };
+}
+
 const autoBookBtn = document.getElementById('autoBookAllBtn');
 if (autoBookBtn) {
   autoBookBtn.onclick = async () => {
-    const unbooked = data.orders.filter(o => !o.tracking_number && ['confirmed', 'processing', 'new', 'paid'].includes(o.status));
-    if (!unbooked.length) return status('All ready orders already have an AWB.', 'var(--brand)');
+    const unbooked = data.orders.filter(o => !o.tracking_number && o.status !== 'on_hold' && o.ekart_status !== 'On Hold' && ['confirmed', 'processing', 'new', 'paid'].includes(o.status));
+    if (!unbooked.length) return status('All ready orders already have an AWB (on-hold orders skipped).', 'var(--brand)');
     autoBookBtn.disabled = true;
     autoBookBtn.textContent = 'Booking…';
     status(`Booking ${unbooked.length} order(s) with Ekart…`, '#475569');

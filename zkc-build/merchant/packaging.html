@@ -62,6 +62,7 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
       <label class="f">Orders
         <select id="stage">
           <option value="ready">Ready to pack (paid / COD confirmed)</option>
+          <option value="on_hold">⏸ On Hold (Not Ready / Paused)</option>
           <option value="packed">Packed, not shipped</option>
           <option value="shipped">Shipped</option>
           <option value="all">All (except unpaid / cancelled)</option>
@@ -80,12 +81,14 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
   <div class="card">
     <div class="row" style="justify-content:space-between">
       <div class="summary" id="summary">—</div>
-      <div class="row">
+      <div class="row" style="gap:6px;flex-wrap:wrap">
         <button class="btn sm" id="selAll">Select all</button>
         <button class="btn sm" id="selNone">Clear</button>
         <button class="btn sm primary" id="syncEkartBtn" style="background:#059669;border-color:#059669;color:#fff;font-weight:700" title="Book and sync selected orders with Ekart immediately">⚡ Sync selected to Ekart</button>
         <button class="btn sm" id="manifestBtn" style="background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700" title="Generate consolidated Ekart daily pickup manifest handover sheet">📋 Pickup Manifest</button>
-        <button class="btn sm" id="csvBtn">⬇ CSV (Ekart bulk upload)</button>
+        <button class="btn sm" id="holdSelBtn" style="border-color:#f59e0b;color:#b45309;font-weight:700" title="Put selected orders on hold (not ready for packaging / pickup)">⏸ Hold selected</button>
+        <button class="btn sm" id="releaseHoldSelBtn" style="border-color:#10b981;color:#047857;font-weight:700" title="Mark selected orders ready for packaging & Ekart booking">▶ Ready selected</button>
+        <button class="btn sm" id="csvBtn">⬇ CSV</button>
         <button class="btn sm" id="packedBtn">✔ Mark selected as packed</button>
         <a class="btn sm" href="shipments.html" style="text-decoration:none;border-color:#0284c7;color:#0284c7;font-weight:600">🚚 Shipments &amp; AWBs →</a>
       </div>
@@ -134,7 +137,11 @@ const PHP_ROUTES = {
   'orders/packaging': 'admin/packaging',
   'orders/packaging/mark-packed': 'admin/mark-packed',
   '/shipments/orders/sync-all': 'shipments/orders/sync-all',
-  'shipments/orders/sync-all': 'shipments/orders/sync-all'
+  'shipments/orders/sync-all': 'shipments/orders/sync-all',
+  '/shipments/orders/hold': 'shipments/orders/hold',
+  'shipments/orders/hold': 'shipments/orders/hold',
+  '/shipments/orders/release-hold': 'shipments/orders/release-hold',
+  'shipments/orders/release-hold': 'shipments/orders/release-hold'
 };
 const storeId = new URLSearchParams(location.search).get('store_id');
 let data = { orders: [], store: {} }, selected = new Set();
@@ -235,17 +242,20 @@ function renderRows() {
   if (!data.orders.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No orders for these dates.</td></tr>'; renderSummary(); renderPreview(); return; }
   tbody.innerHTML = data.orders.map(o => {
     const a = addr(o), it = items(o);
+    const isHold = o.status === 'on_hold' || o.ekart_status === 'On Hold';
     return `<tr class="${selected.has(o.id) ? 'sel' : ''}">
       <td><input type="checkbox" data-id="${o.id}" ${selected.has(o.id) ? 'checked' : ''} aria-label="Select ${esc(o.order_number)}"></td>
       <td>
         <b>${esc(o.order_number || '#' + o.id)}</b>
         <div class="muted">${esc(new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }))}</div>
         <div>
-          ${(o.status === 'confirmed' || o.status === 'new') 
-            ? '<span class="pill" style="background:#ecfdf5;color:#047857;border:1.5px solid #34d399;font-weight:800;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">📦 Ready to Pack</span>' 
-            : (o.status === 'processing' 
-              ? '<span class="pill" style="background:#eff6ff;color:#1e40af;border:1.5px solid #93c5fd;font-weight:700;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">✔ Packed</span>' 
-              : '<span class="pill" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;font-weight:700;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">' + esc(o.status) + '</span>')}
+          ${isHold 
+            ? '<span class="pill" style="background:#fef3c7;color:#92400e;border:1.5px solid #f59e0b;font-weight:800;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">⏸ On Hold (Not Ready)</span>' 
+            : ((o.status === 'confirmed' || o.status === 'new') 
+              ? '<span class="pill" style="background:#ecfdf5;color:#047857;border:1.5px solid #34d399;font-weight:800;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">📦 Ready to Pack</span>' 
+              : (o.status === 'processing' 
+                ? '<span class="pill" style="background:#eff6ff;color:#1e40af;border:1.5px solid #93c5fd;font-weight:700;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">✔ Packed</span>' 
+                : '<span class="pill" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;font-weight:700;font-size:11px;padding:3px 9px;display:inline-block;margin-top:4px;border-radius:12px">' + esc(o.status) + '</span>'))}
         </div>
       </td>
       <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div></td>
@@ -253,8 +263,14 @@ function renderRows() {
       <td>${it.map(x => esc(x.name) + ' × ' + (Number(x.quantity) || 1)).join('<br>')}</td>
       <td>${isCod(o) ? '<span class="pill cod">COD ' + money(o.total_amount) + '</span>' : '<span class="pill paid">Prepaid</span>'}<div class="muted">${money(o.total_amount)}</div></td>
       <td>${esc(o.invoice_number || '—')}</td>
-      <td style="white-space:nowrap">${o.whatsapp && o.whatsapp.customer_url ? `<a class="btn sm wa" target="_blank" rel="noopener" href="${esc(o.whatsapp.customer_url)}" title="Message the customer">💬 Customer</a>` : ''}
-        ${o.whatsapp && o.whatsapp.care_url ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(o.whatsapp.care_url)}" title="Forward order details to ${esc(data.care_label || 'customer care')}">↪ Care</a>` : ''}</td>
+      <td style="white-space:nowrap">
+        ${o.whatsapp && o.whatsapp.customer_url ? `<a class="btn sm wa" target="_blank" rel="noopener" href="${esc(o.whatsapp.customer_url)}" title="Message the customer">💬 Customer</a>` : ''}
+        ${isHold 
+          ? `<button type="button" class="btn sm" data-release="${o.id}" style="border-color:#10b981;color:#047857;font-weight:700" title="Item packed & ready. Release hold">▶ Ready</button>` 
+          : (!['shipped', 'delivered', 'cancelled'].includes(o.status) 
+            ? `<button type="button" class="btn sm" data-hold="${o.id}" style="border-color:#f59e0b;color:#b45309" title="Hold packaging / pickup run">⏸ Hold</button>` 
+            : '')}
+      </td>
     </tr>`;
   }).join('');
   tbody.querySelectorAll('input[data-id]').forEach(cb => cb.onchange = () => { const id = Number(cb.dataset.id); cb.checked ? selected.add(id) : selected.delete(id); cb.closest('tr').classList.toggle('sel', cb.checked); renderSummary(); renderPreview(); });
@@ -348,9 +364,10 @@ async function markPacked() {
 }
 
 async function syncToEkart() {
-  const ids = [...selected];
-  if (!ids.length) return status('Select orders to sync with Ekart', 'var(--err)');
-  if (!confirm(`Sync and book ${ids.length} selected order(s) directly with Ekart?\n\nThis will generate official active Ekart AWBs and register them in both portals.`)) return;
+  const readyOrders = data.orders.filter(o => selected.has(o.id) && o.status !== 'on_hold' && o.ekart_status !== 'On Hold');
+  const ids = readyOrders.map(o => o.id);
+  if (!ids.length) return status('Selected orders are currently On Hold or already booked. Release hold first.', 'var(--warn)');
+  if (!confirm(`Sync and book ${ids.length} selected order(s) directly with Ekart?\n\nThis will generate official active Ekart AWBs and register them in both portals (on-hold orders skipped).`)) return;
   const btn = document.getElementById('syncEkartBtn');
   btn.disabled = true;
   btn.textContent = 'Syncing to Ekart…';
@@ -374,6 +391,64 @@ async function syncToEkart() {
     btn.disabled = false;
     btn.textContent = '⚡ Sync selected to Ekart';
   }
+}
+
+// Table click handler for hold and release
+const rowsEl = document.getElementById('rows');
+if (rowsEl) {
+  rowsEl.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.hold) {
+      const oid = Number(b.dataset.hold);
+      if (!confirm('Put order #' + oid + ' on hold?\n\nEkart pickup will be paused so courier driver does not collect it until package is ready.')) return;
+      b.disabled = true;
+      try {
+        await api('/shipments/orders/' + oid + '/hold', { method: 'POST' });
+        await load();
+        status('⏸ Order #' + oid + ' put on hold. Ekart pickup paused.', '#d97706');
+      } catch (err) { b.disabled = false; status('❌ ' + err.message, 'var(--err)'); }
+    }
+    if (b.dataset.release) {
+      const oid = Number(b.dataset.release);
+      b.disabled = true;
+      try {
+        const d = await api('/shipments/orders/' + oid + '/release-hold', { method: 'POST' });
+        await load();
+        status('✓ Order #' + oid + ' marked ready and booked into Ekart! AWB: ' + (d.tracking_id || 'Active'), 'var(--brand)');
+      } catch (err) { b.disabled = false; status('❌ ' + err.message, 'var(--err)'); }
+    }
+  });
+}
+
+// Bulk Hold / Release
+const holdSelBtn = document.getElementById('holdSelBtn');
+if (holdSelBtn) {
+  holdSelBtn.onclick = async () => {
+    const candidates = data.orders.filter(o => selected.has(o.id) && o.status !== 'on_hold');
+    if (!candidates.length) return status('No active orders selected to put on hold.', 'var(--warn)');
+    if (!confirm(`Put ${candidates.length} order(s) on hold?\n\nEkart pickup will be paused for selected orders.`)) return;
+    holdSelBtn.disabled = true;
+    for (const o of candidates) {
+      try { await api('/shipments/orders/' + o.id + '/hold', { method: 'POST' }); } catch(e){}
+    }
+    holdSelBtn.disabled = false;
+    await load();
+    status(`⏸ Put ${candidates.length} order(s) on hold. Ekart pickup paused.`, '#d97706');
+  };
+}
+const releaseHoldSelBtn = document.getElementById('releaseHoldSelBtn');
+if (releaseHoldSelBtn) {
+  releaseHoldSelBtn.onclick = async () => {
+    const candidates = data.orders.filter(o => selected.has(o.id) && (o.status === 'on_hold' || o.ekart_status === 'On Hold'));
+    if (!candidates.length) return status('Select on-hold orders to mark ready and schedule with Ekart.', 'var(--warn)');
+    releaseHoldSelBtn.disabled = true;
+    for (const o of candidates) {
+      try { await api('/shipments/orders/' + o.id + '/release-hold', { method: 'POST' }); } catch(e){}
+    }
+    releaseHoldSelBtn.disabled = false;
+    await load();
+    status(`✓ ${candidates.length} order(s) marked ready and scheduled with Ekart!`, 'var(--brand)');
+  };
 }
 
 // Inside the merchant dashboard (iframe) the dashboard already has the store name and navigation.

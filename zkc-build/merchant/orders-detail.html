@@ -182,14 +182,18 @@ body{background:var(--zk-chalk);overflow-x:hidden}
           </div>
           <div class="field-group" style="margin-bottom:12px">
             <label class="field-label" style="font-size:12px;font-weight:700">Order Status</label>
-            <select class="field" id="select-status" style="font-size:13px">
+            <select class="field" id="select-status" style="font-size:13px" onchange="checkHoldNotice()">
               <option value="new">New</option>
               <option value="confirmed">Confirmed</option>
               <option value="processing">Processing (Packing)</option>
+              <option value="on_hold">⏸ On Hold (Package Not Ready)</option>
               <option value="shipped">Shipped (Dispatched)</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
             </select>
+            <div id="hold-notice" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:8px 10px;font-size:12px;color:#92400e;margin-top:8px;font-weight:600">
+              ⏸ <strong>Ekart Pickup Paused:</strong> Courier van driver will NOT arrive for collection until status is changed to Confirmed or Shipped.
+            </div>
           </div>
           <button class="btn btn-primary btn-sm btn-full" onclick="saveFulfillment()">Save Shipping &amp; Status</button>
         </div>
@@ -338,9 +342,15 @@ async function loadOrder() {
   if (aInp) aInp.value = o.tracking_number || o.awb_number || '';
   var sSel = document.getElementById('select-status');
   if (sSel) sSel.value = o.order_status || o.status || 'new';
+  checkHoldNotice();
 
-  setEl('timeline-status-title', 'Status: ' + (o.order_status || o.status || 'new').toUpperCase());
-  setEl('timeline-status-desc', (o.courier ? (o.courier + ' tracking: ' + (o.tracking_number || 'pending')) : 'Ready to pack and dispatch'));
+  if (o.order_status === 'on_hold' || o.ekart_status === 'On Hold') {
+    setEl('timeline-status-title', 'Status: ⏸ ON HOLD (PACKAGE NOT READY)');
+    setEl('timeline-status-desc', 'Ekart pickup is paused — courier driver will NOT arrive until package is marked ready.');
+  } else {
+    setEl('timeline-status-title', 'Status: ' + (o.order_status || o.status || 'new').toUpperCase());
+    setEl('timeline-status-desc', (o.courier ? (o.courier + ' tracking: ' + (o.tracking_number || 'pending')) : 'Ready to pack and dispatch'));
+  }
 
   // Items
   var items = o.items || [];
@@ -397,6 +407,14 @@ function openInvoice() {
   }
   // Open real invoice PDF / print view
   window.open('../api.php?route=invoices/' + oid + '/pdf', '_blank');
+}
+
+function checkHoldNotice() {
+  var sSel = document.getElementById('select-status');
+  var notice = document.getElementById('hold-notice');
+  if (notice && sSel) {
+    notice.style.display = (sSel.value === 'on_hold') ? 'block' : 'none';
+  }
 }
 
 async function saveFulfillment() {

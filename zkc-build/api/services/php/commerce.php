@@ -406,7 +406,7 @@ function zkcAssignAwb($pdo, $orderId, $awb, $courier = '') {
     return zkcOrderById($pdo, $orderId);
 }
 
-const ZKC_STATUSES = ['pending', 'new', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
+const ZKC_STATUSES = ['pending', 'new', 'confirmed', 'processing', 'on_hold', 'shipped', 'delivered', 'cancelled', 'returned'];
 
 /** Status change with stock and WhatsApp, like PUT /api/orders/:id/status. Returns ['order', 'whatsapp']. */
 function zkcChangeStatus($pdo, $orderId, $status, $awb = null) {

@@ -70,7 +70,7 @@ body{background:var(--zk-chalk);overflow-x:hidden}
 </div>
 <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
   <input type="search" class="field" placeholder="🔍 Search order or customer…" style="max-width:260px">
-  <select class="field" style="width:auto"><option>All status</option><option>Processing</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option></select>
+  <select class="field" id="order-status-filter" style="width:auto" onchange="loadOrders(1, this.value)"><option value="">All status</option><option value="processing">Processing</option><option value="on_hold">⏸ On Hold</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select>
   <select class="field" style="width:auto"><option>All payment</option><option>UPI</option><option>Card</option><option>COD</option></select>
   <select class="field" style="width:auto"><option>Last 30 days</option><option>Today</option><option>This week</option><option>This month</option></select>
 </div>
@@ -146,7 +146,7 @@ async function loadOrders(page, status) {
       + '<td>' + (o.item_count || 1) + '</td>'
       + '<td><strong>' + total + '</strong></td>'
       + '<td><span class="badge badge-' + (payStatus === 'paid' ? 'green' : 'brand') + '">' + payMethod + ' (' + payStatus + ')</span></td>'
-      + '<td><span class="status status-' + ordStatus + '">' + ordStatus + '</span></td>'
+      + '<td>' + (ordStatus === 'on_hold' ? '<span class="badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;font-weight:700">⏸ On Hold</span>' : ('<span class="status status-' + ordStatus + '">' + ordStatus + '</span>')) + '</td>'
       + '<td>' + dt + '</td>'
       + '<td><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
       + '  <a href="orders-detail.html?id=' + o.id + '" class="btn btn-secondary btn-sm">View Details</a>'

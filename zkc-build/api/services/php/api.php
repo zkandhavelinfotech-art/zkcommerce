@@ -1753,10 +1753,31 @@ if (preg_match('#^orders/(\d+)/status$#', $route, $m) && ($method === 'PUT' || $
     if ($pdo && $status !== '') {
         $tbl = zkcGetOrdersTable($pdo);
         zkcEnsureOrderColumns($pdo, $tbl);
-        try {
-            $stmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = ?, courier = ?, tracking_number = ? WHERE id = ?");
+        if ($status === 'on_hold') {
+            if (function_exists('zkcEkartHoldShipment')) {
+                try {
+                    zkcEkartHoldShipment($pdo, $orderId);
+                } catch (Throwable $e) {
+                    $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'on_hold', ekart_status = 'On Hold', tracking_number = NULL, tracking_url = NULL WHERE id = ?")->execute([$orderId]);
+                }
+            } else {
+                $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'on_hold', ekart_status = 'On Hold', tracking_number = NULL, tracking_url = NULL WHERE id = ?")->execute([$orderId]);
+            }
+        } else {
+            $prevStmt = $pdo->prepare("SELECT order_status FROM `{$tbl}` WHERE id = ?");
+            $prevStmt->execute([$orderId]);
+            $prevStatus = $prevStmt->fetchColumn();
+
+            $stmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = ?, courier = COALESCE(NULLIF(?, ''), courier), tracking_number = COALESCE(NULLIF(?, ''), tracking_number) WHERE id = ?");
             $stmt->execute([$status, $courier, $tracking, $orderId]);
-        } catch (Exception $e) {}
+
+            // If coming off on_hold to confirmed/new/processing, schedule with Ekart
+            if ($prevStatus === 'on_hold' && in_array($status, ['confirmed', 'new', 'processing']) && function_exists('zkcEkartCreateShipment')) {
+                try {
+                    zkcEkartCreateShipment($pdo, $orderId);
+                } catch (Throwable $e) {}
+            }
+        }
     }
     respond(['success' => true]);
 }
@@ -2633,6 +2654,76 @@ function zkcEkartCancelShipment($pdo, $orderId, $awb = '') {
     ];
 }
 
+/**
+ * Put shipment on hold (When package is not ready for delivery/pickup).
+ * 1. If AWB exists, calls Ekart cancel API so courier driver/pickup van will NOT visit to pick up.
+ * 2. Updates merchant DB: order_status = 'on_hold', ekart_status = 'On Hold', clears active tracking.
+ */
+function zkcEkartHoldShipment($pdo, $orderId) {
+    $oid = (int)$orderId;
+    if ($oid <= 0) throw new Exception("Invalid order ID: $orderId");
+    $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+    if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
+
+    $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id = ? LIMIT 1");
+    $stmt->execute([$oid]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$order) throw new Exception("Order not found: ID $oid");
+
+    $awb = trim((string)($order['tracking_number'] ?? ''));
+    $cancelInfo = null;
+    if ($awb !== '') {
+        try {
+            $cancelInfo = zkcEkartCancelShipment($pdo, $oid, $awb);
+        } catch (Throwable $e) {
+            $cancelInfo = ['error' => $e->getMessage()];
+        }
+    }
+
+    $uStmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'on_hold', ekart_status = 'On Hold', tracking_number = NULL, tracking_url = NULL, shipped_at = NULL WHERE id = ?");
+    $uStmt->execute([$oid]);
+
+    return [
+        'success' => true,
+        'order_id' => $oid,
+        'order_status' => 'on_hold',
+        'ekart_status' => 'On Hold',
+        'message' => 'Shipment put on hold. Ekart pickup request cancelled — courier driver will NOT come for pickup until shipment is marked ready.',
+        'cancelled_awb' => $awb,
+        'cancel_result' => $cancelInfo
+    ];
+}
+
+/**
+ * Release shipment from hold and schedule with Ekart (When package is ready for delivery).
+ * 1. Sets order_status = 'confirmed'.
+ * 2. Calls zkcEkartCreateShipment() to create/manifest consignment in Ekart and generate active AWB.
+ * 3. Ekart schedules pickup van for the next run.
+ */
+function zkcEkartReleaseHoldShipment($pdo, $orderId) {
+    $oid = (int)$orderId;
+    if ($oid <= 0) throw new Exception("Invalid order ID: $orderId");
+    $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
+    if (function_exists('zkcEnsureOrderColumns')) zkcEnsureOrderColumns($pdo, $tbl);
+
+    // Update order status to confirmed
+    $uStmt = $pdo->prepare("UPDATE `{$tbl}` SET order_status = 'confirmed' WHERE id = ?");
+    $uStmt->execute([$oid]);
+
+    // Book shipment in Ekart Logistics
+    $bookRes = zkcEkartCreateShipment($pdo, $oid);
+
+    return [
+        'success' => true,
+        'order_id' => $oid,
+        'order_status' => 'confirmed',
+        'ekart_status' => 'Order Placed',
+        'tracking_id' => $bookRes['tracking_id'] ?? null,
+        'message' => 'Shipment marked ready. Ekart pickup scheduled with active AWB: ' . ($bookRes['tracking_id'] ?? ''),
+        'shipment' => $bookRes
+    ];
+}
+
 // Shipments / Ekart settings
 if ($route === 'shipments/settings' || $route === 'shipping/settings' || $route === 'admin/shipments/settings' || $route === 'settings/shipments' || $route === 'settings/ekart') {
     $settingsFile = __DIR__ . '/ekart_settings.json';
@@ -2781,6 +2872,66 @@ if (($route === 'shipments/orders/rebook' || preg_match('#^shipments/orders/(\\d
     }
 }
 
+// Hold Ekart shipment (Cancels Ekart pickup run so driver does not come, sets status to on_hold)
+if (($route === 'shipments/orders/hold' || preg_match('#^shipments/orders/(\\d+)/hold#', $route, $m) || $route === 'admin/hold') && $method === 'POST') {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    if (!$oid) respond(['error' => 'order_id is required to put shipment on hold'], 400);
+    try {
+        $res = zkcEkartHoldShipment($pdo, $oid);
+        respond($res);
+    } catch (Throwable $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
+}
+
+// Release hold / Enable book (Marks package ready and books/re-books with Ekart)
+if (($route === 'shipments/orders/release-hold' || preg_match('#^shipments/orders/(\\d+)/release-hold#', $route, $m) || $route === 'admin/release-hold') && $method === 'POST') {
+    $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+    if (!$oid) respond(['error' => 'order_id is required to release hold'], 400);
+    try {
+        $res = zkcEkartReleaseHoldShipment($pdo, $oid);
+        respond($res);
+    } catch (Throwable $e) {
+        respond(['error' => $e->getMessage()], 400);
+    }
+}
+
+// Bulk Hold shipments
+if (($route === 'shipments/orders/bulk-hold' || $route === 'admin/bulk-hold') && $method === 'POST') {
+    $rawIds = (array)($body['order_ids'] ?? ($_POST['order_ids'] ?? []));
+    $orderIds = array_values(array_filter(array_map('intval', $rawIds), function($x) { return $x > 0; }));
+    if (empty($orderIds)) respond(['error' => 'No order IDs provided'], 400);
+    $held = [];
+    $failed = [];
+    foreach ($orderIds as $oid) {
+        try {
+            $r = zkcEkartHoldShipment($pdo, $oid);
+            $held[] = ['order_id' => $oid, 'status' => 'on_hold'];
+        } catch (Throwable $e) {
+            $failed[] = ['order_id' => $oid, 'error' => $e->getMessage()];
+        }
+    }
+    respond(['success' => true, 'held_count' => count($held), 'failed_count' => count($failed), 'held' => $held, 'failed' => $failed]);
+}
+
+// Bulk Release Hold shipments (mark ready & schedule pickup with Ekart)
+if (($route === 'shipments/orders/bulk-release' || $route === 'admin/bulk-release') && $method === 'POST') {
+    $rawIds = (array)($body['order_ids'] ?? ($_POST['order_ids'] ?? []));
+    $orderIds = array_values(array_filter(array_map('intval', $rawIds), function($x) { return $x > 0; }));
+    if (empty($orderIds)) respond(['error' => 'No order IDs provided'], 400);
+    $released = [];
+    $failed = [];
+    foreach ($orderIds as $oid) {
+        try {
+            $r = zkcEkartReleaseHoldShipment($pdo, $oid);
+            $released[] = ['order_id' => $oid, 'status' => 'confirmed', 'awb' => $r['tracking_id'] ?? ''];
+        } catch (Throwable $e) {
+            $failed[] = ['order_id' => $oid, 'error' => $e->getMessage()];
+        }
+    }
+    respond(['success' => true, 'released_count' => count($released), 'failed_count' => count($failed), 'released' => $released, 'failed' => $failed]);
+}
+
 // Cancel Ekart shipment
 if (($route === 'shipments/orders/cancel' || preg_match('#^shipments/orders/(\\d+)/cancel#', $route, $m) || $route === 'admin/cancel') && ($method === 'POST' || $method === 'DELETE')) {
     $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
@@ -2827,7 +2978,7 @@ if (($route === 'shipments/orders/sync-all' || $route === 'admin/shipments/sync-
         $stmt = $pdo->prepare("SELECT * FROM `{$tbl}` WHERE id IN ($marks) ORDER BY id ASC");
         $stmt->execute($orderIds);
     } else {
-        $stmt = $pdo->query("SELECT * FROM `{$tbl}` WHERE (tracking_number IS NULL OR tracking_number = '' OR ekart_status = 'Cancelled') AND order_status NOT IN ('cancelled', 'delivered') ORDER BY id ASC LIMIT 50");
+        $stmt = $pdo->query("SELECT * FROM `{$tbl}` WHERE (tracking_number IS NULL OR tracking_number = '' OR ekart_status = 'Cancelled') AND order_status NOT IN ('cancelled', 'delivered', 'on_hold') AND (ekart_status IS NULL OR ekart_status != 'On Hold') ORDER BY id ASC LIMIT 50");
     }
     $candidates = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

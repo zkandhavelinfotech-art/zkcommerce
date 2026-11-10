@@ -7,6 +7,8 @@
 
 /** An order as the dashboard pages expect it (PHP 'new' = Node 'confirmed'). */
 function zkcAdminOrderJson($o) {
+    $st = $o['order_status'] ?? ($o['status'] ?? 'new');
+    $adminStatus = ($st === 'on_hold') ? 'on_hold' : (in_array($st, ['new', 'paid']) ? 'confirmed' : $st);
     return [
         'id' => (int)$o['id'],
         'order_number' => $o['order_number'],
@@ -18,7 +20,9 @@ function zkcAdminOrderJson($o) {
         'total_amount' => (float)$o['total_amount'],
         'payment_method' => $o['payment_method'],
         'payment_status' => $o['payment_status'],
-        'status' => in_array($o['order_status'], ['new', 'paid']) ? 'confirmed' : $o['order_status'],
+        'status' => $adminStatus,
+        'order_status' => $st,
+        'ekart_status' => $o['ekart_status'] ?? null,
         'tracking_number' => $o['tracking_number'] ?? null,
         'courier' => $o['courier'] ?? 'Ekart Logistics',
         'tracking_url' => $o['tracking_url'] ?? null,
@@ -54,7 +58,8 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         $to = zkcDateParam($_GET['to'] ?? '', '');
         if ($from !== '' && $to !== '' && $from > $to) respond(['error' => '"From" date must be on or before "To" date'], 400);
         $stages = [
-            'ready' => "(o.order_status IN ('new','confirmed','paid','processing') OR o.payment_status = 'paid' OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped'))) AND o.order_status NOT IN ('cancelled','delivered','shipped')",
+            'ready' => "(o.order_status IN ('new','confirmed','paid','processing') OR o.payment_status = 'paid' OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped','on_hold'))) AND o.order_status NOT IN ('cancelled','delivered','shipped','on_hold')",
+            'on_hold' => "o.order_status = 'on_hold' OR o.ekart_status = 'On Hold'",
             'packed' => "o.order_status = 'processing'",
             'shipped' => "o.order_status = 'shipped'",
             'all' => "o.order_status NOT IN ('cancelled')"
@@ -124,7 +129,8 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         // ── Shipments (Ekart AWBs, labels, shipped / delivered) ──
         if (($route === 'admin/shipments' || $route === 'shipments/orders' || $route === 'shipments') && $method === 'GET') {
             $stages = [
-                'ready' => "(o.order_status IN ('new','confirmed','paid','processing') OR o.payment_status = 'paid' OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped'))) AND o.order_status NOT IN ('cancelled','delivered','shipped')",
+                'ready' => "(o.order_status IN ('new','confirmed','paid','processing') OR o.payment_status = 'paid' OR (o.payment_method = 'cod' AND o.order_status NOT IN ('cancelled','delivered','shipped','on_hold'))) AND o.order_status NOT IN ('cancelled','delivered','shipped','on_hold')",
+                'on_hold' => "o.order_status = 'on_hold' OR o.ekart_status = 'On Hold'",
                 'shipped' => "o.order_status = 'shipped'",
                 'delivered' => "o.order_status = 'delivered'",
                 'all' => "o.order_status NOT IN ('cancelled')"
@@ -170,8 +176,43 @@ function zkcHandleAdminRoute($pdo, $route, $method, $body) {
         if (($route === 'admin/status' || preg_match('#^orders/(\\d+)/status#', $route, $m)) && $method === 'PUT') {
             $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? 0);
             $status = ($body['status'] ?? '') === 'confirmed' ? 'new' : (string)($body['status'] ?? '');
+            if ($status === 'on_hold') {
+                if (function_exists('zkcEkartHoldShipment')) {
+                    try { zkcEkartHoldShipment($pdo, $oid); } catch (Throwable $e) {}
+                }
+            }
             $r = zkcChangeStatus($pdo, $oid, $status, $body['tracking_number'] ?? null);
             respond(['order' => zkcAdminOrderJson($r['order']), 'whatsapp' => $r['whatsapp']]);
+        }
+        // Ekart Shipment Hold (pause pickup, item not ready)
+        if (($route === 'admin/hold' || preg_match('#^shipments/orders/(\\d+)/hold#', $route, $m)) && $method === 'POST') {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+            if (!$oid) respond(['error' => 'Order ID required to hold shipment'], 400);
+            if (function_exists('zkcEkartHoldShipment')) {
+                try {
+                    $res = zkcEkartHoldShipment($pdo, $oid);
+                    respond($res);
+                } catch (Throwable $e) {
+                    respond(['error' => $e->getMessage()], 400);
+                }
+            } else {
+                respond(['error' => 'Ekart Hold handler not found'], 500);
+            }
+        }
+        // Ekart Shipment Release Hold / Enable Book (item packed & ready)
+        if (($route === 'admin/release-hold' || preg_match('#^shipments/orders/(\\d+)/release-hold#', $route, $m)) && $method === 'POST') {
+            $oid = !empty($m[1]) ? (int)$m[1] : (int)($body['order_id'] ?? ($_GET['order_id'] ?? 0));
+            if (!$oid) respond(['error' => 'Order ID required to release hold'], 400);
+            if (function_exists('zkcEkartReleaseHoldShipment')) {
+                try {
+                    $res = zkcEkartReleaseHoldShipment($pdo, $oid);
+                    respond($res);
+                } catch (Throwable $e) {
+                    respond(['error' => $e->getMessage()], 400);
+                }
+            } else {
+                respond(['error' => 'Ekart Release handler not found'], 500);
+            }
         }
         // Ekart API Booking
         if (($route === 'admin/book' || preg_match('#^shipments/orders/(\\d+)/book#', $route, $m)) && $method === 'POST') {
