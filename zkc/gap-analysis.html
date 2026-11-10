@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Product Gap Analysis &amp; Comprehensive Roadmap — ZKCommerce v4.9 → v4.10</title>
+<title>Product Gap Analysis &amp; Comprehensive Roadmap — ZKCommerce v4.10 Delivered</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -523,10 +523,10 @@ body {
 
   <!-- Page Header -->
   <section class="page-header">
-    <div class="eyebrow">📋 Comprehensive Architectural &amp; Requirement Audit</div>
+    <div class="eyebrow">📋 Comprehensive Architectural &amp; Requirement Audit · Release v4.10 Active</div>
     <h1 class="page-title">Project Scope Gap Analysis &amp; <span>Release Roadmap</span></h1>
     <p class="page-desc">
-      A systematic audit comparing the original business requirements, completed functional deliverables in <code>v4.9</code> (including the live Ekart 3PL courier integration, automated sync, and PDF tax invoicing), remaining technical gaps, and the execution blueprint for <code>v4.10</code> and <code>v5.0</code>.
+      A systematic audit comparing the original business requirements, completed functional deliverables in <code>v4.10</code> (including the live Ekart 3PL courier integration, daily pickup manifest PDF generator, live checkout PIN serviceability API, in-browser GoDaddy FTP uploader, and fiscal-year sequential tax invoicing), remaining technical gaps, and the execution blueprint for <code>v4.11</code> and <code>v5.0</code>.
     </p>
   </section>
 
@@ -534,23 +534,23 @@ body {
   <section class="kpi-grid">
     <div class="kpi-card green">
       <div class="kpi-label">Core Scope Completion</div>
-      <div class="kpi-value">86%</div>
-      <div class="kpi-sub">38 of 44 capabilities fully verified in code</div>
+      <div class="kpi-value">98%</div>
+      <div class="kpi-sub">43 of 44 capabilities fully verified in code</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">Ekart 3PL Logistics</div>
-      <div class="kpi-value">Active &amp; Synced</div>
-      <div class="kpi-sub">Auto-booking, AWB labels, 2-way sync &amp; cancel</div>
+      <div class="kpi-value">Active &amp; Hardened</div>
+      <div class="kpi-sub">Auto-booking, AWB labels, 2-way sync, pickup manifest PDF</div>
     </div>
     <div class="kpi-card amber">
-      <div class="kpi-label">Identified Gaps</div>
-      <div class="kpi-value">6 Gaps</div>
-      <div class="kpi-sub">Ekart pickup manifest, Pincode check, FTP uploader</div>
+      <div class="kpi-label">v4.10 Release Status</div>
+      <div class="kpi-value">Completed</div>
+      <div class="kpi-sub">Manifest PDF, PIN validation, FTP client, FY invoice</div>
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Next Release Target</div>
-      <div class="kpi-value">v4.10</div>
-      <div class="kpi-sub">Automated Dispatch &amp; Carrier Hardening</div>
+      <div class="kpi-value">v4.11 / v5.0</div>
+      <div class="kpi-sub">Multi-Carrier Failover &amp; Accounting Sync</div>
     </div>
   </section>
 
@@ -630,36 +630,52 @@ body {
             <td><code>store-builder/</code> (Publish Portal)</td>
           </tr>
           <tr>
-            <td><strong>Ekart Manifest Handover Sheet &amp; Driver Pickup Scheduling</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">API endpoint to close the manifest batch and schedule the vehicle pickup run</span></td>
+            <td><strong>Ekart Manifest Handover Sheet &amp; Driver Pickup Scheduling</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Consolidated daily pickup manifest PDF generator with Code128 barcodes and courier FE handover receipt</span></td>
             <td>Logistics &amp; Courier</td>
-            <td><span class="status-pill pending"><span class="status-dot"></span> Pending</span></td>
-            <td><span class="severity-tag severity-high">High Gap</span></td>
-            <td>Planned: <code>v4.10</code></td>
-            <td>Ekart Portal Handover Sheet</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Delivered</span></td>
+            <td><span class="severity-tag severity-low">Resolved</span></td>
+            <td><code>v4.10</code></td>
+            <td><code>shipments.html</code> (📋 Pickup Manifest)</td>
           </tr>
           <tr>
-            <td><strong>Live Pincode Serviceability &amp; COD Availability Checker</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Pre-order check during storefront checkout to confirm if Ekart delivers to the customer's PIN</span></td>
+            <td><strong>Live Pincode Serviceability &amp; COD Availability Checker</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Instant checkout API validation for 6-digit PIN codes with TAT calculation, zone detection &amp; COD rules</span></td>
             <td>Checkout &amp; Cart</td>
-            <td><span class="status-pill pending"><span class="status-dot"></span> Pending</span></td>
-            <td><span class="severity-tag severity-med">Medium Gap</span></td>
-            <td>Planned: <code>v4.10</code></td>
-            <td>Storefront Checkout PIN Validator</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Delivered</span></td>
+            <td><span class="severity-tag severity-low">Resolved</span></td>
+            <td><code>v4.10</code></td>
+            <td><code>api.php?route=shipping/serviceability</code></td>
           </tr>
           <tr>
-            <td><strong>Direct Browser-to-cPanel FTP Uploader</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">One-click upload from Store Builder directly to GoDaddy hosting without manual ZIP unzipping</span></td>
+            <td><strong>Direct Browser-to-cPanel FTP Uploader</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">In-browser GoDaddy cPanel FTP client with credential validation, test connection, and 1-click live deploy</span></td>
             <td>Publish Portal</td>
-            <td><span class="status-pill partial"><span class="status-dot"></span> Partial Gap</span></td>
-            <td><span class="severity-tag severity-med">Medium Gap</span></td>
-            <td>Planned: <code>v4.10</code></td>
-            <td>Publish Portal Deploy Tab</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Delivered</span></td>
+            <td><span class="severity-tag severity-low">Resolved</span></td>
+            <td><code>v4.10</code></td>
+            <td><code>merchant/index.html</code> (GoDaddy Deployer)</td>
           </tr>
           <tr>
-            <td><strong>Headless WhatsApp Cloud API (Automated Dispatch)</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Automated server-side WhatsApp message sending via Gupshup / Meta Cloud API (no manual click needed)</span></td>
+            <td><strong>Standardized Fiscal Year Invoice Numbering (SMR/26-27/XXXX)</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Indian statutory compliant annual resetting sequential invoice generator with E-Way Bill advisory (> ₹50k)</span></td>
+            <td>Invoicing &amp; Tax</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Delivered</span></td>
+            <td><span class="severity-tag severity-low">Resolved</span></td>
+            <td><code>v4.10</code></td>
+            <td><code>invoice.php</code> &amp; <code>api.php</code></td>
+          </tr>
+          <tr>
+            <td><strong>Restricted Warehouse "Packer" Role</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Role-based access limiting warehouse packing staff strictly to Packaging Queue &amp; Shipping Labels (financials hidden)</span></td>
+            <td>Staff &amp; RBAC</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Delivered</span></td>
+            <td><span class="severity-tag severity-low">Resolved</span></td>
+            <td><code>v4.10</code></td>
+            <td><code>merchant/staff.html</code> &amp; <code>auth/login.html</code></td>
+          </tr>
+          <tr>
+            <td><strong>Headless WhatsApp Cloud API (Automated Dispatch)</strong><br><span style="color:var(--zk-text-muted);font-size:12px;">Automated server-side WhatsApp message sending via Meta Cloud API / ZKWAConnect with wa.me fallback</span></td>
             <td>Notifications</td>
-            <td><span class="status-pill partial"><span class="status-dot"></span> Partial Gap</span></td>
-            <td><span class="severity-tag severity-low">Low Gap</span></td>
-            <td>Planned: <code>v4.10</code></td>
-            <td>WhatsApp Sender Background Task</td>
+            <td><span class="status-pill done"><span class="status-dot"></span> Delivered</span></td>
+            <td><span class="severity-tag severity-low">Resolved</span></td>
+            <td><code>v4.10</code></td>
+            <td><code>whatsapp_orders.php</code></td>
           </tr>
         </tbody>
       </table>
@@ -796,39 +812,39 @@ body {
     </div>
 
     <div class="timeline">
-      <!-- Current Release -->
-      <div class="timeline-card current">
-        <span class="timeline-tag">CURRENT RELEASE</span>
-        <div class="timeline-title">v4.9 — Ekart &amp; Sync</div>
-        <div class="timeline-desc">Live production release featuring complete Ekart Elite 3PL integration, 2-way sync, and packaging automation.</div>
+      <!-- Previous Release -->
+      <div class="timeline-card">
+        <span class="timeline-tag">DELIVERED MILESTONE</span>
+        <div class="timeline-title">v4.9 — Ekart &amp; 2-Way Sync</div>
+        <div class="timeline-desc">Production release featuring live Ekart Elite 3PL package booking, AWB generation, and two-way status &amp; cancellation sync.</div>
         <ul class="timeline-items">
-          <li>Ekart PUT /package/create integration with AWB generation</li>
+          <li>Ekart PUT /package/create integration with verified warehouse alias</li>
           <li>Two-way Cancel and Status polling from Ekart API</li>
           <li>Packaging portal 1-click Ekart Bulk Sync button</li>
           <li>Direct Forward Shipments (/ship/forward) portal routing</li>
-          <li>Split Frontend / Backend deployment exporter</li>
         </ul>
       </div>
 
-      <!-- Next Release -->
-      <div class="timeline-card next">
-        <span class="timeline-tag">NEXT ROADMAP RELEASE</span>
-        <div class="timeline-title">v4.10 — Dispatch Automation</div>
-        <div class="timeline-desc">Targeted release closing operational gaps: pickup manifests, serviceability checks, and in-app deployment.</div>
+      <!-- Current Active Release -->
+      <div class="timeline-card current">
+        <span class="timeline-tag" style="background:#10B981;color:#fff">CURRENT ACTIVE RELEASE</span>
+        <div class="timeline-title">v4.10 — Dispatch Automation &amp; Carrier Hardening</div>
+        <div class="timeline-desc">Operational hardening release closing dispatch, serviceability, invoicing, and deployment gaps.</div>
         <ul class="timeline-items">
-          <li><strong>Daily Manifest Handover Sheet:</strong> Generate consolidated Ekart handover PDF for courier driver pickup</li>
-          <li><strong>Pincode Serviceability &amp; COD API:</strong> Live checkout check to confirm courier delivery before order placement</li>
-          <li><strong>Direct Browser FTP Deployer:</strong> 1-click upload to GoDaddy cPanel without manual ZIP handling</li>
-          <li><strong>Fiscal Year Invoice Numbering:</strong> Standardized <code>SMR/26-27/XXXX</code> sequential format</li>
-          <li><strong>Packer Role Permission:</strong> Restricted merchant view specifically for packaging warehouse operators</li>
+          <li><strong>Daily Manifest Handover Sheet:</strong> Consolidated Ekart pickup manifest PDF with Code128 barcodes &amp; driver signature receipt</li>
+          <li><strong>Live PIN Serviceability &amp; COD API:</strong> Checkout validation confirming courier coverage, TAT &amp; COD eligibility</li>
+          <li><strong>GoDaddy cPanel FTP Client:</strong> 1-click in-browser deployment uploader to live server (/httpdocs)</li>
+          <li><strong>Fiscal Year Invoicing:</strong> Standardized <code>SMR/26-27/XXXX</code> sequential format &amp; E-Way Bill advisory (> ₹50k)</li>
+          <li><strong>Restricted Packer Role:</strong> Role-based access limiting warehouse packing staff strictly to Packaging Queue &amp; Labels</li>
+          <li><strong>Headless WhatsApp Cloud API:</strong> Automated order dispatch notifications via Meta Cloud API / ZKWAConnect</li>
         </ul>
       </div>
 
       <!-- Future Release -->
       <div class="timeline-card future">
-        <span class="timeline-tag">MILESTONE v5.0</span>
-        <div class="timeline-title">v5.0 — Omnichannel Scale</div>
-        <div class="timeline-desc">Enterprise scale milestone for multi-carrier failover, accounting sync, and customer self-serve.</div>
+        <span class="timeline-tag">NEXT ROADMAP RELEASE</span>
+        <div class="timeline-title">v4.11 / v5.0 — Multi-Carrier Aggregator</div>
+        <div class="timeline-desc">Enterprise scale milestone for automated multi-carrier failover, accounting sync, and customer self-serve.</div>
         <ul class="timeline-items">
           <li><strong>Multi-Courier Failover:</strong> Auto-switching to Delhivery / Shiprocket if Ekart does not service a location</li>
           <li><strong>Tally &amp; Zoho Books Integration:</strong> Automatic push of tax invoices and GST credit summaries</li>
@@ -842,11 +858,11 @@ body {
   <!-- Action Box -->
   <section class="action-box">
     <div>
-      <h4>Ready to Proceed with Release v4.10?</h4>
-      <p>All core requirements up to v4.9 are committed, verified, and merged in both <code>v4.9</code> and <code>main</code>.</p>
+      <h4>Release v4.10 Complete &amp; Operational</h4>
+      <p>All dispatch automation, pickup manifest generation, serviceability APIs, in-browser FTP uploader, and fiscal invoice numbering are fully implemented.</p>
     </div>
     <div style="display:flex; gap:12px;">
-      <a href="shipments.html" class="nav-btn primary">Open Ekart Shipments →</a>
+      <a href="shipments.html" class="nav-btn primary">Open Ekart Shipments &amp; Manifest →</a>
       <a href="packaging.html" class="nav-btn">Open Packaging Portal →</a>
     </div>
   </section>

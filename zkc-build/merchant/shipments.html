@@ -72,6 +72,7 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:260px}.muted{color:var(
     <div class="row" style="margin-bottom:10px">
       <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="selAll"> Select all</label>
       <button class="btn blue" id="printBtn">🖨 Print labels (4×6)</button>
+      <button class="btn" id="printManifestBtn" style="background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700" title="Generate consolidated Ekart daily pickup manifest handover sheet for courier driver signature">📋 Print Pickup Manifest (PDF)</button>
       <button class="btn primary" id="autoBookAllBtn" style="background:#059669;color:#fff;border-color:#059669" title="Book all unbooked ready orders with Ekart automatically">⚡ Auto-book with Ekart</button>
       <button class="btn" id="syncStatusBtn" style="border-color:#0284c7;color:#0284c7;font-weight:600" title="Check live tracking and cancellation status of shipments in Ekart">🔄 Sync from Ekart</button>
       <button class="btn" id="shipSelBtn">Mark selected shipped</button>
@@ -462,6 +463,35 @@ document.getElementById('enableBtn').onclick = async () => {
   try { await api('/shipments/settings', { method: 'PUT', body: JSON.stringify({ enabled: true }) }); await load(); status('✓ Ekart shipping enabled', 'var(--brand)'); }
   catch (e) { status('❌ ' + e.message, 'var(--err)'); }
 };
+document.getElementById('printManifestBtn').onclick = () => {
+  const selIds = Array.from(selected);
+  const isClient = location.pathname.includes('/clients/');
+  const phpBase = isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php');
+  let url = phpBase + '?route=shipments/manifest&format=html';
+  if (selIds.length > 0) {
+    url += '&order_ids=' + encodeURIComponent(selIds.join(','));
+  }
+  if (storeId) url += '&store_id=' + encodeURIComponent(storeId);
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
+// Warehouse Packer Mode Support
+try {
+  const u = JSON.parse(localStorage.getItem('zk_user') || '{}');
+  if (u.role === 'packer') {
+    const h = document.querySelector('header');
+    if (h) {
+      const b = document.createElement('span');
+      b.style.cssText = 'background:#f59e0b;color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;';
+      b.textContent = '👷 Packer Mode';
+      h.querySelector('h1').appendChild(b);
+      const dashLink = h.querySelector('a');
+      if (dashLink) {
+        dashLink.textContent = '← Packaging Queue';
+        dashLink.href = 'packaging.html' + (storeId ? '?store_id=' + storeId : '');
+      }
+    }
+  }
+} catch(_) {}
 document.getElementById('loadBtn').onclick = load;
 document.getElementById('stage').onchange = load;
 if (!PHP_MODE && !token && location.port && location.port !== '80' && location.port !== '443') location.href = '../auth/login.html'; else load();

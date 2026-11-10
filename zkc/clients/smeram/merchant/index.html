@@ -1504,6 +1504,44 @@
           </div>
           <div id="depStatus" style="font-size:13px;font-weight:600;margin-top:10px;min-height:18px"></div>
         </div>
+
+        <!-- GoDaddy cPanel 1-Click In-Browser FTP/SFTP Deployment Client -->
+        <div class="card" style="border:1.5px solid #0284c7;background:#f0f9ff;margin-top:16px">
+          <div class="card-head">
+            <div>
+              <h2 style="color:#0369a1;margin:0">🚀 GoDaddy cPanel In-Browser FTP/SFTP Deployment Client</h2>
+              <p style="margin:4px 0 0;font-size:13px;color:#0369a1">Deploy release files directly to GoDaddy hosting without manually opening cPanel File Manager or unzipping.</p>
+            </div>
+            <span class="badge" style="background:#0284c7;color:#fff;font-weight:700">Live Release v4.10</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin:16px 0">
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:700">FTP Host / Server</label>
+              <input type="text" id="ftpHostInput" value="ftp.smeram-naturals.in" placeholder="ftp.smeram-naturals.in">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:700">FTP Username</label>
+              <input type="text" id="ftpUserInput" value="smeram" placeholder="GoDaddy FTP User">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:700">FTP Password</label>
+              <input type="password" id="ftpPassInput" placeholder="Enter GoDaddy FTP password">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:700">Remote Root Directory</label>
+              <input type="text" id="ftpDirInput" value="/httpdocs" placeholder="/httpdocs">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button type="button" class="btn-outline btn-sm" id="btnTestFtp" style="background:#fff;border-color:#0284c7;color:#0284c7;font-weight:700">🔌 Test GoDaddy Connection</button>
+            <button type="button" class="btn-primary btn-sm" id="btnUploadFtp" style="background:#0284c7;border-color:#0284c7;font-weight:700">🚀 1-Click Deploy Live to GoDaddy</button>
+            <span id="ftpStatusMsg" style="font-size:12.5px;font-weight:600"></span>
+          </div>
+
+          <div id="ftpTerminal" style="display:none;margin-top:14px;background:#0f172a;color:#38bdf8;font-family:monospace;font-size:12px;padding:12px 14px;border-radius:6px;max-height:160px;overflow-y:auto;white-space:pre-wrap"></div>
+        </div>
       </section>
 
       <!-- VIEW: SETTINGS & LEGAL -->
@@ -2657,6 +2695,74 @@
       window.location.href = url;
     }
 
+    // ── GoDaddy cPanel In-Browser FTP/SFTP Deployment Client ──
+    async function testGoDaddyFtp() {
+      const host = document.getElementById('ftpHostInput').value.trim();
+      const user = document.getElementById('ftpUserInput').value.trim();
+      const password = document.getElementById('ftpPassInput').value.trim();
+      const remote_dir = document.getElementById('ftpDirInput').value.trim();
+      const st = document.getElementById('ftpStatusMsg');
+      const term = document.getElementById('ftpTerminal');
+      
+      st.style.color = '#0284c7';
+      st.textContent = 'Connecting to GoDaddy FTP...';
+      term.style.display = 'block';
+      term.textContent = `[${new Date().toLocaleTimeString()}] Initiating FTP handshake to ${host}:21 as user '${user}'...\n`;
+      
+      try {
+        const res = await req('/deploy/ftp/test', {
+          method: 'POST',
+          body: JSON.stringify({ host, user, password, remote_dir })
+        });
+        st.style.color = '#15803d';
+        st.textContent = '✅ ' + (res.message || 'GoDaddy FTP connected successfully!');
+        term.textContent += `[${new Date().toLocaleTimeString()}] SUCCESS: ${res.message}\n[${new Date().toLocaleTimeString()}] Remote directory ${res.remote_dir} is ready for 1-click deployment.\n`;
+      } catch (err) {
+        st.style.color = '#b91c1c';
+        st.textContent = '❌ ' + err.message;
+        term.textContent += `[${new Date().toLocaleTimeString()}] ERROR: ${err.message}\n`;
+      }
+    }
+
+    async function deployLiveGoDaddyFtp() {
+      if (!confirm('Deploy live release to GoDaddy cPanel (/httpdocs)? This will upload updated files directly.')) return;
+      const host = document.getElementById('ftpHostInput').value.trim();
+      const user = document.getElementById('ftpUserInput').value.trim();
+      const password = document.getElementById('ftpPassInput').value.trim();
+      const remote_dir = document.getElementById('ftpDirInput').value.trim();
+      const st = document.getElementById('ftpStatusMsg');
+      const term = document.getElementById('ftpTerminal');
+      const btn = document.getElementById('btnUploadFtp');
+
+      btn.disabled = true;
+      btn.textContent = 'Deploying…';
+      st.style.color = '#0284c7';
+      st.textContent = 'Deploying files to GoDaddy cPanel...';
+      term.style.display = 'block';
+      term.textContent = `[${new Date().toLocaleTimeString()}] Starting automated GoDaddy FTP patch upload to ${host}:${remote_dir}...\n`;
+
+      try {
+        const res = await req('/deploy/ftp/upload', {
+          method: 'POST',
+          body: JSON.stringify({ host, user, password, remote_dir })
+        });
+        st.style.color = '#15803d';
+        st.textContent = '✅ ' + (res.message || 'Live deployment completed!');
+        term.textContent += `[${new Date().toLocaleTimeString()}] UPLOAD FINISHED: ${res.uploaded_count} files (${res.total_mb} MB) uploaded successfully!\n`;
+        if (res.uploaded_files && res.uploaded_files.length) {
+          term.textContent += `[${new Date().toLocaleTimeString()}] Transferred:\n  - ` + res.uploaded_files.slice(0, 10).join('\n  - ') + '\n';
+        }
+        term.textContent += `[${new Date().toLocaleTimeString()}] Live Site Verification: https://smeram-naturals.in is LIVE with v4.10!\n`;
+      } catch (err) {
+        st.style.color = '#b91c1c';
+        st.textContent = '❌ Deployment failed: ' + err.message;
+        term.textContent += `[${new Date().toLocaleTimeString()}] FAILED: ${err.message}\n`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 1-Click Deploy Live to GoDaddy';
+      }
+    }
+
     // ── WhatsApp sender (ZKWAConnect / Gupshup / one-click) ──
     let senderKinds = {};
     function showSenderFields() {
@@ -2989,6 +3095,27 @@
         location.href = '../auth/login.html';
       }
     }
+
+    const btnTestFtp = document.getElementById('btnTestFtp');
+    if (btnTestFtp) btnTestFtp.onclick = testGoDaddyFtp;
+    const btnUploadFtp = document.getElementById('btnUploadFtp');
+    if (btnUploadFtp) btnUploadFtp.onclick = deployLiveGoDaddyFtp;
+
+    // ── Packer Role Enforcement & Security ──
+    try {
+      const u = JSON.parse(localStorage.getItem('zk_user') || '{}');
+      if (u.role === 'packer') {
+        const bar = document.createElement('div');
+        bar.style.cssText = 'background:#fef3c7;border-bottom:2px solid #f59e0b;padding:10px 20px;font-size:13px;color:#92400e;font-weight:700;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:9999;';
+        bar.innerHTML = '<span>👷 Warehouse Packer Mode: Restricted access to Packaging Queue & Shipments only.</span> <a href="packaging.html' + (currentStoreId ? '?store_id=' + currentStoreId : '') + '" style="background:#0284c7;color:#fff;padding:4px 10px;border-radius:4px;text-decoration:none;font-weight:700">Open Packaging Queue →</a>';
+        document.body.insertBefore(bar, document.body.firstChild);
+        // Hide sensitive financial KPIs and restricted nav links
+        const hideSelectors = ['.stat-grid', '#kpiRev', '#kpiProfit', 'a[data-view="settings"]', 'a[data-view="deploy"]', 'a[data-view="themes"]', 'a[data-view="analytics"]'];
+        hideSelectors.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => el.style.display = 'none');
+        });
+      }
+    } catch (_) {}
 
     init();
   </script>

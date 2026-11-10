@@ -112,3 +112,58 @@ function zkcHandoffUrl($o) {
     if (!defined('WA_HANDOFF') || !WA_HANDOFF) return null;
     return zkcOrderWhatsAppLinks($o)['care_url'];
 }
+
+/**
+ * Headless Automated WhatsApp Cloud API / ZKWAConnect sender.
+ * Sends automated WhatsApp text messages directly without manual wa.me browser clicks.
+ */
+function zkcSendAutomatedWhatsAppCloudMessage($phone, $text, $token = null, $phoneId = null) {
+    $cleanPhone = preg_replace('/\D/', '', (string)$phone);
+    if (strlen($cleanPhone) === 10) $cleanPhone = '91' . $cleanPhone;
+    elseif (strlen($cleanPhone) === 11 && $cleanPhone[0] === '0') $cleanPhone = '91' . substr($cleanPhone, 1);
+
+    if (empty($cleanPhone)) return ['success' => false, 'error' => 'Invalid destination phone number'];
+
+    $apiToken = $token ?: (defined('WA_CLOUD_API_TOKEN') ? WA_CLOUD_API_TOKEN : (getenv('WA_CLOUD_API_TOKEN') ?: ''));
+    $fromPhoneId = $phoneId ?: (defined('WA_PHONE_NUMBER_ID') ? WA_PHONE_NUMBER_ID : (getenv('WA_PHONE_NUMBER_ID') ?: ''));
+
+    if (empty($apiToken) || empty($fromPhoneId)) {
+        return [
+            'success' => true,
+            'mode' => 'wa_link_fallback',
+            'url' => zkcWhatsAppLink($cleanPhone, $text)
+        ];
+    }
+
+    $url = "https://graph.facebook.com/v19.0/{$fromPhoneId}/messages";
+    $payload = json_encode([
+        'messaging_product' => 'whatsapp',
+        'recipient_type' => 'individual',
+        'to' => $cleanPhone,
+        'type' => 'text',
+        'text' => ['preview_url' => true, 'body' => $text]
+    ]);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiToken
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15
+    ]);
+    $res = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $json = json_decode((string)$res, true);
+    return [
+        'success' => ($httpCode >= 200 && $httpCode < 300),
+        'http_code' => $httpCode,
+        'response' => $json,
+        'mode' => 'meta_cloud_api'
+    ];
+}

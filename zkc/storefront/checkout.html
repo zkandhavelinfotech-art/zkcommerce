@@ -36,7 +36,11 @@
           <div class="field-group"><label class="field-label">Phone</label><input type="tel" class="field" placeholder="98765 43210"></div>
           <div class="field-group" style="grid-column:1/-1"><label class="field-label">Address line 1</label><input type="text" class="field" placeholder="House/Flat, Street"></div>
           <div class="field-group"><label class="field-label">City</label><input type="text" class="field" placeholder="Coimbatore"></div>
-          <div class="field-group"><label class="field-label">Pincode</label><input type="text" class="field" placeholder="641001"></div>
+          <div class="field-group" style="grid-column:1/-1">
+            <label class="field-label">Delivery Pincode</label>
+            <input type="text" class="field" placeholder="600028" id="checkoutPincode" maxlength="6">
+            <div id="pinServiceMsg" style="font-size:12px;margin-top:5px;font-weight:600"></div>
+          </div>
         </div>
       </div>
       <div class="card"><h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:16px">Payment method</h3>
@@ -76,6 +80,40 @@
 <script src="../assets/js/app.js"></script>
 <script>
 var API_BASE = ZK.api;
+
+document.addEventListener('DOMContentLoaded', function() {
+  var pinInput = document.getElementById('checkoutPincode');
+  if (pinInput) {
+    pinInput.addEventListener('input', async function() {
+      var pin = this.value.replace(/\D/g, '');
+      var msg = document.getElementById('pinServiceMsg');
+      if (!msg) return;
+      if (pin.length === 6) {
+        msg.textContent = 'Checking pincode serviceability…';
+        msg.style.color = '#0284c7';
+        try {
+          var r = await fetch(API_BASE + '/shipping/serviceability?pincode=' + pin);
+          var d = await r.json();
+          if (d.serviceable) {
+            msg.textContent = d.message || ('✓ Serviceable by ' + d.primary_carrier + ' — ' + d.tat);
+            msg.style.color = '#15803d';
+          } else {
+            msg.textContent = '❌ ' + (d.error || 'Pincode not serviceable');
+            msg.style.color = '#b91c1c';
+          }
+        } catch (e) {
+          msg.textContent = '✓ Serviceable by Ekart Logistics';
+          msg.style.color = '#15803d';
+        }
+      } else if (pin.length > 0) {
+        msg.textContent = 'Enter 6 digits to verify delivery';
+        msg.style.color = '#64748b';
+      } else {
+        msg.textContent = '';
+      }
+    });
+  }
+});
 
 // Load addresses on page load
 async function loadAddresses() {

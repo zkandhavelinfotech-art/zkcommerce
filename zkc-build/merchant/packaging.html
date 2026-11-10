@@ -84,6 +84,7 @@ tr.sel td{background:var(--brand-soft)}td.addr{max-width:300px}.muted{color:var(
         <button class="btn sm" id="selAll">Select all</button>
         <button class="btn sm" id="selNone">Clear</button>
         <button class="btn sm primary" id="syncEkartBtn" style="background:#059669;border-color:#059669;color:#fff;font-weight:700" title="Book and sync selected orders with Ekart immediately">⚡ Sync selected to Ekart</button>
+        <button class="btn sm" id="manifestBtn" style="background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700" title="Generate consolidated Ekart daily pickup manifest handover sheet">📋 Pickup Manifest</button>
         <button class="btn sm" id="csvBtn">⬇ CSV (Ekart bulk upload)</button>
         <button class="btn sm" id="packedBtn">✔ Mark selected as packed</button>
         <a class="btn sm" href="shipments.html" style="text-decoration:none;border-color:#0284c7;color:#0284c7;font-weight:600">🚚 Shipments &amp; AWBs →</a>
@@ -406,6 +407,36 @@ document.getElementById('csvBtn').onclick = downloadCsv;
 document.getElementById('packedBtn').onclick = markPacked;
 const syncBtnEl = document.getElementById('syncEkartBtn');
 if (syncBtnEl) syncBtnEl.onclick = syncToEkart;
+const manifestBtnEl = document.getElementById('manifestBtn');
+if (manifestBtnEl) {
+  manifestBtnEl.onclick = () => {
+    const selIds = Array.from(selected);
+    const isClient = location.pathname.includes('/clients/');
+    const phpBase = isClient ? '../../../api.php' : (location.pathname.includes('/merchant/') ? '../api.php' : 'api.php');
+    let url = phpBase + '?route=shipments/manifest&format=html';
+    if (selIds.length > 0) url += '&order_ids=' + encodeURIComponent(selIds.join(','));
+    if (storeId) url += '&store_id=' + encodeURIComponent(storeId);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+}
+// Warehouse Packer Mode Support
+try {
+  const u = JSON.parse(localStorage.getItem('zk_user') || '{}');
+  if (u.role === 'packer') {
+    const h = document.querySelector('header');
+    if (h) {
+      const b = document.createElement('span');
+      b.style.cssText = 'background:#f59e0b;color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;';
+      b.textContent = '👷 Packer Mode (Warehouse)';
+      h.querySelector('h1').appendChild(b);
+      const backLink = h.querySelector('a');
+      if (backLink) {
+        backLink.textContent = '🚚 Shipments Workspace →';
+        backLink.href = 'shipments.html' + (storeId ? '?store_id=' + storeId : '');
+      }
+    }
+  }
+} catch(_) {}
 load();
 </script>
 </body>
