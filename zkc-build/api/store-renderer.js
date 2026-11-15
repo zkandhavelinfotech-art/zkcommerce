@@ -104,25 +104,374 @@ function renderStore(snapshot, options={}) {
   const pb=checkout.pay_button,payFontLink=pb.font_family&&!['Georgia','Arial'].includes(pb.font_family)?`<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(pb.font_family).replace(/%20/g,'+')}:wght@400;500;700;800&display=swap">`:'';
   const payStyle=[pb.bg_color&&`background:${pb.bg_color}`,pb.text_color&&`color:${pb.text_color}`,pb.font_family&&`font-family:'${pb.font_family}',sans-serif`,pb.font_size&&`font-size:${pb.font_size}px`,pb.radius!==null&&`border-radius:${pb.radius}px`,!pb.bold&&'font-weight:500'].filter(Boolean).join(';');
   const payButtonHtml=`${payFontLink}<button class="buy" id="zkPayButton" type="submit"${payStyle?` style="${payStyle}"`:''}>${escapeHtml(pb.text)}</button>`;
-  const cartMarkup=`<div class="cart-backdrop" id="cartBackdrop" onclick="if(event.target===this)closeCheckout()"><section class="cart-panel" id="checkout"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid #e2e8f0;padding-bottom:10px"><button class="button continue-shopping" type="button" onclick="closeCheckout()" style="font-size:12px;padding:6px 12px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1">← Continue Shopping</button><button class="cart-close" type="button" onclick="closeCheckout()">×</button></div><h2>Your cart</h2><div id="cartItems"></div><p class="cart-total">Subtotal: <strong id="cartSubtotal">₹0</strong></p>${checkout.show_coupon?'<div class="coupon-row"><input id="couponCode" placeholder="Discount code"><button type="button" onclick="applyCoupon()">Apply</button></div><p id="couponMessage" role="status"></p>':''}<form id="checkoutForm" onsubmit="placeOrder(event)"><input name="name" required maxlength="150" placeholder="Full name"><input name="email" type="email" placeholder="Email"><input name="phone" required placeholder="Phone"><input name="address" required placeholder="Address"><input name="city" placeholder="City"><input name="state" placeholder="State"><input name="pincode" placeholder="PIN code"><!--zk-shipping-->${paymentField}${payButtonHtml}<button class="button continue-shopping-block" type="button" onclick="closeCheckout()" style="width:100%;margin-top:8px;font-size:13px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155">🛍️ Continue Shopping</button></form><p id="checkoutMessage" role="status"></p></section></div>`;
+  const cartMarkup=`<div class="cart-backdrop" id="cartBackdrop" onclick="if(event.target===this)closeCheckout()"><section class="cart-panel" id="checkout">
+  <!-- Active Cart & Checkout View -->
+  <div id="cartActiveView">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid #e2e8f0;padding-bottom:10px">
+      <button class="button continue-shopping" type="button" onclick="closeCheckout()" style="font-size:12px;padding:6px 12px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1">← Continue Shopping</button>
+      <button class="cart-close" type="button" onclick="closeCheckout()">×</button>
+    </div>
+    <h2>Your cart</h2>
+    <div id="cartItems"></div>
+    <p class="cart-total">Subtotal: <strong id="cartSubtotal">₹0</strong></p>
+    ${checkout.show_coupon?'<div class="coupon-row"><input id="couponCode" placeholder="Discount code"><button type="button" onclick="applyCoupon()">Apply</button></div><p id="couponMessage" role="status"></p>':''}
+    <form id="checkoutForm" onsubmit="placeOrder(event)">
+      <input name="name" required maxlength="150" placeholder="Full name">
+      <input name="email" type="email" placeholder="Email">
+      <input name="phone" required placeholder="Phone">
+      <input name="address" required placeholder="Address">
+      <input name="city" placeholder="City">
+      <input name="state" placeholder="State">
+      <input name="pincode" placeholder="PIN code">
+      <!--zk-shipping-->
+      ${paymentField}
+      ${payButtonHtml}
+      <button class="button continue-shopping-block" type="button" onclick="closeCheckout()" style="width:100%;margin-top:8px;font-size:13px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155">🛍️ Continue Shopping</button>
+    </form>
+    <p id="checkoutMessage" role="status"></p>
+  </div>
+
+  <!-- Dedicated Order Confirmation View (Shown immediately on payment receipt) -->
+  <div id="orderSuccessView" style="display:none;padding:4px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;border-bottom:1px solid #e2e8f0;padding-bottom:10px">
+      <span style="font-size:13px;font-weight:700;color:#059669;display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981"></span>
+        Payment Received &amp; Confirmed
+      </span>
+      <button class="cart-close" type="button" onclick="resetAndCloseCheckout()">×</button>
+    </div>
+
+    <div style="text-align:center;padding:16px 12px;background:linear-gradient(180deg,#ecfdf5 0%,#f0fdf4 100%);border:1.5px solid #a7f3d0;border-radius:12px;margin-bottom:16px">
+      <div style="width:56px;height:56px;border-radius:50%;background:#10b981;color:#fff;display:inline-grid;place-items:center;font-size:28px;font-weight:bold;box-shadow:0 0 0 6px #d1fae5;margin:0 auto 10px">✓</div>
+      <h3 style="font-size:18px;font-weight:800;color:#065f46;margin:0 0 4px">Order Placed Successfully!</h3>
+      <p style="font-size:12.5px;color:#047857;margin:0;font-weight:500">Thank you for your order. We are preparing it for dispatch.</p>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Order Number</span>
+        <span id="confOrderBadge" style="font-family:monospace;font-size:13px;font-weight:700;background:#f1f5f9;color:#0f172a;padding:3px 8px;border-radius:6px;border:1px solid #cbd5e1">ORD-XXXX</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:#64748b">Amount Paid</span>
+        <strong id="confOrderTotal" style="font-size:16px;color:#059669">₹0</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:#64748b">Payment Mode</span>
+        <span id="confPaymentMethod" style="font-size:12px;font-weight:700;color:#0f172a">Online (Razorpay)</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:#64748b">Logistics Partner</span>
+        <span style="font-size:11.5px;font-weight:700;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:4px;border:1px solid #bfdbfe">Ekart Logistics</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:#64748b">Fulfillment Status</span>
+        <span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fef3c7;padding:2px 8px;border-radius:4px;border:1px solid #fde68a">Packaging Queue</span>
+      </div>
+    </div>
+
+    <!-- Ordered Items Summary -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Items Ordered</div>
+      <div id="confOrderItems" style="font-size:12px;color:#1e293b;line-height:1.6"></div>
+    </div>
+
+    <!-- Shipping Address Summary -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Delivery Address</div>
+      <div id="confShippingAddress" style="font-size:12px;color:#334155;line-height:1.5"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:grid;gap:9px;margin-bottom:14px">
+      <a id="confInvoiceLink" href="#" target="_blank" download style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0f172a;color:#fff;padding:12px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,0.15)">
+        <span>🧾</span> Download Official Tax Invoice (PDF)
+      </a>
+      <a id="confCustomerWaBtn" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;padding:12px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(37,211,102,0.25)">
+        <span>💬</span> Receive Updates on WhatsApp
+      </a>
+      <a id="confMerchantWaBtn" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0284c7;color:#fff;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:12.5px">
+        <span>📲</span> Notify Store Care WhatsApp
+      </a>
+      <button type="button" class="button" onclick="resetAndCloseCheckout()" style="width:100%;padding:11px;background:#fff;border:1px solid #cbd5e1;color:#334155;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer">
+        🛍️ Continue Shopping
+      </button>
+    </div>
+
+    <div style="padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:11.5px;color:#92400e;line-height:1.5">
+      <strong>📦 What happens next?</strong><br>
+      1. Warehouse packs your items and issues shipping label.<br>
+      2. Ekart Logistics assigns AWB tracking number.<br>
+      3. Live delivery tracking updates are sent to your WhatsApp.
+    </div>
+  </div>
+</section></div>`;
   const shippingDropdownHtml = checkout.show_shipping_field !== false ? '<div class="cart-shipping-field" style="margin:10px 0"><label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Delivery &amp; Tax Fee</label><div class="delivery-tax-badge" style="display:flex;align-items:center;gap:6px;background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:8px;font-size:12.5px;font-weight:700"><span style="color:#059669;font-size:15px">✓</span> Inclusive of GST and free shipping</div><input type="hidden" name="shipping_rate_id" id="shippingRate" value="inclusive_gst_free_shipping"></div>' : '';
   const cartMarkupWithShipping=cartMarkup.replace('<!--zk-shipping-->', shippingDropdownHtml);
   const cartLogic=`${checkout.razorpay?'<script src="https://checkout.razorpay.com/v1/checkout.js"></script>':''}<script>
-  (function(){const storeSlug=${JSON.stringify(String(store.slug||''))};const catalog=${JSON.stringify(allProducts.map(p=>({id:Number(p.id),name:String(p.name),price:Number(p.price),variants:(Array.isArray(p.variants)?p.variants:[]).filter(v=>v&&typeof v==='object'&&v.id&&v.active!==false).map(v=>({id:String(v.id),label:String(v.label||''),price:Number(v.price)}))}))).replace(/</g,'\\u003c')};let zkCart=[];let appliedCoupon='';try{zkCart=JSON.parse(sessionStorage.getItem('zk_cart')||'[]')}catch(_){}
-  const byId=id=>catalog.find(p=>String(p.id)===String(id));const variantOf=(p,vid)=>p&&vid?(p.variants||[]).find(v=>v.id===String(vid)):null;const unitPrice=item=>{const p=byId(item.product_id),v=variantOf(p,item.variant_id);return v?v.price:(p?p.price:0)};const cartSubtotal=()=>zkCart.reduce((n,x)=>n+unitPrice(x)*x.quantity,0);const money=n=>'₹'+Number(n||0).toLocaleString('en-IN');const zkFetch=async(ep,opts)=>{const c=ep.indexOf('/api/')===0?ep.slice(5):(ep.indexOf('api/')===0?ep.slice(4):(ep.charAt(0)==='/'?ep.slice(1):ep));try{const r=await fetch('/api/'+c,opts);if(!r.ok&&(r.status===404||r.status===405))return await fetch('api.php?route='+encodeURIComponent(c),opts);return r}catch(_){return await fetch('api.php?route='+encodeURIComponent(c),opts)}};
-  window.openCheckout=function(e){if(e)e.preventDefault();document.getElementById('cartBackdrop').classList.add('open');drawCart()};window.closeCheckout=function(){document.getElementById('cartBackdrop').classList.remove('open')};
+  (function(){
+  const storeSlug=${JSON.stringify(String(store.slug||''))};
+  const storeName=${JSON.stringify(String(store.store_name||'Smeram Naturals'))};
+  const storeWhatsapp=${JSON.stringify(String(store.whatsapp_number||store.phone||'919901640727'))};
+  const catalog=${JSON.stringify(allProducts.map(p=>({id:Number(p.id),name:String(p.name),price:Number(p.price),variants:(Array.isArray(p.variants)?p.variants:[]).filter(v=>v&&typeof v==='object'&&v.id&&v.active!==false).map(v=>({id:String(v.id),label:String(v.label||''),price:Number(v.price)}))}))).replace(/</g,'\\u003c')};
+  let zkCart=[];let appliedCoupon='';
+  try{zkCart=JSON.parse(sessionStorage.getItem('zk_cart')||'[]')}catch(_){}
+  const byId=id=>catalog.find(p=>String(p.id)===String(id));
+  const variantOf=(p,vid)=>p&&vid?(p.variants||[]).find(v=>v.id===String(vid)):null;
+  const unitPrice=item=>{const p=byId(item.product_id),v=variantOf(p,item.variant_id);return v?v.price:(p?p.price:0)};
+  const cartSubtotal=()=>zkCart.reduce((n,x)=>n+unitPrice(x)*x.quantity,0);
+  const money=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+  const zkFetch=async(ep,opts)=>{
+    const c=ep.indexOf('/api/')===0?ep.slice(5):(ep.indexOf('api/')===0?ep.slice(4):(ep.charAt(0)==='/'?ep.slice(1):ep));
+    try{
+      const r=await fetch('/api/'+c,opts);
+      if(!r.ok&&(r.status===404||r.status===405))return await fetch('api.php?route='+encodeURIComponent(c),opts);
+      return r;
+    }catch(_){
+      return await fetch('api.php?route='+encodeURIComponent(c),opts);
+    }
+  };
+  window.openCheckout=function(e){if(e)e.preventDefault();document.getElementById('cartBackdrop').classList.add('open');drawCart()};
+  window.closeCheckout=function(){document.getElementById('cartBackdrop').classList.remove('open')};
   window.openCart=window.openCheckout;window.closeCart=window.closeCheckout;
-  window.changeCartQty=function(id,variantId,delta){const vid=variantId?String(variantId):null;const row=zkCart.find(x=>String(x.product_id)===String(id)&&(x.variant_id||null)===vid);if(!row)return;row.quantity+=delta;if(row.quantity<=0){zkCart=zkCart.filter(x=>!(String(x.product_id)===String(id)&&(x.variant_id||null)===vid))}sessionStorage.setItem('zk_cart',JSON.stringify(zkCart));drawCart()};
-  window.showStoreToast=function(msg){let t=document.getElementById('zkStoreToast');if(!t){t=document.createElement('div');t.id='zkStoreToast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600';document.body.appendChild(t)}t.innerHTML='<span>✓ '+msg+'</span><button type=\"button\" onclick=\"openCheckout()\" style=\"background:#22c55e;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-weight:700;cursor:pointer\">🛒 View Cart →</button><button type=\"button\" onclick=\"this.parentNode.remove()\" style=\"background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px\">×</button>';clearTimeout(t._timer);t._timer=setTimeout(()=>{if(t.parentNode)t.remove()},5000)};
-  window.addCart=function(id,variantId){const p=byId(id);if(!p)return false;if((p.variants||[]).length&&!variantOf(p,variantId)){if(window.zkQuickView){window.zkQuickView(Number(id));return false}variantId=p.variants[0].id}const vid=variantId?String(variantId):null;const row=zkCart.find(x=>String(x.product_id)===String(id)&&(x.variant_id||null)===vid);if(row)row.quantity++;else zkCart.push({product_id:Number(id),variant_id:vid,quantity:1});sessionStorage.setItem('zk_cart',JSON.stringify(zkCart));drawCart();${checkout.show_cart_popup?"window.showStoreToast(p.name+' added to cart');":''}openCheckout();return true};
-  function drawCart(){const host=document.getElementById('cartItems');if(!host)return;if(typeof host.replaceChildren==='function')host.replaceChildren();else host.innerHTML='';if(!zkCart.length){const emptyMsg=document.createElement('div');emptyMsg.style.cssText='text-align:center;padding:24px 8px;color:#64748b;font-size:14px';emptyMsg.innerHTML='Your cart is empty.<br><button type=\"button\" class=\"button\" style=\"margin-top:10px;font-size:12px;padding:6px 14px\" onclick=\"closeCheckout()\">🛍️ Continue Shopping</button>';host.append(emptyMsg)}let sum=0;zkCart.forEach(item=>{const p=byId(item.product_id);if(!p)return;const v=variantOf(p,item.variant_id),price=unitPrice(item);sum+=price*item.quantity;const row=document.createElement('div');row.className='cart-item';row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee';const leftCol=document.createElement('div');leftCol.style.cssText='flex:1;min-width:0';const label=document.createElement('div');label.style.cssText='font-weight:600;font-size:13px;color:#0f172a';label.textContent=p.name+(v?' ('+v.label+')':'');const unitPr=document.createElement('div');unitPr.style.cssText='font-size:11.5px;color:#64748b;margin-top:2px';unitPr.textContent=money(price);leftCol.append(label,unitPr);const qtyWrap=document.createElement('div');qtyWrap.style.cssText='display:inline-flex;align-items:center;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#fff';const minusBtn=document.createElement('button');minusBtn.type='button';minusBtn.textContent='−';minusBtn.title='Decrease quantity';minusBtn.style.cssText='border:none;background:#f8fafc;width:26px;height:26px;cursor:pointer;font-weight:800;font-size:14px';minusBtn.onclick=function(){window.changeCartQty(item.product_id,item.variant_id,-1)};const qtyVal=document.createElement('span');qtyVal.style.cssText='padding:0 8px;font-size:12px;font-weight:700';qtyVal.textContent=item.quantity;const plusBtn=document.createElement('button');plusBtn.type='button';plusBtn.textContent='+';plusBtn.title='Increase quantity';plusBtn.style.cssText='border:none;background:#f8fafc;width:26px;height:26px;cursor:pointer;font-weight:800;font-size:14px';plusBtn.onclick=function(){window.changeCartQty(item.product_id,item.variant_id,1)};qtyWrap.append(minusBtn,qtyVal,plusBtn);const rightCol=document.createElement('div');rightCol.style.cssText='text-align:right;white-space:nowrap';const amount=document.createElement('strong');amount.style.cssText='font-size:13px;color:#0f172a;display:block';amount.textContent=money(price*item.quantity);const delBtn=document.createElement('button');delBtn.type='button';delBtn.textContent='🗑';delBtn.title='Remove item';delBtn.style.cssText='border:none;background:none;cursor:pointer;font-size:13px;color:#94a3b8;padding:2px';delBtn.onclick=function(){window.changeCartQty(item.product_id,item.variant_id,-item.quantity)};rightCol.append(amount,delBtn);row.append(leftCol,qtyWrap,rightCol);host.append(row)});const count=zkCart.reduce((n,x)=>n+Number(x.quantity||0),0);document.querySelectorAll('#cart').forEach(el=>el.textContent=String(count));document.getElementById('cartSubtotal').textContent=money(sum)}
-  window.applyCoupon=async function(){const code=document.getElementById('couponCode').value.trim(),subtotal=cartSubtotal(),msg=document.getElementById('couponMessage');if(!code){appliedCoupon='';msg.textContent='';return}try{const r=await zkFetch('coupons/validate/'+encodeURIComponent(storeSlug),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,subtotal})});const d=await r.json();if(!r.ok||!d.valid)throw Error(d.error||'Coupon is not valid');appliedCoupon=d.code;msg.textContent='Discount applied: '+money(d.discount)}catch(err){appliedCoupon='';msg.textContent=err.message}};
-  window.loadShipping=async function(){const select=document.getElementById('shippingRate'),form=document.getElementById('checkoutForm'),subtotal=cartSubtotal(),postal=new FormData(form).get('pincode');try{const r=await zkFetch('storefront/'+encodeURIComponent(storeSlug)+'/shipping-rates?subtotal='+subtotal+'&postal_code='+encodeURIComponent(postal||''));const d=await r.json();if(!r.ok)throw Error(d.error||'Could not load shipping options');if(typeof select.replaceChildren==='function')select.replaceChildren(new Option(d.rates.length?'Choose a shipping rate':'No shipping fee configured',''));else{select.innerHTML='';select.add(new Option(d.rates.length?'Choose a shipping rate':'No shipping fee configured',''))}d.rates.forEach(rate=>select.add(new Option(rate.name+' — '+money(rate.amount)+(rate.estimated_days?' · '+rate.estimated_days:''),rate.id)))}catch(err){document.getElementById('checkoutMessage').textContent=err.message}};
-  window.placeOrder=async function(e){e.preventDefault();const form=e.target,msg=document.getElementById('checkoutMessage');if(!zkCart.length){msg.textContent='Your cart is empty.';return}const f=new FormData(form);const address={line1:f.get('address'),city:f.get('city'),state:f.get('state'),pincode:f.get('pincode')};msg.textContent='Creating your order…';try{const r=await zkFetch('storefront/'+encodeURIComponent(storeSlug)+'/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:f.get('name'),email:f.get('email'),phone:f.get('phone')},address,items:zkCart,payment_method:f.get('payment_method'),coupon_code:appliedCoupon||undefined,shipping_rate_id:f.get('shipping_rate_id')||undefined})});const order=await r.json();if(!r.ok)throw Error(order.error||'Could not create order');if(order.next==='confirmed'){msg.textContent='Order '+order.order_number+' placed. The merchant will contact you.';clearCart();zkHandoff(order.whatsapp_handoff_url);return}const pr=await zkFetch('payments/razorpay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:order.order_id})});const paymentOrder=await pr.json();if(!pr.ok)throw Error(paymentOrder.error||'Could not start payment');const checkout=new Razorpay({key:paymentOrder.key,amount:paymentOrder.amount,currency:paymentOrder.currency,name:document.title,order_id:paymentOrder.razorpay_order_id,prefill:{name:f.get('name'),email:f.get('email'),contact:f.get('phone')},handler:async response=>{const vr=await zkFetch('payments/razorpay/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...response,order_id:order.order_id})});const vd=await vr.json();if(!vr.ok){msg.textContent=vd.error||'Payment confirmation is pending. Please retry.';return}msg.textContent='Payment received. Order '+order.order_number+' is confirmed.';clearCart();zkHandoff(vd.whatsapp_handoff_url)},modal:{ondismiss:()=>recordFailure(order.order_id,paymentOrder.razorpay_order_id,'Payment window closed. Retry payment.') }});checkout.on('payment.failed',response=>recordFailure(order.order_id,paymentOrder.razorpay_order_id,response.error?.description||'Payment failed. Retry payment.'));checkout.open()}catch(err){msg.textContent=err.message}};
-  // WhatsApp hand-off (no Business API): open the shopper's WhatsApp with the order typed out to the store's customer care.
-  function zkHandoff(url){if(!url||String(url).indexOf('https://wa.me/')!==0)return;const msg=document.getElementById('checkoutMessage');const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.className='buy wa-handoff';a.style.cssText='display:block;margin-top:10px;text-align:center;background:#25D366;color:#fff;text-decoration:none';a.textContent='📲 Send order details on WhatsApp';msg.appendChild(document.createElement('br'));msg.appendChild(a);try{window.open(url,'_blank','noopener')}catch(_){}}
-  async function recordFailure(orderId,paymentId,reason){await zkFetch('payments/razorpay/failure',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:orderId,razorpay_order_id:paymentId,reason})}).catch(()=>{});document.getElementById('checkoutMessage').textContent=reason+' Your cart is saved; submit again to retry.'}
-  function clearCart(){zkCart=[];appliedCoupon='';sessionStorage.removeItem('zk_cart');drawCart()};drawCart()})();
+  window.changeCartQty=function(id,variantId,delta){
+    const vid=variantId?String(variantId):null;
+    const row=zkCart.find(x=>String(x.product_id)===String(id)&&(x.variant_id||null)===vid);
+    if(!row)return;
+    row.quantity+=delta;
+    if(row.quantity<=0){zkCart=zkCart.filter(x=>!(String(x.product_id)===String(id)&&(x.variant_id||null)===vid))}
+    sessionStorage.setItem('zk_cart',JSON.stringify(zkCart));
+    drawCart();
+  };
+  window.showStoreToast=function(msg){
+    let t=document.getElementById('zkStoreToast');
+    if(!t){
+      t=document.createElement('div');t.id='zkStoreToast';
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600';
+      document.body.appendChild(t);
+    }
+    t.innerHTML='<span>✓ '+msg+'</span><button type="button" onclick="openCheckout()" style="background:#22c55e;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-weight:700;cursor:pointer">🛒 View Cart →</button><button type="button" onclick="this.parentNode.remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px">×</button>';
+    clearTimeout(t._timer);t._timer=setTimeout(()=>{if(t.parentNode)t.remove()},5000);
+  };
+  window.addCart=function(id,variantId){
+    const p=byId(id);if(!p)return false;
+    if((p.variants||[]).length&&!variantOf(p,variantId)){if(window.zkQuickView){window.zkQuickView(Number(id));return false}variantId=p.variants[0].id}
+    const vid=variantId?String(variantId):null;
+    const row=zkCart.find(x=>String(x.product_id)===String(id)&&(x.variant_id||null)===vid);
+    if(row)row.quantity++;else zkCart.push({product_id:Number(id),variant_id:vid,quantity:1});
+    sessionStorage.setItem('zk_cart',JSON.stringify(zkCart));
+    drawCart();
+    ${checkout.show_cart_popup?"window.showStoreToast(p.name+' added to cart');":''}
+    openCheckout();
+    return true;
+  };
+  function drawCart(){
+    const host=document.getElementById('cartItems');if(!host)return;
+    if(typeof host.replaceChildren==='function')host.replaceChildren();else host.innerHTML='';
+    if(!zkCart.length){
+      const emptyMsg=document.createElement('div');
+      emptyMsg.style.cssText='text-align:center;padding:24px 8px;color:#64748b;font-size:14px';
+      emptyMsg.innerHTML='Your cart is empty.<br><button type="button" class="button" style="margin-top:10px;font-size:12px;padding:6px 14px" onclick="closeCheckout()">🛍️ Continue Shopping</button>';
+      host.append(emptyMsg);
+    }
+    let sum=0;
+    zkCart.forEach(item=>{
+      const p=byId(item.product_id);if(!p)return;
+      const v=variantOf(p,item.variant_id),price=unitPrice(item);
+      sum+=price*item.quantity;
+      const row=document.createElement('div');row.className='cart-item';
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee';
+      const leftCol=document.createElement('div');leftCol.style.cssText='flex:1;min-width:0';
+      const label=document.createElement('div');label.style.cssText='font-weight:600;font-size:13px;color:#0f172a';
+      label.textContent=p.name+(v?' ('+v.label+')':'');
+      const unitPr=document.createElement('div');unitPr.style.cssText='font-size:11.5px;color:#64748b;margin-top:2px';
+      unitPr.textContent=money(price);
+      leftCol.append(label,unitPr);
+      const qtyWrap=document.createElement('div');qtyWrap.style.cssText='display:inline-flex;align-items:center;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#fff';
+      const minusBtn=document.createElement('button');minusBtn.type='button';minusBtn.textContent='−';minusBtn.title='Decrease quantity';
+      minusBtn.style.cssText='border:none;background:#f8fafc;width:26px;height:26px;cursor:pointer;font-weight:800;font-size:14px';
+      minusBtn.onclick=function(){window.changeCartQty(item.product_id,item.variant_id,-1)};
+      const qtyVal=document.createElement('span');qtyVal.style.cssText='padding:0 8px;font-size:12px;font-weight:700';qtyVal.textContent=item.quantity;
+      const plusBtn=document.createElement('button');plusBtn.type='button';plusBtn.textContent='+';plusBtn.title='Increase quantity';
+      plusBtn.style.cssText='border:none;background:#f8fafc;width:26px;height:26px;cursor:pointer;font-weight:800;font-size:14px';
+      plusBtn.onclick=function(){window.changeCartQty(item.product_id,item.variant_id,1)};
+      qtyWrap.append(minusBtn,qtyVal,plusBtn);
+      const rightCol=document.createElement('div');rightCol.style.cssText='text-align:right;white-space:nowrap';
+      const amount=document.createElement('strong');amount.style.cssText='font-size:13px;color:#0f172a;display:block';
+      amount.textContent=money(price*item.quantity);
+      const delBtn=document.createElement('button');delBtn.type='button';delBtn.textContent='🗑';delBtn.title='Remove item';
+      delBtn.style.cssText='border:none;background:none;cursor:pointer;font-size:13px;color:#94a3b8;padding:2px';
+      delBtn.onclick=function(){window.changeCartQty(item.product_id,item.variant_id,-item.quantity)};
+      rightCol.append(amount,delBtn);
+      row.append(leftCol,qtyWrap,rightCol);
+      host.append(row);
+    });
+    const count=zkCart.reduce((n,x)=>n+Number(x.quantity||0),0);
+    document.querySelectorAll('#cart').forEach(el=>el.textContent=String(count));
+    document.getElementById('cartSubtotal').textContent=money(sum);
+  }
+  window.applyCoupon=async function(){
+    const code=document.getElementById('couponCode').value.trim(),subtotal=cartSubtotal(),msg=document.getElementById('couponMessage');
+    if(!code){appliedCoupon='';msg.textContent='';return}
+    try{
+      const r=await zkFetch('coupons/validate/'+encodeURIComponent(storeSlug),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,subtotal})});
+      const d=await r.json();if(!r.ok||!d.valid)throw Error(d.error||'Coupon is not valid');
+      appliedCoupon=d.code;msg.textContent='Discount applied: '+money(d.discount);
+    }catch(err){appliedCoupon='';msg.textContent=err.message}
+  };
+  window.loadShipping=async function(){
+    const select=document.getElementById('shippingRate'),form=document.getElementById('checkoutForm'),subtotal=cartSubtotal(),postal=new FormData(form).get('pincode');
+    try{
+      const r=await zkFetch('storefront/'+encodeURIComponent(storeSlug)+'/shipping-rates?subtotal='+subtotal+'&postal_code='+encodeURIComponent(postal||''));
+      const d=await r.json();if(!r.ok)throw Error(d.error||'Could not load shipping options');
+      if(typeof select.replaceChildren==='function')select.replaceChildren(new Option(d.rates.length?'Choose a shipping rate':'No shipping fee configured',''));
+      else{select.innerHTML='';select.add(new Option(d.rates.length?'Choose a shipping rate':'No shipping fee configured',''))}
+      d.rates.forEach(rate=>select.add(new Option(rate.name+' — '+money(rate.amount)+(rate.estimated_days?' · '+rate.estimated_days:''),rate.id)));
+    }catch(err){document.getElementById('checkoutMessage').textContent=err.message}
+  };
+
+  function showOrderConfirmation(order, customerData, paymentMethod, paymentRef, handoffUrl) {
+    const activeView = document.getElementById('cartActiveView');
+    const successView = document.getElementById('orderSuccessView');
+    if (activeView) activeView.style.display = 'none';
+    if (successView) successView.style.display = 'block';
+
+    const orderNum = order.order_number || ('ORD-' + (order.order_id || Date.now()));
+    const badgeEl = document.getElementById('confOrderBadge');
+    if (badgeEl) badgeEl.textContent = orderNum;
+
+    const totalEl = document.getElementById('confOrderTotal');
+    const totalAmt = order.total_amount !== undefined ? order.total_amount : (order.subtotal || 0);
+    if (totalEl) totalEl.textContent = money(totalAmt);
+
+    const payEl = document.getElementById('confPaymentMethod');
+    if (payEl) {
+      payEl.textContent = paymentMethod === 'Razorpay' 
+        ? ('Paid Online' + (paymentRef ? ' (' + String(paymentRef).slice(0, 14) + '…)' : ' (Razorpay)'))
+        : (paymentMethod || 'Paid');
+    }
+
+    const itemsEl = document.getElementById('confOrderItems');
+    if (itemsEl) {
+      if (zkCart && zkCart.length) {
+        itemsEl.innerHTML = zkCart.map(it => {
+          const p = byId(it.product_id);
+          const v = variantOf(p, it.variant_id);
+          const pr = unitPrice(it);
+          const name = p ? (p.name + (v ? ' (' + v.label + ')' : '')) : 'Item';
+          return '<div style="display:flex;justify-content:space-between;padding:2px 0"><span>' + it.quantity + '× ' + name + '</span><span style="font-weight:600">' + money(pr * it.quantity) + '</span></div>';
+        }).join('');
+      } else if (order.items && Array.isArray(order.items)) {
+        itemsEl.innerHTML = order.items.map(it => 
+          '<div style="display:flex;justify-content:space-between;padding:2px 0"><span>' + it.quantity + '× ' + it.name + '</span><span style="font-weight:600">' + money(it.price * it.quantity) + '</span></div>'
+        ).join('');
+      }
+    }
+
+    const addrEl = document.getElementById('confShippingAddress');
+    if (addrEl && customerData) {
+      addrEl.innerHTML = '<strong>' + (customerData.name || '') + '</strong> · ' + (customerData.phone || '') + '<br>' + (customerData.address || '') + (customerData.city ? ', ' + customerData.city : '') + (customerData.state ? ' ' + customerData.state : '') + (customerData.pincode ? ' - ' + customerData.pincode : '');
+    }
+
+    const invLink = document.getElementById('confInvoiceLink');
+    const orderIdParam = order.order_id || order.id;
+    const invoicePdfUrl = 'api.php?route=' + encodeURIComponent('invoices/' + orderIdParam + '/pdf') + '&download=1';
+    if (invLink) {
+      invLink.href = invoicePdfUrl;
+      invLink.title = 'Download Official GST Tax Invoice for ' + orderNum;
+    }
+
+    const custWaBtn = document.getElementById('confCustomerWaBtn');
+    const fullInvoiceUrl = window.location.origin + '/' + invoicePdfUrl;
+    const waCustMsg = encodeURIComponent('Hello ' + (customerData?.name || '') + '! Your order ' + orderNum + ' at ' + storeName + ' is confirmed! Total: ₹' + totalAmt + '.
+Download Tax Invoice: ' + fullInvoiceUrl);
+    if (custWaBtn) {
+      custWaBtn.href = handoffUrl || ('https://wa.me/?text=' + waCustMsg);
+    }
+
+    const merchWaBtn = document.getElementById('confMerchantWaBtn');
+    const storePhoneClean = String(storeWhatsapp || '919901640727').replace(/\D/g, '');
+    const waMerchMsg = encodeURIComponent('*NEW ORDER CONFIRMED!* 🛍️
+Order: ' + orderNum + '
+Amount: ₹' + totalAmt + '
+Customer: ' + (customerData?.name || '') + ' (' + (customerData?.phone || '') + ')
+Address: ' + (customerData?.address || '') + ', ' + (customerData?.city || '') + ' - ' + (customerData?.pincode || '') + '
+Payment: ' + (paymentMethod || 'Paid') + '
+Invoice: ' + fullInvoiceUrl);
+    if (merchWaBtn) {
+      merchWaBtn.href = 'https://wa.me/' + storePhoneClean + '?text=' + waMerchMsg;
+    }
+
+    zkCart = [];
+    appliedCoupon = '';
+    try { sessionStorage.removeItem('zk_cart'); } catch (_) {}
+    document.querySelectorAll('#cart').forEach(el => el.textContent = '0');
+
+    if (handoffUrl && typeof window.open === 'function') {
+      try { window.open(handoffUrl, '_blank', 'noopener'); } catch (_) {}
+    }
+  }
+
+  window.resetAndCloseCheckout = function() {
+    const activeView = document.getElementById('cartActiveView');
+    const successView = document.getElementById('orderSuccessView');
+    if (activeView) activeView.style.display = 'block';
+    if (successView) successView.style.display = 'none';
+    const form = document.getElementById('checkoutForm');
+    if (form) form.reset();
+    const msg = document.getElementById('checkoutMessage');
+    if (msg) msg.textContent = '';
+    drawCart();
+    closeCheckout();
+  };
+
+  window.placeOrder=async function(e){
+    e.preventDefault();
+    const form=e.target,msg=document.getElementById('checkoutMessage');
+    if(!zkCart.length){msg.textContent='Your cart is empty.';return}
+    const f=new FormData(form);
+    const customerData={name:f.get('name'),email:f.get('email'),phone:f.get('phone'),address:f.get('address'),city:f.get('city'),state:f.get('state'),pincode:f.get('pincode')};
+    const address={line1:customerData.address,city:customerData.city,state:customerData.state,pincode:customerData.pincode};
+    msg.textContent='Creating your order…';
+    try{
+      const r=await zkFetch('storefront/'+encodeURIComponent(storeSlug)+'/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:customerData.name,email:customerData.email,phone:customerData.phone},address,items:zkCart,payment_method:f.get('payment_method'),coupon_code:appliedCoupon||undefined,shipping_rate_id:f.get('shipping_rate_id')||undefined})});
+      const order=await r.json();
+      if(!r.ok)throw Error(order.error||'Could not create order');
+      if(order.next==='confirmed'){
+        showOrderConfirmation(order, customerData, 'Cash on Delivery (COD)', '', order.whatsapp_handoff_url);
+        return;
+      }
+      const pr=await zkFetch('payments/razorpay/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:order.order_id})});
+      const paymentOrder=await pr.json();
+      if(!pr.ok)throw Error(paymentOrder.error||'Could not start payment');
+      const checkout=new Razorpay({
+        key:paymentOrder.key,
+        amount:paymentOrder.amount,
+        currency:paymentOrder.currency,
+        name:document.title,
+        order_id:paymentOrder.razorpay_order_id,
+        prefill:{name:customerData.name,email:customerData.email,contact:customerData.phone},
+        handler:async response=>{
+          const vr=await zkFetch('payments/razorpay/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...response,order_id:order.order_id})});
+          const vd=await vr.json();
+          if(!vr.ok){msg.textContent=vd.error||'Payment confirmation is pending. Please retry.';return}
+          showOrderConfirmation(order, customerData, 'Razorpay', response.razorpay_payment_id, vd.whatsapp_handoff_url);
+        },
+        modal:{ondismiss:()=>recordFailure(order.order_id,paymentOrder.razorpay_order_id,'Payment window closed. Retry payment.')}
+      });
+      checkout.on('payment.failed',response=>recordFailure(order.order_id,paymentOrder.razorpay_order_id,response.error?.description||'Payment failed. Retry payment.'));
+      checkout.open();
+    }catch(err){msg.textContent=err.message}
+  };
+
+  async function recordFailure(orderId,paymentId,reason){
+    await zkFetch('payments/razorpay/failure',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:orderId,razorpay_order_id:paymentId,reason})}).catch(()=>{});
+    document.getElementById('checkoutMessage').textContent=reason+' Your cart is saved; submit again to retry.';
+  }
+  function clearCart(){zkCart=[];appliedCoupon='';sessionStorage.removeItem('zk_cart');drawCart()};
+  drawCart();
+  })();
   </script>`;
   const design=designFor(rootConfig);
   if(design)return renderDesign(design,{store,cfg,fields,allProducts:listedProducts,template,product,page,collection:options.collection,pages:snapshot.pages||[],categories:snapshot.categories||[],sec,isVisible,list,escapeHtml,safeImage,safeColor,safeLink,slugify,format,cartMarkup:cartMarkupWithShipping,cartLogic,slug,title,description,showContact:options.showContact,renderBlocks,basePath});

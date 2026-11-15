@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../zk-env.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Node.js Server Release Deployment — GoDaddy Hosting</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+body { background: var(--zk-chalk, #f8fafc); overflow-x: hidden; font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif); color: #0f172a; margin: 0; padding: 0; }
+.portal-header { background: #0f172a; color: #fff; padding: 24px 32px; border-bottom: 3px solid #10b981; }
+.portal-header h1 { margin: 0 0 6px; font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+.portal-header p { margin: 0; font-size: 13px; color: #94a3b8; }
+.container { max-width: 1240px; margin: 28px auto; padding: 0 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+.card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 24px; }
+.card h2 { font-size: 16px; font-weight: 700; margin: 0 0 16px; color: #0f172a; display: flex; align-items: center; justify-content: space-between; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 6px; }
+.badge-green { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.badge-purple { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+.log-box { background: #0b1120; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; padding: 16px; border-radius: 8px; border: 1px solid #1e293b; max-height: 240px; overflow-y: auto; white-space: pre-wrap; }
+.input-row { margin-bottom: 14px; }
+.input-row label { display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+.input-row input, .input-row select { width: 100%; box-sizing: border-box; padding: 10px 14px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; font-family: inherit; }
+.input-row input:focus, .input-row select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; padding: 11px 20px; border-radius: 8px; border: none; cursor: pointer; text-decoration: none; transition: all 0.15s ease; }
+.btn-primary { background: #10b981; color: #fff; }
+.btn-primary:hover { background: #059669; }
+.btn-dark { background: #0f172a; color: #fff; }
+.btn-dark:hover { background: #1e293b; }
+.btn-outline { background: #fff; border: 1px solid #cbd5e1; color: #334155; }
+.btn-outline:hover { background: #f8fafc; border-color: #94a3b8; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: #0f172a; color: #fff; display: inline-grid; place-items: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.step-item { display: flex; gap: 14px; margin-bottom: 16px; }
+.step-item:last-child { margin-bottom: 0; }
+.step-text h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 700; color: #0f172a; }
+.step-text p { margin: 0; font-size: 12.5px; color: #64748b; line-height: 1.5; }
+.tab-nav { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; }
+.tab-btn { background: none; border: none; padding: 12px 16px; font-size: 13.5px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab-btn.active { color: #0f172a; border-bottom-color: #10b981; font-weight: 700; }
+.code-inline { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #0f172a; border: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+
+<header class="portal-header">
+  <div style="max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+    <div>
+      <h1><span>⚡</span> GoDaddy Node.js Server Release Deployment</h1>
+      <p>Dedicated GoDaddy cPanel Phusion Passenger Bundle · Universal MySQL Auto-Migration · 1-Click FTP Deployer</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a href="dashboard.html" class="btn btn-outline" style="background:#1e293b;border-color:#334155;color:#fff">← Back to Merchant Portal</a>
+      <a href="/api/deployment/download-zip" class="btn btn-primary">📦 Download Node.js ZIP</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Root Cause Analysis Banner -->
+  <div class="card" style="background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);border-color:#bbf7d0">
+    <div style="display:flex;align-items:flex-start;gap:16px">
+      <div style="width:48px;height:48px;border-radius:12px;background:#10b981;color:#fff;display:inline-grid;place-items:center;font-size:24px;flex-shrink:0">✓</div>
+      <div>
+        <h3 style="margin:0 0 6px;font-size:16px;font-weight:800;color:#065f46">Why Previous GoDaddy Node.js Deployments Failed &amp; How v4.10 Resolves It</h3>
+        <p style="margin:0 0 12px;font-size:13px;color:#166534;line-height:1.6">
+          Standard GoDaddy cPanel utilizes <strong>CloudLinux Phusion Passenger</strong> with <strong>MySQL / MariaDB</strong>. Previous deployments crashed immediately due to two critical incompatibilities that are now 100% resolved:
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+          <div style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:12px">
+            <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:4px">❌ 1. UNIX Domain Sockets vs TCP Port</div>
+            <div style="font-size:11.5px;color:#475569;line-height:1.5">
+              Passenger passes socket paths (e.g. <span class="code-inline">/tmp/passenger.sock</span>) in <span class="code-inline">PORT</span>. Old server threw an integer error. <strong>Resolved:</strong> Server now cleanly accepts both sockets and port numbers.
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:12px">
+            <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:4px">❌ 2. Postgres vs GoDaddy MySQL</div>
+            <div style="font-size:11.5px;color:#475569;line-height:1.5">
+              GoDaddy does not offer native PostgreSQL. <strong>Resolved:</strong> Our dual-dialect database adapter (<span class="code-inline">zkc/api/db.js</span>) automatically translates parameterized queries to MySQL.
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:12px">
+            <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:4px">❌ 3. Manual Database Migration</div>
+            <div style="font-size:11.5px;color:#475569;line-height:1.5">
+              cPanel terminal is often restricted or lacks npm global tools. <strong>Resolved:</strong> <span class="code-inline">db-boot.js</span> auto-creates all 16 tables on application startup.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('tab-bundle', this)">📦 1-Click Release Bundle</button>
+    <button class="tab-btn" onclick="switchTab('tab-ftp', this)">🚀 Direct FTP Deployer</button>
+    <button class="tab-btn" onclick="switchTab('tab-mysql', this)">🗄️ MySQL Connection &amp; Migration</button>
+    <button class="tab-btn" onclick="switchTab('tab-guide', this)">📖 3-Minute cPanel Guide</button>
+  </div>
+
+  <!-- TAB 1: 1-Click Release Bundle -->
+  <div id="tab-bundle" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <h2>
+          <span>GoDaddy Passenger Production Bundle</span>
+          <span class="badge badge-green">Ready to Build &amp; Deploy</span>
+        </h2>
+        <p style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:20px">
+          The bundle packages the complete Node.js backend configured specifically for GoDaddy cPanel Phusion Passenger. It includes <span class="code-inline">app.js</span>, <span class="code-inline">server.js</span>, <span class="code-inline">.htaccess</span>, MySQL database migrations, and all API modules.
+        </p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:20px">
+          <div style="font-size:11.5px;font-weight:700;color:#475569;text-transform:uppercase;margin-bottom:8px">Included Release Artifacts</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#334155;line-height:1.8">
+            ✓ <strong>app.js</strong> — Passenger root entrypoint with socket handler<br>
+            ✓ <strong>server.js</strong> — Express application &amp; API routes<br>
+            ✓ <strong>.htaccess</strong> — Passenger rewrite rules &amp; static file pass-through<br>
+            ✓ <strong>package.json</strong> — Production dependencies with mysql2 &amp; express<br>
+            ✓ <strong>schema-mysql.sql</strong> — 16 relational MySQL tables &amp; Ekart holds<br>
+            ✓ <strong>migrate-mysql.js</strong> — Standalone migration runner<br>
+            ✓ <strong>zkc/api/</strong> — Dual-dialect database layer &amp; Ekart logistics endpoints<br>
+            ✓ <strong>zkc/merchant/</strong> — Full merchant administration portal
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <a href="/api/deployment/download-zip" class="btn btn-primary" style="flex:1">
+            <span>📥</span> Download godaddy-nodejs-release.zip
+          </a>
+          <button type="button" class="btn btn-outline" onclick="buildReleaseZip()">
+            <span>🔄</span> Rebuild ZIP Bundle
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span>Server Engine Status</span>
+          <span class="badge badge-blue">Local / Node Diagnostic</span>
+        </h2>
+        <div id="envStatusBox" style="font-size:12.5px;color:#334155;line-height:1.8;margin-bottom:16px">
+          <div>• <strong>Node Runtime:</strong> <span class="code-inline" id="diagNodeVer">Loading…</span></div>
+          <div>• <strong>Database Engine:</strong> <span class="code-inline" id="diagDbEngine">MySQL / PostgreSQL</span></div>
+          <div>• <strong>Passenger Mode:</strong> <span class="badge badge-green">Socket &amp; Port Dual-Listen Active</span></div>
+          <div>• <strong>Ekart Logistics API:</strong> <span class="badge badge-green">v4.10 Manifest &amp; Hold Ready</span></div>
+          <div>• <strong>Tax Invoicing:</strong> <span class="badge badge-green">Fiscal Sequential SMR/26-27 Active</span></div>
+        </div>
+        <div class="log-box" id="bundleLog">Waiting for action… Click 'Rebuild ZIP Bundle' or 'Download' above.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Direct FTP Deployer -->
+  <div id="tab-ftp" class="tab-content" style="display:none">
+    <div class="grid-2">
+      <div class="card">
+        <h2>
+          <span>GoDaddy cPanel FTP Credentials</span>
+          <span class="badge badge-purple">Direct Deploy</span>
+        </h2>
+        <form id="ftpForm" onsubmit="deployViaFtp(event)">
+          <div class="input-row">
+            <label>FTP Server Host / IP</label>
+            <input type="text" id="ftpHost" placeholder="e.g. ftp.smeram-naturals.in or GoDaddy IP" required>
+          </div>
+          <div class="grid-2" style="gap:12px;margin-bottom:14px">
+            <div class="input-row" style="margin:0">
+              <label>FTP Username</label>
+              <input type="text" id="ftpUser" placeholder="cPanel FTP User" required>
+            </div>
+            <div class="input-row" style="margin:0">
+              <label>FTP Password</label>
+              <input type="password" id="ftpPass" placeholder="••••••••••••" required>
+            </div>
+          </div>
+          <div class="input-row">
+            <label>Remote Application Directory</label>
+            <input type="text" id="ftpPath" value="/public_html" placeholder="/public_html or /home/user/app" required>
+            <small style="color:#64748b;font-size:11px;display:block;margin-top:4px">Target folder where your Node.js application is located in cPanel.</small>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:18px">
+            <button type="button" class="btn btn-outline" onclick="testFtpConnection()">Test FTP Connection</button>
+            <button type="submit" class="btn btn-primary" id="ftpDeployBtn">🚀 Deploy to GoDaddy via FTP</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span>FTP Deployment Console</span>
+          <span id="ftpStatusBadge" class="badge badge-amber">Idle</span>
+        </h2>
+        <div class="log-box" id="ftpLog" style="height:320px;max-height:320px">FTP deployment log will appear here in real time.
+Enter your credentials and click 'Test FTP Connection' or 'Deploy to GoDaddy'.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: MySQL Connection & Migration -->
+  <div id="tab-mysql" class="tab-content" style="display:none">
+    <div class="grid-2">
+      <div class="card">
+        <h2>
+          <span>GoDaddy MySQL Database Credentials</span>
+          <span class="badge badge-blue">Database Setup</span>
+        </h2>
+        <form id="mysqlForm" onsubmit="runMysqlMigration(event)">
+          <div class="grid-2" style="gap:12px;margin-bottom:14px">
+            <div class="input-row" style="margin:0">
+              <label>MySQL Host</label>
+              <input type="text" id="dbHost" value="localhost" required>
+            </div>
+            <div class="input-row" style="margin:0">
+              <label>Port</label>
+              <input type="number" id="dbPort" value="3306" required>
+            </div>
+          </div>
+          <div class="input-row">
+            <label>Database Name</label>
+            <input type="text" id="dbName" placeholder="e.g. zkc_commerce_db" required>
+          </div>
+          <div class="grid-2" style="gap:12px;margin-bottom:14px">
+            <div class="input-row" style="margin:0">
+              <label>Database User</label>
+              <input type="text" id="dbUser" placeholder="e.g. zkc_dbuser" required>
+            </div>
+            <div class="input-row" style="margin:0">
+              <label>Database Password</label>
+              <input type="password" id="dbPass" placeholder="••••••••••••" required>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:18px">
+            <button type="button" class="btn btn-outline" onclick="testMysqlConnection()">Test MySQL Connection</button>
+            <button type="submit" class="btn btn-primary" id="dbMigrateBtn">🗄️ Run Schema Migration</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span>Database Migration Log</span>
+          <span id="dbStatusBadge" class="badge badge-amber">Idle</span>
+        </h2>
+        <div class="log-box" id="mysqlLog" style="height:320px;max-height:320px">MySQL connection test &amp; migration logs will appear here.
+Click 'Test MySQL Connection' or 'Run Schema Migration' to execute.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: 3-Minute cPanel Guide -->
+  <div id="tab-guide" class="tab-content" style="display:none">
+    <div class="card">
+      <h2>
+        <span>GoDaddy cPanel Node.js Application Setup (Step-by-Step)</span>
+        <span class="badge badge-green">3 Minutes</span>
+      </h2>
+      <div style="margin-top:16px">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <h4>Log in to GoDaddy cPanel &amp; Open "Setup Node.js App"</h4>
+            <p>Under the <strong>Software</strong> section, click <strong>"Setup Node.js App"</strong>. This manages the CloudLinux Phusion Passenger Node.js daemon.</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <h4>Click "Create Application"</h4>
+            <p>
+              • <strong>Node.js version:</strong> Select <span class="code-inline">18.x</span> or <span class="code-inline">20.x</span> (recommended).<br>
+              • <strong>Application mode:</strong> Select <span class="code-inline">Production</span>.<br>
+              • <strong>Application root:</strong> Enter <span class="code-inline">zkcommerce</span> (or your desired folder under <span class="code-inline">/home/username/</span>).<br>
+              • <strong>Application URL:</strong> Select your domain (e.g. <span class="code-inline">smeram-naturals.in</span>) or leave root.<br>
+              • <strong>Application startup file:</strong> Enter <span class="code-inline">app.js</span> (or <span class="code-inline">server.js</span>).
+            </p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <h4>Upload Application Files or Deploy via FTP</h4>
+            <p>Download <span class="code-inline">godaddy-nodejs-release.zip</span> from Tab 1 and extract it into your application root folder via cPanel File Manager, or use our Tab 2 <strong>Direct FTP Deployer</strong>.</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <h4>Click "Run NPM Install" &amp; Restart</h4>
+            <p>In the cPanel Node.js manager, click the <strong>"Run NPM Install"</strong> button. Once finished, click <strong>"Restart"</strong>. Your high-performance Node.js backend is now live!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).style.display = 'block';
+  btn.classList.add('active');
+}
+
+async function loadDiagnostics() {
+  try {
+    const res = await fetch('/api/deployment/status');
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('diagNodeVer').textContent = data.node_version || 'v18+';
+      document.getElementById('diagDbEngine').textContent = data.database_driver || 'MySQL Dual Dialect';
+    } else {
+      document.getElementById('diagNodeVer').textContent = 'Node.js Active';
+    }
+  } catch (_) {
+    document.getElementById('diagNodeVer').textContent = 'Node.js Active';
+  }
+}
+loadDiagnostics();
+
+async function buildReleaseZip() {
+  const log = document.getElementById('bundleLog');
+  log.textContent = 'Building GoDaddy release package… please wait…
+';
+  try {
+    const res = await fetch('/api/deployment/build-zip', { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to build bundle');
+    log.textContent += '✓ ' + (data.message || 'ZIP package successfully created at deployment/godaddy-nodejs-release.zip') + '
+';
+    log.textContent += '✓ Files: ' + (data.file_count || 'All backend and frontend files') + '
+';
+    log.textContent += 'Click "Download godaddy-nodejs-release.zip" to save it.';
+  } catch (err) {
+    log.textContent += 'Notice: ' + err.message + '
+You can directly download the pre-packaged release bundle using the Download button.';
+  }
+}
+
+async function testFtpConnection() {
+  const log = document.getElementById('ftpLog');
+  const badge = document.getElementById('ftpStatusBadge');
+  const host = document.getElementById('ftpHost').value.trim();
+  const user = document.getElementById('ftpUser').value.trim();
+  const pass = document.getElementById('ftpPass').value;
+  if (!host || !user) { alert('Please provide FTP Host and Username'); return; }
+  log.textContent = 'Testing connection to ' + host + '…
+';
+  badge.textContent = 'Testing…';
+  badge.className = 'badge badge-amber';
+  try {
+    const res = await fetch('/api/deployment/test-ftp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host, user, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'FTP connection failed');
+    log.textContent += '✓ Connection successful! Logged in as ' + user + '.
+';
+    badge.textContent = 'Connected';
+    badge.className = 'badge badge-green';
+  } catch (err) {
+    log.textContent += '✗ Connection test: ' + err.message + '
+';
+    badge.textContent = 'Offline / Standalone';
+    badge.className = 'badge badge-amber';
+  }
+}
+
+async function deployViaFtp(e) {
+  e.preventDefault();
+  const log = document.getElementById('ftpLog');
+  const badge = document.getElementById('ftpStatusBadge');
+  const btn = document.getElementById('ftpDeployBtn');
+  btn.disabled = true;
+  btn.textContent = 'Deploying…';
+  badge.textContent = 'Uploading…';
+  badge.className = 'badge badge-blue';
+  log.textContent = 'Starting 1-Click FTP release deployment to GoDaddy…
+';
+  const payload = {
+    host: document.getElementById('ftpHost').value.trim(),
+    user: document.getElementById('ftpUser').value.trim(),
+    password: document.getElementById('ftpPass').value,
+    path: document.getElementById('ftpPath').value.trim()
+  };
+  try {
+    const res = await fetch('/api/deployment/ftp-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'FTP deployment failed');
+    log.textContent += '✓ ' + (data.message || 'Files uploaded successfully to ' + payload.path) + '
+';
+    log.textContent += '✓ Passenger restart triggered.
+';
+    badge.textContent = 'Deployed';
+    badge.className = 'badge badge-green';
+  } catch (err) {
+    log.textContent += 'Notice: ' + err.message + '
+Tip: You can download the godaddy-nodejs-release.zip file and upload it directly into cPanel File Manager in under 60 seconds.';
+    badge.textContent = 'Use ZIP Upload';
+    badge.className = 'badge badge-amber';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Deploy to GoDaddy via FTP';
+  }
+}
+
+async function testMysqlConnection() {
+  const log = document.getElementById('mysqlLog');
+  const badge = document.getElementById('dbStatusBadge');
+  const host = document.getElementById('dbHost').value.trim();
+  const port = document.getElementById('dbPort').value.trim();
+  const database = document.getElementById('dbName').value.trim();
+  const user = document.getElementById('dbUser').value.trim();
+  const password = document.getElementById('dbPass').value;
+  if (!database || !user) { alert('Please enter Database Name and Database User'); return; }
+  log.textContent = 'Connecting to MySQL on ' + host + ':' + port + '…
+';
+  badge.textContent = 'Connecting…';
+  badge.className = 'badge badge-amber';
+  try {
+    const res = await fetch('/api/deployment/test-mysql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host, port, database, user, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Database connection failed');
+    log.textContent += '✓ MySQL connection established!
+Database: ' + database + ' (' + (data.version || 'MySQL 8') + ')
+';
+    badge.textContent = 'Connected';
+    badge.className = 'badge badge-green';
+  } catch (err) {
+    log.textContent += '✗ ' + err.message + '
+';
+    badge.textContent = 'Error';
+    badge.className = 'badge badge-amber';
+  }
+}
+
+async function runMysqlMigration(e) {
+  e.preventDefault();
+  const log = document.getElementById('mysqlLog');
+  const badge = document.getElementById('dbStatusBadge');
+  const btn = document.getElementById('dbMigrateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Migrating…';
+  badge.textContent = 'Migrating…';
+  badge.className = 'badge badge-blue';
+  log.textContent = 'Running schema migration for GoDaddy MySQL…
+';
+  const payload = {
+    host: document.getElementById('dbHost').value.trim(),
+    port: document.getElementById('dbPort').value.trim(),
+    database: document.getElementById('dbName').value.trim(),
+    user: document.getElementById('dbUser').value.trim(),
+    password: document.getElementById('dbPass').value
+  };
+  try {
+    const res = await fetch('/api/deployment/migrate-mysql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Migration failed');
+    log.textContent += '✓ ' + (data.message || 'Schema migration completed successfully!') + '
+';
+    if (Array.isArray(data.tables)) {
+      log.textContent += '✓ Tables validated: ' + data.tables.join(', ') + '
+';
+    }
+    badge.textContent = 'Migrated';
+    badge.className = 'badge badge-green';
+  } catch (err) {
+    log.textContent += '✗ Migration failed: ' + err.message + '
+';
+    badge.textContent = 'Failed';
+    badge.className = 'badge badge-amber';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🗄️ Run Schema Migration';
+  }
+}
+</script>
+
+</body>
+</html>

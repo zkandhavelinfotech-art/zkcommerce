@@ -9,14 +9,15 @@ const helmet       = require('helmet');
 const rateLimit    = require('express-rate-limit');
 const pool         = require('./db');
 const { renderStore } = require('./store-renderer');
-// Tracked schema migrations (api/services/pg-migrations.js) run once at start-up.
-require('./services/pg-migrations').ready().catch(e => console.error('[ZKCommerce] Database migration failed:', e.message));
+// Universal DB boot & schema migration (MySQL on GoDaddy cPanel / PostgreSQL on Neon)
+const { initDatabase } = require('./services/db-boot');
+initDatabase().catch(e => console.error('[ZKCommerce] Database boot notice:', e.message));
 const path = require('path');
 const fs   = require('fs');
 
 const app  = express();
-const PORT = Number(process.env.PORT || 3000);
-if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) throw new Error('PORT must be a valid TCP port from 1 to 65535');
+// GoDaddy cPanel Phusion Passenger sets PORT as either a TCP port or a UNIX domain socket path
+const PORT = process.env.PORT || 3000;
 
 // â”€â”€ Middleware â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -28,10 +29,22 @@ app.use(rateLimit({ windowMs: 15*60*1000, max: 500, message: { error: 'Too many 
 const { nodeEnvScript } = require('./services/zk-env');
 app.get(/\/zk-env\.js$/, (req, res) => res.type('application/javascript').set('Cache-Control', 'no-store').send(nodeEnvScript(req)));
 app.use('/store-builder', express.static(path.join(__dirname, '..', 'store-builder')));
+app.use('/storefront', express.static(path.join(__dirname, '..', 'storefront')));
 app.use('/auth', express.static(path.join(__dirname, '..', 'auth')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
 app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
+app.get(['/publish-nodejs.html', '/publish-nodejs'], (req, res) => res.sendFile(path.join(__dirname, '..', 'merchant', 'publish-nodejs.html')));
+app.get('/', (req, res, next) => {
+  const storefrontHome = path.join(__dirname, '..', 'storefront', 'home.html');
+  const rootIndex = path.join(__dirname, '..', 'index.html');
+  if (fs.existsSync(storefrontHome)) {
+    return res.sendFile(storefrontHome);
+  } else if (fs.existsSync(rootIndex)) {
+    return res.sendFile(rootIndex);
+  }
+  next();
+});
 app.get(['/release-history.html', '/release_history.html', '/changelog'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-history.html')));
 app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => res.sendFile(path.join(__dirname, '..', 'db-migrations.html')));
 app.get(['/gap-analysis.html', '/gap-analysis', '/audit'], (req, res) => res.sendFile(path.join(__dirname, '..', 'gap-analysis.html')));
@@ -85,6 +98,7 @@ app.use('/api/notify',      require('./routes/notify'));
 app.use('/api/inventory',   require('./routes/inventory'));
 app.use('/api/whatsapp',    require('./routes/whatsapp'));
 app.use('/api/shipments',   require('./routes/shipments'));
+app.use('/api/deployment',  require('./routes/deployment'));
 
 async function serveStore(req, res, identifier, subpath = '/', basePathOverride = null) {
   const cleanId = String(identifier || '').toLowerCase().trim().replace(/^www\./, '');

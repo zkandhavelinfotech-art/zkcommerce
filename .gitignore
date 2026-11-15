@@ -70,3 +70,5 @@ zkc/deployment/smeram-api-v*/
 zkc-build/deployment/*-frontend*/
 zkc-build/deployment/*-backend-api*/
 zkc-build/deployment/smeram-api-v*/
+
+scratch/
