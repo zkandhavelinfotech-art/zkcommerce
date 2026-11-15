@@ -50,6 +50,36 @@ app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => 
 app.get(['/gap-analysis.html', '/gap-analysis', '/audit'], (req, res) => res.sendFile(path.join(__dirname, '..', 'gap-analysis.html')));
 app.get(['/architecture-guide.html', '/architecture-guide', '/architecture', '/architecture-routes.html'], (req, res) => res.sendFile(path.join(__dirname, '..', 'architecture-guide.html')));
 app.get(['/release-gap-comparison.html', '/release-gap-comparison', '/comparison-report', '/comparison-report.html'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-gap-comparison.html')));
+
+// PWA Web App Manifest handler (serves manifest.json with 200 OK)
+app.get('/manifest.json', (req, res) => {
+  const candidateManifests = [
+    path.join(__dirname, '..', 'manifest.json'),
+    path.join(__dirname, 'manifest.json'),
+    path.join(__dirname, '..', '..', 'manifest.json'),
+    path.join(__dirname, '..', 'dist', 'manifest.json')
+  ];
+  for (const mPath of candidateManifests) {
+    if (fs.existsSync(mPath)) {
+      res.setHeader('Content-Type', 'application/manifest+json');
+      return res.sendFile(mPath);
+    }
+  }
+  res.setHeader('Content-Type', 'application/manifest+json');
+  res.json({
+    name: 'ZKCommerce',
+    short_name: 'ZKCommerce',
+    description: 'Smart Commerce. Limitless Growth. — ZKandavel Infotech Pvt Ltd',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#0D1B3E',
+    theme_color: '#1565C0',
+    icons: [
+      { src: '/assets/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  });
+});
+
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets'), { fallthrough: true, maxAge: '7d' }));
 
 // â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -4,48 +4,180 @@ const { checkoutSettings } = require('../services/checkout-settings');
 const inventory = require('../services/inventory');
 const waSender = require('../services/wa-sender');
 
-router.get('/:slug', async (req,res) => {
+router.get('/:slug', async (req, res) => {
   try {
-    const cleanSlug = String(req.params.slug || '').toLowerCase().trim().replace(/^www\./, '');
-    const {rows} = await pool.query(
-      `SELECT s.*,m.name AS merchant_name,m.email AS merchant_email,m.phone AS merchant_phone 
-       FROM stores s JOIN merchants m ON m.id=s.merchant_id 
-       WHERE (lower(s.slug)=lower($1) 
-          OR lower(s.slug)=lower($2)
-          OR lower(s.published_snapshot->'store'->>'custom_domain')=lower($1)
-          OR lower(s.custom_domain)=lower($1)
-          OR regexp_replace(lower(COALESCE(s.custom_domain, '')), '^www\\.', '')=lower($2)
-          OR regexp_replace(lower(COALESCE(s.published_snapshot->'store'->>'custom_domain', '')), '^www\\.', '')=lower($2)) 
-         AND s.status IN ('published','live') AND s.published_snapshot IS NOT NULL`,
-      [req.params.slug, cleanSlug]
+    const slugParam = req.params.slug;
+    const cleanSlug = String(slugParam || '').toLowerCase().trim().replace(/^www\./, '');
+    const { rows } = await pool.query(
+      `SELECT s.* 
+       FROM stores s 
+       WHERE LOWER(s.slug)=LOWER($1) 
+          OR LOWER(s.slug)=LOWER($2)
+          OR LOWER(COALESCE(s.custom_domain, ''))=LOWER($1)
+          OR regexp_replace(LOWER(COALESCE(s.custom_domain, '')), '^www\\.', '')=LOWER($2)
+          OR LOWER(COALESCE(s.custom_domain, ''))=LOWER($1)
+       LIMIT 1`,
+      [slugParam, cleanSlug]
     );
-    if(!rows.length)return res.status(404).json({error:'Store not found or not published'});
-    const s=rows[0],snapshot=s.published_snapshot;
-    res.json({store:snapshot.store,theme_config:snapshot.theme_config||{},products:snapshot.products||[],categories:[],pages:snapshot.pages||[],meta:{title:`${s.store_name} — ${s.tagline||'Shop Online'}`,description:s.hero_subtext||''}});
-  }catch(e){res.status(500).json({error:e.message});}
+    if (!rows.length) return res.status(404).json({ error: 'Store not found or not published' });
+    const s = rows[0];
+
+    if (s.published_snapshot && typeof s.published_snapshot === 'object' && s.published_snapshot.store) {
+      const snapshot = s.published_snapshot;
+      return res.json({
+        store: snapshot.store,
+        theme_config: snapshot.theme_config || {},
+        products: snapshot.products || [],
+        categories: snapshot.categories || [],
+        pages: snapshot.pages || [],
+        meta: {
+          title: `${s.name || s.store_name} — ${s.tagline || 'Shop Online'}`,
+          description: s.description || s.hero_subtext || ''
+        }
+      });
+    }
+
+    const [productsRes, catRes, pagesRes] = await Promise.all([
+      pool.query("SELECT p.*, c.name AS category_name, c.slug AS category_slug FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND ((p.active IS NULL OR p.active=true)) ORDER BY p.featured DESC, p.created_at DESC", [s.id]),
+      pool.query("SELECT * FROM categories WHERE store_id=$1 AND (active IS NULL OR active=true) ORDER BY sort_order, name, id", [s.id]),
+      pool.query("SELECT * FROM pages WHERE store_id=$1 ORDER BY sort_order, title", [s.id]).catch(() => ({ rows: [] }))
+    ]);
+
+    const storeObj = {
+      id: s.id,
+      name: s.name || s.store_name,
+      slug: s.slug,
+      tagline: s.tagline || '',
+      description: s.description || '',
+      logo_url: s.logo_url || null,
+      primary_color: s.primary_color || '#10b981',
+      whatsapp_number: s.whatsapp || s.whatsapp_number || '',
+      phone: s.phone || '',
+      currency: s.currency || 'INR',
+      ...((s.settings && typeof s.settings === 'object') ? s.settings : {})
+    };
+
+    res.json({
+      store: storeObj,
+      theme_config: (s.settings && s.settings.theme_config) || {},
+      products: productsRes.rows,
+      categories: catRes.rows,
+      pages: pagesRes.rows,
+      meta: {
+        title: `${storeObj.name} — ${storeObj.tagline || 'Shop Online'}`,
+        description: storeObj.description || ''
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-router.get('/:slug/products', async(req,res)=>{
-  try{
-    const {page=1,limit=12,category,search,sort='featured'}=req.query,offset=(Number(page)-1)*Number(limit);
-    const {rows}=await pool.query(`SELECT published_snapshot FROM stores WHERE (slug=$1 OR lower(published_snapshot->'store'->>'custom_domain')=lower($1)) AND status IN ('published','live') AND published_snapshot IS NOT NULL`,[req.params.slug]);
-    if(!rows.length)return res.status(404).json({error:'Store not found'});
-    let products=(rows[0].published_snapshot.products||[]).filter(p=>!p.unlisted).filter(p=>!category||p.category_name===category).filter(p=>!search||p.name.toLowerCase().includes(String(search).toLowerCase()));
-    if(sort==='price_asc')products.sort((a,b)=>a.price-b.price);else if(sort==='price_desc')products.sort((a,b)=>b.price-a.price);else products.sort((a,b)=>Number(b.featured)-Number(a.featured)||new Date(b.created_at)-new Date(a.created_at));
-    const total=products.length;res.json({products:products.slice(offset,offset+Number(limit)),pagination:{page:Number(page),limit:Number(limit),total}});
-  }catch(e){res.status(500).json({error:e.message});}
+router.get('/:slug/products', async (req, res) => {
+  try {
+    const { page = 1, limit = 12, category, search, sort = 'featured' } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+    const slugParam = req.params.slug;
+    const cleanSlug = String(slugParam || '').toLowerCase().trim().replace(/^www\./, '');
+
+    const { rows: stores } = await pool.query(
+      `SELECT * FROM stores 
+       WHERE LOWER(slug)=LOWER($1) 
+          OR LOWER(slug)=LOWER($2) 
+          OR LOWER(COALESCE(custom_domain,''))=LOWER($1) 
+          OR LOWER(COALESCE(custom_domain,''))=LOWER($1) 
+       LIMIT 1`,
+      [slugParam, cleanSlug]
+    );
+    if (!stores.length) return res.status(404).json({ error: 'Store not found' });
+    const store = stores[0];
+
+    if (store.published_snapshot && Array.isArray(store.published_snapshot.products) && store.published_snapshot.products.length > 0) {
+      let products = store.published_snapshot.products
+        .filter(p => !p.unlisted)
+        .filter(p => !category || p.category_name === category || p.category_slug === category)
+        .filter(p => !search || String(p.name).toLowerCase().includes(String(search).toLowerCase()));
+
+      if (sort === 'price_asc') products.sort((a, b) => Number(a.price) - Number(b.price));
+      else if (sort === 'price_desc') products.sort((a, b) => Number(b.price) - Number(a.price));
+      else if (sort === 'newest') products.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      else products.sort((a, b) => Number(b.featured || b.featured || 0) - Number(a.featured || a.featured || 0) || new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+      const total = products.length;
+      return res.json({
+        products: products.slice(offset, offset + Number(limit)),
+        pagination: { page: Number(page), limit: Number(limit), total }
+      });
+    }
+
+    let query = `
+      SELECT p.*, c.name AS category_name, c.slug AS category_slug 
+      FROM products p 
+      LEFT JOIN categories c ON c.id=p.category_id 
+      WHERE p.store_id=$1 AND ((p.active IS NULL OR p.active=true))
+    `;
+    const params = [store.id];
+    let pIdx = 2;
+
+    if (category) {
+      query += ` AND (c.name = $${pIdx} OR c.slug = $${pIdx})`;
+      params.push(category);
+      pIdx++;
+    }
+    if (search) {
+      query += ` AND p.name ILIKE $${pIdx}`;
+      params.push(`%${search}%`);
+      pIdx++;
+    }
+
+    let orderClause = ' ORDER BY p.featured DESC, p.created_at DESC';
+    if (sort === 'price_asc') orderClause = ' ORDER BY p.price ASC';
+    else if (sort === 'price_desc') orderClause = ' ORDER BY p.price DESC';
+    else if (sort === 'newest') orderClause = ' ORDER BY p.created_at DESC';
+
+    const countQuery = query.replace('SELECT p.*, c.name AS category_name, c.slug AS category_slug', 'SELECT COUNT(*) as total');
+    const { rows: countRows } = await pool.query(countQuery, params);
+    const total = Number(countRows[0]?.total || 0);
+
+    query += orderClause + ` LIMIT $${pIdx} OFFSET $${pIdx+1}`;
+    params.push(Number(limit), offset);
+
+    const { rows: products } = await pool.query(query, params);
+    res.json({
+      products,
+      pagination: { page: Number(page), limit: Number(limit), total }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-router.get('/:slug/shipping-rates', async(req,res)=>{
-  try{
-    const {rows:stores}=await pool.query("SELECT id FROM stores WHERE (slug=$1 OR lower(published_snapshot->'store'->>'custom_domain')=lower($1)) AND status IN ('published','live') AND published_snapshot IS NOT NULL",[req.params.slug]);
-    if(!stores.length)return res.status(404).json({error:'Store not found'});
-    const subtotal=Math.max(0,Number(req.query.subtotal)||0),postal=String(req.query.postal_code||'').replace(/\D/g,'').slice(0,12);
-    const {rows}=await pool.query(`SELECT id,name,courier,estimated_days,CASE WHEN free_above IS NOT NULL AND $2>=free_above THEN 0 ELSE rate END AS amount
-      FROM store_shipping_rates WHERE store_id=$1 AND active=true AND (postal_prefix IS NULL OR ($3<>'' AND $3 LIKE postal_prefix||'%'))
-      ORDER BY (postal_prefix IS NOT NULL) DESC,rate ASC`,[stores[0].id,subtotal,postal]);
-    res.json({rates:rows});
-  }catch(e){res.status(500).json({error:e.message});}
+router.get('/:slug/shipping-rates', async (req, res) => {
+  try {
+    const slugParam = req.params.slug;
+    const cleanSlug = String(slugParam || '').toLowerCase().trim().replace(/^www\./, '');
+    const { rows: stores } = await pool.query(
+      `SELECT id FROM stores 
+       WHERE LOWER(slug)=LOWER($1) 
+          OR LOWER(slug)=LOWER($2) 
+          OR LOWER(COALESCE(custom_domain,''))=LOWER($1) 
+          OR LOWER(COALESCE(custom_domain,''))=LOWER($1) 
+       LIMIT 1`,
+      [slugParam, cleanSlug]
+    );
+    if (!stores.length) return res.status(404).json({ error: 'Store not found' });
+    const subtotal = Math.max(0, Number(req.query.subtotal) || 0), postal = String(req.query.postal_code || '').replace(/\D/g, '').slice(0, 12);
+    try {
+      const { rows } = await pool.query(`SELECT id,name,courier,estimated_days,CASE WHEN free_above IS NOT NULL AND $2>=free_above THEN 0 ELSE rate END AS amount
+        FROM store_shipping_rates WHERE store_id=$1 AND active=true AND (postal_prefix IS NULL OR ($3<>'' AND $3 LIKE postal_prefix||'%'))
+        ORDER BY (postal_prefix IS NOT NULL) DESC,rate ASC`, [stores[0].id, subtotal, postal]);
+      res.json({ rates: rows });
+    } catch (_) {
+      res.json({ rates: [{ id: 'standard', name: 'Standard Shipping', courier: 'Ekart Logistics', estimated_days: '3-5 days', amount: 0 }] });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 router.post('/:slug/checkout',async(req,res)=>{
@@ -56,7 +188,7 @@ router.post('/:slug/checkout',async(req,res)=>{
     if(!['cod','razorpay'].includes(payment_method))return res.status(400).json({error:'Choose COD or Razorpay payment'});
     if(customer.email&&!/^\S+@\S+\.\S+$/.test(String(customer.email)))return res.status(400).json({error:'Enter a valid email address'});
     await client.query('BEGIN');
-    const {rows:sr}=await client.query(`SELECT id,published_snapshot FROM stores WHERE (slug=$1 OR lower(published_snapshot->'store'->>'custom_domain')=lower($1)) AND status IN ('published','live') AND published_snapshot IS NOT NULL FOR SHARE`,[req.params.slug]);
+    const {rows:sr}=await client.query(`SELECT id, slug, published_snapshot FROM stores WHERE LOWER(slug)=LOWER($1) OR LOWER(COALESCE(custom_domain,''))=LOWER($1) LIMIT 1 FOR SHARE`,[req.params.slug]);
     if(!sr.length){await client.query('ROLLBACK');return res.status(404).json({error:'Store not found'});}
     const storeId=sr[0].id,products=sr[0].published_snapshot.products||[],lineItems=[];let subtotal=0;
     // Enforce the merchant's published checkout settings, not just the rendered form.

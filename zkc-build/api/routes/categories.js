@@ -13,12 +13,43 @@ function categorySlug(name) {
   return String(name || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const store = await ownedStore(req);
-    if (!store) return res.status(404).json({ error: 'Store not found' });
-    const { rows } = await pool.query('SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id', [store.id]);
-    res.json({ categories: rows });
+    const slug = (req.query.slug || req.query.store_slug || req.query.store || '').trim();
+    if (slug) {
+      const { rows: stores } = await pool.query(
+        'SELECT id FROM stores WHERE LOWER(slug)=LOWER($1) OR LOWER(COALESCE(custom_domain,\'\'))=LOWER($1) LIMIT 1',
+        [slug]
+      );
+      if (!stores.length) return res.status(404).json({ error: 'Store not found' });
+      const { rows } = await pool.query(
+        'SELECT * FROM categories WHERE store_id=$1 AND (active IS NULL OR active=true) ORDER BY sort_order,name,id',
+        [stores[0].id]
+      );
+      return res.json({ categories: rows });
+    }
+
+    if (req.query.store_id && Number.isInteger(Number(req.query.store_id)) && !req.headers.authorization) {
+      const { rows } = await pool.query(
+        'SELECT * FROM categories WHERE store_id=$1 AND (active IS NULL OR active=true) ORDER BY sort_order,name,id',
+        [Number(req.query.store_id)]
+      );
+      return res.json({ categories: rows });
+    }
+
+    auth(req, res, async () => {
+      try {
+        const store = await ownedStore(req);
+        if (!store) return res.status(404).json({ error: 'Store not found' });
+        const { rows } = await pool.query(
+          'SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order,name,id',
+          [store.id]
+        );
+        res.json({ categories: rows });
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
