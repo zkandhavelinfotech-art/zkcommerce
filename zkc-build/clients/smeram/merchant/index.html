@@ -536,9 +536,24 @@
 
   <!-- Sidebar -->
   <aside>
-    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid #1a2a44">
-      <div style="width:28px;height:28px;border-radius:7px;background:#1976d2;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:900;flex-shrink:0">ZK</div>
-      <span style="font-weight:800;font-size:16px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>
+    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #1a2a44;position:relative">
+      <!-- 1. Attached Official ZK Emblem Logo -->
+      <img src="../../assets/zk-logo-square.png" alt="ZK" style="width:34px;height:34px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,0.35);flex-shrink:0" onerror="this.src='/assets/zk-logo-square.png'">
+      
+      <!-- 2. ZKCommerce Text -->
+      <div style="display:flex;flex-direction:column;line-height:1.15">
+        <span style="font-weight:800;font-size:15px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>
+        <span style="font-size:8.5px;font-weight:700;color:#38bdf8;letter-spacing:0.06em;text-transform:uppercase">Merchant Platform</span>
+      </div>
+
+      <!-- 3. ZKCommerce Right: Merchant Logo (Smeram Naturals circular floral logo) with Edit/Replace Action -->
+      <div class="sidebar-merchant-logo-wrap" style="margin-left:auto;position:relative;display:flex;align-items:center" title="Click to Edit / Replace Store Logo">
+        <div class="merchant-logo-click-target" onclick="openLogoUploadModal()" style="cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid rgba(225,29,116,0.45);border-radius:50%;width:38px;height:38px;padding:2px;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:all .18s ease" onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='#e11d74';this.querySelector('.edit-badge').style.opacity='1'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(225,29,116,0.45)';this.querySelector('.edit-badge').style.opacity='0'">
+          <img id="sidebarMerchantLogo" src="../../assets/themes/smeram/smeram-round-logo.jpg" alt="Smeram Naturals Logo" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block" onerror="this.src='/assets/themes/smeram/smeram-round-logo.jpg'">
+          <!-- Edit / Replace Overlay Pencil Icon -->
+          <div class="edit-badge" style="position:absolute;inset:0;background:rgba(15,23,42,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s ease;color:#fff;font-size:13px" title="Edit / Replace Logo">✏️</div>
+        </div>
+      </div>
     </div>
     <div class="nav-controls">
       <span style="font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;letter-spacing:.08em">Navigation</span>
@@ -1790,6 +1805,7 @@
         localStorage.setItem('zk_store_logo', newLogo);
         if (document.getElementById('headerStoreLogo')) document.getElementById('headerStoreLogo').src = newLogo;
         if (document.getElementById('settingsStoreLogoPreview')) document.getElementById('settingsStoreLogoPreview').src = newLogo;
+        if (document.getElementById('sidebarMerchantLogo')) document.getElementById('sidebarMerchantLogo').src = newLogo;
         if (currentStore) currentStore.logo_url = newLogo;
         
         if (currentStoreId) {
@@ -1802,7 +1818,7 @@
             }).catch(() => {});
           }
         }
-        notify('Store logo updated and applied successfully!');
+        notify('Store logo updated and applied successfully in sidebar and header!');
         closeLogoUploadModal();
       } catch (err) {
         notify('Logo saved locally: ' + err.message);
@@ -1821,22 +1837,28 @@
       if (currentStore.whatsapp_number) {
         document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;
       }
-      const savedLogo = localStorage.getItem('zk_store_logo') || currentStore.logo_url;
+      const isSmeram = String(currentStore.slug || '').toLowerCase().includes('smeram') || String(currentStore.store_name || '').toLowerCase().includes('smeram');
+      const defaultStoreLogo = isSmeram ? '../../assets/themes/smeram/smeram-round-logo.jpg' : null;
+      const savedLogo = (currentStore.logo_url && !currentStore.logo_url.includes('placeholder')) ? currentStore.logo_url : (localStorage.getItem('zk_store_logo') || defaultStoreLogo);
       const hLogo = document.getElementById('headerStoreLogo');
       const sLogo = document.getElementById('settingsStoreLogoPreview');
+      const sideLogo = document.getElementById('sidebarMerchantLogo');
       if (hLogo && savedLogo) hLogo.src = savedLogo;
       if (sLogo && savedLogo) sLogo.src = savedLogo;
+      if (sideLogo && savedLogo) sideLogo.src = savedLogo;
       const sTitle = document.getElementById('settingsStoreLogoTitle');
       if (sTitle) sTitle.textContent = 'Current Client Logo: ' + (currentStore.store_name || 'Smeram Naturals');
 
-      if (currentStore.slug === 'smeram') {
-        document.documentElement.style.setProperty('--bg', '#fff5f7');
+      if (isSmeram) {
+        document.documentElement.style.setProperty('--bg', '#fff9fa');
         document.documentElement.style.setProperty('--border', '#fce7ec');
-        document.documentElement.style.setProperty('--primary', '#ed6375');
+        document.documentElement.style.setProperty('--primary', '#e11d74');
+        document.documentElement.style.setProperty('--accent', '#7ea82b');
       } else {
+        const prim = currentStore.primary_color || '#1976d2';
         document.documentElement.style.setProperty('--bg', '#f5f7fb');
         document.documentElement.style.setProperty('--border', '#e2e8f0');
-        document.documentElement.style.setProperty('--primary', '#1976d2');
+        document.documentElement.style.setProperty('--primary', prim);
       }
       updateStoreBuilderLinks();
     }
