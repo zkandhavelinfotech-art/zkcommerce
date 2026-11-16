@@ -156,9 +156,11 @@
     }
 
     headerContainer.innerHTML = ''
-      // Top row: [Official ZKCommerce Full Banner Logo (Transparent & Expanded Width)]
-      + '<div class="zk-merchant-brand-bar" style="display:flex;align-items:center;justify-content:center;width:100%;position:relative;padding:8px 0 10px">'
-      +   '<img src="/assets/zkcommerce-logo-banner.png" alt="ZKCommerce" style="width:100%;max-width:215px;height:auto;max-height:64px;object-fit:contain;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.35))" onerror="this.src=\'../assets/zkcommerce-logo-banner.png\'">'
+      // Top row: [Full-Width Official ZKCommerce Banner Header]
+      + '<div class="zk-merchant-brand-bar" style="padding:0;margin:0;width:100%;background:#02122c;border-bottom:1px solid rgba(0,163,255,0.22);display:flex;align-items:center;justify-content:center;overflow:hidden">'
+      +   '<a href="index.html" style="display:block;width:100%;line-height:0">'
+      +     '<img src="/assets/zkcommerce-sidebar-banner.png?v=5.2" alt="ZKCommerce" style="width:100%;height:auto;display:block;object-fit:cover" onerror="this.src=\'../assets/zkcommerce-sidebar-banner.png?v=5.2\'">'
+      +   '</a>'
       + '</div>'
       // Store info strip & quick navigation links
       + '<div class="zk-merchant-info-strip" style="margin-top:4px">'
