@@ -156,13 +156,9 @@
     }
 
     headerContainer.innerHTML = ''
-      // Top row: [Attached ZK Logo] + [ZKCommerce Platform Identity]
-      + '<div class="zk-merchant-brand-bar" style="display:flex;align-items:center;gap:12px;width:100%;position:relative;padding-bottom:4px">'
-      +   '<img src="/assets/zk-logo-square.png" alt="ZKCommerce" style="width:34px;height:34px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,0.35);flex-shrink:0" onerror="this.src=\'../assets/zk-logo-square.png\'">'
-      +   '<div style="display:flex;flex-direction:column;line-height:1.2">'
-      +     '<span style="font-weight:800;font-size:15px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>'
-      +     '<span style="font-size:8.5px;font-weight:700;color:' + brand.accentColor + ';letter-spacing:0.06em;text-transform:uppercase">Merchant Platform</span>'
-      +   '</div>'
+      // Top row: [Official ZKCommerce Banner Logo]
+      + '<div class="zk-merchant-brand-bar" style="display:flex;align-items:center;justify-content:center;width:100%;position:relative;padding:4px 0 8px">'
+      +   '<img src="/assets/zkcommerce-logo-banner.png" alt="ZKCommerce" style="max-height:48px;max-width:100%;object-fit:contain;display:block" onerror="this.src=\'../assets/zkcommerce-logo-banner.png\'">'
       + '</div>'
       // Store info strip & quick navigation links
       + '<div class="zk-merchant-info-strip" style="margin-top:4px">'
