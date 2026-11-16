@@ -536,23 +536,14 @@
 
   <!-- Sidebar -->
   <aside>
-    <div class="brand" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #1a2a44;position:relative">
-      <!-- 1. Attached Official ZK Emblem Logo -->
-      <img src="../assets/zk-logo-square.png" alt="ZK" style="width:34px;height:34px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,0.35);flex-shrink:0" onerror="this.src='/assets/zk-logo-square.png'">
+    <div class="brand" style="display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid #1a2a44;position:relative">
+      <!-- Attached Official ZK Emblem Logo -->
+      <img src="../assets/zk-logo-square.png" alt="ZKCommerce" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;box-shadow:0 2px 8px rgba(0,0,0,0.35);flex-shrink:0" onerror="this.src='/assets/zk-logo-square.png'">
       
-      <!-- 2. ZKCommerce Text -->
-      <div style="display:flex;flex-direction:column;line-height:1.15">
-        <span style="font-weight:800;font-size:15px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>
-        <span style="font-size:8.5px;font-weight:700;color:#38bdf8;letter-spacing:0.06em;text-transform:uppercase">Merchant Platform</span>
-      </div>
-
-      <!-- 3. ZKCommerce Right: Merchant Logo (Smeram Naturals circular floral logo) with Edit/Replace Action -->
-      <div class="sidebar-merchant-logo-wrap" style="margin-left:auto;position:relative;display:flex;align-items:center" title="Click to Edit / Replace Store Logo">
-        <div class="merchant-logo-click-target" onclick="openLogoUploadModal()" style="cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid rgba(225,29,116,0.45);border-radius:50%;width:38px;height:38px;padding:2px;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:all .18s ease" onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='#e11d74';this.querySelector('.edit-badge').style.opacity='1'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(225,29,116,0.45)';this.querySelector('.edit-badge').style.opacity='0'">
-          <img id="sidebarMerchantLogo" src="../assets/themes/smeram/smeram-round-logo.jpg" alt="Smeram Naturals Logo" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block" onerror="this.src='/assets/themes/smeram/smeram-round-logo.jpg'">
-          <!-- Edit / Replace Overlay Pencil Icon -->
-          <div class="edit-badge" style="position:absolute;inset:0;background:rgba(15,23,42,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s ease;color:#fff;font-size:13px" title="Edit / Replace Logo">✏️</div>
-        </div>
+      <!-- ZKCommerce Platform Identity -->
+      <div style="display:flex;flex-direction:column;line-height:1.2">
+        <span style="font-weight:800;font-size:16px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>
+        <span style="font-size:9px;font-weight:700;color:#38bdf8;letter-spacing:0.07em;text-transform:uppercase">Merchant Platform</span>
       </div>
     </div>
     <div class="nav-controls">
@@ -638,14 +629,19 @@
   <!-- Main Container -->
   <div class="app-main">
     <header>
-      <div class="header-left" style="display:flex;align-items:center;gap:12px">
-        <div style="display:flex;align-items:center;gap:8px" id="headerStoreLogoWrap">
-          <img id="headerStoreLogo" src="../assets/themes/smeram/smeram-logo.png" alt="Store Logo" style="height:34px;max-width:140px;object-fit:contain;background:#fff;padding:2px 8px;border-radius:6px;border:1px solid var(--border)" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
-          <button type="button" class="btn-outline btn-sm" onclick="openLogoUploadModal()" title="Upload or change client store logo" style="font-size:11px;padding:3px 7px;cursor:pointer">✏️ Logo</button>
+      <div class="header-left" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <!-- Prominent Store Brand Card with One-Click Edit Action -->
+        <div id="headerStoreLogoWrap" style="display:inline-flex;align-items:center;background:#ffffff;border:1.5px solid rgba(225,29,116,0.28);border-radius:10px;padding:4px 10px 4px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:8px">
+          <div onclick="openLogoUploadModal()" title="Click to Edit / Replace Store Logo" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+            <img id="headerStoreLogo" src="../assets/themes/smeram/smeram-banner-logo.jpg" alt="Store Logo" style="height:46px;max-width:240px;min-width:46px;object-fit:contain;display:block;border-radius:6px" onerror="this.src='/assets/themes/smeram/smeram-banner-logo.jpg'">
+            <button type="button" class="btn-outline btn-sm" onclick="event.stopPropagation();openLogoUploadModal()" title="Upload or change client store logo" style="font-size:11px;font-weight:700;color:#e11d74;background:#fff0f5;border:1px solid rgba(225,29,116,0.25);border-radius:6px;padding:4px 8px;cursor:pointer;display:inline-flex;align-items:center;gap:3px">✏️ Logo</button>
+          </div>
         </div>
-        <label style="font-size:13px;font-weight:600;color:var(--muted)">Store:</label>
-        <select id="storeSelect" style="min-width:190px;font-weight:600"></select>
-        <span class="store-badge" id="storeStatusBadge">Live</span>
+        <div style="display:inline-flex;align-items:center;gap:8px">
+          <label style="font-size:13px;font-weight:600;color:var(--muted)">Store:</label>
+          <select id="storeSelect" style="min-width:190px;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid var(--border)"></select>
+          <span class="store-badge" id="storeStatusBadge">Live</span>
+        </div>
       </div>
       <div class="header-actions">
         <button class="btn-outline btn-sm" id="btnViewStore">👁️ View Storefront</button>
@@ -1813,7 +1809,7 @@
         document.getElementById('settingsWhatsappInput').value = currentStore.whatsapp_number;
       }
       const isSmeram = String(currentStore.slug || '').toLowerCase().includes('smeram') || String(currentStore.store_name || '').toLowerCase().includes('smeram');
-      const defaultStoreLogo = isSmeram ? '../assets/themes/smeram/smeram-round-logo.jpg' : null;
+      const defaultStoreLogo = isSmeram ? '../assets/themes/smeram/smeram-banner-logo.jpg' : (currentStore.logo_url || null);
       const savedLogo = (currentStore.logo_url && !currentStore.logo_url.includes('placeholder')) ? currentStore.logo_url : (localStorage.getItem('zk_store_logo') || defaultStoreLogo);
       const hLogo = document.getElementById('headerStoreLogo');
       const sLogo = document.getElementById('settingsStoreLogoPreview');
@@ -1824,16 +1820,19 @@
       const sTitle = document.getElementById('settingsStoreLogoTitle');
       if (sTitle) sTitle.textContent = 'Current Client Logo: ' + (currentStore.store_name || 'Smeram Naturals');
 
+      const logoWrap = document.getElementById('headerStoreLogoWrap');
       if (isSmeram) {
         document.documentElement.style.setProperty('--bg', '#fff9fa');
         document.documentElement.style.setProperty('--border', '#fce7ec');
         document.documentElement.style.setProperty('--primary', '#e11d74');
         document.documentElement.style.setProperty('--accent', '#7ea82b');
+        if (logoWrap) logoWrap.style.borderColor = 'rgba(225, 29, 116, 0.35)';
       } else {
         const prim = currentStore.primary_color || '#1976d2';
         document.documentElement.style.setProperty('--bg', '#f5f7fb');
         document.documentElement.style.setProperty('--border', '#e2e8f0');
         document.documentElement.style.setProperty('--primary', prim);
+        if (logoWrap) logoWrap.style.borderColor = '#e2e8f0';
       }
       updateStoreBuilderLinks();
     }

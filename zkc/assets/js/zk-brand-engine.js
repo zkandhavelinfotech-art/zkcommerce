@@ -156,18 +156,12 @@
     }
 
     headerContainer.innerHTML = ''
-      // Top row: [Attached ZK Logo] + [ZKCommerce Text] + [Merchant Logo on Right with Edit/Replace]
-      + '<div class="zk-merchant-brand-bar" style="display:flex;align-items:center;gap:10px;width:100%;position:relative">'
-      +   '<img src="/assets/zk-logo-square.png" alt="ZKCommerce" style="width:32px;height:32px;border-radius:7px;object-fit:contain;background:#fff;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,0.35);flex-shrink:0" onerror="this.src=\'../assets/zk-logo-square.png\'">'
-      +   '<div style="display:flex;flex-direction:column;line-height:1.15">'
-      +     '<span style="font-weight:800;font-size:14px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>'
+      // Top row: [Attached ZK Logo] + [ZKCommerce Platform Identity]
+      + '<div class="zk-merchant-brand-bar" style="display:flex;align-items:center;gap:12px;width:100%;position:relative;padding-bottom:4px">'
+      +   '<img src="/assets/zk-logo-square.png" alt="ZKCommerce" style="width:34px;height:34px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,0.35);flex-shrink:0" onerror="this.src=\'../assets/zk-logo-square.png\'">'
+      +   '<div style="display:flex;flex-direction:column;line-height:1.2">'
+      +     '<span style="font-weight:800;font-size:15px;letter-spacing:-0.2px;color:#fff">ZKCommerce</span>'
       +     '<span style="font-size:8.5px;font-weight:700;color:' + brand.accentColor + ';letter-spacing:0.06em;text-transform:uppercase">Merchant Platform</span>'
-      +   '</div>'
-      +   '<div class="sidebar-merchant-logo-wrap" style="margin-left:auto;position:relative;display:flex;align-items:center" title="Click to Edit / Replace Store Logo">'
-      +     '<div class="merchant-logo-click-target" onclick="window.ZKBrandEngine.openLogoModal()" style="cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid ' + brand.primaryColor + ';border-radius:50%;width:38px;height:38px;padding:2px;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:all .18s ease" onmouseover="this.style.transform=\'scale(1.1)\';this.querySelector(\'.edit-badge\').style.opacity=\'1\'" onmouseout="this.style.transform=\'scale(1)\';this.querySelector(\'.edit-badge\').style.opacity=\'0\'">'
-      +       merchantLogoHtml
-      +       '<div class="edit-badge" style="position:absolute;inset:0;background:rgba(15,23,42,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s ease;color:#fff;font-size:12px" title="Click to Edit / Replace Logo">✏️</div>'
-      +     '</div>'
       +   '</div>'
       + '</div>'
       // Store info strip & quick navigation links
