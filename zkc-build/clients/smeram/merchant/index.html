@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<script src="../zk-env.js"></script>
+  <script src="../zk-env.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Merchant Dashboard · ZKCommerce</title>
@@ -22,7 +23,11 @@
       --muted: #64748b;
       --radius: 10px;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -31,6 +36,7 @@
       display: flex;
       min-height: 100vh;
     }
+
     /* Sidebar */
     aside {
       width: 260px;
@@ -44,6 +50,7 @@
       position: sticky;
       top: 0;
     }
+
     .brand {
       padding: 18px 20px;
       font-size: 17px;
@@ -54,13 +61,18 @@
       gap: 10px;
       border-bottom: 1px solid #1a2a44;
     }
-    .brand span { color: #5ea8ff; }
+
+    .brand span {
+      color: #5ea8ff;
+    }
+
     .nav-controls {
       padding: 8px 12px 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+
     .nav-toggle-all-btn {
       background: transparent;
       border: 1px solid #233554;
@@ -72,17 +84,38 @@
       cursor: pointer;
       transition: all 0.15s;
     }
+
     .nav-toggle-all-btn:hover {
       background: var(--sidebar-hover);
       color: #fff;
       border-color: #3b82f6;
     }
+
     /* High-contrast, easily visible scrollbars across the entire app */
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 8px; }
-    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; border: 2px solid #e2e8f0; }
-    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-    * { scrollbar-color: #94a3b8 #e2e8f0; scrollbar-width: thin; }
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    * {
+      scrollbar-color: #94a3b8 #e2e8f0;
+      scrollbar-width: thin;
+    }
 
     /* High-contrast vibrant scrollbar for dark sidebar */
     .nav {
@@ -96,10 +129,25 @@
       scrollbar-color: #3b82f6 #0b1329;
       scrollbar-width: thin;
     }
-    .nav::-webkit-scrollbar { width: 9px; }
-    .nav::-webkit-scrollbar-track { background: #0b1329; border-radius: 8px; }
-    .nav::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 8px; border: 2px solid #0b1329; }
-    .nav::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
+
+    .nav::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    .nav::-webkit-scrollbar-track {
+      background: #0b1329;
+      border-radius: 8px;
+    }
+
+    .nav::-webkit-scrollbar-thumb {
+      background: #3b82f6;
+      border-radius: 8px;
+      border: 2px solid #0b1329;
+    }
+
+    .nav::-webkit-scrollbar-thumb:hover {
+      background: #60a5fa;
+    }
 
     /* Redesigned modern sidebar navigation items */
     .nav-item {
@@ -120,18 +168,26 @@
       transition: all 0.18s ease;
       position: relative;
     }
+
     .nav-item:hover {
       background: rgba(255, 255, 255, 0.08);
       color: #f8fafc;
       transform: translateX(2px);
     }
+
     .nav-item.active {
       background: #2563eb;
       color: #fff;
       font-weight: 600;
       box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
     }
-    .nav-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 15px; }
+
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+      font-size: 15px;
+    }
 
     /* Collapsible Accordion Groups */
     .nav-group {
@@ -139,6 +195,7 @@
       border-radius: 8px;
       transition: background 0.15s;
     }
+
     .nav-group-header {
       display: flex;
       align-items: center;
@@ -156,22 +213,26 @@
       letter-spacing: 0.01em;
       transition: all 0.18s;
     }
+
     .nav-group-header:hover {
       background: rgba(255, 255, 255, 0.08);
       color: #fff;
       border-color: rgba(96, 165, 250, 0.4);
     }
-    .nav-group.open > .nav-group-header {
+
+    .nav-group.open>.nav-group-header {
       color: #60a5fa;
       background: rgba(37, 99, 235, 0.12);
       border-color: rgba(96, 165, 250, 0.3);
     }
+
     .nav-group-title {
       display: flex;
       align-items: center;
       gap: 10px;
       flex: 1;
     }
+
     .nav-chevron {
       font-size: 10px;
       color: #64748b;
@@ -179,10 +240,12 @@
       display: inline-block;
       padding: 2px 4px;
     }
+
     .nav-group.open .nav-chevron {
       transform: rotate(90deg);
       color: #60a5fa;
     }
+
     .nav-submenu {
       display: none;
       flex-direction: column;
@@ -191,20 +254,24 @@
       margin: 4px 0 6px 12px;
       border-left: 2px solid #2563eb;
     }
+
     .nav-group.open .nav-submenu {
       display: flex;
     }
+
     .nav-submenu .nav-item {
       padding: 8px 12px;
       font-size: 13px;
       border-radius: 7px;
     }
+
     .nav-submenu .nav-item.active {
       background: #1d4ed8;
       color: #fff;
       font-weight: 600;
       box-shadow: 0 2px 6px rgba(29, 78, 216, 0.35);
     }
+
     .sidebar-footer {
       padding: 16px;
       border-top: 1px solid #1a2a44;
@@ -214,8 +281,15 @@
       justify-content: space-between;
       align-items: center;
     }
-    .sidebar-footer a { color: #94a3b8; text-decoration: none; }
-    .sidebar-footer a:hover { color: #fff; }
+
+    .sidebar-footer a {
+      color: #94a3b8;
+      text-decoration: none;
+    }
+
+    .sidebar-footer a:hover {
+      color: #fff;
+    }
 
     /* Main Area */
     .app-main {
@@ -225,6 +299,7 @@
       min-width: 0;
       overflow-x: hidden;
     }
+
     header {
       background: #fff;
       border-bottom: 1px solid var(--border);
@@ -235,11 +310,13 @@
       gap: 16px;
       flex-wrap: wrap;
     }
+
     .header-left {
       display: flex;
       align-items: center;
       gap: 14px;
     }
+
     .store-badge {
       display: inline-flex;
       align-items: center;
@@ -252,12 +329,16 @@
       font-weight: 600;
       text-transform: capitalize;
     }
+
     .header-actions {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    select, input, button {
+
+    select,
+    input,
+    button {
       font: inherit;
       border: 1px solid var(--border);
       border-radius: 7px;
@@ -265,33 +346,51 @@
       background: #fff;
       color: inherit;
     }
-    select:focus, input:focus {
+
+    select:focus,
+    input:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
     }
+
     button {
       cursor: pointer;
       font-weight: 600;
       transition: all 0.15s;
     }
+
     .btn-primary {
       background: var(--primary);
       color: #fff;
       border-color: var(--primary);
     }
-    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
     .btn-outline {
       background: #fff;
       color: var(--text);
     }
-    .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .btn-outline:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
     .btn-success {
       background: var(--success);
       color: #fff;
       border-color: var(--success);
     }
-    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
 
     /* Content Area */
     .content {
@@ -300,12 +399,14 @@
       width: 100%;
       margin: 0 auto;
     }
+
     .page-title {
       font-size: 22px;
       font-weight: 800;
       margin: 0 0 6px;
       letter-spacing: -0.4px;
     }
+
     .page-sub {
       color: var(--muted);
       margin: 0 0 24px;
@@ -319,13 +420,15 @@
       gap: 16px;
       margin-bottom: 24px;
     }
+
     .stat-card {
       background: #fff;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
+
     .stat-label {
       font-size: 12px;
       font-weight: 700;
@@ -333,6 +436,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+
     .stat-value {
       font-size: 28px;
       font-weight: 800;
@@ -340,9 +444,18 @@
       letter-spacing: -0.5px;
       color: var(--text);
     }
-    .stat-value.blue { color: var(--primary); }
-    .stat-value.green { color: var(--success); }
-    .stat-value.amber { color: var(--warning); }
+
+    .stat-value.blue {
+      color: var(--primary);
+    }
+
+    .stat-value.green {
+      color: var(--success);
+    }
+
+    .stat-value.amber {
+      color: var(--warning);
+    }
 
     .card {
       background: #fff;
@@ -350,8 +463,9 @@
       border-radius: var(--radius);
       padding: 22px;
       margin-bottom: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
+
     .card-head {
       display: flex;
       justify-content: space-between;
@@ -360,15 +474,24 @@
       flex-wrap: wrap;
       gap: 12px;
     }
-    .card-head h2 { font-size: 17px; margin: 0; font-weight: 700; }
+
+    .card-head h2 {
+      font-size: 17px;
+      margin: 0;
+      font-weight: 700;
+    }
 
     /* Tables */
-    .table-wrap { overflow-x: auto; }
+    .table-wrap {
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
     }
+
     th {
       text-align: left;
       padding: 11px 12px;
@@ -380,12 +503,16 @@
       letter-spacing: 0.04em;
       border-bottom: 1px solid var(--border);
     }
+
     td {
       padding: 12px;
       border-bottom: 1px solid #f1f5f9;
       vertical-align: middle;
     }
-    tr:hover td { background: #fafbfc; }
+
+    tr:hover td {
+      background: #fafbfc;
+    }
 
     .badge {
       display: inline-flex;
@@ -396,13 +523,41 @@
       font-weight: 700;
       text-transform: capitalize;
     }
-    .badge-confirmed { background: #e0f2fe; color: #0284c7; }
-    .badge-processing { background: #fef3c7; color: #b45309; }
-    .badge-shipped { background: #dcfce7; color: #15803d; }
-    .badge-delivered { background: #d1fae5; color: #065f46; }
-    .badge-cancelled { background: #fee2e2; color: #b91c1c; }
-    .badge-paid { background: #ecfdf5; color: #047857; }
-    .badge-unpaid { background: #fff7ed; color: #c2410c; }
+
+    .badge-confirmed {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    .badge-processing {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .badge-shipped {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-delivered {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-cancelled {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .badge-paid {
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .badge-unpaid {
+      background: #fff7ed;
+      color: #c2410c;
+    }
 
     .toolbar-row {
       display: flex;
@@ -420,14 +575,27 @@
       font-size: 13px;
       display: none;
     }
-    .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; display: block; }
-    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+
+    .alert-success {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      display: block;
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      display: block;
+    }
 
     .legal-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 14px;
     }
+
     .legal-card {
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -437,8 +605,16 @@
       justify-content: space-between;
       align-items: center;
     }
-    .legal-title { font-weight: 600; font-size: 14px; }
-    .legal-slug { font-size: 12px; color: var(--muted); }
+
+    .legal-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .legal-slug {
+      font-size: 12px;
+      color: var(--muted);
+    }
 
     .form-grid {
       display: grid;
@@ -446,6 +622,7 @@
       gap: 14px;
       margin-bottom: 16px;
     }
+
     .form-group label {
       display: block;
       font-size: 12px;
@@ -453,15 +630,40 @@
       color: var(--muted);
       margin-bottom: 6px;
     }
-    .form-group input, .form-group select { width: 100%; }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+    }
 
     @media (max-width: 768px) {
-      aside { width: 68px; }
-      .brand span, .nav-item span, .sidebar-footer { display: none; }
-      .brand { justify-content: center; padding: 18px 0; }
-      .nav-item { justify-content: center; padding: 12px 0; }
-      .content { padding: 16px; }
-      header { padding: 12px 16px; }
+      aside {
+        width: 68px;
+      }
+
+      .brand span,
+      .nav-item span,
+      .sidebar-footer {
+        display: none;
+      }
+
+      .brand {
+        justify-content: center;
+        padding: 18px 0;
+      }
+
+      .nav-item {
+        justify-content: center;
+        padding: 12px 0;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      header {
+        padding: 12px 16px;
+      }
     }
 
     /* WhatsApp Template Tabs & Previews */
@@ -473,6 +675,7 @@
       overflow-x: auto;
       padding-bottom: 0;
     }
+
     .wa-tab-btn {
       padding: 9px 16px;
       font-size: 13px;
@@ -491,22 +694,26 @@
       position: relative;
       bottom: -2px;
     }
+
     .wa-tab-btn:hover {
       background: #f1f5f9;
       color: var(--ink);
     }
+
     .wa-tab-btn.active {
       background: #fff;
       color: #065f46;
       border-color: #cbd5e1;
       border-bottom: 2px solid #fff;
       font-weight: 700;
-      box-shadow: 0 -2px 6px rgba(0,0,0,0.03);
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03);
     }
+
     .wa-tab-pane {
       background: #fff;
       padding: 4px 0;
     }
+
     .wa-preview-box {
       white-space: pre-wrap;
       background: #ecfdf5;
@@ -516,8 +723,9 @@
       font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: #064e3b;
       min-height: 180px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
+
     .wa-tpl-textarea {
       width: 100%;
       font: 12.5px/1.45 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
@@ -532,19 +740,27 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Sidebar -->
   <aside>
-    <div class="brand" style="display:flex;align-items:center;justify-content:center;padding:12px 14px;border-bottom:1px solid #1a2a44">
-      <!-- Official ZKCommerce Banner Logo (Replaces plain text) -->
-      <a href="index.html" style="display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none" title="ZKCommerce — Smart Commerce. Limitless Growth.">
-        <img src="../../assets/zkcommerce-logo-banner.png" alt="ZKCommerce" style="max-height:50px;width:auto;max-width:100%;object-fit:contain;display:block" onerror="this.src='/assets/zkcommerce-logo-banner.png'">
+    <div class="brand"
+      style="display:flex;align-items:center;justify-content:center;padding:16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);background:transparent">
+      <!-- Official ZKCommerce Full Banner Logo (Transparent Background & Expanded Width) -->
+      <a href="index.html"
+        style="display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none"
+        title="ZKCommerce — Smart Commerce. Limitless Growth.">
+        <img src="../../assets/zkcommerce-logo-banner.png" alt="ZKCommerce"
+          style="width:100%;max-width:215px;height:auto;max-height:64px;object-fit:contain;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.35))"
+          onerror="this.src='/assets/zkcommerce-logo-banner.png'">
       </a>
     </div>
     <div class="nav-controls">
-      <span style="font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;letter-spacing:.08em">Navigation</span>
-      <button type="button" class="nav-toggle-all-btn" id="btnToggleAllNav" onclick="toggleAllNavGroups()" title="Expand or collapse all menu categories">⊞ Expand All</button>
+      <span
+        style="font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;letter-spacing:.08em">Navigation</span>
+      <button type="button" class="nav-toggle-all-btn" id="btnToggleAllNav" onclick="toggleAllNavGroups()"
+        title="Expand or collapse all menu categories">⊞ Expand All</button>
     </div>
 
     <nav class="nav" id="sidebarNav">
@@ -560,10 +776,16 @@
           <span class="nav-chevron">▶</span>
         </button>
         <div class="nav-submenu">
-          <button class="nav-item" data-view="products"><span class="nav-icon">📦</span><span>Products List</span></button>
-          <button class="nav-item" data-view="categories"><span class="nav-icon">🗂️</span><span>Categories</span></button>
-          <button class="nav-item" data-view="inventory"><span class="nav-icon">📊</span><span>Stock &amp; Inventory <span id="invLowBadge" class="badge badge-cancelled" style="display:none;margin-left:4px"></span></span></button>
-          <a class="nav-item store-builder-nav-btn" id="sidebarStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#FF6B00,#EA580C);color:#fff;font-weight:700;margin:4px 0 4px 0;border-radius:6px;box-shadow:0 2px 8px rgba(234,88,12,0.3);text-decoration:none;display:flex;align-items:center;gap:8px;padding:8px 10px">
+          <button class="nav-item" data-view="products"><span class="nav-icon">📦</span><span>Products
+              List</span></button>
+          <button class="nav-item" data-view="categories"><span
+              class="nav-icon">🗂️</span><span>Categories</span></button>
+          <button class="nav-item" data-view="inventory"><span class="nav-icon">📊</span><span>Stock &amp; Inventory
+              <span id="invLowBadge" class="badge badge-cancelled"
+                style="display:none;margin-left:4px"></span></span></button>
+          <a class="nav-item store-builder-nav-btn" id="sidebarStoreBuilderBtn" href="../store-builder/" target="_blank"
+            rel="noopener"
+            style="background:linear-gradient(135deg,#FF6B00,#EA580C);color:#fff;font-weight:700;margin:4px 0 4px 0;border-radius:6px;box-shadow:0 2px 8px rgba(234,88,12,0.3);text-decoration:none;display:flex;align-items:center;gap:8px;padding:8px 10px">
             <span class="nav-icon" style="font-size:14px">🎨</span>
             <span>Store Builder CMS ↗</span>
           </a>
@@ -577,10 +799,14 @@
           <span class="nav-chevron">▶</span>
         </button>
         <div class="nav-submenu">
-          <button class="nav-item" data-view="orders"><span class="nav-icon">📋</span><span>Orders &amp; Fulfillment</span></button>
-          <button class="nav-item" data-view="packaging"><span class="nav-icon">📮</span><span>Packaging &amp; Labels</span></button>
-          <button class="nav-item" data-view="shipments" id="navShipments" style="display:none"><span class="nav-icon">🚚</span><span>Ekart Courier &amp; Tracking</span></button>
-          <button class="nav-item" data-view="invoices"><span class="nav-icon">🧾</span><span>Invoices &amp; GST Tax Filing</span></button>
+          <button class="nav-item" data-view="orders"><span class="nav-icon">📋</span><span>Orders &amp;
+              Fulfillment</span></button>
+          <button class="nav-item" data-view="packaging"><span class="nav-icon">📮</span><span>Packaging &amp;
+              Labels</span></button>
+          <button class="nav-item" data-view="shipments" id="navShipments" style="display:none"><span
+              class="nav-icon">🚚</span><span>Ekart Courier &amp; Tracking</span></button>
+          <button class="nav-item" data-view="invoices"><span class="nav-icon">🧾</span><span>Invoices &amp; GST Tax
+              Filing</span></button>
         </div>
       </div>
 
@@ -592,9 +818,12 @@
         </button>
         <div class="nav-submenu">
           <button class="nav-item" data-view="customers"><span class="nav-icon">👤</span><span>Customers</span></button>
-          <button class="nav-item" data-view="coupons"><span class="nav-icon">🏷️</span><span>Coupons &amp; Offers</span></button>
-          <button class="nav-item" data-view="inbox"><span class="nav-icon">💬</span><span>Customer Inquiries (Inbox)</span></button>
-          <button class="nav-item" data-view="whatsapp"><span class="nav-icon">🟢</span><span>WhatsApp Notifications</span></button>
+          <button class="nav-item" data-view="coupons"><span class="nav-icon">🏷️</span><span>Coupons &amp;
+              Offers</span></button>
+          <button class="nav-item" data-view="inbox"><span class="nav-icon">💬</span><span>Customer Inquiries
+              (Inbox)</span></button>
+          <button class="nav-item" data-view="whatsapp"><span class="nav-icon">🟢</span><span>WhatsApp
+              Notifications</span></button>
         </div>
       </div>
 
@@ -605,19 +834,28 @@
           <span class="nav-chevron">▶</span>
         </button>
         <div class="nav-submenu">
-          <button class="nav-item" data-view="checkout"><span class="nav-icon">🛒</span><span>Checkout &amp; Razorpay</span></button>
-          <button class="nav-item" data-view="shipping"><span class="nav-icon">🚚</span><span>Shipping Rates &amp; Rules</span></button>
-          <button class="nav-item" data-view="ekart-settings"><span class="nav-icon">📦</span><span>Ekart Shipping</span></button>
-          <button class="nav-item" data-view="theme"><span class="nav-icon">🎨</span><span>Theme &amp; Store Design</span></button>
-          <button class="nav-item" data-view="display"><span class="nav-icon">👁️</span><span>Shop Display Settings</span></button>
-          <button class="nav-item" data-view="pages"><span class="nav-icon">📄</span><span>Content &amp; Policy Pages</span></button>
-          <button class="nav-item" data-view="deploy"><span class="nav-icon">🚀</span><span>Deploy &amp; Hosting</span></button>
-          <button class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span>General Settings &amp; Legal</span></button>
+          <button class="nav-item" data-view="checkout"><span class="nav-icon">🛒</span><span>Checkout &amp;
+              Razorpay</span></button>
+          <button class="nav-item" data-view="shipping"><span class="nav-icon">🚚</span><span>Shipping Rates &amp;
+              Rules</span></button>
+          <button class="nav-item" data-view="ekart-settings"><span class="nav-icon">📦</span><span>Ekart
+              Shipping</span></button>
+          <button class="nav-item" data-view="theme"><span class="nav-icon">🎨</span><span>Theme &amp; Store
+              Design</span></button>
+          <button class="nav-item" data-view="display"><span class="nav-icon">👁️</span><span>Shop Display
+              Settings</span></button>
+          <button class="nav-item" data-view="pages"><span class="nav-icon">📄</span><span>Content &amp; Policy
+              Pages</span></button>
+          <button class="nav-item" data-view="deploy"><span class="nav-icon">🚀</span><span>Deploy &amp;
+              Hosting</span></button>
+          <button class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span>General Settings &amp;
+              Legal</span></button>
         </div>
       </div>
     </nav>
     <div class="sidebar-footer">
-      <a id="footerStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener" style="color:#ff6b00;font-weight:700">🎨 Store Builder ↗</a>
+      <a id="footerStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener"
+        style="color:#ff6b00;font-weight:700">🎨 Store Builder ↗</a>
       <a href="javascript:logout()">Log out</a>
     </div>
   </aside>
@@ -627,23 +865,35 @@
     <header>
       <div class="header-left" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <!-- Prominent Store Brand Card with One-Click Edit Action -->
-        <div id="headerStoreLogoWrap" style="display:inline-flex;align-items:center;background:#ffffff;border:1.5px solid rgba(225,29,116,0.28);border-radius:10px;padding:4px 10px 4px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:8px">
-          <div onclick="openLogoUploadModal()" title="Click to Edit / Replace Store Logo" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px">
-            <img id="headerStoreLogo" src="../../assets/themes/smeram/smeram-banner-logo.jpg" alt="Store Logo" style="height:46px;max-width:240px;min-width:46px;object-fit:contain;display:block;border-radius:6px" onerror="this.src='/assets/themes/smeram/smeram-banner-logo.jpg'">
-            <button type="button" class="btn-outline btn-sm" onclick="event.stopPropagation();openLogoUploadModal()" title="Upload or change client store logo" style="font-size:11px;font-weight:700;color:#e11d74;background:#fff0f5;border:1px solid rgba(225,29,116,0.25);border-radius:6px;padding:4px 8px;cursor:pointer;display:inline-flex;align-items:center;gap:3px">✏️ Logo</button>
+        <div id="headerStoreLogoWrap"
+          style="display:inline-flex;align-items:center;background:#ffffff;border:1.5px solid rgba(225,29,116,0.28);border-radius:10px;padding:4px 10px 4px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:8px">
+          <div onclick="openLogoUploadModal()" title="Click to Edit / Replace Store Logo"
+            style="cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+            <img id="headerStoreLogo" src="../../assets/themes/smeram/smeram-banner-logo.jpg" alt="Store Logo"
+              style="height:46px;max-width:240px;min-width:46px;object-fit:contain;display:block;border-radius:6px"
+              onerror="this.src='/assets/themes/smeram/smeram-banner-logo.jpg'">
+            <button type="button" class="btn-outline btn-sm" onclick="event.stopPropagation();openLogoUploadModal()"
+              title="Upload or change client store logo"
+              style="font-size:11px;font-weight:700;color:#e11d74;background:#fff0f5;border:1px solid rgba(225,29,116,0.25);border-radius:6px;padding:4px 8px;cursor:pointer;display:inline-flex;align-items:center;gap:3px">✏️
+              Logo</button>
           </div>
         </div>
         <div style="display:inline-flex;align-items:center;gap:8px">
           <label style="font-size:13px;font-weight:600;color:var(--muted)">Store:</label>
-          <select id="storeSelect" style="min-width:190px;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid var(--border)"></select>
+          <select id="storeSelect"
+            style="min-width:190px;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid var(--border)"></select>
           <span class="store-badge" id="storeStatusBadge">Live</span>
         </div>
       </div>
       <div class="header-actions">
         <button class="btn-outline btn-sm" id="btnViewStore">👁️ View Storefront</button>
-        <a class="btn-primary btn-sm" id="headerStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener" style="background:#ea580c;border-color:#ea580c;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700;box-shadow:0 2px 8px rgba(234,88,12,0.3)">🎨 Store Builder CMS ↗</a>
+        <a class="btn-primary btn-sm" id="headerStoreBuilderBtn" href="../store-builder/" target="_blank" rel="noopener"
+          style="background:#ea580c;border-color:#ea580c;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700;box-shadow:0 2px 8px rgba(234,88,12,0.3)">🎨
+          Store Builder CMS ↗</a>
         <button class="btn-outline btn-sm" id="btnRefresh">🔄 Refresh</button>
-        <button class="btn-outline btn-sm" id="btnLogoff" onclick="logout()" style="color:#e11d48;border-color:#fecdd3;background:#fff1f2;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer">🚪 Log off</button>
+        <button class="btn-outline btn-sm" id="btnLogoff" onclick="logout()"
+          style="color:#e11d48;border-color:#fecdd3;background:#fff1f2;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer">🚪
+          Log off</button>
       </div>
     </header>
 
@@ -652,7 +902,8 @@
 
       <!-- VIEW: OVERVIEW -->
       <section id="view-overview" class="view-panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div>
             <h1 class="page-title" id="overviewStoreName">Store Dashboard</h1>
             <p class="page-sub">Real-time orders, revenue, customer inquiries, and fulfillment operations.</p>
@@ -700,7 +951,11 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted)">Loading recent orders…</td></tr></tbody>
+              <tbody>
+                <tr>
+                  <td colspan="7" style="text-align:center;color:var(--muted)">Loading recent orders…</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -723,9 +978,11 @@
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <input type="text" id="orderSearchInput" placeholder="Search order #, customer, phone…" style="min-width:250px">
+            <input type="text" id="orderSearchInput" placeholder="Search order #, customer, phone…"
+              style="min-width:250px">
             <button class="btn-outline" id="btnSearchOrders">Search</button>
-            <button class="btn-primary" id="btnOrdersToPackaging" style="margin-left:auto">📮 Print packaging labels</button>
+            <button class="btn-primary" id="btnOrdersToPackaging" style="margin-left:auto">📮 Print packaging
+              labels</button>
           </div>
 
           <div class="table-wrap">
@@ -742,7 +999,11 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody><tr><td colspan="8" style="text-align:center;color:var(--muted)">Loading orders…</td></tr></tbody>
+              <tbody>
+                <tr>
+                  <td colspan="8" style="text-align:center;color:var(--muted)">Loading orders…</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -771,7 +1032,11 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted)">Loading invoices…</td></tr></tbody>
+              <tbody>
+                <tr>
+                  <td colspan="7" style="text-align:center;color:var(--muted)">Loading invoices…</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -779,7 +1044,8 @@
 
       <!-- VIEW: CUSTOMERS -->
       <section id="view-customers" class="view-panel" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div>
             <h1 class="page-title">Customers CRM</h1>
             <p class="page-sub">Customer purchase history and order analytics aggregated from store orders.</p>
@@ -799,7 +1065,11 @@
                   <th>Last Order</th>
                 </tr>
               </thead>
-              <tbody><tr><td colspan="5" style="text-align:center;color:var(--muted)">Loading customer database…</td></tr></tbody>
+              <tbody>
+                <tr>
+                  <td colspan="5" style="text-align:center;color:var(--muted)">Loading customer database…</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -811,26 +1081,37 @@
         <p class="page-sub">Create promo codes, percentage/fixed discounts, and minimum order rules.</p>
 
         <!-- View Cart Promo Code Status Banner -->
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div
+          style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
           <div>
             <div style="display:flex;align-items:center;gap:8px">
               <strong style="font-size:14px;color:var(--dark)">Cart Promo Code Input:</strong>
-              <span id="cartPromoBadge" class="badge badge-cancelled" style="font-size:12px;padding:3px 8px">Disabled (Default)</span>
+              <span id="cartPromoBadge" class="badge badge-cancelled" style="font-size:12px;padding:3px 8px">Disabled
+                (Default)</span>
             </div>
-            <p style="margin:4px 0 0;font-size:12.5px;color:var(--muted)">Controls whether promo code box is visible in View Cart / Checkout. Disabled by default; enable after adding coupons.</p>
+            <p style="margin:4px 0 0;font-size:12.5px;color:var(--muted)">Controls whether promo code box is visible in
+              View Cart / Checkout. Disabled by default; enable after adding coupons.</p>
           </div>
-          <button type="button" id="btnToggleCartPromo" class="btn-primary btn-sm" onclick="toggleCartPromoBox()">Enable in View Cart</button>
+          <button type="button" id="btnToggleCartPromo" class="btn-primary btn-sm" onclick="toggleCartPromoBox()">Enable
+            in View Cart</button>
         </div>
 
         <div class="card">
           <h2 style="font-size:16px;margin:0 0 16px">Create New Coupon</h2>
           <form id="couponForm">
             <div class="form-grid">
-              <div class="form-group"><label>Coupon Code</label><input name="code" required placeholder="FESTIVE20" style="text-transform:uppercase"></div>
-              <div class="form-group"><label>Discount Type</label><select name="discount_type"><option value="percent">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
-              <div class="form-group"><label>Discount Value</label><input name="discount_value" type="number" min="1" step="0.5" required placeholder="20"></div>
-              <div class="form-group"><label>Min. Order (₹)</label><input name="minimum_order" type="number" min="0" value="0"></div>
-              <div class="form-group"><label>Usage Limit</label><input name="usage_limit" type="number" min="1" placeholder="Unlimited"></div>
+              <div class="form-group"><label>Coupon Code</label><input name="code" required placeholder="FESTIVE20"
+                  style="text-transform:uppercase"></div>
+              <div class="form-group"><label>Discount Type</label><select name="discount_type">
+                  <option value="percent">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₹)</option>
+                </select></div>
+              <div class="form-group"><label>Discount Value</label><input name="discount_value" type="number" min="1"
+                  step="0.5" required placeholder="20"></div>
+              <div class="form-group"><label>Min. Order (₹)</label><input name="minimum_order" type="number" min="0"
+                  value="0"></div>
+              <div class="form-group"><label>Usage Limit</label><input name="usage_limit" type="number" min="1"
+                  placeholder="Unlimited"></div>
             </div>
             <div style="margin:12px 0 16px">
               <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer">
@@ -843,11 +1124,26 @@
         </div>
 
         <div class="card">
-          <div class="card-head"><h2>Active Coupons</h2></div>
+          <div class="card-head">
+            <h2>Active Coupons</h2>
+          </div>
           <div class="table-wrap">
             <table id="couponsTable">
-              <thead><tr><th>Code</th><th>Offer</th><th>Min Order</th><th>Usage</th><th>Status</th><th>Action</th></tr></thead>
-              <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading coupons…</td></tr></tbody>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Offer</th>
+                  <th>Min Order</th>
+                  <th>Usage</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" style="text-align:center;color:var(--muted)">Loading coupons…</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -858,33 +1154,52 @@
         <h1 class="page-title">Shipping &amp; Delivery Rates</h1>
         <p class="page-sub">Configure flat rates, free shipping thresholds, and pincode prefix rules.</p>
 
-        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div
+          style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
             <b style="color:#1e40af;font-size:14px">📦 Looking for Ekart Logistics API &amp; Webhooks?</b>
-            <p style="margin:3px 0 0;font-size:13px;color:#2563eb">Ekart credentials, portal URLs, automated AWB generation, and webhook tracking have moved to their own dedicated page.</p>
+            <p style="margin:3px 0 0;font-size:13px;color:#2563eb">Ekart credentials, portal URLs, automated AWB
+              generation, and webhook tracking have moved to their own dedicated page.</p>
           </div>
-          <button type="button" class="btn-primary btn-sm" onclick="switchView('ekart-settings')" style="padding:7px 14px;font-size:13px;font-weight:700">Open Ekart Shipping Settings →</button>
+          <button type="button" class="btn-primary btn-sm" onclick="switchView('ekart-settings')"
+            style="padding:7px 14px;font-size:13px;font-weight:700">Open Ekart Shipping Settings →</button>
         </div>
 
         <div class="card">
           <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
           <form id="shippingRateForm">
             <div class="form-grid">
-              <div class="form-group"><label>Rate Name</label><input name="name" required placeholder="Standard Delivery"></div>
-              <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0" required></div>
-              <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0" placeholder="Optional (e.g. 499)"></div>
-              <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix" placeholder="All (or e.g. 600 for Chennai)"></div>
-              <div class="form-group"><label>Estimated Days</label><input name="estimated_days" placeholder="2–4 business days"></div>
+              <div class="form-group"><label>Rate Name</label><input name="name" required
+                  placeholder="Standard Delivery"></div>
+              <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0"
+                  required></div>
+              <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0"
+                  placeholder="Optional (e.g. 499)"></div>
+              <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix"
+                  placeholder="All (or e.g. 600 for Chennai)"></div>
+              <div class="form-group"><label>Estimated Days</label><input name="estimated_days"
+                  placeholder="2–4 business days"></div>
             </div>
             <button class="btn-primary" type="submit">Save Shipping Rate</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="card-head"><h2>Configured Shipping Rates</h2></div>
+          <div class="card-head">
+            <h2>Configured Shipping Rates</h2>
+          </div>
           <div class="table-wrap">
             <table id="shippingRatesTable">
-              <thead><tr><th>Rate Name</th><th>Fee</th><th>Free Above</th><th>Pincode Prefix</th><th>Est. Days</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Rate Name</th>
+                  <th>Fee</th>
+                  <th>Free Above</th>
+                  <th>Pincode Prefix</th>
+                  <th>Est. Days</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody></tbody>
             </table>
           </div>
@@ -893,39 +1208,54 @@
 
       <!-- VIEW: EKART SHIPPING SETTINGS -->
       <section id="view-ekart-settings" class="view-panel" style="display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+        <div
+          style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
           <div>
             <h1 class="page-title" style="margin:0 0 4px">📦 Ekart Shipping Settings</h1>
-            <p class="page-sub" style="margin:0">Direct Ekart Elite API booking, automated AWB generation, real-time tracking &amp; webhook status sync.</p>
+            <p class="page-sub" style="margin:0">Direct Ekart Elite API booking, automated AWB generation, real-time
+              tracking &amp; webhook status sync.</p>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <a id="btnEkartPortalLink" class="btn-primary" href="https://app.elite.ekartlogistics.in/" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
+            <a id="btnEkartPortalLink" class="btn-primary" href="https://app.elite.ekartlogistics.in/" target="_blank"
+              rel="noopener"
+              style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
               🌐 EKart Portal ↗
             </a>
-            <a id="btnEkartTrackLink" class="btn-outline" href="https://ekartlogistics.com/ekartlogistics-web/" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
+            <a id="btnEkartTrackLink" class="btn-outline" href="https://ekartlogistics.com/ekartlogistics-web/"
+              target="_blank" rel="noopener"
+              style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
               🔍 EKart Track Order ↗
             </a>
-            <button type="button" class="btn-outline" onclick="switchView('shipments')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
+            <button type="button" class="btn-outline" onclick="switchView('shipments')"
+              style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px">
               🚚 Shipments &amp; AWBs ↗
             </button>
           </div>
         </div>
 
         <div class="card" id="ekartCard">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <div
+            style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
             <div>
               <h2 style="font-size:16px;margin:0 0 4px">Ekart Elite Integration &amp; Configuration</h2>
-              <p style="font-size:13px;color:var(--muted);margin:0">Automated parcel booking with Ekart Elite and live customer tracking.</p>
+              <p style="font-size:13px;color:var(--muted);margin:0">Automated parcel booking with Ekart Elite and live
+                customer tracking.</p>
             </div>
-            <span class="badge" style="background:#e0f2fe;color:#0369a1;font-weight:700;padding:4px 10px;border-radius:12px;font-size:12px;border:1px solid #bae6fd">Client ID: EKART_6ad49aef2206ede3ee46d222</span>
+            <span class="badge"
+              style="background:#e0f2fe;color:#0369a1;font-weight:700;padding:4px 10px;border-radius:12px;font-size:12px;border:1px solid #bae6fd">Client
+              ID: EKART_6ad49aef2206ede3ee46d222</span>
           </div>
 
-          <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer;max-width:680px"><input type="checkbox" id="ekEnabled"><span><b>Enable Ekart shipping</b><br><small style="color:var(--muted)">When active, you can book orders directly with Ekart Elite, generate AWBs and print shipping labels.</small></span></label>
+          <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer;max-width:680px"><input
+              type="checkbox" id="ekEnabled"><span><b>Enable Ekart shipping</b><br><small
+                style="color:var(--muted)">When active, you can book orders directly with Ekart Elite, generate AWBs and
+                print shipping labels.</small></span></label>
 
           <div id="ekFields" style="margin-top:14px">
             <!-- Portal & Tracking URL Settings -->
             <div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:14px;margin-bottom:16px">
-              <h3 style="font-size:13px;font-weight:700;margin:0 0 8px;color:#0f172a">🔗 Ekart Portal &amp; Tracking URL Settings</h3>
+              <h3 style="font-size:13px;font-weight:700;margin:0 0 8px;color:#0f172a">🔗 Ekart Portal &amp; Tracking URL
+                Settings</h3>
               <div class="form-grid">
                 <div class="form-group">
                   <label>EKart Portal URL</label>
@@ -941,81 +1271,132 @@
             <!-- General Shipping Preferences -->
             <div class="form-grid">
               <div class="form-group"><label>How AWBs are created</label>
-                <select id="ekMode"><option value="api">Ekart API &amp; Webhooks — automated tracking &amp; status sync</option><option value="manual">Manual — book on Ekart portal, enter / scan AWB</option></select></div>
-              <div class="form-group"><label>Courier name on labels</label><input id="ekCourier" placeholder="Ekart Logistics"></div>
-              <div class="form-group" style="grid-column:1/-1"><label>Tracking link template ({awb} is replaced)</label><input id="ekTrack" placeholder="https://app.elite.ekartlogistics.in/track/{awb}"></div>
+                <select id="ekMode">
+                  <option value="api">Ekart API &amp; Webhooks — automated tracking &amp; status sync</option>
+                  <option value="manual">Manual — book on Ekart portal, enter / scan AWB</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Courier name on labels</label><input id="ekCourier"
+                  placeholder="Ekart Logistics"></div>
+              <div class="form-group" style="grid-column:1/-1"><label>Tracking link template ({awb} is
+                  replaced)</label><input id="ekTrack" placeholder="https://app.elite.ekartlogistics.in/track/{awb}">
+              </div>
             </div>
 
             <!-- API Credentials Card -->
             <div style="background:#fff;border:1.5px solid #93c5fd;border-radius:10px;padding:16px;margin:16px 0">
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
                 <h3 style="font-size:14px;font-weight:700;margin:0;color:#1e40af">🔑 Ekart API Credentials</h3>
-                <span style="font-size:11px;font-weight:700;background:#dbeafe;color:#1e40af;padding:3px 8px;border-radius:6px">Required for Auto-book</span>
+                <span
+                  style="font-size:11px;font-weight:700;background:#dbeafe;color:#1e40af;padding:3px 8px;border-radius:6px">Required
+                  for Auto-book</span>
               </div>
               <div class="form-grid">
-                <div class="form-group"><label>API base URL</label><input id="ekApiBase" placeholder="https://app.elite.ekartlogistics.in"></div>
-                <div class="form-group"><label>Client ID</label><input id="ekApiClient" value="EKART_6ad49aef2206ede3ee46d222"></div>
-                <div class="form-group"><label>Merchant code / Name</label><input id="ekApiMerchant" value="SMERAMx"></div>
-                <div class="form-group"><label>Ekart Login Email / Username</label><input id="ekApiUser" placeholder="smeramindustries@gmail.com"></div>
+                <div class="form-group"><label>API base URL</label><input id="ekApiBase"
+                    placeholder="https://app.elite.ekartlogistics.in"></div>
+                <div class="form-group"><label>Client ID</label><input id="ekApiClient"
+                    value="EKART_6ad49aef2206ede3ee46d222"></div>
+                <div class="form-group"><label>Merchant code / Name</label><input id="ekApiMerchant" value="SMERAMx">
+                </div>
+                <div class="form-group"><label>Ekart Login Email / Username</label><input id="ekApiUser"
+                    placeholder="smeramindustries@gmail.com"></div>
                 <div class="form-group" style="grid-column:1/-1">
                   <div style="display:flex;justify-content:space-between;align-items:center">
                     <label>Ekart Account Password / API Token</label>
-                    <a href="javascript:void(0)" onclick="toggleEkartPasswordVisibility()" style="font-size:12px;color:#2563eb;text-decoration:none" id="toggleEkartPwdBtn">👁️ Show Password</a>
+                    <a href="javascript:void(0)" onclick="toggleEkartPasswordVisibility()"
+                      style="font-size:12px;color:#2563eb;text-decoration:none" id="toggleEkartPwdBtn">👁️ Show
+                      Password</a>
                   </div>
-                  <input id="ekApiKey" type="password" placeholder="Password used to log in at app.elite.ekartlogistics.in">
+                  <input id="ekApiKey" type="password"
+                    placeholder="Password used to log in at app.elite.ekartlogistics.in">
                 </div>
               </div>
-              <div style="font-size:12px;color:var(--text-muted,#64748b);margin-top:10px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0">
+              <div
+                style="font-size:12px;color:var(--text-muted,#64748b);margin-top:10px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0">
                 <span style="font-weight:600;color:#0f172a">💡 How to authenticate:</span><br>
-                • <b>Login Email:</b> <code>smeramindustries@gmail.com</code> (your login email for <a href="https://app.elite.ekartlogistics.in" target="_blank" rel="noopener" style="color:#2563eb">app.elite.ekartlogistics.in</a>).<br>
-                • <b>Password:</b> The password you use to sign in to your Ekart Elite account. Ekart validates this with your Client ID to grant access tokens for booking.
+                • <b>Login Email:</b> <code>smeramindustries@gmail.com</code> (your login email for <a
+                  href="https://app.elite.ekartlogistics.in" target="_blank" rel="noopener"
+                  style="color:#2563eb">app.elite.ekartlogistics.in</a>).<br>
+                • <b>Password:</b> The password you use to sign in to your Ekart Elite account. Ekart validates this
+                with your Client ID to grant access tokens for booking.
               </div>
               <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                <button type="button" class="btn-outline" id="btnTestEkart" onclick="testEkartConnection()" style="border-color:#3b82f6;color:#1d4ed8;font-weight:700">🔌 Test Ekart Connection</button>
+                <button type="button" class="btn-outline" id="btnTestEkart" onclick="testEkartConnection()"
+                  style="border-color:#3b82f6;color:#1d4ed8;font-weight:700">🔌 Test Ekart Connection</button>
                 <span id="ekTestStatus" style="font-size:13px;font-weight:600"></span>
               </div>
             </div>
 
             <!-- Ekart Webhook Integration Details Box -->
-            <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:16px;margin-bottom:18px">
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <div
+              style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:16px;margin-bottom:18px">
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
                 <div style="display:flex;align-items:center;gap:8px">
                   <span style="font-size:18px">⚡</span>
                   <div>
-                    <h3 style="font-size:14px;font-weight:700;margin:0;color:#0f172a">Ekart Webhook Integration Details</h3>
-                    <p style="font-size:12px;color:#64748b;margin:2px 0 0">Verified webhook configuration for real-time tracking updates:</p>
+                    <h3 style="font-size:14px;font-weight:700;margin:0;color:#0f172a">Ekart Webhook Integration Details
+                    </h3>
+                    <p style="font-size:12px;color:#64748b;margin:2px 0 0">Verified webhook configuration for real-time
+                      tracking updates:</p>
                   </div>
                 </div>
-                <span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">Active &amp; Verified</span>
+                <span
+                  style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">Active
+                  &amp; Verified</span>
               </div>
 
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
                 <div style="grid-column:1/-1">
-                  <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">1. Webhook URL (Enter URL)</label>
+                  <label
+                    style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">1.
+                    Webhook URL (Enter URL)</label>
                   <div style="display:flex;gap:6px">
-                    <input id="ekWebhookUrlDisplay" readonly value="https://smeram-naturals.in/api.php?route=webhooks/ekart" style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1;font-weight:600" />
-                    <button type="button" class="btn-subtle" onclick="navigator.clipboard.writeText('https://smeram-naturals.in/api.php?route=webhooks/ekart');alert('Webhook URL copied!');" style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋 Copy URL</button>
+                    <input id="ekWebhookUrlDisplay" readonly
+                      value="https://smeram-naturals.in/api.php?route=webhooks/ekart"
+                      style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1;font-weight:600" />
+                    <button type="button" class="btn-subtle"
+                      onclick="navigator.clipboard.writeText('https://smeram-naturals.in/api.php?route=webhooks/ekart');alert('Webhook URL copied!');"
+                      style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋
+                      Copy URL</button>
                   </div>
                 </div>
 
                 <div>
-                  <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">2. Secret (Enter Secret)</label>
+                  <label
+                    style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">2.
+                    Secret (Enter Secret)</label>
                   <div style="display:flex;gap:6px">
-                    <input id="ekWebhookSecretDisplay" readonly value="ek_sec_984f1801m1z6_smeram" style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1;font-weight:600" />
-                    <button type="button" class="btn-subtle" onclick="navigator.clipboard.writeText('ek_sec_984f1801m1z6_smeram');alert('Webhook Secret copied!');" style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋 Copy Secret</button>
+                    <input id="ekWebhookSecretDisplay" readonly value="ek_sec_984f1801m1z6_smeram"
+                      style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1;font-weight:600" />
+                    <button type="button" class="btn-subtle"
+                      onclick="navigator.clipboard.writeText('ek_sec_984f1801m1z6_smeram');alert('Webhook Secret copied!');"
+                      style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋
+                      Copy Secret</button>
                   </div>
                 </div>
 
                 <div>
-                  <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">3. Webhook ID / Alert Email</label>
-                  <input readonly value="ID: mw3dn1mn · smeramindustries@gmail.com" style="width:100%;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;font-weight:600" />
+                  <label
+                    style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">3.
+                    Webhook ID / Alert Email</label>
+                  <input readonly value="ID: mw3dn1mn · smeramindustries@gmail.com"
+                    style="width:100%;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;font-weight:600" />
                 </div>
 
                 <div style="grid-column:1/-1">
-                  <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">4. Topics (Select Topics)</label>
+                  <label
+                    style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px">4.
+                    Topics (Select Topics)</label>
                   <div style="display:flex;gap:6px">
-                    <input id="ekWebhookTopicsDisplay" readonly value="shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto" style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1" />
-                    <button type="button" class="btn-subtle" onclick="navigator.clipboard.writeText('shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto');alert('Topics copied!');" style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋 Copy Topics</button>
+                    <input id="ekWebhookTopicsDisplay" readonly
+                      value="shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto"
+                      style="font-family:monospace;font-size:12px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;flex:1" />
+                    <button type="button" class="btn-subtle"
+                      onclick="navigator.clipboard.writeText('shipment.created, shipment.pickup_completed, shipment.in_transit, shipment.out_for_delivery, shipment.delivered, shipment.rto');alert('Topics copied!');"
+                      style="padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;background:#fff;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer">📋
+                      Copy Topics</button>
                   </div>
                 </div>
               </div>
@@ -1023,33 +1404,54 @@
 
           </div>
           <div id="ekStatus" style="font-size:13px;font-weight:600;margin:8px 0;min-height:18px"></div>
-          <button class="btn-primary" id="btnSaveEkart" style="padding:10px 20px;font-size:14px">Save Ekart settings</button>
+          <button class="btn-primary" id="btnSaveEkart" style="padding:10px 20px;font-size:14px">Save Ekart
+            settings</button>
         </div>
       </section>
 
-        <div class="card">
-          <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
-          <form id="shippingRateForm">
-            <div class="form-grid">
-              <div class="form-group"><label>Rate Name</label><input name="name" required placeholder="Standard Delivery"></div>
-              <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0" required></div>
-              <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0" placeholder="Optional (e.g. 499)"></div>
-              <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix" placeholder="All (or e.g. 600 for Chennai)"></div>
-              <div class="form-group"><label>Estimated Days</label><input name="estimated_days" placeholder="2–4 business days"></div>
+      <div class="card">
+        <h2 style="font-size:16px;margin:0 0 16px">Add Shipping Rate Rule</h2>
+        <form id="shippingRateForm">
+          <div class="form-grid">
+            <div class="form-group"><label>Rate Name</label><input name="name" required placeholder="Standard Delivery">
             </div>
-            <button class="btn-primary" type="submit">Save Shipping Rate</button>
-          </form>
-        </div>
-
-        <div class="card">
-          <div class="card-head"><h2>Configured Shipping Rates</h2></div>
-          <div class="table-wrap">
-            <table id="shippingRatesTable">
-              <thead><tr><th>Rate Name</th><th>Fee</th><th>Free Threshold</th><th>Pincode Prefix</th><th>Est. Delivery</th><th>Action</th></tr></thead>
-              <tbody><tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading shipping rates…</td></tr></tbody>
-            </table>
+            <div class="form-group"><label>Shipping Fee (₹)</label><input name="rate" type="number" min="0" value="0"
+                required></div>
+            <div class="form-group"><label>Free Above (₹)</label><input name="free_above" type="number" min="0"
+                placeholder="Optional (e.g. 499)"></div>
+            <div class="form-group"><label>Pincode Prefix</label><input name="postal_prefix"
+                placeholder="All (or e.g. 600 for Chennai)"></div>
+            <div class="form-group"><label>Estimated Days</label><input name="estimated_days"
+                placeholder="2–4 business days"></div>
           </div>
+          <button class="btn-primary" type="submit">Save Shipping Rate</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Configured Shipping Rates</h2>
         </div>
+        <div class="table-wrap">
+          <table id="shippingRatesTable">
+            <thead>
+              <tr>
+                <th>Rate Name</th>
+                <th>Fee</th>
+                <th>Free Threshold</th>
+                <th>Pincode Prefix</th>
+                <th>Est. Delivery</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="6" style="text-align:center;color:var(--muted)">Loading shipping rates…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       </section>
 
       <!-- VIEW: INBOX -->
@@ -1066,76 +1468,127 @@
         <div class="card-head" style="margin-bottom:12px">
           <div>
             <h1 class="page-title">Packaging & Delivery Labels</h1>
-            <p class="page-sub" style="margin:0">Pick a date range, tick the addresses to print, then print labels (A4 or 4×6 thermal), download the Ekart CSV, or mark orders as packed.</p>
+            <p class="page-sub" style="margin:0">Pick a date range, tick the addresses to print, then print labels (A4
+              or 4×6 thermal), download the Ekart CSV, or mark orders as packed.</p>
           </div>
-          <a class="btn-outline btn-sm" id="packagingNewTab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a>
+          <a class="btn-outline btn-sm" id="packagingNewTab" target="_blank" rel="noopener"
+            style="text-decoration:none">Open in new tab ↗</a>
         </div>
-        <iframe id="packagingFrame" title="Packaging and delivery labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+        <iframe id="packagingFrame" title="Packaging and delivery labels"
+          style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
 
       <section id="view-shipments" class="view-panel" style="display:none">
         <div class="card-head" style="margin-bottom:12px">
           <div>
             <h1 class="page-title">Shipments & Ekart Labels</h1>
-            <p class="page-sub" style="margin:0">Enter or scan the AWB from the Ekart portal, print barcode labels, then mark orders shipped / delivered — the customer gets the tracking link on WhatsApp.</p>
+            <p class="page-sub" style="margin:0">Enter or scan the AWB from the Ekart portal, print barcode labels, then
+              mark orders shipped / delivered — the customer gets the tracking link on WhatsApp.</p>
           </div>
-          <a class="btn-outline btn-sm" id="shipmentsNewTab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a>
+          <a class="btn-outline btn-sm" id="shipmentsNewTab" target="_blank" rel="noopener"
+            style="text-decoration:none">Open in new tab ↗</a>
         </div>
-        <iframe id="shipmentsFrame" title="Shipments and Ekart labels" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+        <iframe id="shipmentsFrame" title="Shipments and Ekart labels"
+          style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
 
       <!-- VIEWS: CATALOGUE & CONTENT (Store Builder editors, embedded; saved changes go live at once) -->
       <section id="view-products" class="view-panel cms-view" data-workspace="products" style="display:none">
-        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Products</h1><p class="page-sub" style="margin:0">Add and edit products, sizes, prices, stock and photos. Saved changes appear in the live shop straight away.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
-        <iframe class="cms-frame" title="Products" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Products</h1>
+            <p class="page-sub" style="margin:0">Add and edit products, sizes, prices, stock and photos. Saved changes
+              appear in the live shop straight away.</p>
+          </div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener"
+            style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe class="cms-frame" title="Products"
+          style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
       <section id="view-categories" class="view-panel cms-view" data-workspace="categories" style="display:none">
-        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Categories</h1><p class="page-sub" style="margin:0">Create, rename, re-image or remove categories. They show in the Shop menu and on category pages at once.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
-        <iframe class="cms-frame" title="Categories" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Categories</h1>
+            <p class="page-sub" style="margin:0">Create, rename, re-image or remove categories. They show in the Shop
+              menu and on category pages at once.</p>
+          </div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener"
+            style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe class="cms-frame" title="Categories"
+          style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
       <section id="view-pages" class="view-panel cms-view" data-workspace="pages" style="display:none">
-        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Pages</h1><p class="page-sub" style="margin:0">About, Contact, policies and any other page. Saved pages go live at once.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
-        <iframe class="cms-frame" title="Pages" style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Pages</h1>
+            <p class="page-sub" style="margin:0">About, Contact, policies and any other page. Saved pages go live at
+              once.</p>
+          </div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener"
+            style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe class="cms-frame" title="Pages"
+          style="width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
       <section id="view-theme" class="view-panel cms-view" data-workspace="theme" style="display:none">
-        <div style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fdba74;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div
+          style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fdba74;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <div>
             <div style="font-size:15px;font-weight:800;color:#9a3412;display:flex;align-items:center;gap:8px">
               <span>🎨</span> Full Store Builder &amp; Visual Customizer
             </div>
             <p style="margin:4px 0 0;font-size:12.5px;color:#c2410c">
-              Open the full Store Builder CMS to customize Header, Announcement Bar, Hero Banner, Category Cards, Offer Sections, Colors, Typography and Live Preview.
+              Open the full Store Builder CMS to customize Header, Announcement Bar, Hero Banner, Category Cards, Offer
+              Sections, Colors, Typography and Live Preview.
             </p>
           </div>
-          <a class="btn-primary" id="btnOpenThemeBuilder" href="../store-builder/" target="_blank" rel="noopener" style="background:#ea580c;border-color:#ea580c;color:#fff;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;box-shadow:0 3px 10px rgba(234,88,12,0.3)">
+          <a class="btn-primary" id="btnOpenThemeBuilder" href="../store-builder/" target="_blank" rel="noopener"
+            style="background:#ea580c;border-color:#ea580c;color:#fff;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;box-shadow:0 3px 10px rgba(234,88,12,0.3)">
             🎨 Open Store Builder CMS ↗
           </a>
         </div>
-        <div class="card-head" style="margin-bottom:12px"><div><h1 class="page-title">Theme &amp; design</h1><p class="page-sub" style="margin:0">Change the theme, colours, header menu and sections. Design changes are a draft until you click <b>Publish</b>, so shoppers never see half-finished work.</p></div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener" style="text-decoration:none">Open in new tab ↗</a></div>
-        <iframe class="cms-frame" title="Theme and design" style="width:100%;height:calc(100vh - 190px);min-height:680px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
+        <div class="card-head" style="margin-bottom:12px">
+          <div>
+            <h1 class="page-title">Theme &amp; design</h1>
+            <p class="page-sub" style="margin:0">Change the theme, colours, header menu and sections. Design changes are
+              a draft until you click <b>Publish</b>, so shoppers never see half-finished work.</p>
+          </div><a class="btn-outline btn-sm cms-newtab" target="_blank" rel="noopener"
+            style="text-decoration:none">Open in new tab ↗</a>
+        </div>
+        <iframe class="cms-frame" title="Theme and design"
+          style="width:100%;height:calc(100vh - 190px);min-height:680px;border:1px solid var(--border,#e2e8f0);border-radius:12px;background:#fff"></iframe>
       </section>
 
       <!-- VIEW: WHATSAPP ORDER MESSAGES -->
       <section id="view-whatsapp" class="view-panel" style="display:none">
         <h1 class="page-title">WhatsApp Order Messages</h1>
-        <p class="page-sub">No WhatsApp Business API needed: after checkout the shopper's WhatsApp opens with the order typed out to your customer-care number, and the Orders / Packaging pages have one-click buttons to message customers. With an official provider (Gupshup, Meta Cloud API, ZKWAConnect) the same messages are sent automatically.</p>
+        <p class="page-sub">No WhatsApp Business API needed: after checkout the shopper's WhatsApp opens with the order
+          typed out to your customer-care number, and the Orders / Packaging pages have one-click buttons to message
+          customers. With an official provider (Gupshup, Meta Cloud API, ZKWAConnect) the same messages are sent
+          automatically.</p>
         <div class="card">
           <div class="form-grid">
-            <div class="form-group"><label>Customer-care WhatsApp number</label><input id="waCareNumber" placeholder="+91 75399 72026"></div>
-            <div class="form-group"><label>Shown as</label><input id="waCareLabel" placeholder="Smeram Customer Care"></div>
+            <div class="form-group"><label>Customer-care WhatsApp number</label><input id="waCareNumber"
+                placeholder="+91 75399 72026"></div>
+            <div class="form-group"><label>Shown as</label><input id="waCareLabel" placeholder="Smeram Customer Care">
+            </div>
           </div>
-          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0"><input type="checkbox" id="waEnabled"> <b>Use WhatsApp order messages</b></label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0 12px"><input type="checkbox" id="waHandoff"> After an order is placed / paid, open the shopper's WhatsApp to send the order to customer care</label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0"><input type="checkbox"
+              id="waEnabled"> <b>Use WhatsApp order messages</b></label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0 12px"><input type="checkbox"
+              id="waHandoff"> After an order is placed / paid, open the shopper's WhatsApp to send the order to customer
+            care</label>
           <!-- Available Variables Badges -->
           <div style="margin: 14px 0 6px; display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Available Template Variables:</div>
-            <span class="badge" style="background:#f1f5f9;color:var(--muted);font-weight:600">Templates are standard verified &amp; non-editable</span>
+            <span class="badge" style="background:#f1f5f9;color:var(--muted);font-weight:600">Templates are standard
+              verified &amp; non-editable</span>
           </div>
           <div id="waChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px"></div>
 
           <!-- WhatsApp Order Messages Tab Navigation -->
           <div class="wa-tabs-bar" id="waTemplateTabs">
-            <button type="button" class="wa-tab-btn active" data-tab="tab-wa-customer" onclick="setWaTab('tab-wa-customer')">
+            <button type="button" class="wa-tab-btn active" data-tab="tab-wa-customer"
+              onclick="setWaTab('tab-wa-customer')">
               ✉️ Message to the customer (order confirmation)
             </button>
             <button type="button" class="wa-tab-btn" data-tab="tab-wa-shipped" onclick="setWaTab('tab-wa-shipped')">
@@ -1158,20 +1611,25 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
                 <strong style="font-size:14px;color:var(--ink)">Message to the customer (order confirmation)</strong>
-                <div style="font-size:12px;color:var(--muted)">Sent automatically or via one-click WhatsApp to the customer once an order is placed or paid.</div>
+                <div style="font-size:12px;color:var(--muted)">Sent automatically or via one-click WhatsApp to the
+                  customer once an order is placed or paid.</div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
                 <span class="badge" style="background:#e2e8f0;color:#334155;font-weight:700">🔒 Non-Editable</span>
-                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waCustomerTpl', this)">📋 Copy Template</button>
+                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waCustomerTpl', this)">📋 Copy
+                  Template</button>
               </div>
             </div>
             <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 16px;">
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template Format</label>
+                <label
+                  style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template
+                  Format</label>
                 <textarea id="waCustomerTpl" readonly rows="8" class="wa-tpl-textarea"></textarea>
               </div>
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live WhatsApp Preview (Sample Order)</label>
+                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live
+                  WhatsApp Preview (Sample Order)</label>
                 <div id="waPreviewCustomer" class="wa-preview-box"></div>
               </div>
             </div>
@@ -1182,20 +1640,25 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
                 <strong style="font-size:14px;color:var(--ink)">Shipped update (to the customer)</strong>
-                <div style="font-size:12px;color:var(--muted)">Triggered when order status changes to "Shipped" or when dispatching via Ekart / Courier.</div>
+                <div style="font-size:12px;color:var(--muted)">Triggered when order status changes to "Shipped" or when
+                  dispatching via Ekart / Courier.</div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
                 <span class="badge" style="background:#e2e8f0;color:#334155;font-weight:700">🔒 Non-Editable</span>
-                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waShippedTpl', this)">📋 Copy Template</button>
+                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waShippedTpl', this)">📋 Copy
+                  Template</button>
               </div>
             </div>
             <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 16px;">
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template Format</label>
+                <label
+                  style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template
+                  Format</label>
                 <textarea id="waShippedTpl" readonly rows="7" class="wa-tpl-textarea"></textarea>
               </div>
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live WhatsApp Preview (Sample Shipment)</label>
+                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live
+                  WhatsApp Preview (Sample Shipment)</label>
                 <div id="waPreviewShipped" class="wa-preview-box"></div>
               </div>
             </div>
@@ -1206,20 +1669,25 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
                 <strong style="font-size:14px;color:var(--ink)">Delivered update (to the customer)</strong>
-                <div style="font-size:12px;color:var(--muted)">Sent automatically or via one-click when package delivery is confirmed.</div>
+                <div style="font-size:12px;color:var(--muted)">Sent automatically or via one-click when package delivery
+                  is confirmed.</div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
                 <span class="badge" style="background:#e2e8f0;color:#334155;font-weight:700">🔒 Non-Editable</span>
-                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waDeliveredTpl', this)">📋 Copy Template</button>
+                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waDeliveredTpl', this)">📋 Copy
+                  Template</button>
               </div>
             </div>
             <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 16px;">
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template Format</label>
+                <label
+                  style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template
+                  Format</label>
                 <textarea id="waDeliveredTpl" readonly rows="7" class="wa-tpl-textarea"></textarea>
               </div>
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live WhatsApp Preview (Sample Delivery)</label>
+                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live
+                  WhatsApp Preview (Sample Delivery)</label>
                 <div id="waPreviewDelivered" class="wa-preview-box"></div>
               </div>
             </div>
@@ -1230,20 +1698,26 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
                 <strong style="font-size:14px;color:var(--ink)">Preview (sample order) — customer care</strong>
-                <div style="font-size:12px;color:var(--muted)">Real preview of incoming order notification dispatched to customer care number (+91 75399 72026).</div>
+                <div style="font-size:12px;color:var(--muted)">Real preview of incoming order notification dispatched to
+                  customer care number (+91 75399 72026).</div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
-                <span class="badge" style="background:#dcfce7;color:#166534;font-weight:700">✓ Customer Care Preview</span>
-                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waPreviewCareLive', this)">📋 Copy Preview</button>
+                <span class="badge" style="background:#dcfce7;color:#166534;font-weight:700">✓ Customer Care
+                  Preview</span>
+                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waPreviewCareLive', this)">📋 Copy
+                  Preview</button>
               </div>
             </div>
             <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 16px;">
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Customer Care Order Template Format</label>
+                <label
+                  style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Customer
+                  Care Order Template Format</label>
                 <textarea id="waCareTpl" readonly rows="11" class="wa-tpl-textarea"></textarea>
               </div>
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live WhatsApp Preview (Customer Care Order Alert)</label>
+                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live
+                  WhatsApp Preview (Customer Care Order Alert)</label>
                 <div id="waPreviewCareLive" class="wa-preview-box"></div>
               </div>
             </div>
@@ -1254,20 +1728,25 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
                 <strong style="font-size:14px;color:var(--ink)">Low-stock alert (to customer care)</strong>
-                <div style="font-size:12px;color:var(--muted)">Dispatched to store manager / care WhatsApp when any product variant inventory falls below threshold.</div>
+                <div style="font-size:12px;color:var(--muted)">Dispatched to store manager / care WhatsApp when any
+                  product variant inventory falls below threshold.</div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
                 <span class="badge" style="background:#e2e8f0;color:#334155;font-weight:700">🔒 Non-Editable</span>
-                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waLowTpl', this)">📋 Copy Template</button>
+                <button type="button" class="btn-outline btn-sm" onclick="copyWaText('waLowTpl', this)">📋 Copy
+                  Template</button>
               </div>
             </div>
             <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 16px;">
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template Format</label>
+                <label
+                  style="font-size:11.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Template
+                  Format</label>
                 <textarea id="waLowTpl" readonly rows="7" class="wa-tpl-textarea"></textarea>
               </div>
               <div>
-                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live WhatsApp Preview (Sample Alert)</label>
+                <label style="font-size:11.5px;font-weight:700;color:var(--brand);display:block;margin-bottom:4px">Live
+                  WhatsApp Preview (Sample Alert)</label>
                 <div id="waPreviewLow" class="wa-preview-box"></div>
               </div>
             </div>
@@ -1279,7 +1758,8 @@
             <pre id="waPreview"></pre>
           </div>
 
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9">
+          <div
+            style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9">
             <button class="btn-primary" id="btnSaveWa">Save WhatsApp settings</button>
             <span id="waStatus" style="font-size:13px;font-weight:600"></span>
           </div>
@@ -1287,25 +1767,57 @@
 
         <!-- Automatic sender (v4.6) -->
         <div class="card">
-          <div class="card-head"><div><h2>WhatsApp sender</h2>
-            <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">One provider is active. ZKWAConnect is your own official Meta Cloud API (no middle-man fee); Gupshup is a paid provider. Messages that cannot be sent automatically wait in the outbox below for a one-click send.</p></div></div>
+          <div class="card-head">
+            <div>
+              <h2>WhatsApp sender</h2>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">One provider is active. ZKWAConnect is your
+                own official Meta Cloud API (no middle-man fee); Gupshup is a paid provider. Messages that cannot be
+                sent automatically wait in the outbox below for a one-click send.</p>
+            </div>
+          </div>
           <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px" id="sndProviders">
-            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider" value="zkwaconnect"><span><b>ZKWAConnect</b><br><small style="color:var(--muted)">Official Cloud API · recommended</small></span></label>
-            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider" value="gupshup"><span><b>Gupshup</b><br><small style="color:var(--muted)">Paid per message</small></span></label>
-            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider" value="none"><span><b>One-click only</b><br><small style="color:var(--muted)">Nothing sent automatically</small></span></label>
+            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider"
+                value="zkwaconnect"><span><b>ZKWAConnect</b><br><small style="color:var(--muted)">Official Cloud API ·
+                  recommended</small></span></label>
+            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider"
+                value="gupshup"><span><b>Gupshup</b><br><small style="color:var(--muted)">Paid per
+                  message</small></span></label>
+            <label class="legal-card" style="cursor:pointer;gap:8px"><input type="radio" name="sndProvider"
+                value="none"><span><b>One-click only</b><br><small style="color:var(--muted)">Nothing sent
+                  automatically</small></span></label>
           </div>
           <div class="form-grid" id="sndZkwa">
-            <div class="form-group"><label>ZKWAConnect URL</label><input id="sndZkwaUrl" placeholder="https://app.zkwaconnect.in"></div>
-            <div class="form-group"><label>API key (ZKWAConnect → Developer → API keys)</label><input id="sndZkwaKey" type="password" placeholder="zk_live_…"></div>
-            <div class="form-group"><label>Phone number id (optional)</label><input id="sndZkwaPhone" placeholder="Uses the first connected number"></div>
+            <div class="form-group"><label>ZKWAConnect URL</label><input id="sndZkwaUrl"
+                placeholder="https://app.zkwaconnect.in"></div>
+            <div class="form-group"><label>API key (ZKWAConnect → Developer → API keys)</label><input id="sndZkwaKey"
+                type="password" placeholder="zk_live_…"></div>
+            <div class="form-group"><label>Phone number id (optional)</label><input id="sndZkwaPhone"
+                placeholder="Uses the first connected number"></div>
           </div>
           <div class="form-grid" id="sndGupshup">
             <div class="form-group"><label>Gupshup app name</label><input id="sndGsApp"></div>
-            <div class="form-group"><label>Source number</label><input id="sndGsSource" placeholder="917539972026"></div>
-            <div class="form-group"><label>API key</label><input id="sndGsKey" type="password" placeholder="••••••••"></div>
+            <div class="form-group"><label>Source number</label><input id="sndGsSource" placeholder="917539972026">
+            </div>
+            <div class="form-group"><label>API key</label><input id="sndGsKey" type="password" placeholder="••••••••">
+            </div>
           </div>
-          <div style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0">Meta-approved templates — WhatsApp needs one for messages to customers who have not written to you in the last 24 h. Fields fill {{1}}, {{2}}… in order, separated by |</div>
-          <div class="table-wrap"><table id="sndTemplates"><thead><tr><th>Message</th><th>Send automatically</th><th>Template name</th><th>Language</th><th>Fields for {{1}}|{{2}}|…</th></tr></thead><tbody></tbody></table></div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0">Meta-approved templates — WhatsApp
+            needs one for messages to customers who have not written to you in the last 24 h. Fields fill {{1}}, {{2}}…
+            in order, separated by |</div>
+          <div class="table-wrap">
+            <table id="sndTemplates">
+              <thead>
+                <tr>
+                  <th>Message</th>
+                  <th>Send automatically</th>
+                  <th>Template name</th>
+                  <th>Language</th>
+                  <th>Fields for {{1}}|{{2}}|…</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px">
             <button class="btn-primary" id="btnSaveSender">Save sender</button>
             <input id="sndTestTo" placeholder="+91 number to test" style="max-width:200px">
@@ -1316,25 +1828,77 @@
 
         <!-- Outbox -->
         <div class="card">
-          <div class="card-head"><div><h2>Message outbox</h2><p style="margin:4px 0 0;font-size:13px;color:var(--muted)" id="outboxSummary">Every WhatsApp message the store sent or still needs to send.</p></div>
-            <div style="display:flex;gap:6px"><select id="outboxFilter"><option value="">All</option><option value="pending">Waiting (one-click)</option><option value="failed">Failed</option><option value="sent">Sent</option></select><button class="btn-outline btn-sm" id="btnReloadOutbox">Refresh</button></div></div>
-          <div class="table-wrap"><table id="outboxTable"><thead><tr><th>When</th><th>Type</th><th>To</th><th>Message</th><th>Status</th><th></th></tr></thead><tbody><tr><td colspan="6" style="color:var(--muted)">Loading…</td></tr></tbody></table></div>
+          <div class="card-head">
+            <div>
+              <h2>Message outbox</h2>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)" id="outboxSummary">Every WhatsApp message the
+                store sent or still needs to send.</p>
+            </div>
+            <div style="display:flex;gap:6px"><select id="outboxFilter">
+                <option value="">All</option>
+                <option value="pending">Waiting (one-click)</option>
+                <option value="failed">Failed</option>
+                <option value="sent">Sent</option>
+              </select><button class="btn-outline btn-sm" id="btnReloadOutbox">Refresh</button></div>
+          </div>
+          <div class="table-wrap">
+            <table id="outboxTable">
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Type</th>
+                  <th>To</th>
+                  <th>Message</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" style="color:var(--muted)">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <!-- VIEW: INVENTORY (v4.6) -->
       <section id="view-inventory" class="view-panel" style="display:none">
         <h1 class="page-title">Inventory</h1>
-        <p class="page-sub">Stock for every product and size. Orders take stock automatically and cancellations return it; when an item falls to the low-stock level, customer care gets a WhatsApp alert.</p>
+        <p class="page-sub">Stock for every product and size. Orders take stock automatically and cancellations return
+          it; when an item falls to the low-stock level, customer care gets a WhatsApp alert.</p>
         <div class="card">
           <div class="toolbar-row" style="align-items:end">
-            <div class="form-group" style="margin:0"><label>Low-stock level (store default)</label><input id="invThreshold" type="number" min="0" style="max-width:140px"></div>
-            <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="invAlerts"> WhatsApp alert when stock reaches this level</label>
+            <div class="form-group" style="margin:0"><label>Low-stock level (store default)</label><input
+                id="invThreshold" type="number" min="0" style="max-width:140px"></div>
+            <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="invAlerts">
+              WhatsApp alert when stock reaches this level</label>
             <button class="btn-primary btn-sm" id="btnSaveInvSettings">Save</button>
-            <label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-left:auto"><input type="checkbox" id="invLowOnly"> Show low stock only</label>
+            <label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-left:auto"><input
+                type="checkbox" id="invLowOnly"> Show low stock only</label>
             <span id="invStatus" style="font-size:13px;font-weight:600"></span>
           </div>
-          <div class="table-wrap"><table id="inventoryTable"><thead><tr><th>Product</th><th>Size</th><th>SKU</th><th>Stock</th><th>Status</th><th>Set stock</th><th></th></tr></thead><tbody><tr><td colspan="7" style="color:var(--muted)">Loading…</td></tr></tbody></table></div>
+          <div class="table-wrap">
+            <table id="inventoryTable">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Size</th>
+                  <th>SKU</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                  <th>Set stock</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" style="color:var(--muted)">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div id="invHistory" style="margin-top:12px"></div>
         </div>
       </section>
@@ -1342,38 +1906,75 @@
       <!-- VIEW: CHECKOUT & PAYMENTS (theme_config.checkout) -->
       <section id="view-checkout" class="view-panel" style="display:none">
         <h1 class="page-title">Checkout & Payments</h1>
-        <p class="page-sub">What shoppers see in the cart. Saved as a draft; the live store changes when you publish.</p>
+        <p class="page-sub">What shoppers see in the cart. Saved as a draft; the live store changes when you publish.
+        </p>
         <div class="card">
           <div style="display:grid;gap:10px;max-width:680px">
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCoupon"><span><b>Show discount code box</b><br><small style="color:var(--muted)">Shoppers can enter a coupon in the cart.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowShipping"><span><b>Show Delivery &amp; Tax Fee badge</b><br><small style="color:var(--muted)">Display "Delivery &amp; Tax Fee: ✓ Inclusive of GST and free shipping" locked badge in the cart.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowWhatsappOrder"><span><b>Quick order via WhatsApp button</b><br><small style="color:var(--muted)">Display "💬 Quick order via WhatsApp" button in product view and cart. (Disabled by default).</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coShowCoupon"><span><b>Show discount code box</b><br><small style="color:var(--muted)">Shoppers can
+                  enter a coupon in the cart.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coShowShipping"><span><b>Show Delivery &amp; Tax Fee badge</b><br><small
+                  style="color:var(--muted)">Display "Delivery &amp; Tax Fee: ✓ Inclusive of GST and free shipping"
+                  locked badge in the cart.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coShowWhatsappOrder"><span><b>Quick order via WhatsApp button</b><br><small
+                  style="color:var(--muted)">Display "💬 Quick order via WhatsApp" button in product view and cart.
+                  (Disabled by default).</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Payment methods offered</div>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)" id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately, paid on delivery.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowPaymentSelector"><span><b>Show payment method choice in the cart</b><br><small style="color:var(--muted)">Turn off to hide the payment dropdown. Orders then use Razorpay when it is on, otherwise Cash on delivery.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)"
+                  id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately,
+                  paid on delivery.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coShowPaymentSelector"><span><b>Show payment method choice in the cart</b><br><small
+                  style="color:var(--muted)">Turn off to hide the payment dropdown. Orders then use Razorpay when it is
+                  on, otherwise Cash on delivery.</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Add to cart</div>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCartPopup"><span><b>Show “View Cart” popup after Add to cart</b><br><small style="color:var(--muted)">The “✓ added to cart · 🛒 View Cart →” bar at the bottom of the page. The cart count in the header still updates when this is off.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="coShowCartPopup"><span><b>Show “View Cart” popup after Add to cart</b><br><small
+                  style="color:var(--muted)">The “✓ added to cart · 🛒 View Cart →” bar at the bottom of the page. The
+                  cart count in the header still updates when this is off.</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Checkout button</div>
             <div class="legal-card" style="display:block">
               <div class="form-grid" style="margin-bottom:10px">
-                <div class="form-group"><label for="coPayText">Button text</label><input id="coPayText" maxlength="40" placeholder="Place order"></div>
+                <div class="form-group"><label for="coPayText">Button text</label><input id="coPayText" maxlength="40"
+                    placeholder="Place order"></div>
                 <div class="form-group"><label for="coPayFont">Font</label>
                   <select id="coPayFont">
-                    <option value="">Theme font</option><option>Inter</option><option>Poppins</option><option>Roboto</option><option>Playfair Display</option><option>Dancing Script</option><option>Georgia</option><option>Arial</option>
+                    <option value="">Theme font</option>
+                    <option>Inter</option>
+                    <option>Poppins</option>
+                    <option>Roboto</option>
+                    <option>Playfair Display</option>
+                    <option>Dancing Script</option>
+                    <option>Georgia</option>
+                    <option>Arial</option>
                   </select>
                 </div>
-                <div class="form-group"><label for="coPayFontSize">Text size (px)</label><input id="coPayFontSize" type="number" min="12" max="28" placeholder="Theme size"></div>
-                <div class="form-group"><label for="coPayRadius">Corner rounding (px)</label><input id="coPayRadius" type="number" min="0" max="40" placeholder="Theme rounding"></div>
+                <div class="form-group"><label for="coPayFontSize">Text size (px)</label><input id="coPayFontSize"
+                    type="number" min="12" max="28" placeholder="Theme size"></div>
+                <div class="form-group"><label for="coPayRadius">Corner rounding (px)</label><input id="coPayRadius"
+                    type="number" min="0" max="40" placeholder="Theme rounding"></div>
               </div>
-              <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="coPayBold"> Bold text</label>
-              <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="coPayCustomColors"> Use my own colours (off = theme colours)</label>
+              <label
+                style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:8px"><input
+                  type="checkbox" id="coPayBold"> Bold text</label>
+              <label
+                style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:8px"><input
+                  type="checkbox" id="coPayCustomColors"> Use my own colours (off = theme colours)</label>
               <div class="form-grid" id="coPayColorRow" style="margin-bottom:10px">
-                <div class="form-group"><label for="coPayBg">Button colour</label><input id="coPayBg" type="color" value="#2e7d32"></div>
-                <div class="form-group"><label for="coPayColor">Text colour</label><input id="coPayColor" type="color" value="#ffffff"></div>
+                <div class="form-group"><label for="coPayBg">Button colour</label><input id="coPayBg" type="color"
+                    value="#2e7d32"></div>
+                <div class="form-group"><label for="coPayColor">Text colour</label><input id="coPayColor" type="color"
+                    value="#ffffff"></div>
               </div>
               <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Preview</div>
-              <button type="button" id="coPayPreview" tabindex="-1" style="width:100%;max-width:420px;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:800;background:#2e7d32;color:#fff;cursor:default">Place order</button>
+              <button type="button" id="coPayPreview" tabindex="-1"
+                style="width:100%;max-width:420px;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:800;background:#2e7d32;color:#fff;cursor:default">Place
+                order</button>
             </div>
           </div>
           <div id="coStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
@@ -1381,15 +1982,19 @@
             <button class="btn-outline" id="btnSaveCheckout">Save as draft</button>
             <button class="btn-primary" id="btnPublishCheckout">Save & publish to live store</button>
           </div>
-          <p style="font-size:12px;color:var(--muted);margin-top:10px">“Publish” also publishes any other unpublished design changes from the Store Builder. GoDaddy PHP sites pick up these options in the next package build.</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:10px">“Publish” also publishes any other unpublished
+            design changes from the Store Builder. GoDaddy PHP sites pick up these options in the next package build.
+          </p>
         </div>
         <div class="card" style="background:#f8fafc;border:1px dashed #cbd5e1;padding:14px 20px;margin-top:16px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div>
               <b style="font-size:13px;color:#334155">Looking for Category Boxes or Product Details Sections?</b>
-              <p style="font-size:12px;color:var(--muted);margin:2px 0 0">Configure Home page category boxes, Announcement Bar, Key Benefits, and How to Use in the dedicated <b>Shop Display</b> tab.</p>
+              <p style="font-size:12px;color:var(--muted);margin:2px 0 0">Configure Home page category boxes,
+                Announcement Bar, Key Benefits, and How to Use in the dedicated <b>Shop Display</b> tab.</p>
             </div>
-            <button type="button" class="btn-outline btn-sm" onclick="switchView('display')" style="font-weight:700">👁️ Go to Shop Display →</button>
+            <button type="button" class="btn-outline btn-sm" onclick="switchView('display')" style="font-weight:700">👁️
+              Go to Shop Display →</button>
           </div>
         </div>
       </section>
@@ -1397,39 +2002,62 @@
       <!-- VIEW: SHOP DISPLAY -->
       <section id="view-display" class="view-panel" style="display:none">
         <h1 class="page-title">Shop Display</h1>
-        <p class="page-sub">Customize category boxes, announcement bar, product details sections, and storefront visibility options. Applies immediately to the live store.</p>
+        <p class="page-sub">Customize category boxes, announcement bar, product details sections, and storefront
+          visibility options. Applies immediately to the live store.</p>
         <div class="card">
           <div style="display:grid;gap:14px;max-width:680px">
             <div class="legal-card" style="display:block;border-left:4px solid #ea580c;background:#fffaf5">
               <b style="font-size:14px;color:#9a3412">🏠 Home page category boxes</b><br>
-              <small style="color:var(--muted)">Where shoppers land when they click a category box on the home page. When a category has 1 product, opens View Details directly so customers can buy immediately.</small>
+              <small style="color:var(--muted)">Where shoppers land when they click a category box on the home page.
+                When a category has 1 product, opens View Details directly so customers can buy immediately.</small>
               <div class="form-grid" style="margin:12px 0 0">
                 <div class="form-group"><label for="dsCategoryLink">Opens</label>
                   <select id="dsCategoryLink">
-                    <option value="single_product">Product page when the category has only 1 product (Recommended)</option>
+                    <option value="single_product">Product page when the category has only 1 product (Recommended)
+                    </option>
                     <option value="collection">Category page (list of products)</option>
                     <option value="first_product">Always the first product's page</option>
                   </select>
                 </div>
-                <div class="form-group"><label for="dsCategoryCta">Box button text</label><input id="dsCategoryCta" maxlength="40" placeholder="View Details (default when 1 product) / Explore Products"></div>
-              </div>
-            </div>
-            
-            <div class="legal-card" style="display:block;border-left:4px solid #059669;background:#f0fdf4">
-              <b style="font-size:14px;color:#065f46">📑 Product details page sections ("View Details")</b><br>
-              <small style="color:var(--muted)">Configure what information is displayed on the product details page and quick-view modal.</small>
-              <div style="display:grid;gap:8px;margin-top:10px">
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="dsShowBenefits" checked><span><b>Show Key Benefits</b> (clinical and therapeutic benefit highlights)</span></label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="dsShowInstructions" checked><span><b>Show How to Use / Instructions</b> (step-by-step directions)</span></label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="dsShowIngredients" checked><span><b>Show Ingredients</b> (active botanical ingredients breakdown)</span></label>
+                <div class="form-group"><label for="dsCategoryCta">Box button text</label><input id="dsCategoryCta"
+                    maxlength="40" placeholder="View Details (default when 1 product) / Explore Products"></div>
               </div>
             </div>
 
-            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-top:6px">Header &amp; Storefront Sections</div>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAnnouncement"><span><b>Show Announcement Bar</b><br><small style="color:var(--muted)">Display top notification banner (promotions, announcements) across the storefront.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowCategoryImages" checked><span><b>Show category images in Shop menu</b><br><small style="color:var(--muted)">Display thumbnail photos beside each category in the header Shop dropdown subcategories list.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP strike-through, “% OFF” badges and offer tags such as “Special Introductory Offer”.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The product grid on the home page and its menu, tab and footer links. Other sections are switched in Store Builder → Settings.</small></span></label>
+            <div class="legal-card" style="display:block;border-left:4px solid #059669;background:#f0fdf4">
+              <b style="font-size:14px;color:#065f46">📑 Product details page sections ("View Details")</b><br>
+              <small style="color:var(--muted)">Configure what information is displayed on the product details page and
+                quick-view modal.</small>
+              <div style="display:grid;gap:8px;margin-top:10px">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input
+                    type="checkbox" id="dsShowBenefits" checked><span><b>Show Key Benefits</b> (clinical and therapeutic
+                    benefit highlights)</span></label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input
+                    type="checkbox" id="dsShowInstructions" checked><span><b>Show How to Use / Instructions</b>
+                    (step-by-step directions)</span></label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input
+                    type="checkbox" id="dsShowIngredients" checked><span><b>Show Ingredients</b> (active botanical
+                    ingredients breakdown)</span></label>
+              </div>
+            </div>
+
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-top:6px">Header &amp; Storefront
+              Sections</div>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="dsAnnouncement"><span><b>Show Announcement Bar</b><br><small style="color:var(--muted)">Display top
+                  notification banner (promotions, announcements) across the storefront.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="dsShowCategoryImages" checked><span><b>Show category images in Shop menu</b><br><small
+                  style="color:var(--muted)">Display thumbnail photos beside each category in the header Shop dropdown
+                  subcategories list.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="dsShowOffers"><span><b>Show offers &amp; discounts</b><br><small style="color:var(--muted)">MRP
+                  strike-through, “% OFF” badges and offer tags such as “Special Introductory
+                  Offer”.</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+                id="dsAllProducts"><span><b>Show the “All Products” section</b><br><small style="color:var(--muted)">The
+                  product grid on the home page and its menu, tab and footer links. Other sections are switched in Store
+                  Builder → Settings.</small></span></label>
           </div>
           <div id="dsStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
           <button class="btn-primary" id="btnSaveDisplay">Save display settings</button>
@@ -1441,9 +2069,11 @@
         <div class="card-head" style="margin-bottom:12px">
           <div>
             <h1 class="page-title">Deploy & Hosting</h1>
-            <p class="page-sub" style="margin:0">Package versions per environment, downloads and database migrations. Build, FTP upload and settings live in the Deployment Portal.</p>
+            <p class="page-sub" style="margin:0">Package versions per environment, downloads and database migrations.
+              Build, FTP upload and settings live in the Deployment Portal.</p>
           </div>
-          <a class="btn-primary btn-sm" id="btnOpenPortal" target="_blank" rel="noopener" style="text-decoration:none">🚀 Open Deployment Portal ↗</a>
+          <a class="btn-primary btn-sm" id="btnOpenPortal" target="_blank" rel="noopener"
+            style="text-decoration:none">🚀 Open Deployment Portal ↗</a>
         </div>
 
         <!-- Database Engine & SQL Schema Packages Card -->
@@ -1451,44 +2081,58 @@
           <div class="card-head">
             <div>
               <h2 style="font-size:15px;margin:0 0 4px">Database Engine &amp; SQL Schema Packages</h2>
-              <p style="margin:0;font-size:13px;color:var(--muted)">Download up-to-date installation, migration patch, full reset, or targeted password SQL for MySQL (GoDaddy/cPanel) or PostgreSQL (Neon/Railway).</p>
+              <p style="margin:0;font-size:13px;color:var(--muted)">Download up-to-date installation, migration patch,
+                full reset, or targeted password SQL for MySQL (GoDaddy/cPanel) or PostgreSQL (Neon/Railway).</p>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:12px;font-weight:700;color:var(--muted)">Target Engine:</span>
-              <select id="merchantSqlEngine" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-weight:600">
+              <select id="merchantSqlEngine"
+                style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-weight:600">
                 <option value="mysql">MySQL / MariaDB (GoDaddy / cPanel)</option>
                 <option value="postgres">PostgreSQL (Neon / Supabase / Railway)</option>
               </select>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;margin-top:14px">
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+            <div
+              style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
               <div>
                 <strong style="font-size:13px">📦 Full Installation SQL</strong>
-                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Creates all 18 tables and seeds store catalog &amp; admin defaults from scratch.</p>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Creates all 18 tables and seeds store
+                  catalog &amp; admin defaults from scratch.</p>
               </div>
-              <button type="button" class="btn-primary btn-sm" onclick="downloadMerchantSql('full')">Download Full Install</button>
+              <button type="button" class="btn-primary btn-sm" onclick="downloadMerchantSql('full')">Download Full
+                Install</button>
             </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+            <div
+              style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
               <div>
                 <strong style="font-size:13px">🔄 Migration / Patch SQL</strong>
-                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Safe for existing databases. Adds missing tables and modern columns without losing any orders or customers.</p>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Safe for existing databases. Adds
+                  missing tables and modern columns without losing any orders or customers.</p>
               </div>
-              <button type="button" class="btn-outline btn-sm" onclick="downloadMerchantSql('migration')">Download Migration Patch</button>
+              <button type="button" class="btn-outline btn-sm" onclick="downloadMerchantSql('migration')">Download
+                Migration Patch</button>
             </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+            <div
+              style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
               <div>
                 <strong style="font-size:13px">⚠️ Full Database Reset</strong>
-                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Drops existing tables and runs a clean fresh install with complete Smeram seed data.</p>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Drops existing tables and runs a clean
+                  fresh install with complete Smeram seed data.</p>
               </div>
-              <button type="button" class="btn-outline btn-sm" style="color:#b91c1c;border-color:#fca5a5" onclick="downloadMerchantSql('reset')">Download Reset SQL</button>
+              <button type="button" class="btn-outline btn-sm" style="color:#b91c1c;border-color:#fca5a5"
+                onclick="downloadMerchantSql('reset')">Download Reset SQL</button>
             </div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
+            <div
+              style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:space-between">
               <div>
                 <strong style="font-size:13px">🔑 Password Update SQL</strong>
-                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Targeted single query to change merchant password to Smeram2026! without altering any data.</p>
+                <p style="font-size:11.5px;color:var(--muted);margin:4px 0 10px">Targeted single query to change
+                  merchant password to Smeram2026! without altering any data.</p>
               </div>
-              <button type="button" class="btn-outline btn-sm" onclick="downloadMerchantSql('password')">Download Password SQL</button>
+              <button type="button" class="btn-outline btn-sm" onclick="downloadMerchantSql('password')">Download
+                Password SQL</button>
             </div>
           </div>
         </div>
@@ -1506,8 +2150,22 @@
           </div>
           <div class="table-wrap">
             <table id="deployTable">
-              <thead><tr><th>Environment</th><th>Latest package</th><th>Previous builds</th><th>Database</th><th>FTP</th><th>Razorpay keys</th><th>Actions</th></tr></thead>
-              <tbody><tr><td colspan="7" style="text-align:center;color:var(--muted)">Loading…</td></tr></tbody>
+              <thead>
+                <tr>
+                  <th>Environment</th>
+                  <th>Latest package</th>
+                  <th>Previous builds</th>
+                  <th>Database</th>
+                  <th>FTP</th>
+                  <th>Razorpay keys</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" style="text-align:center;color:var(--muted)">Loading…</td>
+                </tr>
+              </tbody>
             </table>
           </div>
           <div id="depStatus" style="font-size:13px;font-weight:600;margin-top:10px;min-height:18px"></div>
@@ -1518,7 +2176,8 @@
           <div class="card-head">
             <div>
               <h2 style="color:#0369a1;margin:0">🚀 GoDaddy cPanel In-Browser FTP/SFTP Deployment Client</h2>
-              <p style="margin:4px 0 0;font-size:13px;color:#0369a1">Deploy release files directly to GoDaddy hosting without manually opening cPanel File Manager or unzipping.</p>
+              <p style="margin:4px 0 0;font-size:13px;color:#0369a1">Deploy release files directly to GoDaddy hosting
+                without manually opening cPanel File Manager or unzipping.</p>
             </div>
             <span class="badge" style="background:#0284c7;color:#fff;font-weight:700">Live Release v4.10</span>
           </div>
@@ -1543,25 +2202,32 @@
           </div>
 
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <button type="button" class="btn-outline btn-sm" id="btnTestFtp" style="background:#fff;border-color:#0284c7;color:#0284c7;font-weight:700">🔌 Test GoDaddy Connection</button>
-            <button type="button" class="btn-primary btn-sm" id="btnUploadFtp" style="background:#0284c7;border-color:#0284c7;font-weight:700">🚀 1-Click Deploy Live to GoDaddy</button>
+            <button type="button" class="btn-outline btn-sm" id="btnTestFtp"
+              style="background:#fff;border-color:#0284c7;color:#0284c7;font-weight:700">🔌 Test GoDaddy
+              Connection</button>
+            <button type="button" class="btn-primary btn-sm" id="btnUploadFtp"
+              style="background:#0284c7;border-color:#0284c7;font-weight:700">🚀 1-Click Deploy Live to GoDaddy</button>
             <span id="ftpStatusMsg" style="font-size:12.5px;font-weight:600"></span>
           </div>
 
-          <div id="ftpTerminal" style="display:none;margin-top:14px;background:#0f172a;color:#38bdf8;font-family:monospace;font-size:12px;padding:12px 14px;border-radius:6px;max-height:160px;overflow-y:auto;white-space:pre-wrap"></div>
+          <div id="ftpTerminal"
+            style="display:none;margin-top:14px;background:#0f172a;color:#38bdf8;font-family:monospace;font-size:12px;padding:12px 14px;border-radius:6px;max-height:160px;overflow-y:auto;white-space:pre-wrap">
+          </div>
         </div>
       </section>
 
       <!-- VIEW: SETTINGS & LEGAL -->
       <section id="view-settings" class="view-panel" style="display:none">
         <h1 class="page-title">Store Settings & Legal Policy Pages</h1>
-        <p class="page-sub">Statutory Indian eCommerce compliance, WhatsApp order alert setup, and store credentials.</p>
+        <p class="page-sub">Statutory Indian eCommerce compliance, WhatsApp order alert setup, and store credentials.
+        </p>
 
         <div class="card">
           <div class="card-head">
             <div>
               <h2>Standard Statutory & Legal Pages</h2>
-              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Mandatory for Razorpay merchant KYC approval and Indian Consumer Protection (E-Commerce) Rules.</p>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Mandatory for Razorpay merchant KYC approval
+                and Indian Consumer Protection (E-Commerce) Rules.</p>
             </div>
             <button class="btn-primary btn-sm" id="btnScaffoldPages">⚡ Scaffold / Restore All 6 Default Pages</button>
           </div>
@@ -1574,7 +2240,9 @@
           <div class="card-head">
             <div>
               <h2>WhatsApp Order Notification Settings</h2>
-              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Receive instant alerts whenever a customer places an order or completes payment. Message text, customer-care number and fields: <a href="#" onclick="switchView('whatsapp');return false">WhatsApp Messages →</a></p>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Receive instant alerts whenever a customer
+                places an order or completes payment. Message text, customer-care number and fields: <a href="#"
+                  onclick="switchView('whatsapp');return false">WhatsApp Messages →</a></p>
             </div>
           </div>
           <div class="form-grid" style="align-items:end">
@@ -1591,19 +2259,26 @@
           <div class="card-head">
             <div>
               <h2>Store Logo &amp; Client Branding</h2>
-              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Upload, update, or change your client store logo anytime. (The ZKCommerce platform engine brand remains preserved).</p>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Upload, update, or change your client store
+                logo anytime. (The ZKCommerce platform engine brand remains preserved).</p>
             </div>
             <button class="btn-primary btn-sm" onclick="openLogoUploadModal()">🖼️ Upload New Logo</button>
           </div>
           <div style="display:flex;align-items:center;gap:20px;padding:12px 0;flex-wrap:wrap">
-            <div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px 20px;display:flex;align-items:center;justify-content:center;min-width:180px;min-height:70px">
-              <img id="settingsStoreLogoPreview" src="../assets/themes/smeram/smeram-logo.png" alt="Current Logo" style="max-height:50px;max-width:200px;object-fit:contain" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+            <div
+              style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px 20px;display:flex;align-items:center;justify-content:center;min-width:180px;min-height:70px">
+              <img id="settingsStoreLogoPreview" src="../assets/themes/smeram/smeram-logo.png" alt="Current Logo"
+                style="max-height:50px;max-width:200px;object-fit:contain"
+                onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
             </div>
             <div style="flex:1;min-width:240px">
-              <div style="font-size:14px;font-weight:700;margin-bottom:4px" id="settingsStoreLogoTitle">Current Client Logo: Smeram Naturals</div>
-              <div style="font-size:12px;color:var(--muted);line-height:1.5">This logo is displayed in the storefront navigation bar, footer brand badge, and generated statutory GST invoices.</div>
+              <div style="font-size:14px;font-weight:700;margin-bottom:4px" id="settingsStoreLogoTitle">Current Client
+                Logo: Smeram Naturals</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">This logo is displayed in the storefront
+                navigation bar, footer brand badge, and generated statutory GST invoices.</div>
               <div style="margin-top:10px;display:flex;gap:8px">
-                <button type="button" class="btn-outline btn-sm" onclick="openLogoUploadModal()">✏️ Change / Upload Logo</button>
+                <button type="button" class="btn-outline btn-sm" onclick="openLogoUploadModal()">✏️ Change / Upload
+                  Logo</button>
               </div>
             </div>
           </div>
@@ -1614,15 +2289,21 @@
   </div>
 
   <!-- Store Logo Upload Modal -->
-  <div class="modal-backdrop" id="logoUploadModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
-    <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden">
-      <div style="padding:16px 20px;background:#0f172a;color:#fff;display:flex;justify-content:space-between;align-items:center">
+  <div class="modal-backdrop" id="logoUploadModal"
+    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
+    <div
+      style="background:#fff;border-radius:14px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden">
+      <div
+        style="padding:16px 20px;background:#0f172a;color:#fff;display:flex;justify-content:space-between;align-items:center">
         <strong style="font-size:15px">Upload Client Store Logo</strong>
-        <button type="button" onclick="closeLogoUploadModal()" style="border:none;background:none;color:#94a3b8;font-size:20px;cursor:pointer">×</button>
+        <button type="button" onclick="closeLogoUploadModal()"
+          style="border:none;background:none;color:#94a3b8;font-size:20px;cursor:pointer">×</button>
       </div>
       <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
         <div style="text-align:center;padding:14px;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:10px">
-          <img id="logoModalPreview" src="../assets/themes/smeram/smeram-logo.png" alt="Preview" style="max-height:60px;max-width:220px;object-fit:contain;margin-bottom:8px" onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
+          <img id="logoModalPreview" src="../assets/themes/smeram/smeram-logo.png" alt="Preview"
+            style="max-height:60px;max-width:220px;object-fit:contain;margin-bottom:8px"
+            onerror="this.src='/assets/themes/smeram/smeram-logo.png'">
           <div style="font-size:12px;color:var(--muted)">Preview of client store logo</div>
         </div>
         <div class="form-group">
@@ -1631,7 +2312,8 @@
         </div>
         <div class="form-group">
           <label>Or Enter Logo Image URL / Path</label>
-          <input type="text" id="modalLogoUrlInput" placeholder="/assets/themes/smeram/smeram-logo.png" oninput="document.getElementById('logoModalPreview').src=this.value">
+          <input type="text" id="modalLogoUrlInput" placeholder="/assets/themes/smeram/smeram-logo.png"
+            oninput="document.getElementById('logoModalPreview').src=this.value">
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
           <button type="button" class="btn-outline btn-sm" onclick="closeLogoUploadModal()">Cancel</button>
@@ -1780,7 +2462,7 @@
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = function (evt) {
         const base64 = evt.target.result;
         document.getElementById('logoModalPreview').src = base64;
         document.getElementById('modalLogoUrlInput').value = base64;
@@ -1800,7 +2482,7 @@
         if (document.getElementById('settingsStoreLogoPreview')) document.getElementById('settingsStoreLogoPreview').src = newLogo;
         if (document.getElementById('sidebarMerchantLogo')) document.getElementById('sidebarMerchantLogo').src = newLogo;
         if (currentStore) currentStore.logo_url = newLogo;
-        
+
         if (currentStoreId) {
           const fresh = await req('/stores/' + currentStoreId).catch(() => null);
           if (fresh && fresh.store) {
@@ -1808,7 +2490,7 @@
             await req('/stores/' + currentStoreId, {
               method: 'PATCH',
               body: JSON.stringify({ logo_url: newLogo, theme_config })
-            }).catch(() => {});
+            }).catch(() => { });
           }
         }
         notify('Store logo updated and applied successfully in sidebar and header!');
@@ -1940,8 +2622,8 @@
             <td><strong>${money(o.total_amount)}</strong></td>
             <td><span class="badge badge-${o.payment_status === 'paid' ? 'paid' : 'unpaid'}">${o.payment_method?.toUpperCase()}</span></td>
             <td>
-              <select id="status-${o.id}" style="font-size:12px;padding:4px 8px;font-weight:600;border-radius:6px;${o.status==='on_hold'?'background:#fef3c7;color:#92400e;border-color:#f59e0b;':''}">
-                ${['pending','confirmed','processing','on_hold','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s==='on_hold'?'⏸ On Hold (Not Ready)':(s.charAt(0).toUpperCase()+s.slice(1))}</option>`).join('')}
+              <select id="status-${o.id}" style="font-size:12px;padding:4px 8px;font-weight:600;border-radius:6px;${o.status === 'on_hold' ? 'background:#fef3c7;color:#92400e;border-color:#f59e0b;' : ''}">
+                ${['pending', 'confirmed', 'processing', 'on_hold', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s === 'on_hold' ? '⏸ On Hold (Not Ready)' : (s.charAt(0).toUpperCase() + s.slice(1))}</option>`).join('')}
               </select>
               ${o.status === 'on_hold' ? '<div style="font-size:10px;color:#d97706;font-weight:700;margin-top:2px">⏸ Pickup Paused</div>' : ''}
             </td>
@@ -2336,21 +3018,23 @@
       const portalUrl = document.getElementById('ekPortalUrl') ? document.getElementById('ekPortalUrl').value.trim() : '';
       const trackPortalUrl = document.getElementById('ekTrackPortalUrl') ? document.getElementById('ekTrackPortalUrl').value.trim() : '';
       try {
-        await req('/shipments/settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
-          enabled: document.getElementById('ekEnabled').checked,
-          mode: document.getElementById('ekMode').value,
-          courier_name: document.getElementById('ekCourier').value,
-          tracking_url_template: document.getElementById('ekTrack').value,
-          portal_url: portalUrl || 'https://app.elite.ekartlogistics.in/',
-          track_url: trackPortalUrl || 'https://ekartlogistics.com/ekartlogistics-web/',
-          api: {
-            base_url: document.getElementById('ekApiBase').value,
-            client_id: document.getElementById('ekApiClient').value,
-            merchant_code: document.getElementById('ekApiMerchant').value,
-            username: user || 'smeramindustries@gmail.com',
-            ...(key ? { api_key: key } : {})
-          }
-        }) });
+        await req('/shipments/settings?store_id=' + currentStoreId, {
+          method: 'PUT', body: JSON.stringify({
+            enabled: document.getElementById('ekEnabled').checked,
+            mode: document.getElementById('ekMode').value,
+            courier_name: document.getElementById('ekCourier').value,
+            tracking_url_template: document.getElementById('ekTrack').value,
+            portal_url: portalUrl || 'https://app.elite.ekartlogistics.in/',
+            track_url: trackPortalUrl || 'https://ekartlogistics.com/ekartlogistics-web/',
+            api: {
+              base_url: document.getElementById('ekApiBase').value,
+              client_id: document.getElementById('ekApiClient').value,
+              merchant_code: document.getElementById('ekApiMerchant').value,
+              username: user || 'smeramindustries@gmail.com',
+              ...(key ? { api_key: key } : {})
+            }
+          })
+        });
         await loadEkartSettings();
         st.style.color = '#15803d';
         st.textContent = document.getElementById('ekEnabled').checked ? '✅ Saved — open Shipments (Ekart) in the menu.' : '✅ Saved — Ekart shipping is off.';
@@ -2442,17 +3126,19 @@
     async function saveWhatsAppSettings() {
       const st = document.getElementById('waStatus');
       try {
-        const r = await req('/orders/whatsapp-settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
-          enabled: document.getElementById('waEnabled').checked,
-          customer_handoff: document.getElementById('waHandoff').checked,
-          care_number: document.getElementById('waCareNumber').value.trim(),
-          care_label: document.getElementById('waCareLabel').value.trim(),
-          care_template: document.getElementById('waCareTpl').value,
-          customer_template: document.getElementById('waCustomerTpl').value,
-          low_stock_template: document.getElementById('waLowTpl').value,
-          shipped_template: document.getElementById('waShippedTpl').value,
-          delivered_template: document.getElementById('waDeliveredTpl').value
-        }) });
+        const r = await req('/orders/whatsapp-settings?store_id=' + currentStoreId, {
+          method: 'PUT', body: JSON.stringify({
+            enabled: document.getElementById('waEnabled').checked,
+            customer_handoff: document.getElementById('waHandoff').checked,
+            care_number: document.getElementById('waCareNumber').value.trim(),
+            care_label: document.getElementById('waCareLabel').value.trim(),
+            care_template: document.getElementById('waCareTpl').value,
+            customer_template: document.getElementById('waCustomerTpl').value,
+            low_stock_template: document.getElementById('waLowTpl').value,
+            shipped_template: document.getElementById('waShippedTpl').value,
+            delivered_template: document.getElementById('waDeliveredTpl').value
+          })
+        });
         document.getElementById('waCareNumber').value = r.settings.care_number ? '+' + r.settings.care_number : '';
         st.style.color = '#15803d';
         st.textContent = '✅ Saved — live on the Node store now; rebuild the PHP package for GoDaddy.';
@@ -2494,22 +3180,24 @@
       try {
         const annEnabled = document.getElementById('dsAnnouncement')?.checked !== false;
         const showCatImgs = document.getElementById('dsShowCategoryImages')?.checked !== false;
-        const d = await req('/stores/' + currentStoreId + '/display', { method: 'PUT', body: JSON.stringify({
-          show_offers: document.getElementById('dsShowOffers').checked,
-          show_all_products: document.getElementById('dsAllProducts').checked,
-          announcement_enabled: annEnabled,
-          show_category_images: showCatImgs,
-          category_link: document.getElementById('dsCategoryLink').value,
-          category_cta_text: document.getElementById('dsCategoryCta').value.trim(),
-          show_benefits: document.getElementById('dsShowBenefits')?.checked !== false,
-          show_instructions: document.getElementById('dsShowInstructions')?.checked !== false,
-          show_ingredients: document.getElementById('dsShowIngredients')?.checked !== false
-        }) });
+        const d = await req('/stores/' + currentStoreId + '/display', {
+          method: 'PUT', body: JSON.stringify({
+            show_offers: document.getElementById('dsShowOffers').checked,
+            show_all_products: document.getElementById('dsAllProducts').checked,
+            announcement_enabled: annEnabled,
+            show_category_images: showCatImgs,
+            category_link: document.getElementById('dsCategoryLink').value,
+            category_cta_text: document.getElementById('dsCategoryCta').value.trim(),
+            show_benefits: document.getElementById('dsShowBenefits')?.checked !== false,
+            show_instructions: document.getElementById('dsShowInstructions')?.checked !== false,
+            show_ingredients: document.getElementById('dsShowIngredients')?.checked !== false
+          })
+        });
         try {
           localStorage.setItem('zk_announcement_enabled', String(annEnabled));
           localStorage.setItem('zk_announcement_disabled', String(!annEnabled));
           localStorage.setItem('zk_header_cat_images', String(showCatImgs));
-        } catch(_) {}
+        } catch (_) { }
         st.style.color = '#166534';
         st.textContent = d.live ? 'Saved — the live store is updated.' : 'Saved. The store is not published yet; it applies when you publish.';
       } catch (e) { st.style.color = '#b91c1c'; st.textContent = e.message; }
@@ -2538,7 +3226,7 @@
         await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });
         if (document.getElementById('coShowCoupon')) document.getElementById('coShowCoupon').checked = newState;
         updateCartPromoBadge(newState);
-        try { localStorage.setItem('zk_checkout_show_coupon', String(newState)); } catch(_) {}
+        try { localStorage.setItem('zk_checkout_show_coupon', String(newState)); } catch (_) { }
         notify(newState ? 'Promo code input is now ENABLED in View Cart!' : 'Promo code input is now DISABLED in View Cart (default).');
       } catch (e) { notify(e.message, true); }
     }
@@ -2624,17 +3312,19 @@
         const codEnabled = document.getElementById('coCod').checked;
         // Merge into the existing checkout object so keys set elsewhere (e.g. Store Builder) are kept.
         const freshTheme = fresh.store.theme_config || {};
-        const theme_config = { ...freshTheme, checkout: {
-          ...(freshTheme.checkout || {}),
-          show_coupon: document.getElementById('coShowCoupon').checked,
-          show_shipping_field: showShipping,
-          show_whatsapp_order: showWhatsapp,
-          razorpay: document.getElementById('coRazorpay').checked,
-          cod: codEnabled,
-          show_payment_selector: document.getElementById('coShowPaymentSelector').checked,
-          show_cart_popup: document.getElementById('coShowCartPopup').checked,
-          pay_button: readPayButton()
-        } };
+        const theme_config = {
+          ...freshTheme, checkout: {
+            ...(freshTheme.checkout || {}),
+            show_coupon: document.getElementById('coShowCoupon').checked,
+            show_shipping_field: showShipping,
+            show_whatsapp_order: showWhatsapp,
+            razorpay: document.getElementById('coRazorpay').checked,
+            cod: codEnabled,
+            show_payment_selector: document.getElementById('coShowPaymentSelector').checked,
+            show_cart_popup: document.getElementById('coShowCartPopup').checked,
+            pay_button: readPayButton()
+          }
+        };
         try {
           localStorage.setItem('zk_checkout_cod', String(codEnabled));
           localStorage.setItem('zk_show_shipping_field', String(showShipping));
@@ -2643,7 +3333,7 @@
           localStorage.setItem('zk_show_cart_popup', String(document.getElementById('coShowCartPopup').checked));
           localStorage.setItem('zk_show_payment_selector', String(document.getElementById('coShowPaymentSelector').checked));
           localStorage.setItem('zk_pay_button', JSON.stringify(readPayButton()));
-        } catch(_) {}
+        } catch (_) { }
         await req('/stores/' + currentStoreId + '/draft', { method: 'PUT', body: JSON.stringify({ theme_config }) });
         if (publish) await req('/stores/' + currentStoreId + '/publish', { method: 'POST', body: '{}' });
         checkoutThemeConfig = theme_config;
@@ -2724,12 +3414,12 @@
       const remote_dir = document.getElementById('ftpDirInput').value.trim();
       const st = document.getElementById('ftpStatusMsg');
       const term = document.getElementById('ftpTerminal');
-      
+
       st.style.color = '#0284c7';
       st.textContent = 'Connecting to GoDaddy FTP...';
       term.style.display = 'block';
       term.textContent = `[${new Date().toLocaleTimeString()}] Initiating FTP handshake to ${host}:21 as user '${user}'...\n`;
-      
+
       try {
         const res = await req('/deploy/ftp/test', {
           method: 'POST',
@@ -2824,12 +3514,14 @@
         auto[tr.dataset.kind] = g('auto').checked;
       });
       try {
-        await req('/whatsapp/sender?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
-          provider: (document.querySelector('input[name=sndProvider]:checked') || {}).value,
-          zkwaconnect: { base_url: document.getElementById('sndZkwaUrl').value.trim(), api_key: document.getElementById('sndZkwaKey').value.trim(), phone_number_id: document.getElementById('sndZkwaPhone').value.trim() },
-          gupshup: { app_name: document.getElementById('sndGsApp').value.trim(), source_number: document.getElementById('sndGsSource').value.trim(), api_key: document.getElementById('sndGsKey').value.trim() },
-          templates, auto
-        }) });
+        await req('/whatsapp/sender?store_id=' + currentStoreId, {
+          method: 'PUT', body: JSON.stringify({
+            provider: (document.querySelector('input[name=sndProvider]:checked') || {}).value,
+            zkwaconnect: { base_url: document.getElementById('sndZkwaUrl').value.trim(), api_key: document.getElementById('sndZkwaKey').value.trim(), phone_number_id: document.getElementById('sndZkwaPhone').value.trim() },
+            gupshup: { app_name: document.getElementById('sndGsApp').value.trim(), source_number: document.getElementById('sndGsSource').value.trim(), api_key: document.getElementById('sndGsKey').value.trim() },
+            templates, auto
+          })
+        });
         st.style.color = '#15803d'; st.textContent = '✅ Sender saved';
         loadSender();
       } catch (e) { st.style.color = '#b91c1c'; st.textContent = '❌ ' + e.message; }
@@ -2951,7 +3643,7 @@
         const states = JSON.parse(localStorage.getItem('zk_nav_group_states') || '{}');
         states[groupId] = grp.classList.contains('open');
         localStorage.setItem('zk_nav_group_states', JSON.stringify(states));
-      } catch (_) {}
+      } catch (_) { }
     }
 
     function initNavGroupStates() {
@@ -2962,7 +3654,7 @@
             grp.classList.toggle('open', !!states[grp.id]);
           }
         });
-      } catch (_) {}
+      } catch (_) { }
     }
 
     function toggleAllNavGroups() {
@@ -2975,7 +3667,7 @@
         const states = {};
         grps.forEach(g => { states[g.id] = anyClosed; });
         localStorage.setItem('zk_nav_group_states', JSON.stringify(states));
-      } catch (_) {}
+      } catch (_) { }
     }
 
     function switchView(viewName) {
@@ -3038,7 +3730,7 @@
     document.getElementById('btnSaveEkart').onclick = saveEkartSettings;
     document.getElementById('ekEnabled').onchange = ekartShowFields;
     document.getElementById('btnPublishCheckout').onclick = () => saveCheckout(true);
-    document.getElementById('depDlTarget').onchange = e => { try { localStorage.setItem('zk_dl_target', e.target.value); } catch (_) {} };
+    document.getElementById('depDlTarget').onchange = e => { try { localStorage.setItem('zk_dl_target', e.target.value); } catch (_) { } };
     document.getElementById('orderStatusFilter').onchange = loadOrders;
     document.getElementById('orderSearchInput').onkeydown = e => { if (e.key === 'Enter') loadOrders(); };
     document.getElementById('invoiceSearchInput').onkeydown = e => { if (e.key === 'Enter') loadInvoices(); };
@@ -3069,7 +3761,7 @@
               updateCartPromoBadge(true);
               localStorage.setItem('zk_checkout_show_coupon', 'true');
             }
-          } catch(_) {}
+          } catch (_) { }
         }
         notify(autoEnable ? 'Coupon saved and Promo code input enabled in View Cart!' : 'Coupon saved!');
         e.target.reset();
@@ -3136,10 +3828,10 @@
           document.querySelectorAll(sel).forEach(el => el.style.display = 'none');
         });
       }
-    } catch (_) {}
+    } catch (_) { }
 
     init();
   </script>
 </body>
-</html>
 
+</html>
