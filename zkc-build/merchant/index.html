@@ -722,6 +722,7 @@
               <option value="pending">Pending payment</option>
               <option value="confirmed">Confirmed</option>
               <option value="processing">Processing</option>
+              <option value="on_hold">⏸ On Hold (Not Ready)</option>
               <option value="shipped">Shipped</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
@@ -1918,9 +1919,10 @@
             <td><strong>${money(o.total_amount)}</strong></td>
             <td><span class="badge badge-${o.payment_status === 'paid' ? 'paid' : 'unpaid'}">${o.payment_method?.toUpperCase()}</span></td>
             <td>
-              <select id="status-${o.id}" style="font-size:12px;padding:4px 8px">
-                ${['pending','confirmed','processing','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}
+              <select id="status-${o.id}" style="font-size:12px;padding:4px 8px;font-weight:600;border-radius:6px;${o.status==='on_hold'?'background:#fef3c7;color:#92400e;border-color:#f59e0b;':''}">
+                ${['pending','confirmed','processing','on_hold','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s==='on_hold'?'⏸ On Hold (Not Ready)':(s.charAt(0).toUpperCase()+s.slice(1))}</option>`).join('')}
               </select>
+              ${o.status === 'on_hold' ? '<div style="font-size:10px;color:#d97706;font-weight:700;margin-top:2px">⏸ Pickup Paused</div>' : ''}
             </td>
             <td>
               <div style="display:flex;flex-direction:column;gap:3px">
@@ -1974,6 +1976,8 @@
           if (confirm('Order #' + orderId + ' marked Shipped!\n\nSend tracking link to customer on WhatsApp now?')) {
             window.open(waLink, '_blank');
           }
+        } else if (status === 'on_hold') {
+          notify('⏸ Order put on hold. Ekart pickup paused.');
         } else {
           notify('Order updated successfully.');
         }
