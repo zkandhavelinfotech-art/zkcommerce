@@ -82,7 +82,15 @@ body.embed-content .topbar{display:none}body.embed-content .main{height:100vh}.l
 </style></head><body>
 <script>(function(){var q=new URLSearchParams(location.search);if(q.get('embed')&&q.get('workspace')!=='theme')document.body.classList.add('embed-content')})();</script>
 <header class="topbar">
-  <div class="brand">StoreBuilder <small>storebuilderapp.zksuvevy.in</small></div><span class="top-divider"></span>
+  <div class="brand" id="sbBrandDisplay" style="display:flex;align-items:center;gap:10px">
+    <div id="sbLogoWrap" style="height:34px;max-width:130px;display:flex;align-items:center;justify-content:center;background:#fff;padding:2px 6px;border-radius:6px;border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+      <img id="sbMerchantLogo" src="/assets/themes/smeram/smeram-banner-logo.jpg" alt="Logo" style="max-height:28px;max-width:100%;object-fit:contain">
+    </div>
+    <div>
+      <div id="sbStoreTitle" style="font-size:13px;font-weight:800;color:var(--ink)">StoreBuilder</div>
+      <small id="sbStoreSub" style="color:var(--muted);font-size:9.5px;font-weight:600">ZKCommerce Platform Engine</small>
+    </div>
+  </div><span class="top-divider"></span>
   <select id="storeSelect" class="store-select" aria-label="Select store"><option>Loading stores…</option></select>
   <div class="template-control"><label>Template</label><select id="templateSelect" class="template-select" aria-label="Select template"><option value="home">Home page</option><option value="product">Products</option><option value="collection">Collections</option><option value="page">Pages</option></select><select id="resourceSelect" class="product-select" aria-label="Select resource" hidden></select></div>
   <nav class="workspace-nav"><button class="workspace-tab active" data-workspace="theme">Theme</button><button class="workspace-tab" data-workspace="products">Products</button><button class="workspace-tab" data-workspace="pages">Pages</button><button class="workspace-tab" data-workspace="settings">Settings</button></nav>
@@ -697,7 +705,35 @@ async function init(){
     }
   }
 }
-async function selectStore(id){clearTimeout(saveTimer);store=(stores||[]).find(x=>String(x.id)===String(id))||stores[0]||{id:Number(id||2),store_name:'Smeram Naturals',slug:'smeram'};selectedTemplate='home';selectedResource='';selectedSection='hero';const ts=document.getElementById('templateSelect');if(ts)ts.value='home';const rs=document.getElementById('resourceSelect');if(rs)rs.hidden=true;document.getElementById('saveState').textContent='Loading…';try{const d=await api('/stores/'+store.id+'/builder');store=d.store;products=d.products||[];categories=d.categories||[];pages=d.pages||[];paymentsInfo=d.payments||{};document.getElementById('packagingLink').href='../merchant/packaging.html?store_id='+encodeURIComponent(store.id);const cpLink=document.getElementById('clientPortalLink');if(cpLink){cpLink.href=(store.slug==='smeram'?'../clients/smeram/merchant/index.html':'../merchant/index.html')+'?store_id='+encodeURIComponent(store.id);cpLink.target='_blank';}themeConfig=store.theme_config||{};if(!themeConfig.fields)themeConfig.fields={};if(!themeConfig.style_preset&&store.theme_name==='dark-navy')themeConfig.style_preset='dark-navy';dirty=false;document.getElementById('saveState').textContent='All changes saved';document.getElementById('previewDomain').textContent=ZK.storeUrl(store.slug).replace(/^https?:\/\//, '');renderTree();renderThemeStyles();renderProperties(selectedSection);renderProducts();renderCategories();renderPages();renderStoreSettings();await refreshPreview()}catch(e){toast(e.message,true)}}
+async function selectStore(id){clearTimeout(saveTimer);store=(stores||[]).find(x=>String(x.id)===String(id))||stores[0]||{id:Number(id||2),store_name:'Smeram Naturals',slug:'smeram'};selectedTemplate='home';selectedResource='';selectedSection='hero';const ts=document.getElementById('templateSelect');if(ts)ts.value='home';const rs=document.getElementById('resourceSelect');if(rs)rs.hidden=true;document.getElementById('saveState').textContent='Loading…';try{const d=await api('/stores/'+store.id+'/builder');store=d.store;products=d.products||[];categories=d.categories||[];pages=d.pages||[];paymentsInfo=d.payments||{};document.getElementById('packagingLink').href='../merchant/packaging.html?store_id='+encodeURIComponent(store.id);const cpLink=document.getElementById('clientPortalLink');if(cpLink){cpLink.href=(store.slug==='smeram'?'../clients/smeram/merchant/index.html':'../merchant/index.html')+'?store_id='+encodeURIComponent(store.id);cpLink.target='_blank';}themeConfig=store.theme_config||{};if(!themeConfig.fields)themeConfig.fields={};if(!themeConfig.style_preset&&store.theme_name==='dark-navy')themeConfig.style_preset='dark-navy';dirty=false;document.getElementById('saveState').textContent='All changes saved';document.getElementById('previewDomain').textContent=ZK.storeUrl(store.slug).replace(/^https?:\/\//, '');
+
+// Dynamic Merchant Branding in StoreBuilder
+if (store) {
+  const isSmeram = String(store.slug || '').toLowerCase().includes('smeram') || String(store.name || '').toLowerCase().includes('smeram');
+  const logoSrc = store.logo_url || (isSmeram ? '/assets/themes/smeram/smeram-banner-logo.jpg' : null);
+  const primaryCol = store.primary_color || (isSmeram ? '#E11D74' : '#008060');
+  const accentCol = (store.settings && store.settings.accent_color) || (isSmeram ? '#7EA82B' : '#008060');
+  const bgCol = (store.settings && store.settings.bg_color) || (isSmeram ? '#FFF9FA' : '#f1f2f3');
+  const titleEl = document.getElementById('sbStoreTitle');
+  if (titleEl) titleEl.textContent = (store.store_name || store.name || 'Store');
+  const logoWrap = document.getElementById('sbLogoWrap');
+  if (logoWrap) {
+    if (logoSrc) {
+      logoWrap.innerHTML = '<img id="sbMerchantLogo" src="' + logoSrc + '" alt="Logo" style="max-height:28px;max-width:100%;object-fit:contain">';
+    } else {
+      logoWrap.innerHTML = '<span style="font-size:16px;font-weight:800;color:' + primaryCol + '">' + (store.name || 'S')[0] + '</span>';
+    }
+  }
+  document.documentElement.style.setProperty('--green', primaryCol);
+  document.documentElement.style.setProperty('--green-dark', primaryCol);
+  document.documentElement.style.setProperty('--brand-primary', primaryCol);
+  document.documentElement.style.setProperty('--brand-accent', accentCol);
+  document.documentElement.style.setProperty('--canvas', bgCol);
+  const fw = document.getElementById('frameWrap');
+  if (fw) fw.style.background = bgCol;
+}
+
+renderTree();renderThemeStyles();renderProperties(selectedSection);renderProducts();renderCategories();renderPages();renderStoreSettings();await refreshPreview()}catch(e){toast(e.message,true)}}
 function setWorkspace(name){for(const id of ['centerPane','leftPane','rightPane','productsWorkspace','pagesWorkspace','settingsWorkspace'])document.getElementById(id).hidden=false;document.getElementById('leftPane').style.display=name==='theme'?'flex':'none';document.getElementById('rightPane').style.display=name==='theme'?'flex':'none';document.getElementById('centerPane').style.display=name==='theme'?'flex':'none';document.getElementById('productsWorkspace').hidden=name!=='products';document.getElementById('pagesWorkspace').hidden=name!=='pages';document.getElementById('settingsWorkspace').hidden=name!=='settings'}
 function updateResourcePicker(){const t=document.getElementById('templateSelect'),r=document.getElementById('resourceSelect');if(!t||!r)return;selectedTemplate=t.value;r.hidden=!['product','collection','page'].includes(selectedTemplate);r.replaceChildren();if(selectedTemplate==='product'){products.forEach(p=>r.add(new Option(p.name,p.id)));if(selectedResource&&products.some(p=>String(p.id)===String(selectedResource)))r.value=String(selectedResource);else selectedResource=r.value||products[0]?.id||''}else if(selectedTemplate==='collection'){categories.forEach(c=>r.add(new Option(c.name,c.name)));if(selectedResource&&categories.some(c=>c.name===selectedResource||c.slug===selectedResource)){const mc=categories.find(c=>c.name===selectedResource||c.slug===selectedResource);r.value=mc?mc.name:selectedResource;selectedResource=r.value}else selectedResource=r.value||categories[0]?.name||''}else if(selectedTemplate==='page'){pages.forEach(p=>r.add(new Option(p.title,p.id)));if(selectedResource&&pages.some(p=>String(p.id)===String(selectedResource)))r.value=String(selectedResource);else selectedResource=r.value||pages[0]?.id||''}renderTree();renderProperties(selectedSection==='theme'?'theme':selectedSection);refreshPreview()}
 let previewSequence=0;

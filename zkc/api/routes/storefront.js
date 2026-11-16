@@ -152,6 +152,45 @@ router.get('/:slug/products', async (req, res) => {
   }
 });
 
+router.get('/:slug/products/:id', async (req, res) => {
+  try {
+    const { slug, id } = req.params;
+    const cleanSlug = String(slug || '').toLowerCase().trim().replace(/^www\./, '');
+    const { rows: stores } = await pool.query(
+      `SELECT id, name, slug, published_snapshot FROM stores 
+       WHERE LOWER(slug)=LOWER($1) 
+          OR LOWER(slug)=LOWER($2) 
+          OR LOWER(COALESCE(custom_domain,''))=LOWER($1) 
+          OR LOWER(COALESCE(domain,''))=LOWER($1)
+       LIMIT 1`,
+      [slug, cleanSlug]
+    );
+    if (!stores.length) return res.status(404).json({ error: 'Store not found' });
+    const store = stores[0];
+
+    // Check published snapshot first
+    if (store.published_snapshot && Array.isArray(store.published_snapshot.products)) {
+      const snapProd = store.published_snapshot.products.find(p => String(p.id) === String(id) || String(p.slug) === String(id));
+      if (snapProd) return res.json({ product: snapProd });
+    }
+
+    // Live query from products table
+    const { rows } = await pool.query(
+      `SELECT p.*, c.name AS category_name, c.slug AS category_slug 
+       FROM products p 
+       LEFT JOIN categories c ON c.id=p.category_id 
+       WHERE p.store_id=$1 AND (p.id::text=$2 OR p.slug=$2) AND (p.active IS NULL OR p.active=true)
+       LIMIT 1`,
+      [store.id, String(id)]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: 'Product not found' });
+    res.json({ product: rows[0] });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get('/:slug/shipping-rates', async (req, res) => {
   try {
     const slugParam = req.params.slug;

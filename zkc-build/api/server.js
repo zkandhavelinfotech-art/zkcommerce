@@ -34,17 +34,37 @@ app.use('/auth', express.static(path.join(__dirname, '..', 'auth')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
 app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
+app.use(express.static(path.join(__dirname, '..', 'storefront'), { index: false }));
 app.get(['/publish-nodejs.html', '/publish-nodejs'], (req, res) => res.sendFile(path.join(__dirname, '..', 'merchant', 'publish-nodejs.html')));
-app.get('/', (req, res, next) => {
-  const storefrontHome = path.join(__dirname, '..', 'storefront', 'home.html');
-  const rootIndex = path.join(__dirname, '..', 'index.html');
-  if (fs.existsSync(storefrontHome)) {
-    return res.sendFile(storefrontHome);
-  } else if (fs.existsSync(rootIndex)) {
-    return res.sendFile(rootIndex);
+app.get(['/storefront', '/storefront/'], (req, res) => res.sendFile(path.join(__dirname, '..', 'storefront', 'home.html')));
+app.get(['/', '/index.html', '/index'], async (req, res, next) => {
+  try {
+    if (req.query.store) {
+      return await serveStore(req, res, req.query.store, '/');
+    }
+    const host = String(req.hostname || '').toLowerCase().replace(/:\d+$/, '');
+    const baseDomain = String(process.env.STORE_BASE_DOMAIN || 'zkcommerce.in').toLowerCase();
+    const isSubdomain = host.endsWith(`.${baseDomain}`) && host !== `www.${baseDomain}`;
+    const isCustomDomain = host.includes('.') && host !== baseDomain && host !== `www.${baseDomain}` && host !== 'localhost' && !host.endsWith('.localhost');
+    if (isSubdomain || isCustomDomain) {
+      return await serveStore(req, res, host, '/');
+    }
+    const rootIndex = path.join(__dirname, '..', 'index.html');
+    if (fs.existsSync(rootIndex)) {
+      return res.sendFile(rootIndex);
+    }
+    const storefrontHome = path.join(__dirname, '..', 'storefront', 'home.html');
+    if (fs.existsSync(storefrontHome)) {
+      return res.sendFile(storefrontHome);
+    }
+    next();
+  } catch (err) {
+    next(err);
   }
-  next();
 });
+app.get(['/theme-1-dark.html', '/theme-1-dark'], (req, res) => res.sendFile(path.join(__dirname, '..', 'theme-1-dark.html')));
+app.get(['/theme-2-light.html', '/theme-2-light'], (req, res) => res.sendFile(path.join(__dirname, '..', 'theme-2-light.html')));
+app.get(['/theme-3-gradient.html', '/theme-3-gradient'], (req, res) => res.sendFile(path.join(__dirname, '..', 'theme-3-gradient.html')));
 app.get(['/release-history.html', '/release_history.html', '/changelog'], (req, res) => res.sendFile(path.join(__dirname, '..', 'release-history.html')));
 app.get(['/db-migrations.html', '/db-migrations', '/migrations'], (req, res) => res.sendFile(path.join(__dirname, '..', 'db-migrations.html')));
 app.get(['/gap-analysis.html', '/gap-analysis', '/audit'], (req, res) => res.sendFile(path.join(__dirname, '..', 'gap-analysis.html')));
@@ -147,20 +167,33 @@ async function serveStore(req, res, identifier, subpath = '/', basePathOverride 
   let snapshot = store.published_snapshot;
   if (!snapshot) {
     const [products, pages, categories] = await Promise.all([
-      pool.query('SELECT p.*, c.name AS category_name, c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND p.active=true ORDER BY p.featured DESC, p.created_at DESC', [store.id]),
-      pool.query("SELECT * FROM store_pages WHERE store_id=$1 ORDER BY sort_order, id", [store.id]),
-      pool.query("SELECT * FROM categories WHERE store_id=$1 ORDER BY sort_order, name, id", [store.id])
+      pool.query('SELECT p.*, c.name AS category_name, c.image_url AS category_image FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.store_id=$1 AND (p.active IS NULL OR p.active=true) ORDER BY p.featured DESC, p.created_at DESC', [store.id]),
+      pool.query("SELECT * FROM store_pages WHERE store_id=$1 ORDER BY sort_order, id", [store.id]).catch(() => ({ rows: [] })),
+      pool.query("SELECT * FROM categories WHERE store_id=$1 AND (active IS NULL OR active=true) ORDER BY sort_order, name, id", [store.id]).catch(() => ({ rows: [] }))
     ]);
     snapshot = {
       version: 1,
       store: {
-        store_name: store.store_name, slug: store.slug, custom_domain: store.custom_domain,
-        tagline: store.tagline, hero_headline: store.hero_headline, hero_subtext: store.hero_subtext,
-        hero_cta_text: store.hero_cta_text, primary_colour: store.primary_colour, bg_colour: store.bg_colour,
-        accent_colour: store.accent_colour, logo_url: store.logo_url, whatsapp_number: store.whatsapp_number,
-        instagram_handle: store.instagram_handle, address: store.address, city: store.city, state: store.state
+        store_name: store.store_name || store.name,
+        name: store.name || store.store_name,
+        slug: store.slug,
+        custom_domain: store.custom_domain || store.domain,
+        tagline: store.tagline || 'Finest Handlooms & Ethnic Wear',
+        hero_headline: store.hero_headline || store.tagline || store.name,
+        hero_subtext: store.hero_subtext || store.description || '',
+        hero_cta_text: store.hero_cta_text || 'Shop now',
+        primary_colour: store.primary_colour || store.primary_color || '#FF6B00',
+        primary_color: store.primary_color || store.primary_colour || '#FF6B00',
+        bg_colour: store.bg_colour || '#ffffff',
+        accent_colour: store.accent_colour || '#1565C0',
+        logo_url: store.logo_url,
+        whatsapp_number: store.whatsapp_number || store.whatsapp,
+        instagram_handle: store.instagram_handle,
+        address: store.address,
+        city: store.city,
+        state: store.state
       },
-      theme_config: store.theme_config || {},
+      theme_config: store.theme_config || (store.settings && store.settings.theme_config) || {},
       products: products.rows,
       pages: pages.rows,
       categories: categories.rows

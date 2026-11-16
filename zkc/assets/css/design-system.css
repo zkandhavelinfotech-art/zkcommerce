@@ -602,3 +602,267 @@ input, select, textarea { font-family: inherit; }
   .zk-nav-links { display: none; }
   .btn { padding: 11px 20px; font-size: 13px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DYNAMIC MERCHANT BRAND & LOGO THEME SYSTEM (v4.10)
+   Adapts Merchant Portal & StoreBuilder dynamically as per Merchant's Logo.
+   Includes Smeram Naturals (Floral Pink + Leaf Green) Theme & Universal Styles.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --brand-primary:        #E11D74; /* Default: Smeram Floral Pink */
+  --brand-accent:         #7EA82B; /* Smeram Leaf Green */
+  --brand-bg:             #FFF9FA; /* Soft Rose-Cream Canvas */
+  --brand-sidebar-bg:     #180D18; /* Deep Velvet Botanical Plum-Navy */
+  --brand-sidebar-border: rgba(225, 29, 116, 0.16);
+  --brand-sidebar-active: linear-gradient(135deg, rgba(225, 29, 116, 0.24) 0%, rgba(126, 168, 43, 0.18) 100%);
+  --brand-sidebar-active-border: #E11D74;
+}
+
+/* Dynamic Sidebar Styling Driven by Merchant Logo Theme */
+.zk-sidebar {
+  background: var(--brand-sidebar-bg, #180D18) !important;
+  border-right: 1px solid var(--brand-sidebar-border, rgba(255, 255, 255, 0.08)) !important;
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+.zk-main {
+  background: var(--brand-bg, #FFF9FA) !important;
+  transition: background 0.3s ease;
+}
+
+/* Redesigned Sidebar Header with Prominent Merchant Logo & ZKCommerce Text */
+.zk-sidebar-header.merchant-theme-header {
+  padding: 16px 14px 14px !important;
+  border-bottom: 1px solid var(--brand-sidebar-border, rgba(255, 255, 255, 0.08)) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.zk-merchant-brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.zk-merchant-logo-frame {
+  max-width: 135px;
+  max-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 3px 6px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.zk-merchant-logo-frame img {
+  max-height: 36px;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.zk-merchant-logo-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--brand-primary, #E11D74);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+  display: inline-grid;
+  place-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.zk-platform-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.zk-platform-badge .zk-platform-text {
+  font-family: var(--font-display, 'Syne', 'Poppins', sans-serif);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.zk-platform-badge .zk-platform-sub {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-accent, #7EA82B);
+  opacity: 0.95;
+}
+
+.zk-merchant-info-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.zk-merchant-store-name {
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.zk-merchant-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.zk-merchant-action-btn {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.zk-merchant-action-btn.store {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+.zk-merchant-action-btn.store:hover {
+  background: var(--brand-primary, #E11D74);
+  color: #ffffff;
+}
+
+.zk-merchant-action-btn.builder {
+  background: rgba(126, 168, 43, 0.2);
+  color: var(--brand-accent, #7EA82B);
+  border: 1px solid rgba(126, 168, 43, 0.35);
+}
+.zk-merchant-action-btn.builder:hover {
+  background: var(--brand-accent, #7EA82B);
+  color: #ffffff;
+}
+
+/* Store Switcher Pill Bar */
+.zk-store-switch-bar {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0 2px;
+}
+
+.zk-store-switch-pill {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.zk-store-switch-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.zk-store-switch-pill.active {
+  background: var(--brand-primary, #E11D74) !important;
+  color: #ffffff !important;
+  border-color: var(--brand-primary, #E11D74) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Redesigned Sidebar Menu Items as per Smeram / Merchant Theme */
+.zk-sidebar-section-label {
+  color: var(--brand-accent, #7EA82B) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  padding: 14px 10px 6px !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zk-sidebar-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.zk-sidebar-link {
+  padding: 9px 12px !important;
+  border-radius: 9px !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px !important;
+  border-left: 3.5px solid transparent !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.zk-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  transform: translateX(3px);
+}
+
+.zk-sidebar-link.active {
+  background: var(--brand-sidebar-active, rgba(225, 29, 116, 0.24)) !important;
+  color: #ffffff !important;
+  border-left-color: var(--brand-primary, #E11D74) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+}
+
+.zk-sidebar-link .sl-badge {
+  background: var(--brand-primary, #E11D74) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  background: var(--brand-primary, #E11D74) !important;
+  border-color: var(--brand-primary, #E11D74) !important;
+  box-shadow: 0 4px 14px rgba(225, 29, 116, 0.25);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+

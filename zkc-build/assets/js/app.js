@@ -227,3 +227,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.zk-merchant-initial').forEach(function(el){ el.textContent = (user.name||user.email||'U')[0].toUpperCase(); });
   }
 });
+
+
+// Universal Merchant Brand & Theme Engine Loader
+(function() {
+  if (typeof window !== 'undefined' && !window.ZKBrandEngine && !document.querySelector('script[src*="zk-brand-engine.js"]')) {
+    var brandScript = document.createElement('script');
+    var base = (window.ZK && window.ZK.siteUrl) ? window.ZK.siteUrl : '';
+    brandScript.src = base + '/assets/js/zk-brand-engine.js';
+    brandScript.async = true;
+    document.head.appendChild(brandScript);
+  }
+})();
