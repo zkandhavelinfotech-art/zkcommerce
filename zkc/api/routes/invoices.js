@@ -37,7 +37,7 @@ router.get('/', auth, async (req, res) => {
         [storeId, q, '%' + q + '%', limit, offset]
       );
       rows = qRes.rows || [];
-    } catch (_) {}
+    } catch (_) { }
 
     // If no invoices exist in database yet, provide default statutory invoice for Smeram Naturals so merchant can preview and download
     if (!rows.length && !q) {
@@ -70,7 +70,7 @@ router.post('/:orderId', auth, async (req, res) => {
     const storeId = store ? store.id : 2;
     const orderRes = await pool.query('SELECT id, status, payment_method, payment_status, created_at FROM orders WHERE id=$1', [req.params.orderId]);
     if (!orderRes.rows.length) return res.status(404).json({ error: 'Order not found' });
-    
+
     const o = orderRes.rows[0];
     const fyDate = o.created_at ? new Date(o.created_at) : new Date();
     const m = fyDate.getMonth() + 1;

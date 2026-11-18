@@ -282,6 +282,103 @@ const MIGRATIONS = [
       { addColumn: { table: 'orders', column: 'razorpay_signature', definition: 'VARCHAR(255) DEFAULT NULL' } },
       { addColumn: { table: 'orders', column: 'payment_gateway', definition: "VARCHAR(40) DEFAULT 'razorpay'" } }
     ]
+  },
+  {
+    id: '010_store_branding_and_announcements',
+    version: '1.0.10',
+    description: 'Store banner, announcement bar and brand tagline settings (v1.0.10)',
+    steps: [
+      { addColumn: { table: 'stores', column: 'banner_url', definition: 'TEXT DEFAULT NULL' } },
+      { addColumn: { table: 'stores', column: 'announcement_enabled', definition: 'TINYINT(1) DEFAULT 0' } }
+    ]
+  },
+  {
+    id: '011_packaging_manifests_and_awb',
+    version: '1.0.11',
+    description: 'Ekart Logistics AWB and packaging manifests table (v1.0.11)',
+    steps: [
+      { addColumn: { table: 'orders', column: 'awb_number', definition: 'VARCHAR(100) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'delivery_status', definition: "VARCHAR(50) DEFAULT 'unassigned'" } },
+      { addColumn: { table: 'orders', column: 'courier_assigned_at', definition: 'DATETIME DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'label_printed', definition: 'TINYINT(1) DEFAULT 0' } },
+      `CREATE TABLE IF NOT EXISTS \`packaging_manifests\` (
+        \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+        \`store_id\` BIGINT NOT NULL,
+        \`manifest_number\` VARCHAR(50) NOT NULL UNIQUE,
+        \`carrier\` VARCHAR(50) DEFAULT 'Ekart Logistics',
+        \`total_orders\` INT DEFAULT 0,
+        \`order_ids\` TEXT DEFAULT NULL,
+        \`status\` VARCHAR(30) DEFAULT 'generated',
+        \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX \`idx_manifest_store\` (\`store_id\`)
+      ) ${TABLE_OPTS}`
+    ]
+  },
+  {
+    id: '012_order_hold_synchronization',
+    version: '1.0.12',
+    description: 'Order hold status and Ekart courier pause (v1.0.12)',
+    steps: [
+      { addColumn: { table: 'orders', column: 'on_hold', definition: 'TINYINT(1) DEFAULT 0' } },
+      { addColumn: { table: 'orders', column: 'hold_reason', definition: 'VARCHAR(255) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'hold_at', definition: 'DATETIME DEFAULT NULL' } }
+    ]
+  },
+  {
+    id: '013_fiscal_year_statutory_invoices',
+    version: '1.0.13',
+    description: 'Statutory Indian Fiscal Year sequential invoices SMR/26-27/0001 (v1.0.13)',
+    steps: [
+      { addColumn: { table: 'invoices', column: 'fy_year', definition: 'VARCHAR(20) DEFAULT NULL' } },
+      { addColumn: { table: 'invoices', column: 'invoice_sequence', definition: 'INT DEFAULT NULL' } },
+      { addColumn: { table: 'invoices', column: 'place_of_supply', definition: 'VARCHAR(100) DEFAULT NULL' } },
+      { addColumn: { table: 'invoices', column: 'hsn_summary_json', definition: 'LONGTEXT DEFAULT NULL' } },
+      `CREATE TABLE IF NOT EXISTS \`smeram_invoices\` (
+        \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+        \`order_id\` BIGINT NOT NULL UNIQUE,
+        \`invoice_number\` VARCHAR(100) NOT NULL UNIQUE,
+        \`issued_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ${TABLE_OPTS}`
+    ]
+  },
+  {
+    id: '014_coupons_and_cart_promo_control',
+    version: '1.0.14',
+    description: 'Cart promo code box and discount coupons rules (v1.0.14)',
+    steps: [
+      { addColumn: { table: 'stores', column: 'cart_promo_enabled', definition: 'TINYINT(1) DEFAULT 0' } },
+      `CREATE TABLE IF NOT EXISTS \`coupons\` (
+        \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+        \`store_id\` BIGINT NOT NULL,
+        \`code\` VARCHAR(50) NOT NULL,
+        \`discount_type\` VARCHAR(20) NOT NULL DEFAULT 'percentage',
+        \`discount_value\` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        \`min_order_amount\` DECIMAL(10,2) DEFAULT 0.00,
+        \`max_discount\` DECIMAL(10,2) DEFAULT NULL,
+        \`active\` TINYINT(1) DEFAULT 1,
+        \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX \`idx_coupon_store\` (\`store_id\`)
+      ) ${TABLE_OPTS}`
+    ]
+  },
+  {
+    id: '015_gst_audit_and_eway_bill',
+    version: '1.0.26',
+    description: 'Statutory GST Tax Audit & E-Way Bill Advisory (v1.0.26 / v4.10)',
+    steps: [
+      { addColumn: { table: 'orders', column: 'eway_bill_number', definition: 'VARCHAR(50) DEFAULT NULL' } },
+      { addColumn: { table: 'orders', column: 'eway_bill_required', definition: 'TINYINT(1) DEFAULT 0' } },
+      `CREATE TABLE IF NOT EXISTS \`gst_settings\` (
+        \`id\` BIGINT AUTO_INCREMENT PRIMARY KEY,
+        \`store_id\` BIGINT NOT NULL UNIQUE,
+        \`gstin\` VARCHAR(20) DEFAULT NULL,
+        \`legal_name\` VARCHAR(150) DEFAULT NULL,
+        \`trade_name\` VARCHAR(150) DEFAULT NULL,
+        \`state_code\` VARCHAR(10) DEFAULT '33',
+        \`enabled\` TINYINT(1) DEFAULT 1,
+        \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ${TABLE_OPTS}`
+    ]
   }
 ];
 

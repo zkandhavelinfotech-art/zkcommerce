@@ -21,6 +21,7 @@ const codePaths = [
   'order.php',
   'commerce.php',
   'whatsapp_orders.php',
+  'migrate.php',
   'web.config',
   '.htaccess',
   'api',

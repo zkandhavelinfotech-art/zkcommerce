@@ -1,6 +1,7 @@
 ﻿/**
  * ZKCommerce Database Migration Controller & Endpoints
- * Provides live DB migration status inspection, step-by-step one-by-one execution, and bulk upgrade.
+ * Provides live DB migration status inspection, step-by-step one-by-one execution, bulk upgrade,
+ * and selective file migration with full audit log and error diagnostics.
  */
 'use strict';
 const express = require('express');
@@ -10,6 +11,7 @@ const {
   migrateNextStep,
   migrateAllPending,
   migrateSpecific,
+  migrateSelected,
   MASTER_MIGRATIONS
 } = require('../services/db-migrator');
 
@@ -37,6 +39,18 @@ router.post('/step', async (req, res) => {
 router.post('/all', async (req, res) => {
   try {
     const result = await migrateAllPending();
+    res.json(result);
+  } catch(err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/migrations/selected — run specific array of selected migration IDs
+router.post('/selected', async (req, res) => {
+  try {
+    const ids = req.body && Array.isArray(req.body.ids) ? req.body.ids : [];
+    if (!ids.length) return res.status(400).json({ success: false, error: 'No migration IDs selected' });
+    const result = await migrateSelected(ids);
     res.json(result);
   } catch(err) {
     res.status(500).json({ success: false, error: err.message });

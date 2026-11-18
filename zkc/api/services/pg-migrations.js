@@ -110,6 +110,97 @@ const MIGRATIONS = [
     sql: [
       "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_gateway VARCHAR(40) DEFAULT 'razorpay'"
     ]
+  },
+  {
+    id: '010_store_branding_and_announcements',
+    description: 'Store banner and announcement bar settings (v1.0.10)',
+    sql: [
+      'ALTER TABLE stores ADD COLUMN IF NOT EXISTS banner_url TEXT',
+      'ALTER TABLE stores ADD COLUMN IF NOT EXISTS announcement_enabled BOOLEAN DEFAULT FALSE'
+    ]
+  },
+  {
+    id: '011_packaging_manifests_and_awb',
+    description: 'Ekart Logistics AWB and packaging manifests table (v1.0.11)',
+    sql: [
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS awb_number VARCHAR(100)',
+      "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_status VARCHAR(50) DEFAULT 'unassigned'",
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS courier_assigned_at TIMESTAMPTZ',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS label_printed BOOLEAN DEFAULT FALSE',
+      `CREATE TABLE IF NOT EXISTS packaging_manifests (
+        id SERIAL PRIMARY KEY,
+        store_id INT NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+        manifest_number VARCHAR(50) NOT NULL UNIQUE,
+        carrier VARCHAR(50) DEFAULT 'Ekart Logistics',
+        total_orders INT DEFAULT 0,
+        order_ids TEXT,
+        status VARCHAR(30) DEFAULT 'generated',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`,
+      'CREATE INDEX IF NOT EXISTS idx_manifests_store ON packaging_manifests(store_id, created_at DESC)'
+    ]
+  },
+  {
+    id: '012_order_hold_synchronization',
+    description: 'Order hold status and Ekart courier pause (v1.0.12)',
+    sql: [
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS on_hold BOOLEAN NOT NULL DEFAULT FALSE',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS hold_reason VARCHAR(255)',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS hold_at TIMESTAMPTZ'
+    ]
+  },
+  {
+    id: '013_fiscal_year_statutory_invoices',
+    description: 'Statutory Indian Fiscal Year sequential invoices SMR/26-27/0001 (v1.0.13)',
+    sql: [
+      'ALTER TABLE invoices ADD COLUMN IF NOT EXISTS fy_year VARCHAR(20)',
+      'ALTER TABLE invoices ADD COLUMN IF NOT EXISTS invoice_sequence INT',
+      'ALTER TABLE invoices ADD COLUMN IF NOT EXISTS place_of_supply VARCHAR(100)',
+      "ALTER TABLE invoices ADD COLUMN IF NOT EXISTS hsn_summary_json JSONB DEFAULT '{}'::jsonb",
+      `CREATE TABLE IF NOT EXISTS smeram_invoices (
+        id SERIAL PRIMARY KEY,
+        order_id INT NOT NULL UNIQUE,
+        invoice_number VARCHAR(100) NOT NULL UNIQUE,
+        issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`
+    ]
+  },
+  {
+    id: '014_coupons_and_cart_promo_control',
+    description: 'Cart promo code box and discount coupons rules (v1.0.14)',
+    sql: [
+      'ALTER TABLE stores ADD COLUMN IF NOT EXISTS cart_promo_enabled BOOLEAN NOT NULL DEFAULT FALSE',
+      `CREATE TABLE IF NOT EXISTS coupons (
+        id SERIAL PRIMARY KEY,
+        store_id INT NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+        code VARCHAR(50) NOT NULL,
+        discount_type VARCHAR(20) NOT NULL DEFAULT 'percentage',
+        discount_value NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+        min_order_amount NUMERIC(10,2) DEFAULT 0.00,
+        max_discount NUMERIC(10,2),
+        active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`,
+      'CREATE INDEX IF NOT EXISTS idx_coupons_store ON coupons(store_id, code)'
+    ]
+  },
+  {
+    id: '015_gst_audit_and_eway_bill',
+    description: 'Statutory GST Tax Audit & E-Way Bill Advisory (v1.0.26 / v4.10)',
+    sql: [
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS eway_bill_number VARCHAR(50)',
+      'ALTER TABLE orders ADD COLUMN IF NOT EXISTS eway_bill_required BOOLEAN DEFAULT FALSE',
+      `CREATE TABLE IF NOT EXISTS gst_settings (
+        id SERIAL PRIMARY KEY,
+        store_id INT NOT NULL REFERENCES stores(id) ON DELETE CASCADE UNIQUE,
+        gstin VARCHAR(20),
+        legal_name VARCHAR(150),
+        trade_name VARCHAR(150),
+        state_code VARCHAR(10) DEFAULT '33',
+        enabled BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`
+    ]
   }
 ];
 
