@@ -35,6 +35,33 @@ app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
 app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
 app.use(express.static(path.join(__dirname, '..', 'storefront'), { index: false }));
+
+// Statutory Indian GST Tax Invoice Generator endpoint (/invoice.php, /invoice, /invoices/view, /invoices/print)
+const invoiceGenerator = require('./services/invoice-generator');
+app.get([
+  '/invoice.php',
+  '/invoice',
+  '/invoices/view',
+  '/invoices/print',
+  '/clients/:client/invoice.php',
+  '/store/:slug/invoice.php',
+  '/api/orders/:id/invoice'
+], async (req, res) => {
+  try {
+    const orderId = req.query.id || req.params.id || req.query.order_id || 1;
+    const storeId = req.query.store_id;
+    const data = await invoiceGenerator.fetchInvoiceData(orderId, storeId);
+    const html = invoiceGenerator.generateInvoiceHtml({
+      ...data,
+      autoPrint: req.path.endsWith('/print') || req.query.print === '1',
+      autoDownload: req.query.download === '1'
+    });
+    res.type('text/html').send(html);
+  } catch (e) {
+    res.status(500).send('Error rendering GST invoice: ' + e.message);
+  }
+});
+
 app.get(['/publish-nodejs.html', '/publish-nodejs'], (req, res) => res.sendFile(path.join(__dirname, '..', 'merchant', 'publish-nodejs.html')));
 app.get(['/storefront', '/storefront/'], (req, res) => res.sendFile(path.join(__dirname, '..', 'storefront', 'home.html')));
 app.get(['/', '/index.html', '/index'], async (req, res, next) => {

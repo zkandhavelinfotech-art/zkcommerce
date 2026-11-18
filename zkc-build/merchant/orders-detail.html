@@ -287,9 +287,9 @@ async function loadOrder() {
   setEl('order-sub', 'Placed ' + ordDate + ' · ' + totalAmt + ' · ' + payMethodStr);
   setEl('timeline-placed-date', ordDate + ' · ' + (o.customer_name || 'Customer'));
 
-  var isPaid = (o.payment_status === 'paid' || o.payment_status === 'cod');
+  var isPaymentPaid = o.payment_status === 'paid';
   setEl('payment-method', payMethodStr);
-  setEl('payment-status', (o.payment_status || 'paid').toUpperCase());
+  setEl('payment-status', isPaymentPaid ? 'PAID' : (o.payment_method === 'cod' ? 'DUE ON DELIVERY' : 'PAYMENT PENDING'));
   setEl('razorpay-ref', o.razorpay_payment_id || o.razorpay_order_id || '—');
   var pStatus = (o.payment_status || '').toLowerCase();
   var oStatus = (o.order_status || o.status || '').toLowerCase();
@@ -303,10 +303,14 @@ async function loadOrder() {
   }
 
   setEl('timeline-payment-desc', totalAmt + ' · ' + payMethodStr + (o.razorpay_payment_id ? ' · Ref: ' + o.razorpay_payment_id : ''));
-  if (isPaid) {
+  if (isPaymentPaid) {
     var pDot = document.getElementById('timeline-pay-dot');
     if (pDot) pDot.style.background = '#22C55E';
-    setEl('timeline-pay-title', 'Payment confirmed');
+    setEl('timeline-pay-title', 'Payment received');
+  } else if (pMethod === 'cod') {
+    var codDot = document.getElementById('timeline-pay-dot');
+    if (codDot) codDot.style.background = '#F59E0B';
+    setEl('timeline-pay-title', 'Payment due on delivery');
   }
 
   // Customer
@@ -397,7 +401,7 @@ function openInvoice() {
     }
   }
   // Open real invoice PDF / print view
-  window.open('../api.php?route=invoices/' + oid + '/pdf', '_blank');
+  window.open('../invoice.php?id=' + encodeURIComponent(oid) + '&download=1', '_blank', 'noopener');
 }
 
 async function saveFulfillment() {

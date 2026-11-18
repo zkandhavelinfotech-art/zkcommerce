@@ -514,6 +514,20 @@
       background: #fafbfc;
     }
 
+    #ordersTable { min-width: 1120px; table-layout: fixed; }
+    #ordersTable th:nth-child(1) { width: 13%; }
+    #ordersTable th:nth-child(2) { width: 18%; }
+    #ordersTable th:nth-child(3) { width: 8%; }
+    #ordersTable th:nth-child(4) { width: 8%; }
+    #ordersTable th:nth-child(5) { width: 9%; }
+    #ordersTable th:nth-child(6) { width: 12%; }
+    #ordersTable th:nth-child(7) { width: 20%; }
+    #ordersTable th:nth-child(8) { width: 12%; }
+    #ordersTable td { overflow-wrap: anywhere; }
+    .order-action-grid { display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:128px; }
+    .order-action-grid .action-save { grid-column:1/-1; }
+    .order-action-grid .btn-sm { width:100%;min-width:0;text-align:center;justify-content:center;white-space:nowrap; }
+
     .badge {
       display: inline-flex;
       align-items: center;
@@ -664,6 +678,19 @@
       header {
         padding: 12px 16px;
       }
+
+      #view-orders .card { padding: 12px; }
+      #view-orders .toolbar-row > * { width:100%;max-width:none!important;min-width:0!important;margin-left:0!important; }
+      #ordersTable { min-width:0;table-layout:auto; }
+      #ordersTable thead { display:none; }
+      #ordersTable tbody,#ordersTable tr,#ordersTable td { display:block;width:100%; }
+      #ordersTable tr { margin-bottom:12px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff; }
+      #ordersTable td { display:grid;grid-template-columns:105px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;border-bottom:1px solid #f1f5f9; }
+      #ordersTable td::before { content:attr(data-label);font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.04em; }
+      #ordersTable td:last-child { border-bottom:0; }
+      #ordersTable td[colspan] { display:block;text-align:center!important; }
+      #ordersTable td[colspan]::before { display:none; }
+      .order-action-grid { min-width:0; }
     }
 
     /* WhatsApp Template Tabs & Previews */
@@ -1561,10 +1588,9 @@
       <!-- VIEW: WHATSAPP ORDER MESSAGES -->
       <section id="view-whatsapp" class="view-panel" style="display:none">
         <h1 class="page-title">WhatsApp Order Messages</h1>
-        <p class="page-sub">No WhatsApp Business API needed: after checkout the shopper's WhatsApp opens with the order
-          typed out to your customer-care number, and the Orders / Packaging pages have one-click buttons to message
-          customers. With an official provider (Gupshup, Meta Cloud API, ZKWAConnect) the same messages are sent
-          automatically.</p>
+        <p class="page-sub">ZKWAConnect sends order and delivery messages automatically through the configured WhatsApp
+          Business API. Store-care alerts are sent in the backend; customer messages are sent only when the shopper opts
+          in during checkout.</p>
         <div class="card">
           <div class="form-grid">
             <div class="form-group"><label>Customer-care WhatsApp number</label><input id="waCareNumber"
@@ -1574,9 +1600,6 @@
           </div>
           <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0"><input type="checkbox"
               id="waEnabled"> <b>Use WhatsApp order messages</b></label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0 12px"><input type="checkbox"
-              id="waHandoff"> After an order is placed / paid, open the shopper's WhatsApp to send the order to customer
-            care</label>
           <!-- Available Variables Badges -->
           <div style="margin: 14px 0 6px; display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Available Template Variables:</div>
@@ -1928,10 +1951,9 @@
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
                 id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately,
                   paid on delivery.</small></span></label>
-            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
+            <label class="legal-card" style="justify-content:flex-start;gap:10px"><input type="checkbox"
                 id="coShowPaymentSelector"><span><b>Show payment method choice in the cart</b><br><small
-                  style="color:var(--muted)">Turn off to hide the payment dropdown. Orders then use Razorpay when it is
-                  on, otherwise Cash on delivery.</small></span></label>
+                  id="coPaymentSelectorHelp" style="color:var(--muted)">Automatically required when both Cash on delivery and Razorpay are enabled.</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Add to cart</div>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox"
                 id="coShowCartPopup"><span><b>Show “View Cart” popup after Add to cart</b><br><small
@@ -1940,8 +1962,8 @@
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Checkout button</div>
             <div class="legal-card" style="display:block">
               <div class="form-grid" style="margin-bottom:10px">
-                <div class="form-group"><label for="coPayText">Button text</label><input id="coPayText" maxlength="40"
-                    placeholder="Place order"></div>
+                <div class="form-group"><label for="coPayText">Online payment button text</label><input id="coPayText" maxlength="40"
+                    placeholder="Pay Now"></div>
                 <div class="form-group"><label for="coPayFont">Font</label>
                   <select id="coPayFont">
                     <option value="">Theme font</option>
@@ -1973,8 +1995,7 @@
               </div>
               <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Preview</div>
               <button type="button" id="coPayPreview" tabindex="-1"
-                style="width:100%;max-width:420px;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:800;background:#2e7d32;color:#fff;cursor:default">Place
-                order</button>
+                style="width:100%;max-width:420px;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:800;background:#2e7d32;color:#fff;cursor:default">Pay Now</button>
             </div>
           </div>
           <div id="coStatus" style="font-size:13px;font-weight:600;margin:12px 0;min-height:18px"></div>
@@ -2390,6 +2411,13 @@
     }
 
     function money(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+    function paymentBadge(order) {
+      const isCod = order.payment_method === 'cod';
+      const isPaid = order.payment_status === 'paid';
+      const css = isPaid ? 'paid' : 'unpaid';
+      const text = isPaid ? 'ONLINE · PAID' : isCod ? 'COD · DUE ON DELIVERY' : 'ONLINE · PAYMENT PENDING';
+      return `<span class="badge badge-${css}">${text}</span>`;
+    }
 
     async function init() {
       if (!token) { location.href = '../auth/login.html'; return; }
@@ -2593,7 +2621,7 @@
           <td>${o.customer_name || 'Guest'}</td>
           <td>${new Date(o.created_at).toLocaleDateString()}</td>
           <td>${money(o.total_amount)}</td>
-          <td><span class="badge badge-${o.payment_status === 'paid' ? 'paid' : 'unpaid'}">${(o.payment_method || 'Online').toUpperCase()} · ${(o.payment_status || 'unpaid').toUpperCase()}</span></td>
+          <td>${paymentBadge(o)}</td>
           <td><span class="badge badge-${o.status}">${o.status}</span></td>
           <td>${isPaid ? `<button class="btn-outline btn-sm" onclick="downloadInvoice('${o.id}', '${o.order_number}')">PDF Invoice</button>` : `<span class="badge badge-unpaid" style="font-size:11px" title="Invoices are generated only after payment is received">No Invoice (Unpaid)</span>`}</td>
         </tr>
@@ -2613,21 +2641,21 @@
         }
         tbody.innerHTML = orders.map(o => `
           <tr>
-            <td><strong>${o.order_number}</strong></td>
-            <td>
+            <td data-label="Order"><strong>${o.order_number}</strong></td>
+            <td data-label="Customer">
               <div>${o.customer_name || 'Guest'}</div>
               <small style="color:var(--muted)">${o.customer_phone || ''} ${o.customer_email ? '· ' + o.customer_email : ''}</small>
             </td>
-            <td>${new Date(o.created_at).toLocaleDateString()}</td>
-            <td><strong>${money(o.total_amount)}</strong></td>
-            <td><span class="badge badge-${o.payment_status === 'paid' ? 'paid' : 'unpaid'}">${o.payment_method?.toUpperCase()}</span></td>
-            <td>
+            <td data-label="Date">${new Date(o.created_at).toLocaleDateString()}</td>
+            <td data-label="Amount"><strong>${money(o.total_amount)}</strong></td>
+            <td data-label="Payment">${paymentBadge(o)}</td>
+            <td data-label="Status">
               <select id="status-${o.id}" style="font-size:12px;padding:4px 8px;font-weight:600;border-radius:6px;${o.status === 'on_hold' ? 'background:#fef3c7;color:#92400e;border-color:#f59e0b;' : ''}">
                 ${['pending', 'confirmed', 'processing', 'on_hold', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s === 'on_hold' ? '⏸ On Hold (Not Ready)' : (s.charAt(0).toUpperCase() + s.slice(1))}</option>`).join('')}
               </select>
               ${o.status === 'on_hold' ? '<div style="font-size:10px;color:#d97706;font-weight:700;margin-top:2px">⏸ Pickup Paused</div>' : ''}
             </td>
-            <td>
+            <td data-label="Courier & AWB">
               <div style="display:flex;flex-direction:column;gap:3px">
                 <div style="display:flex;gap:4px">
                   <select id="courier-${o.id}" style="width:115px;font-size:12px;padding:3px 5px">
@@ -2650,13 +2678,11 @@
                 `}
               </div>
             </td>
-            <td>
-              <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
-                <button class="btn-primary btn-sm" onclick="saveOrderFulfillment('${o.id}')">Save</button>
-                ${(o.payment_status === 'paid' || ['confirmed', 'processing', 'shipped', 'delivered'].includes(o.status) || (o.payment_method === 'cod' && o.status !== 'cancelled')) ? `<button class="btn-outline btn-sm" onclick="downloadInvoice('${o.id}', '${o.order_number}')">Invoice</button>` : `<span class="badge badge-unpaid" style="font-size:11px" title="Invoices are generated only after payment is received">No Invoice (Unpaid)</span>`}
+            <td data-label="Actions">
+              <div class="order-action-grid">
+                <button class="btn-primary btn-sm action-save" onclick="saveOrderFulfillment('${o.id}')">Save changes</button>
+                ${(o.payment_status === 'paid' || (o.payment_method === 'cod' && o.status !== 'cancelled')) ? `<button class="btn-outline btn-sm" onclick="downloadInvoice('${o.id}', '${o.order_number}')">Invoice</button>` : `<span class="badge badge-unpaid" style="font-size:10px;grid-column:1/-1;justify-content:center" title="Online invoices are available after payment">Unpaid — no invoice</span>`}
                 <a class="btn-outline btn-sm" style="text-decoration:none" href="orders-detail.html?id=${o.id}">Details</a>
-                ${(o.whatsapp && o.whatsapp.care_url) ? `<a class="btn-outline btn-sm" style="text-decoration:none;background:#ecfdf5;color:#047857;border-color:#a7f3d0;font-weight:700" target="_blank" rel="noopener" href="${escAttr(o.whatsapp.care_url)}" title="Send order details to Customer Care WhatsApp (+91 75399 72026)">↪ Care (+91 75399 72026)</a>` : `<a class="btn-outline btn-sm" style="text-decoration:none;background:#ecfdf5;color:#047857;border-color:#a7f3d0;font-weight:700" target="_blank" rel="noopener" href="https://wa.me/917539972026?text=${encodeURIComponent('🛍️ New Order: ' + o.order_number + ' | ' + (o.customer_name || 'Customer') + ' | ' + (o.customer_phone || '') + ' | Total: ₹' + (o.total || o.total_amount || 0))}" title="Send order details to Customer Care WhatsApp (+91 75399 72026)">↪ Care (+91 75399 72026)</a>`}
-                ${o.whatsapp && o.whatsapp.customer_url ? `<a class="btn-outline btn-sm" style="text-decoration:none" target="_blank" rel="noopener" href="${escAttr(o.whatsapp.customer_url)}" title="Message the customer (template)">📱 WA</a>` : (o.customer_phone ? `<button class="btn-outline btn-sm" onclick="openWhatsAppChat('${o.customer_phone}', '${o.order_number}', '${o.status}')">📱 WA</button>` : '')}
               </div>
             </td>
           </tr>
@@ -2704,8 +2730,17 @@
       window.open(`https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(text)}`, '_blank');
     }
 
+    function getInvoiceUrl(orderOrInvId, mode) {
+      const isClientPath = window.location.pathname.indexOf('/clients/') !== -1;
+      const base = isClientPath ? '../../../invoice.php' : '../invoice.php';
+      let url = base + '?id=' + encodeURIComponent(orderOrInvId) + '&store_id=' + encodeURIComponent(currentStoreId);
+      if (mode === 'print') url += '&print=1';
+      else if (mode === 'download') url += '&download=1';
+      return url;
+    }
+
     function downloadInvoice(orderId, orderNumber) {
-      window.open('../api.php?route=invoices/' + encodeURIComponent(orderId) + '/pdf', '_blank');
+      window.open(getInvoiceUrl(orderId, 'download'), '_blank', 'noopener');
     }
 
     async function loadInvoices() {
@@ -2728,11 +2763,11 @@
             </td>
             <td>${new Date(i.issued_at).toLocaleDateString()}</td>
             <td><strong>${money(i.total_amount)}</strong></td>
-            <td><span class="badge badge-${(i.payment_status === 'paid' || i.payment_method === 'cod') ? 'paid' : 'unpaid'}">${(i.payment_method || 'Online').toUpperCase()} · ${(i.payment_status || 'PAID').toUpperCase()}</span></td>
+            <td>${paymentBadge(i)}</td>
             <td>
               <div style="display:flex;gap:6px">
-                <a class="btn-outline btn-sm" style="text-decoration:none" href="../api.php?route=invoices/${i.id}/pdf&download=1" target="_blank" rel="noopener">📥 Download PDF</a>
-                <a class="btn-outline btn-sm" style="text-decoration:none" href="../invoice.php?id=${i.id}&print=1" target="_blank" rel="noopener">🖨 Print View</a>
+                <a class="btn-outline btn-sm" style="text-decoration:none" href="${getInvoiceUrl(i.order_id || i.id, 'download')}" target="_blank" rel="noopener">📥 Download PDF</a>
+                <a class="btn-outline btn-sm" style="text-decoration:none" href="${getInvoiceUrl(i.order_id || i.id, 'print')}" target="_blank" rel="noopener">🖨 Print View</a>
               </div>
             </td>
           </tr>
@@ -2741,7 +2776,7 @@
     }
 
     function downloadInvoiceById(invId, number) {
-      window.open('../api.php?route=invoices/' + encodeURIComponent(invId) + '/pdf', '_blank');
+      window.open(getInvoiceUrl(invId, 'download'), '_blank', 'noopener');
     }
 
     async function loadCustomers() {
@@ -3113,7 +3148,6 @@
         document.getElementById('waCareNumber').value = s.care_number ? '+' + s.care_number : '';
         document.getElementById('waCareLabel').value = s.care_label || '';
         document.getElementById('waEnabled').checked = !!s.enabled;
-        document.getElementById('waHandoff').checked = !!s.customer_handoff;
         document.getElementById('waCareTpl').value = s.care_template || '';
         document.getElementById('waCustomerTpl').value = s.customer_template || '';
         document.getElementById('waLowTpl').value = s.low_stock_template || '';
@@ -3129,7 +3163,7 @@
         const r = await req('/orders/whatsapp-settings?store_id=' + currentStoreId, {
           method: 'PUT', body: JSON.stringify({
             enabled: document.getElementById('waEnabled').checked,
-            customer_handoff: document.getElementById('waHandoff').checked,
+            customer_handoff: false,
             care_number: document.getElementById('waCareNumber').value.trim(),
             care_label: document.getElementById('waCareLabel').value.trim(),
             care_template: document.getElementById('waCareTpl').value,
@@ -3248,7 +3282,7 @@
         }
         document.getElementById('coRazorpay').checked = c.razorpay !== false;
         document.getElementById('coCod').checked = c.cod !== false || c.razorpay === false;
-        document.getElementById('coShowPaymentSelector').checked = c.show_payment_selector !== false;
+        document.getElementById('coShowPaymentSelector').checked = c.razorpay !== false && c.cod !== false;
         document.getElementById('coShowCartPopup').checked = c.show_cart_popup !== false;
         const pb = c.pay_button || {};
         document.getElementById('coPayText').value = pb.text || '';
@@ -3268,6 +3302,16 @@
     }
     function validateCheckout() {
       const rzp = document.getElementById('coRazorpay').checked, cod = document.getElementById('coCod').checked, st = document.getElementById('coStatus');
+      const selector = document.getElementById('coShowPaymentSelector'), selectorHelp = document.getElementById('coPaymentSelectorHelp');
+      if (rzp && cod) {
+        selector.checked = true;
+        selector.disabled = true;
+        selectorHelp.textContent = 'Required: shoppers will see both Cash on delivery and Pay online choices.';
+      } else {
+        selector.checked = false;
+        selector.disabled = true;
+        selectorHelp.textContent = 'Only one payment method is enabled, so no customer choice is needed.';
+      }
       let ok = true;
       if (!rzp && !cod) { st.style.color = '#b91c1c'; st.textContent = 'Keep at least one payment method on.'; ok = false; }
       else if (!cod && !razorpayInfo.razorpay_configured) { st.style.color = '#b91c1c'; st.textContent = 'Razorpay is not configured, so turning off Cash on delivery would block all orders.'; ok = false; }
@@ -3292,7 +3336,7 @@
     function renderPayButtonPreview() {
       const pb = readPayButton(), btn = document.getElementById('coPayPreview');
       document.getElementById('coPayColorRow').style.display = document.getElementById('coPayCustomColors').checked ? '' : 'none';
-      btn.textContent = pb.text || 'Place order';
+      btn.textContent = pb.text || 'Pay Now';
       btn.style.background = pb.bg_color || 'var(--primary, #2e7d32)';
       btn.style.color = pb.text_color || '#fff';
       btn.style.fontFamily = pb.font_family ? `'${pb.font_family}', sans-serif` : '';
@@ -3320,7 +3364,7 @@
             show_whatsapp_order: showWhatsapp,
             razorpay: document.getElementById('coRazorpay').checked,
             cod: codEnabled,
-            show_payment_selector: document.getElementById('coShowPaymentSelector').checked,
+            show_payment_selector: document.getElementById('coRazorpay').checked && codEnabled,
             show_cart_popup: document.getElementById('coShowCartPopup').checked,
             pay_button: readPayButton()
           }

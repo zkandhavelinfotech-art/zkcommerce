@@ -8,8 +8,9 @@ function checkoutSettings(themeConfig) {
   const show_whatsapp_order = c.show_whatsapp_order === true; // Disabled by default
   // "Added to cart · View Cart →" popup after add to cart. On by default for existing stores.
   const show_cart_popup = c.show_cart_popup !== false;
-  // Payment method dropdown in the cart. When hidden, the preferred enabled method is sent automatically.
-  const show_payment_selector = c.show_payment_selector !== false;
+  // Never silently choose a payment method when both are enabled. The shopper must see both choices.
+  // The legacy visibility flag is only relevant when a single method is enabled.
+  const show_payment_selector = (cod && razorpay) || c.show_payment_selector !== false;
   return { show_coupon: c.show_coupon === true, cod, razorpay, show_shipping_field, show_whatsapp_order, show_cart_popup, show_payment_selector, pay_button: payButton(c.pay_button) };
 }
 
@@ -26,7 +27,7 @@ const numberIn = (v, min, max) => (v === '' || v == null || !Number.isFinite(Num
 // Checkout submit button ("Place order" / "Pay Now"): merchant-editable text and style. Empty values keep the theme look.
 function payButton(b) {
   b = b && typeof b === 'object' ? b : {};
-  const text = String(b.text || '').replace(/\s+/g, ' ').trim().slice(0, 40) || 'Place order';
+  const text = String(b.text || '').replace(/\s+/g, ' ').trim().slice(0, 40) || 'Pay Now';
   return {
     text,
     bg_color: hexColor(b.bg_color),
@@ -39,7 +40,8 @@ function payButton(b) {
 }
 
 function enabledPaymentMethods(settings) {
-  return ['cod', 'razorpay'].filter(m => settings[m]);
+  // Online payment is the storefront default; COD is offered as the optional alternative.
+  return ['razorpay', 'cod'].filter(m => settings[m]);
 }
 
 // Method used when the shopper is not shown a choice: online payment first, else cash on delivery.

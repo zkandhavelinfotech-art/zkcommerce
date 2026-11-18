@@ -24,7 +24,7 @@ define('CHECKOUT_COUPON', false);
 
 // WhatsApp order message settings
 define('WA_ENABLED', true);
-define('WA_HANDOFF', true);
+define('WA_HANDOFF', false);
 define('WA_AUTO_REDIRECT', true); // Option 1: Automatically redirect customer to WhatsApp chat upon order confirmation
 define('WA_CARE_NUMBER', '917539972026');
 define('WA_CARE_LABEL', 'Smeram Customer Care');

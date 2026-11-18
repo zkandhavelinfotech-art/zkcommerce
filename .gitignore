@@ -44,6 +44,8 @@ zkc/deployment/published/
 zkc/deployment/db-migrations/
 zkc/deployment/*-godaddy-deploy*/
 zkc/deployment/smeram-godaddy/
+zkc/deployment/smeram-patch-current/
+zkc-build/deployment/smeram-patch-current/
 zkc/deployment/smeram/
 zkc/deployment/scripts/temp-ftp-upload.ps1
 

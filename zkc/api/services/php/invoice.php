@@ -75,8 +75,58 @@ $payStatus = strtolower((string)($o['payment_status'] ?? 'paid'));
 $ordStatus = strtolower((string)($o['order_status'] ?? ($o['status'] ?? 'confirmed')));
 $payMethod = strtolower((string)($o['payment_method'] ?? 'razorpay'));
 
-// Format invoice number as SM-01, SM-02, SM-03...
-$invNum = 'SM-' . sprintf('%02d', $orderId);
+// Calculate Indian Fiscal Year sequential format (e.g. SMR/26-27/0001)
+$orderTimestamp = !empty($o['created_at']) ? strtotime($o['created_at']) : time();
+$orderMonth = (int)date('n', $orderTimestamp);
+$orderYear = (int)date('Y', $orderTimestamp);
+$fyStart = ($orderMonth >= 4) ? $orderYear : ($orderYear - 1);
+$fyEnd = $fyStart + 1;
+$fyStr = sprintf('%02d-%02d', $fyStart % 100, $fyEnd % 100);
+
+$invNum = null;
+if (!empty($o['invoice_number']) && preg_match('#^[A-Z0-9]+/\d{2}-\d{2}/\d+#', $o['invoice_number'])) {
+    $invNum = $o['invoice_number'];
+} elseif ($pdo && $orderId > 0) {
+    try {
+        $stmt = $pdo->prepare("SELECT invoice_number FROM `invoices` WHERE order_id = ? AND invoice_number LIKE 'SMR/%' LIMIT 1");
+        $stmt->execute([$orderId]);
+        $existing = $stmt->fetchColumn();
+        if ($existing) $invNum = $existing;
+    } catch (Exception $e) {}
+    if (!$invNum) {
+        try {
+            $stmt = $pdo->prepare("SELECT invoice_number FROM `smeram_invoices` WHERE order_id = ? AND invoice_number LIKE 'SMR/%' LIMIT 1");
+            $stmt->execute([$orderId]);
+            $existing = $stmt->fetchColumn();
+            if ($existing) $invNum = $existing;
+        } catch (Exception $e) {}
+    }
+}
+if (!$invNum) {
+    $seq = (int)$orderId;
+    if ($pdo && $orderId > 0) {
+        try {
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM `{$tbl}` WHERE created_at >= ? AND created_at < ? AND id <= ?");
+            $stmt->execute([
+                sprintf('%04d-04-01 00:00:00', $fyStart),
+                sprintf('%04d-04-01 00:00:00', $fyEnd),
+                $orderId
+            ]);
+            $cnt = (int)$stmt->fetchColumn();
+            if ($cnt > 0) $seq = $cnt;
+        } catch (Exception $e) {}
+    }
+    $invNum = sprintf('SMR/%s/%04d', $fyStr, $seq);
+    if ($pdo && $orderId > 0) {
+        try {
+            $storeId = defined('STORE_ID') ? STORE_ID : 2;
+            $pdo->prepare("INSERT INTO `invoices` (`store_id`, `order_id`, `invoice_number`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `invoice_number`=VALUES(`invoice_number`)")->execute([$storeId, $orderId, $invNum]);
+        } catch (Exception $e) {}
+        try {
+            $pdo->prepare("INSERT INTO `smeram_invoices` (`order_id`, `invoice_number`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `invoice_number`=VALUES(`invoice_number`)")->execute([$orderId, $invNum]);
+        } catch (Exception $e) {}
+    }
+}
 
 $billingName = 'Smeram Industries';
 $brandName   = 'Smeram Naturals';
@@ -773,6 +823,16 @@ body {
       </tr>
     </table>
   </div>
+
+  <?php if ($grandTotal >= 50000): ?>
+  <div style="margin-top:16px;padding:12px 16px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;font-size:12px;color:#92400e;">
+    <div style="font-weight:800;text-transform:uppercase;margin-bottom:4px">⚠️ Statutory E-Way Bill Mandatory (CGST Rule 138)</div>
+    <div>Consignment value exceeds <b>₹50,000</b> statutory threshold. This consignment must be accompanied by an electronic E-Way Bill for transit.</div>
+    <div style="margin-top:6px;font-size:11.5px">
+      <b>Transporter:</b> Ekart Logistics (Instakart Services Pvt Ltd) &nbsp;|&nbsp; <b>Transporter GSTIN:</b> 29AAACF3483L1ZW &nbsp;|&nbsp; <b>Transport Doc / AWB:</b> <?= h($o['awb_number'] ?? ($o['tracking_number'] ?? 'Manifested')) ?>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- Payment Details -->
   <div class="payment-card">

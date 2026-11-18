@@ -28,9 +28,7 @@ function getRazorpay() {
  * Invoices & GST Tax Filing page, and sends low-stock alerts. Never throws.
  */
 async function afterPaid(order) {
-  let whatsappHandoffUrl = null;
   try {
-    const orderMessages = require('../services/order-messages');
     const inventory = require('../services/inventory');
     const waSender = require('../services/wa-sender');
     const client = await pool.connect();
@@ -57,8 +55,6 @@ async function afterPaid(order) {
       console.warn('[Payment] auto invoice creation error:', invErr.message);
     }
 
-    const waSettings = await orderMessages.loadSettings(order.store_id);
-    if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, full, store).care_url;
     waSender.notifyOrderConfirmed(order.store_id, full, store);
     waSender.notifyLowStock(order.store_id, lowStock);
 
@@ -73,7 +69,6 @@ async function afterPaid(order) {
       console.warn('[Payments AfterPaid] Ekart shipment warning:', shipErr.message);
     }
   } catch (e) { console.warn('[Payment] after-paid steps failed:', e.message); }
-  return { whatsappHandoffUrl };
 }
 
 // Razorpay SDK errors carry { statusCode, error: { description } } and no message.
@@ -135,8 +130,8 @@ router.post('/razorpay/verify', async (req, res) => {
       if (existing.rows[0]?.payment_status === 'paid') return res.json({ message: 'Payment already verified', order_id: Number(order_id) });
       return res.status(404).json({ error: 'Pending order not found for this payment' });
     }
-    const { whatsappHandoffUrl } = await afterPaid(rows[0]);
-    res.json({ message: 'Payment verified', order_id: Number(order_id), whatsapp_handoff_url: whatsappHandoffUrl });
+    await afterPaid(rows[0]);
+    res.json({ message: 'Payment verified', order_id: Number(order_id) });
   } catch (e) { res.status(503).json({ error: rzpError(e) }); }
 });
 

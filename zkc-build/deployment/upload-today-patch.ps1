@@ -7,7 +7,8 @@ param(
     [string]$FtpHost = $env:GODADDY_FTP_HOST,
     [string]$FtpUser = $env:GODADDY_FTP_USER,
     [string]$FtpPass = $env:GODADDY_FTP_PASS,
-    [string]$RemoteDir = $env:GODADDY_FTP_DIR
+    [string]$RemoteDir = $env:GODADDY_FTP_DIR,
+    [string]$PatchDir = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,13 +23,13 @@ if ([string]::IsNullOrWhiteSpace($FtpHost)) {
 Clear-Host
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host "   SMERAM NATURALS - GODADDY LIVE SERVER PATCH DEPLOYMENT (TODAY)       " -ForegroundColor Yellow
-Write-Host "   Version: v1.0.15 | Release: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') " -ForegroundColor Yellow
+Write-Host "   Code-only patch | Release: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') " -ForegroundColor Yellow
 Write-Host "   Customer Care WhatsApp: +91 75399 72026                              " -ForegroundColor Green
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Target Server : $FtpHost" -ForegroundColor White
 Write-Host "Target Root   : $RemoteDir" -ForegroundColor White
-Write-Host "Deployment    : INCREMENTAL PATCH ONLY (16 changed files, no large media)" -ForegroundColor Magenta
+Write-Host "Deployment    : CODE-ONLY PATCH (no product media or customer data)" -ForegroundColor Magenta
 Write-Host ""
 
 # Prompt for credentials if not supplied
@@ -47,7 +48,10 @@ if ([string]::IsNullOrWhiteSpace($FtpUser) -or [string]::IsNullOrWhiteSpace($Ftp
 }
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$PatchDir = Join-Path $ScriptDir "smeram-patch-today-v1.0.15"
+if ([string]::IsNullOrWhiteSpace($PatchDir)) {
+    $PatchDir = Join-Path $ScriptDir "smeram-patch-current"
+}
+$PatchDir = [System.IO.Path]::GetFullPath($PatchDir)
 
 if (-not (Test-Path $PatchDir)) {
     Write-Host "Error: Patch directory not found at: $PatchDir" -ForegroundColor Red

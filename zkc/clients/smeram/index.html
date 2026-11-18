@@ -1576,7 +1576,7 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
     <form class="checkout-form" id="checkoutForm" onsubmit="handlePlaceOrder(event)">
       <div class="ch-title">Delivery &amp; Customer Details</div>
       <input type="text" name="name" required placeholder="Full Name *">
-      <input type="tel" name="phone" required placeholder="WhatsApp Mobile Number *">
+      <input type="tel" name="phone" required placeholder="Mobile Number *">
       <input type="email" name="email" placeholder="Email Address (for invoice PDF)">
       <input type="text" name="address" required placeholder="Delivery House/Street Address *">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -1606,6 +1606,11 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
         <option value="cod" id="optPayCod" selected>Cash on Delivery (COD)</option>
         <option value="razorpay" id="optPayRazorpay">Pay Online via UPI / Cards / NetBanking (Razorpay)</option>
       </select>
+
+      <label style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:9px;align-items:start;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:11px 12px;margin:10px 0;color:#14532d;font-size:12px;line-height:1.4;cursor:pointer">
+        <input type="checkbox" name="whatsapp_opt_in" value="1" style="width:18px;height:18px;margin:0;accent-color:#16a34a">
+        <span><b style="display:block;font-size:12.5px">Receive order updates on WhatsApp</b><small style="display:block;color:#477052;margin-top:2px">Optional. Confirmation and delivery tracking are sent automatically through our WhatsApp Business service.</small></span>
+      </label>
 
       <button type="submit" class="btn-place-order" id="placeOrderBtn">Confirm &amp; Place Order</button>
       <button type="button" class="btn-continue-shopping-block" onclick="closeCart()">🛍️ Continue Shopping</button>
@@ -2176,6 +2181,7 @@ function handlePlaceOrder(e) {
   const city = (fd.get('city') || '').trim();
   const pincode = (fd.get('pincode') || '').trim();
   const payMethod = fd.get('payment_method') || 'razorpay';
+  const whatsappOptIn = fd.get('whatsapp_opt_in') === '1';
   const totalStr = document.getElementById('grandTotalVal').textContent;
   const totalNum = Number(totalStr.replace(/[^0-9.]/g, '')) || 0;
 
@@ -2198,16 +2204,14 @@ function handlePlaceOrder(e) {
     const waUrl = `https://wa.me/917539972026?text=${waMessage}`;
 
     // Option 1: WhatsApp Auto-Redirect Check (toggleable via store config or localStorage)
-    const autoRedirectSetting = (window.STORE_CHECKOUT_CONFIG && typeof window.STORE_CHECKOUT_CONFIG.wa_auto_redirect === 'boolean')
-      ? window.STORE_CHECKOUT_CONFIG.wa_auto_redirect
-      : (localStorage.getItem('zk_wa_auto_redirect') !== 'false');
+    const autoRedirectSetting = false;
 
     // Display Order Success Screen
     const panel = document.querySelector('.drawer-panel');
     panel.innerHTML = `
       <div style="text-align:center;padding:40px 10px">
         <div style="font-size:54px;margin-bottom:14px">🎉</div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:26px;color:var(--pink);margin-bottom:8px">Order Confirmed!</h3>
+        <h3 style="font-family:'Playfair Display',serif;font-size:26px;color:var(--pink);margin-bottom:8px">Order Placed Successfully!</h3>
         <p style="font-size:15px;color:var(--dark);font-weight:700">Order ID: #${orderNum}</p>
         <p style="font-size:13.5px;color:var(--muted);margin:14px 0 24px;line-height:1.6">
           Thank you, <b>${name}</b>! Your order and GST tax invoice have been registered in the ZKCommerce merchant database. Estimated dispatch within 24 business hours.
@@ -2216,7 +2220,7 @@ function handlePlaceOrder(e) {
           <div><b>Total Amount:</b> ${totalStr} (${isPaidOnline ? '✓ Paid Online via Razorpay' : 'Cash on Delivery'})</div>
           ${paymentMeta && paymentMeta.paymentId ? `<div><b>Payment Reference:</b> ${paymentMeta.paymentId}</div>` : ''}
           <div><b>Delivery Address:</b> ${address}, ${city} - ${pincode}</div>
-          <div><b>WhatsApp Updates:</b> ${phone}</div>
+          <div><b>WhatsApp Updates:</b> ${whatsappOptIn ? 'Enabled for ' + phone : 'Not requested'}</div>
           <div style="margin-top:8px;font-size:11.5px;color:var(--green-dark)">✓ Invoice automatically recorded in Orders & Fulfillment and GST reports</div>
         </div>
 
@@ -2228,9 +2232,15 @@ function handlePlaceOrder(e) {
           </div>
         </div>` : ''}
 
-        <a href="${waUrl}" id="waManualBtn" target="_blank" rel="noopener" class="btn-place-order" style="display:inline-block;text-decoration:none;background:#25D366;margin-bottom:12px">
+        <a href="#" id="waManualBtn" aria-hidden="true" tabindex="-1" class="btn-place-order" style="display:none!important;text-decoration:none;background:#25D366;margin-bottom:12px">
           📲 Send Order Details on WhatsApp →
         </a>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;text-align:left;font-size:12px;color:#92400e;line-height:1.6;margin-bottom:14px">
+          <b>What happens next?</b><br>
+          1. Warehouse packs your items and issues shipping label.<br>
+          2. Ekart Logistics assigns AWB tracking number.<br>
+          3. ${whatsappOptIn ? 'Live delivery tracking updates are sent automatically to your WhatsApp.' : 'Delivery tracking will be available after dispatch.'}
+        </div>
         <button type="button" class="btn-view" style="width:100%;padding:12px" onclick="location.reload()">Back to Store</button>
       </div>
     `;
@@ -2247,11 +2257,7 @@ function handlePlaceOrder(e) {
           clearInterval(redirectTimer);
           const banner = document.getElementById('waRedirectBanner');
           if (banner) banner.innerHTML = '✅ WhatsApp opened in new window. <a href="' + waUrl + '" target="_blank" style="color:#075e54;font-weight:700">Click here if not opened</a>';
-          try {
-            window.location.href = waUrl;
-          } catch (_) {
-            window.open(waUrl, '_blank');
-          }
+          // WhatsApp Business notifications are sent by the backend; never navigate the shopper away.
         }
       }, 1000);
 
@@ -2282,6 +2288,7 @@ function handlePlaceOrder(e) {
       city: city,
       state: 'Tamil Nadu',
       pincode: pincode,
+      whatsapp_opt_in: whatsappOptIn,
       payment_method: payMethod,
       payment_status: paymentMeta?.payStatus || (payMethod === 'razorpay' ? 'paid' : 'pending'),
       razorpay_payment_id: paymentMeta?.paymentId || '',
@@ -2338,6 +2345,7 @@ function handlePlaceOrder(e) {
         customer: { name: name, phone: phone, email: email },
         address: { line1: address, city: city, state: 'Tamil Nadu', pincode: pincode },
         payment_method: payMethod === 'razorpay' ? 'razorpay' : 'cod',
+        whatsapp_opt_in: whatsappOptIn,
         payment_status: paymentMeta && paymentMeta.payStatus ? paymentMeta.payStatus : (payMethod === 'razorpay' ? 'paid' : 'pending'),
         razorpay_payment_id: paymentMeta && paymentMeta.paymentId ? paymentMeta.paymentId : null,
         coupon_code: couponCode || null,

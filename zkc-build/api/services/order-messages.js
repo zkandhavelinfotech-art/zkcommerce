@@ -53,8 +53,8 @@ const DEFAULTS = {
   enabled: true,
   care_number: '',
   care_label: 'Customer Care',
-  // After checkout, open the customer's WhatsApp with the order typed out to care_number.
-  customer_handoff: true,
+  // Legacy setting retained for compatible saved configurations. Storefront hand-off is disabled.
+  customer_handoff: false,
   care_template: `🛍️ *New Order — {store_name}*
 *Order ID:* {order_id}
 *Name:* {customer_name}

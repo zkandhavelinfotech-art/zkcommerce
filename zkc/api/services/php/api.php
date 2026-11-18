@@ -135,7 +135,8 @@ function zkcEnsureOrderColumns($pdo, $tbl) {
         'shipped_at' => 'DATETIME NULL',
         'delivered_at' => 'DATETIME NULL',
         'ekart_shipment_data' => 'TEXT NULL',
-        'ekart_status' => 'VARCHAR(60) NULL'
+        'ekart_status' => 'VARCHAR(60) NULL',
+        'whatsapp_opt_in' => 'TINYINT(1) NOT NULL DEFAULT 0'
     ];
     foreach ($cols as $col => $type) {
         try {
@@ -192,6 +193,7 @@ function zkcGetOrdersTable($pdo) {
           `razorpay_signature` VARCHAR(255) NULL,
           `courier` VARCHAR(60) NULL,
           `tracking_number` VARCHAR(60) NULL,
+          `whatsapp_opt_in` TINYINT(1) NOT NULL DEFAULT 0,
           `notes` TEXT NULL,
           `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -1809,7 +1811,7 @@ if ($route === 'invoices' && $method === 'GET') {
                 $params[] = $like;
             }
             $sqlWhere = !empty($where) ? ('WHERE ' . implode(' AND ', $where)) : '';
-            $stmt = $pdo->prepare("SELECT id, order_number, customer_name, customer_email, customer_phone, total_amount, payment_method, payment_status, order_status AS status, created_at AS issued_at, COALESCE((SELECT invoice_number FROM invoices WHERE invoices.order_id = `{$tbl}`.id LIMIT 1), (SELECT invoice_number FROM smeram_invoices WHERE smeram_invoices.order_id = `{$tbl}`.id LIMIT 1), CONCAT('SMR/26-27/', LPAD(id, 4, '0'))) AS invoice_number FROM `{$tbl}` {$sqlWhere} ORDER BY id DESC LIMIT 100");
+            $stmt = $pdo->prepare("SELECT id, id AS order_id, order_number, customer_name, customer_email, customer_phone, total_amount, payment_method, payment_status, order_status AS status, created_at AS issued_at, COALESCE((SELECT invoice_number FROM invoices WHERE invoices.order_id = `{$tbl}`.id LIMIT 1), (SELECT invoice_number FROM smeram_invoices WHERE smeram_invoices.order_id = `{$tbl}`.id LIMIT 1), CONCAT('SMR/26-27/', LPAD(id, 4, '0'))) AS invoice_number FROM `{$tbl}` {$sqlWhere} ORDER BY id DESC LIMIT 100");
             $stmt->execute($params);
             if ($stmt) $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         } catch (Exception $e) {}
@@ -1854,25 +1856,26 @@ if (preg_match('#^invoices/(\d+)/pdf/?$#', $route, $m) && $method === 'GET') {
     $orderId = (int)$m[1];
     $forceDownload = (isset($_GET['download']) && ($_GET['download'] === '1' || $_GET['download'] === 'true'));
 
-    // Check if client explicitly requests HTML instead of binary PDF (?format=html)
-    if (isset($_GET['format']) && $_GET['format'] === 'html') {
-        $_GET['id'] = $orderId;
-        header('Content-Type: text/html; charset=utf-8');
-        $candidates = [
-            __DIR__ . '/invoice.php',
-            __DIR__ . '/api/services/php/invoice.php',
-            dirname(__DIR__) . '/invoice.php',
-            dirname(dirname(__DIR__)) . '/invoice.php'
-        ];
-        foreach ($candidates as $cand) {
-            if (is_file($cand)) {
-                require $cand;
-                exit;
-            }
+    // Use the branded GST invoice template for every browser PDF request. It generates the
+    // downloadable PDF client-side and avoids browsers saving this endpoint as "api.htm".
+    $_GET['id'] = $orderId;
+    if ($forceDownload) $_GET['download'] = '1';
+    $candidates = [
+        __DIR__ . '/invoice.php',
+        __DIR__ . '/api/services/php/invoice.php',
+        dirname(__DIR__) . '/invoice.php',
+        dirname(dirname(__DIR__)) . '/invoice.php'
+    ];
+    foreach ($candidates as $cand) {
+        if (is_file($cand)) {
+            header_remove('Content-Type');
+            header('Content-Type: text/html; charset=utf-8');
+            require $cand;
+            exit;
         }
     }
 
-    // Default for /pdf: ALWAYS generate and output pure binary PDF stream
+    // Emergency binary fallback when the branded template is missing from an incomplete package.
     $o = null;
     if ($pdo) {
         $tbl = function_exists('zkcGetOrdersTable') ? zkcGetOrdersTable($pdo) : 'orders';
@@ -2001,7 +2004,7 @@ if ($route === 'orders/whatsapp-settings') {
 
     $defaults = [
         'enabled' => defined('WA_ENABLED') ? (bool)WA_ENABLED : true,
-        'customer_handoff' => defined('WA_HANDOFF') ? (bool)WA_HANDOFF : true,
+        'customer_handoff' => false,
         'care_number' => defined('WA_CARE_NUMBER') ? WA_CARE_NUMBER : '917539972026',
         'care_label' => defined('WA_CARE_LABEL') ? WA_CARE_LABEL : 'Smeram Customer Care',
         'care_template' => defined('WA_CARE_TEMPLATE') ? WA_CARE_TEMPLATE : "🛍️ *New Order — {store_name}*\n*Order ID:* {order_id}\n*Name:* {customer_name}\n*Phone:* {customer_phone}\n\n*Products:*\n{products}\n\n*Total:* {total} ({payment_method})\n*Address:* {address}\n*Date:* {order_date} {order_time}",
@@ -3655,7 +3658,10 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
     $phone = trim($customer['phone'] ?? '');
     $email = trim($customer['email'] ?? '');
     $line1 = trim($address['line1'] ?? '');
-    if ($name === '' || $phone === '' || $line1 === '') respond(['error' => 'Name, phone and delivery address are required.'], 400);
+    $city = trim($address['city'] ?? '');
+    $state = trim($address['state'] ?? '');
+    $pincode = preg_replace('/\D+/', '', (string)($address['pincode'] ?? ''));
+    if ($name === '' || $phone === '' || $line1 === '' || $city === '' || $state === '' || !preg_match('/^\d{6}$/', $pincode)) respond(['error' => 'Enter a complete shipping address with a valid 6-digit PIN code.'], 400);
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) respond(['error' => 'Enter a valid email address'], 400);
     // Merchant checkout settings (store_config.php) are enforced here, not only in the page.
     $payMethod = ($body['payment_method'] ?? 'cod') === 'razorpay' ? 'razorpay' : 'cod';
@@ -3666,6 +3672,8 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
     $cart = $body['items'] ?? [];
     if (!is_array($cart) || !$cart || count($cart) > 50) respond(['error' => 'Customer name and 1-50 cart items are required'], 400);
 
+    // Run compatibility column upgrades before the transaction; MySQL DDL implicitly commits.
+    $tbl = zkcGetOrdersTable($pdo);
     $pdo->beginTransaction();
     try {
         $items = [];
@@ -3695,7 +3703,8 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
         }
         $shipping = 0.0;
         $rateId = null;
-        if (!empty($body['shipping_rate_id'])) {
+        // Built-in checkout badge: free shipping with GST included. It is not a database rate id.
+        if (!empty($body['shipping_rate_id']) && $body['shipping_rate_id'] !== 'inclusive_gst_free_shipping') {
             $postal = zkcPostal($address['pincode'] ?? '');
             $stmt = $pdo->prepare("SELECT id, rate, free_above FROM shipping_rates WHERE id = ? AND store_id = ? AND active = 1 AND (postal_prefix IS NULL OR (? <> '' AND ? LIKE CONCAT(postal_prefix, '%')))");
             $stmt->execute([(int)$body['shipping_rate_id'], STORE_ID, $postal, $postal]);
@@ -3710,29 +3719,30 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
         $total = $taxable + $gst + $shipping;
 
         $orderNumber = 'ORD-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
-        $tbl = zkcGetOrdersTable($pdo);
         $hasStoreId = true;
         try { $pdo->query("SELECT store_id FROM `{$tbl}` LIMIT 1"); } catch (Exception $e) { $hasStoreId = false; }
 
-        $incomingPayStatus = (($body['payment_status'] ?? '') === 'paid') ? 'paid' : ($payMethod === 'cod' ? 'cod' : 'unpaid');
-        $incomingOrdStatus = ($incomingPayStatus === 'paid' || $payMethod === 'cod') ? 'confirmed' : 'pending';
-        $incomingRzpPayId = trim((string)($body['razorpay_payment_id'] ?? '')) ?: null;
-        $incomingRzpOrdId = trim((string)($body['razorpay_order_id'] ?? '')) ?: null;
+        // Checkout cannot declare itself paid. Only the signed Razorpay verification route may do that.
+        $incomingPayStatus = $payMethod === 'cod' ? 'cod' : 'unpaid';
+        $incomingOrdStatus = $payMethod === 'cod' ? 'confirmed' : 'pending';
+        $incomingRzpPayId = null;
+        $incomingRzpOrdId = null;
 
+        $whatsappOptIn = filter_var($body['whatsapp_opt_in'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         if ($hasStoreId) {
             $pdo->prepare("INSERT INTO `{$tbl}` (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json,
-                    subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, shipping_rate_id, coupon_code, total_amount, payment_method, payment_status, order_status, razorpay_payment_id, razorpay_order_id)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                    subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, shipping_rate_id, coupon_code, total_amount, payment_method, payment_status, order_status, razorpay_payment_id, razorpay_order_id, whatsapp_opt_in)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
                 ->execute([STORE_ID, $orderNumber, mb_substr($name, 0, 120), $phone, $email, $line1, $address['city'] ?? '', $address['state'] ?? '', $address['pincode'] ?? '',
                     json_encode($items, JSON_UNESCAPED_UNICODE), $subtotal, $discount, $gstRate, $gst, $shipping, $rateId, $coupon ? $coupon['code'] : null, $total,
-                    $payMethod, $incomingPayStatus, $incomingOrdStatus, $incomingRzpPayId, $incomingRzpOrdId]);
+                    $payMethod, $incomingPayStatus, $incomingOrdStatus, $incomingRzpPayId, $incomingRzpOrdId, $whatsappOptIn]);
         } else {
             $pdo->prepare("INSERT INTO `{$tbl}` (order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json,
-                    subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, total_amount, payment_method, payment_status, order_status, razorpay_payment_id, razorpay_order_id)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                    subtotal, discount_amount, gst_rate, gst_amount, shipping_amount, total_amount, payment_method, payment_status, order_status, razorpay_payment_id, razorpay_order_id, whatsapp_opt_in)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
                 ->execute([$orderNumber, mb_substr($name, 0, 120), $phone, $email, $line1, $address['city'] ?? '', $address['state'] ?? '', $address['pincode'] ?? '',
                     json_encode($items, JSON_UNESCAPED_UNICODE), $subtotal, $discount, $gstRate, $gst, $shipping, $total,
-                    $payMethod, $incomingPayStatus, $incomingOrdStatus, $incomingRzpPayId, $incomingRzpOrdId]);
+                    $payMethod, $incomingPayStatus, $incomingOrdStatus, $incomingRzpPayId, $incomingRzpOrdId, $whatsappOptIn]);
         }
         $orderId = (int)$pdo->lastInsertId();
         if ($coupon) {
@@ -3747,11 +3757,9 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
     } catch (Exception $e) { if ($pdo->inTransaction()) $pdo->rollBack(); respondError($e); }
 
     $wa = null;
-    $handoff = null;
     if ($payMethod === 'cod' || $incomingPayStatus === 'paid') {
         $order = function_exists('zkcOrderById') ? zkcOrderById($pdo, $orderId) : [];
         if ($order && function_exists('zkcEnsureInvoice')) { try { zkcEnsureInvoice($pdo, $order); } catch (Exception $e) { error_log('[Invoice] ' . $e->getMessage()); } }
-        if (function_exists('zkcHandoffUrl')) $handoff = zkcHandoffUrl($order);
         if (function_exists('zkcNotifyOrderConfirmed')) $wa = zkcNotifyOrderConfirmed($pdo, $order);
         if (function_exists('zkcNotifyLowStock')) zkcNotifyLowStock($pdo, $low);
         if (function_exists('zkcEkartAutoCreateShipment')) {
@@ -3760,7 +3768,8 @@ if (preg_match('#^storefront/[^/]+/checkout$#', $route) && $method === 'POST') {
     }
     respond(['order_id' => $orderId, 'order_number' => $orderNumber, 'subtotal' => $subtotal, 'discount_amount' => $discount, 'gst_rate' => $gstRate,
         'gst_amount' => $gst, 'shipping_amount' => $shipping, 'total_amount' => $total, 'total' => $total, 'coupon_code' => $coupon ? $coupon['code'] : null,
-        'next' => $payMethod === 'cod' ? 'confirmed' : 'razorpay_checkout', 'whatsapp' => $wa, 'whatsapp_handoff_url' => $handoff], 201);
+        'payment_method' => $payMethod, 'payment_status' => $incomingPayStatus, 'status' => $incomingOrdStatus,
+        'next' => $payMethod === 'cod' ? 'confirmed' : 'razorpay_checkout', 'whatsapp_opt_in' => (bool)$whatsappOptIn], 201);
 }
 
 if (preg_match('#^notify/[^/]+/(contact|notify)$#', $route, $m) && $method === 'POST') {
@@ -4056,15 +4065,11 @@ if ($route === 'payments/razorpay/verify' && $method === 'POST') {
         try { zkcEkartAutoCreateShipment($pdo, $order['id']); } catch (Throwable $e) { error_log('[Ekart Verify] ' . $e->getMessage()); }
     }
 
-    $updatedOrder = function_exists('zkcOrderById') ? zkcOrderById($pdo, $order['id']) : $order;
-    $handoff = function_exists('zkcHandoffUrl') ? zkcHandoffUrl($updatedOrder) : null;
-
     respond([
         'message' => 'Payment verified',
         'order_id' => (int)$order['id'],
         'order_number' => $order['order_number'] ?? '',
-        'invoice_number' => $invNum,
-        'whatsapp_handoff_url' => $handoff
+        'invoice_number' => $invNum
     ]);
 }
 

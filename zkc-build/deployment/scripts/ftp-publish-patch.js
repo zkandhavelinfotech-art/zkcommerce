@@ -27,7 +27,7 @@ let user = args.user || process.env.GODADDY_FTP_USER || '';
 let pass = args.pass || process.env.GODADDY_FTP_PASS || '';
 let remoteDir = args.dir || process.env.GODADDY_FTP_DIR || '/httpdocs';
 
-const patchDir = path.resolve(__dirname, '../smeram-patch-today-v1.0.15');
+const patchDir = path.resolve(__dirname, '../smeram-patch-current');
 
 function prompt(question, isSecret = false) {
   return new Promise((resolve) => {
@@ -45,7 +45,7 @@ function prompt(question, isSecret = false) {
 async function main() {
   console.log('========================================================================');
   console.log('   SMERAM NATURALS - GODADDY LIVE SERVER PATCH DEPLOYMENT (TODAY)       ');
-  console.log('   Version: v1.0.15 | Release: ' + new Date().toISOString().replace('T', ' ').slice(0, 19));
+  console.log('   Code-only patch | Release: ' + new Date().toISOString().replace('T', ' ').slice(0, 19));
   console.log('   Customer Care WhatsApp: +91 75399 72026                              ');
   console.log('========================================================================\n');
 
@@ -93,14 +93,14 @@ async function main() {
     console.log('\n❌ FTP credentials not provided. Deployment aborted.');
     console.log('Alternative manual 1-click update:');
     console.log('  1. Open GoDaddy File Manager → httpdocs/');
-    console.log('  2. Upload zkc/deployment/smeram-patch-today-v1.0.15.zip (138 KB)');
-    console.log('  3. Click "Extract" to update all 16 files in 2 seconds!\n');
+    console.log('  2. Upload zkc/deployment/smeram-patch-current.zip');
+    console.log('  3. Click "Extract" to update the code-only files.\n');
     process.exit(0);
   }
 
   console.log(`\nConnecting to FTP ftp://${host}${remoteDir} ...`);
   const psScriptPath = path.resolve(__dirname, '../upload-today-patch.ps1');
-  const psCmd = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}" -FtpHost "${host}" -FtpUser "${user}" -FtpPass "${pass}" -RemoteDir "${remoteDir}"`;
+  const psCmd = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}" -FtpHost "${host}" -FtpUser "${user}" -FtpPass "${pass}" -RemoteDir "${remoteDir}" -PatchDir "${patchDir}"`;
   
   try {
     execSync(psCmd, { stdio: 'inherit' });

@@ -94,6 +94,7 @@ const MIGRATIONS = [
   \`payment_method\` VARCHAR(30) DEFAULT 'cod',
   \`payment_status\` VARCHAR(30) DEFAULT 'pending',
   \`order_status\` VARCHAR(30) DEFAULT 'new',
+  \`whatsapp_opt_in\` TINYINT(1) NOT NULL DEFAULT 0,
   \`created_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ${TABLE_OPTS}`,
       `CREATE TABLE IF NOT EXISTS \`store_pages\` (

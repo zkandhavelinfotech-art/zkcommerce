@@ -222,8 +222,8 @@ router.get('/:slug/shipping-rates', async (req, res) => {
 router.post('/:slug/checkout',async(req,res)=>{
   const client=await pool.connect();
   try{
-    const {customer,items,payment_method,address,coupon_code,shipping_rate_id}=req.body;
-    if(!customer||!customer.name||!Array.isArray(items)||!items.length||items.length>50)return res.status(400).json({error:'Customer name and 1-50 cart items are required'});
+    const {customer,items,payment_method,address,coupon_code,shipping_rate_id,whatsapp_opt_in}=req.body;
+    if(!customer||!customer.name||!customer.phone||!address||!address.line1||!address.city||!address.state||!/^\d{6}$/.test(String(address.pincode||''))||!Array.isArray(items)||!items.length||items.length>50)return res.status(400).json({error:'Enter a complete shipping address with a valid 6-digit PIN code'});
     if(!['cod','razorpay'].includes(payment_method))return res.status(400).json({error:'Choose COD or Razorpay payment'});
     if(customer.email&&!/^\S+@\S+\.\S+$/.test(String(customer.email)))return res.status(400).json({error:'Enter a valid email address'});
     await client.query('BEGIN');
@@ -257,7 +257,8 @@ router.post('/:slug/checkout',async(req,res)=>{
       discount_amount=coupon.discount_type==='percent'?Math.round(subtotal*Number(coupon.discount_value)/100):Math.min(subtotal,Number(coupon.discount_value));
     }
     let shipping_amount=0,selectedShippingRate=null;
-    if(shipping_rate_id){
+    // Built-in checkout badge: free shipping with GST included. It is not a database rate id.
+    if(shipping_rate_id&&shipping_rate_id!=='inclusive_gst_free_shipping'){
       const postal=String(address?.pincode||'').replace(/\D/g,'').slice(0,12);
       const {rows}=await client.query(`SELECT id,rate,free_above FROM store_shipping_rates WHERE id=$1 AND store_id=$2 AND active=true AND (postal_prefix IS NULL OR ($3<>'' AND $3 LIKE postal_prefix||'%')) FOR SHARE`,[shipping_rate_id,storeId,postal]);
       if(!rows.length){await client.query('ROLLBACK');return res.status(400).json({error:'The selected shipping rate is no longer available for this address'});}
@@ -268,24 +269,22 @@ router.post('/:slug/checkout',async(req,res)=>{
     const gst_rate=taxResult.rows.length?Number(taxResult.rows[0].default_rate):0;
     const taxable=Math.max(0,subtotal-discount_amount),gst_amount=Math.round(taxable*gst_rate/100),total_amount=taxable+gst_amount+shipping_amount;
     const orderNum='ZK'+Date.now()+Math.random().toString(36).slice(2,6).toUpperCase();
+    const shippingAddress={...(address||{}),whatsapp_opt_in:whatsapp_opt_in===true};
     const {rows:[order]}=await client.query(`INSERT INTO orders(store_id,order_number,customer_name,customer_email,customer_phone,shipping_address,items,subtotal,discount_amount,gst_rate,gst_amount,shipping_amount,shipping_rate_id,total_amount,coupon_code,payment_method,payment_status,status)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id,order_number,total_amount,discount_amount,gst_amount,shipping_amount`,
-      [storeId,orderNum,String(customer.name).slice(0,150),customer.email||null,customer.phone||null,JSON.stringify(address||{}),JSON.stringify(lineItems),subtotal,discount_amount,gst_rate,gst_amount,shipping_amount,selectedShippingRate,total_amount,coupon?.code||null,payment_method,payment_method==='cod'?'cod':'unpaid',payment_method==='cod'?'confirmed':'pending']);
+      [storeId,orderNum,String(customer.name).slice(0,150),customer.email||null,customer.phone||null,JSON.stringify(shippingAddress),JSON.stringify(lineItems),subtotal,discount_amount,gst_rate,gst_amount,shipping_amount,selectedShippingRate,total_amount,coupon?.code||null,payment_method,payment_method==='cod'?'cod':'unpaid',payment_method==='cod'?'confirmed':'pending']);
     for(const item of lineItems)await client.query('INSERT INTO order_items(order_id,product_id,quantity,price) VALUES($1,$2,$3,$4)',[order.id,item.id,item.quantity,item.price]);
     if(coupon)await client.query('UPDATE coupons SET used_count=used_count+1 WHERE id=$1',[coupon.id]);
     // COD is confirmed now, so its stock is taken in the same transaction; Razorpay orders take stock once paid.
     const lowStock=payment_method==='cod'?await inventory.deductForOrder(client,order.id):[];
     await client.query('COMMIT');
 
-    // WhatsApp: merchant templates. COD is confirmed now; Razorpay orders get the hand-off link after payment (payments.js).
-    let waResults = null, whatsappHandoffUrl = null;
+    // WhatsApp Business API: care alert is automatic; customer messages require checkout consent.
+    let waResults = null;
     if (payment_method === 'cod') {
       try {
-        const orderMessages = require('../services/order-messages');
         const storeInfo = (sr[0] && sr[0].published_snapshot && sr[0].published_snapshot.store) || sr[0];
-        const fullOrder = { ...order, customer_name: customer.name, customer_phone: customer.phone, customer_email: customer.email, shipping_address: address, payment_method: 'cod', payment_status: 'cod', items: lineItems, created_at: new Date() };
-        const waSettings = await orderMessages.loadSettings(storeId);
-        if (waSettings && waSettings.customer_handoff) whatsappHandoffUrl = orderMessages.linksFor(waSettings, fullOrder, storeInfo).care_url;
+        const fullOrder = { ...order, customer_name: customer.name, customer_phone: customer.phone, customer_email: customer.email, shipping_address: shippingAddress, payment_method: 'cod', payment_status: 'cod', items: lineItems, created_at: new Date() };
         // Customer confirmation + customer-care alert through the store's WhatsApp sender; low-stock alerts to the merchant.
         waResults = await waSender.notifyOrderConfirmed(storeId, { ...fullOrder, id: order.id }, storeInfo);
         waSender.notifyLowStock(storeId, lowStock);
@@ -327,9 +326,11 @@ router.post('/:slug/checkout',async(req,res)=>{
       shipping_amount,
       total_amount:order.total_amount,
       coupon_code:coupon?.code||null,
+      payment_method,
+      payment_status:payment_method==='cod'?'cod':'unpaid',
+      status:payment_method==='cod'?'confirmed':'pending',
       next:payment_method==='razorpay'?'razorpay_checkout':'confirmed',
-      whatsapp: waResults,
-      whatsapp_handoff_url: whatsappHandoffUrl
+      whatsapp_opt_in: whatsapp_opt_in===true
     });
   }catch(e){await client.query('ROLLBACK').catch(()=>{});res.status(e.status||500).json({error:e.message});}
   finally{client.release();}

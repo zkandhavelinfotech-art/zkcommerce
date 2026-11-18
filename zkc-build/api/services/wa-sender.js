@@ -149,13 +149,23 @@ async function send(storeId, { kind, to, text, order = null, store = {}, extra =
 
 // ── Business events ──
 
+function customerOptedIn(order) {
+  if (!order) return false;
+  if ([true, 1, '1', 'true'].includes(order.whatsapp_opt_in)) return true;
+  let address = order.shipping_address;
+  if (typeof address === 'string') {
+    try { address = JSON.parse(address); } catch (_) { address = null; }
+  }
+  return Boolean(address && [true, 1, '1', 'true'].includes(address.whatsapp_opt_in));
+}
+
 /** New confirmed/paid order: confirmation to the customer + alert to customer care. Never throws. */
 async function notifyOrderConfirmed(storeId, order, store) {
   try {
     const wa = await orderMessages.loadSettings(storeId);
     if (!wa || !wa.enabled) return [];
     const out = [];
-    if (order.customer_phone) out.push(await send(storeId, { kind: 'order_confirmation', to: order.customer_phone, text: orderMessages.render(wa.customer_template, order, store), order, store, orderId: order.id }));
+    if (order.customer_phone && customerOptedIn(order)) out.push(await send(storeId, { kind: 'order_confirmation', to: order.customer_phone, text: orderMessages.render(wa.customer_template, order, store), order, store, orderId: order.id }));
     if (wa.care_number) out.push(await send(storeId, { kind: 'care_alert', to: wa.care_number, text: orderMessages.render(wa.care_template, order, store), order, store, orderId: order.id }));
     return out;
   } catch (e) { console.warn('[WhatsApp] order notification error:', e.message); return []; }
@@ -165,7 +175,7 @@ async function notifyOrderConfirmed(storeId, order, store) {
 async function notifyShipment(storeId, order, store, stage) {
   try {
     const wa = await orderMessages.loadSettings(storeId);
-    if (!wa || !wa.enabled || !order.customer_phone) return [];
+    if (!wa || !wa.enabled || !order.customer_phone || !customerOptedIn(order)) return [];
     const kind = stage === 'delivered' ? 'order_delivered' : 'order_shipped';
     const tpl = stage === 'delivered' ? wa.delivered_template : wa.shipped_template;
     return [await send(storeId, { kind, to: order.customer_phone, text: orderMessages.render(tpl, order, store), order, store, orderId: order.id })];
@@ -201,4 +211,4 @@ async function markSent(storeId, id) {
   return rowCount > 0;
 }
 
-module.exports = { PROVIDERS, KINDS, loadSender, publicSender, saveSender, send, notifyOrderConfirmed, notifyShipment, notifyLowStock, outbox, markSent };
+module.exports = { PROVIDERS, KINDS, loadSender, publicSender, saveSender, send, customerOptedIn, notifyOrderConfirmed, notifyShipment, notifyLowStock, outbox, markSent };

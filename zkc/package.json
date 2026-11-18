@@ -9,6 +9,7 @@
     "start:stage": "node api/server.js --env=stage",
     "start:preview": "node api/server.js --env=preview",
     "publish:build": "node deployment/scripts/build-godaddy-bundle.js",
+    "publish:patch:build": "node deployment/scripts/build-godaddy-patch.js",
     "publish:ftp": "node deployment/scripts/ftp-publish-smeram.js",
     "health:dev": "curl http://localhost:3000/health",
     "db:status": "node scripts/db-migrate.js status",

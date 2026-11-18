@@ -406,7 +406,7 @@ function openInvoice() {
     }
   }
   // Open real invoice PDF / print view
-  window.open('../api.php?route=invoices/' + oid + '/pdf', '_blank');
+  window.open('../invoice.php?id=' + encodeURIComponent(oid) + '&download=1', '_blank', 'noopener');
 }
 
 function checkHoldNotice() {

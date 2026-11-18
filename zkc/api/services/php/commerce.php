@@ -335,7 +335,7 @@ function zkcOrderById($pdo, $id) {
 function zkcNotifyOrderConfirmed($pdo, $o) {
     if (!zkcConstOr('WA_ENABLED', false)) return [];
     $out = [];
-    if (!empty($o['customer_phone'])) $out[] = zkcWaSend($pdo, 'order_confirmation', $o['customer_phone'], zkcRenderOrderMessage(WA_CUSTOMER_TEMPLATE, $o), $o, (int)$o['id']);
+    if (!empty($o['customer_phone']) && !empty($o['whatsapp_opt_in'])) $out[] = zkcWaSend($pdo, 'order_confirmation', $o['customer_phone'], zkcRenderOrderMessage(WA_CUSTOMER_TEMPLATE, $o), $o, (int)$o['id']);
     if (zkcConstOr('WA_CARE_NUMBER', '') !== '') $out[] = zkcWaSend($pdo, 'care_alert', WA_CARE_NUMBER, zkcRenderOrderMessage(WA_CARE_TEMPLATE, $o), $o, (int)$o['id']);
     return $out;
 }
@@ -351,7 +351,7 @@ function zkcNotifyLowStock($pdo, $crossings) {
 }
 
 function zkcNotifyShipment($pdo, $o, $stage) {
-    if (!zkcConstOr('WA_ENABLED', false) || empty($o['customer_phone'])) return [];
+    if (!zkcConstOr('WA_ENABLED', false) || empty($o['customer_phone']) || empty($o['whatsapp_opt_in'])) return [];
     $kind = $stage === 'delivered' ? 'order_delivered' : 'order_shipped';
     $tpl = $stage === 'delivered' ? zkcConstOr('WA_DELIVERED_TEMPLATE', '') : zkcConstOr('WA_SHIPPED_TEMPLATE', '');
     return [zkcWaSend($pdo, $kind, $o['customer_phone'], zkcRenderOrderMessage($tpl, $o), $o, (int)$o['id'])];
@@ -359,7 +359,7 @@ function zkcNotifyShipment($pdo, $o, $stage) {
 
 // ── Payment and status changes ──────────────────────────
 
-/** Order became paid (verify or webhook, whichever is first): stock, notifications, hand-off link, invoice generation. */
+/** Order became paid (verify or webhook, whichever is first): stock, consented notifications, and invoice generation. */
 function zkcAfterPaid($pdo, $orderId) {
     $pdo->beginTransaction();
     try { $low = zkcDeductForOrder($pdo, $orderId, true); $pdo->commit(); }

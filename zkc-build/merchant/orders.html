@@ -150,7 +150,7 @@ async function loadOrders(page, status) {
       + '<td>' + dt + '</td>'
       + '<td><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
       + '  <a href="orders-detail.html?id=' + o.id + '" class="btn btn-secondary btn-sm">View Details</a>'
-      + (isPaid ? '  <a href="../api.php?route=invoices/' + o.id + '/pdf" target="_blank" class="btn btn-secondary btn-sm">Invoice</a>' : '  <span style="font-size:11px;color:var(--zk-muted);padding:3px 6px;background:#f1f5f9;border-radius:4px" title="Invoices are generated only after payment is received">No Invoice (Unpaid)</span>')
+      + (isPaid ? '  <a href="../invoice.php?id=' + encodeURIComponent(o.id) + '&download=1" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Invoice</a>' : '  <span style="font-size:11px;color:var(--zk-muted);padding:3px 6px;background:#f1f5f9;border-radius:4px" title="Invoices are generated only after payment is received">No Invoice (Unpaid)</span>')
       + '  <a href="' + (o.whatsapp && o.whatsapp.care_url ? o.whatsapp.care_url : ('https://wa.me/917539972026?text=' + encodeURIComponent('🛍️ Order: ' + ordNum + ' | ' + custName + ' | ' + total))) + '" target="_blank" class="btn btn-secondary btn-sm" style="color:#047857;font-weight:700">↪ Care</a>'
       + '</div></td>'
       + '</tr>';

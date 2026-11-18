@@ -1171,10 +1171,9 @@ async function renderWhatsAppSettings(host) {
   const chips = d.placeholders.map(p => `<button type="button" class="btn" data-ph="${esc(p.key)}" title="${esc(p.label)}" style="height:26px;font-size:11px;padding:0 8px">{${esc(p.key)}}</button>`).join(' ');
   const ta = (id, value) => `<textarea id="${id}" rows="9" style="width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace;padding:8px;border:1px solid #cbd5e1;border-radius:8px">${esc(value)}</textarea>`;
   card.innerHTML = `<h3 style="font-size:15px;margin-bottom:4px">WhatsApp order messages</h3>
-    <p style="font-size:12px;color:#64748b;margin-bottom:12px;max-width:760px">Works without the WhatsApp Business API: after checkout the shopper's WhatsApp opens with the order typed out to your customer-care number (they tap Send), and the 📦 Packaging page has one-click buttons to message customers. If an official provider is connected, the same messages are sent automatically.</p>
+    <p style="font-size:12px;color:#64748b;margin-bottom:12px;max-width:760px">ZKWAConnect sends messages through the configured WhatsApp Business API. Store-care alerts are automatic; customer confirmations and tracking updates are automatic only after the shopper opts in at checkout.</p>
     <div style="display:grid;gap:10px;max-width:760px">
       <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="wa_enabled" ${s.enabled ? 'checked' : ''}> <b>Use WhatsApp order messages</b></label>
-      <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="wa_handoff" ${s.customer_handoff ? 'checked' : ''}> After an order is placed / paid, open the shopper's WhatsApp to send the order to customer care</label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <label style="font-size:11px;font-weight:700;color:#475569">Customer-care WhatsApp number<input id="wa_number" value="${esc(s.care_number ? '+' + s.care_number : '')}" placeholder="+91 75399 72026" style="width:100%;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px"></label>
         <label style="font-size:11px;font-weight:700;color:#475569">Shown as<input id="wa_label" value="${esc(s.care_label)}" placeholder="Smeram Customer Care" style="width:100%;padding:7px 9px;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px"></label>
@@ -1212,7 +1211,7 @@ async function renderWhatsAppSettings(host) {
     try {
       const r = await api('/orders/whatsapp-settings?store_id=' + encodeURIComponent(store.id), { method: 'PUT', body: JSON.stringify({
         enabled: document.getElementById('wa_enabled').checked,
-        customer_handoff: document.getElementById('wa_handoff').checked,
+        customer_handoff: false,
         care_number: document.getElementById('wa_number').value.trim(),
         care_label: document.getElementById('wa_label').value.trim(),
         care_template: document.getElementById('wa_care_tpl').value,

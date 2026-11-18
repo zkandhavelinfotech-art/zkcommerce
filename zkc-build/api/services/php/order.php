@@ -263,19 +263,12 @@ if (function_exists('zkcOrderWhatsAppLinks')) {
         'payment_status' => $payStatus ?? ($method === 'razorpay' ? 'paid' : 'pending'),
         'created_at' => date('Y-m-d H:i:s')
     ];
-    $waLinks = zkcOrderWhatsAppLinks($orderData);
-    $waHandoff = $waLinks['care_url'] ?? null;
-    $waCareUrl = $waLinks['care_url'] ?? null;
-    $waCustomerUrl = $waLinks['customer_url'] ?? null;
 }
 
 echo json_encode([
     'success' => true,
     'order_id' => $orderId,
     'order_number' => $orderNum,
-    'whatsapp_handoff_url' => $waHandoff,
-    'whatsapp_care_url' => $waCareUrl,
-    'whatsapp_customer_url' => $waCustomerUrl,
     'saved_to_mysql' => $savedToDb,
     'db_error' => $dbError,
     'message' => 'Order registered successfully!'

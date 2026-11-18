@@ -532,7 +532,7 @@ app.get('/api/storefront/:slug/shipping-rates', (req, res) => res.json({ rates: 
 app.post('/api/storefront/:slug/checkout', async (req, res) => {
   try {
     const { customer = {}, address = {}, items = [], coupon_code } = req.body || {};
-    if (!customer.name || !customer.phone || !address.line1) return res.status(400).json({ error: 'Name, phone and delivery address are required.' });
+    if (!customer.name || !customer.phone || !address.line1 || !address.city || !address.state || !/^\d{6}$/.test(String(address.pincode || ''))) return res.status(400).json({ error: 'Enter a complete shipping address with a valid 6-digit PIN code.' });
     const payMethod = req.body.payment_method === 'razorpay' ? 'razorpay' : 'cod';
     if (!CHECKOUT[payMethod]) return res.status(400).json({ error: payMethod === 'cod' ? 'Cash on delivery is not available for this store. Please pay online.' : 'Online payment is not available for this store.' });
     if (coupon_code) return res.status(400).json({ error: CHECKOUT.show_coupon ? 'Coupon codes are not available on this site yet.' : 'Discount codes are not available for this store.' });
@@ -549,9 +549,9 @@ app.post('/api/storefront/:slug/checkout', async (req, res) => {
     const orderNumber = 'ORD-' + Date.now().toString(36).toUpperCase();
     // COD orders are confirmed now; Razorpay orders stay 'pending' until the payment is verified.
     await db.query('INSERT INTO orders (store_id, order_number, customer_name, customer_phone, customer_email, shipping_address, city, state, pincode, items_json, total_amount, payment_method, payment_status, order_status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',
-      [STORE_ID, orderNumber, customer.name, customer.phone, customer.email || '', address.line1, address.city || '', address.state || '', address.pincode || '', JSON.stringify(lines), total, payMethod, payMethod === 'cod' ? 'cod' : 'unpaid', payMethod === 'cod' ? 'new' : 'pending']);
+      [STORE_ID, orderNumber, customer.name, customer.phone, customer.email || '', address.line1, address.city || '', address.state || '', address.pincode || '', JSON.stringify(lines), total, payMethod, payMethod === 'cod' ? 'cod' : 'unpaid', payMethod === 'cod' ? 'confirmed' : 'pending']);
     const { rows: [created] } = await db.query('SELECT id FROM orders WHERE order_number=$1', [orderNumber]);
-    res.json({ order_id: created.id, order_number: orderNumber, total, next: payMethod === 'cod' ? 'confirmed' : 'razorpay_checkout' });
+    res.json({ order_id: created.id, order_number: orderNumber, total, payment_method: payMethod, payment_status: payMethod === 'cod' ? 'cod' : 'unpaid', status: payMethod === 'cod' ? 'confirmed' : 'pending', next: payMethod === 'cod' ? 'confirmed' : 'razorpay_checkout' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -732,12 +732,9 @@ function phpFetchShim(prefix = '') {
   return `<script src="${prefix}zk-env.js"></script>`;
 }
 
-// Static hosting has no backend: checkout and contact forms hand off to WhatsApp instead.
-function staticFetchShim(store, products) {
-  const catalog = {};
-  for (const p of products) catalog[p.id] = { n: p.name, p: Number(p.price) || 0 };
-  const wa = String(store.whatsapp_number || '').replace(/\D/g, '');
-  return `<script>(function(){var f=window.fetch,C=${JSON.stringify(catalog).replace(/</g, '\\u003c')},W=${JSON.stringify(wa)};function J(b,s){return Promise.resolve(new Response(JSON.stringify(b),{status:s||200,headers:{'Content-Type':'application/json'}}))}window.fetch=function(u,o){if(typeof u!=='string'||u.indexOf('/api/')!==0)return f.call(this,u,o);var b={};try{b=JSON.parse(o&&o.body||'{}')}catch(e){}if(/\\/shipping-rates/.test(u))return J({rates:[]});if(/\\/checkout$/.test(u)){var n='WEB-'+String(Date.now()).slice(-6),t=0,l=(b.items||[]).map(function(i){var p=C[i.product_id]||{n:'Item '+i.product_id,p:0};t+=p.p*i.quantity;return '- '+p.n+' x '+i.quantity});var a=b.address||{},c=b.customer||{};var m='New order '+n+'\\n'+l.join('\\n')+'\\nTotal: Rs.'+t+'\\n\\n'+(c.name||'')+' / '+(c.phone||'')+'\\n'+[a.line1,a.city,a.state,a.pincode].filter(Boolean).join(', ');if(W)window.open('https://wa.me/'+W+'?text='+encodeURIComponent(m),'_blank');return J({order_number:n,next:'confirmed'})}if(/\\/notify\\//.test(u)){if(W)window.open('https://wa.me/'+W+'?text='+encodeURIComponent(Object.keys(b).map(function(k){return k+': '+b[k]}).join('\\n')),'_blank');return J({ok:true})}return J({error:'This feature needs the PHP or Node.js package'},400)}})();</script>`;
+// Static hosting has no trusted backend, so it must not simulate checkout or expose manual WhatsApp hand-offs.
+function staticFetchShim() {
+  return `<script>(function(){var f=window.fetch;function J(b,s){return Promise.resolve(new Response(JSON.stringify(b),{status:s||503,headers:{'Content-Type':'application/json'}}))}window.fetch=function(u,o){if(typeof u!=='string'||u.indexOf('/api/')!==0)return f.call(this,u,o);if(/\\/shipping-rates/.test(u))return J({rates:[]},200);return J({error:'Checkout and messaging require a connected PHP or Node.js backend.'},503)}})();</script>`;
 }
 
 // Exported sites must work at the domain root AND in a subfolder (e.g. public_html/published/),
@@ -842,7 +839,7 @@ define('CHECKOUT_RAZORPAY', ${checkout.razorpay ? 'true' : 'false'});
 define('CHECKOUT_COUPON', ${checkout.show_coupon ? 'true' : 'false'});
 // Set in Store Builder → Settings → WhatsApp order messages ({fields} are filled per order).
 define('WA_ENABLED', ${wa.enabled ? 'true' : 'false'});
-define('WA_HANDOFF', ${wa.customer_handoff ? 'true' : 'false'});
+define('WA_HANDOFF', false);
 define('WA_CARE_NUMBER', ${phpString(wa.care_number || '')});
 define('WA_CARE_LABEL', ${phpString(wa.care_label || '')});
 define('WA_CARE_TEMPLATE', ${phpString(wa.care_template || '')});

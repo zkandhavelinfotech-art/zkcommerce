@@ -33,6 +33,7 @@
     "docker:build": "docker build -f Dockerfile -t zkcommerce-api:latest .",
     "db:migrate:dev": "node zkc-build/deployment/scripts/neon-migrate.js",
     "db:migrate:neon": "node zkc-build/deployment/scripts/neon-migrate.js",
+    "publish:patch:build": "node zkc/deployment/scripts/build-godaddy-patch.js",
     "publish:patch": "node zkc/deployment/scripts/ftp-publish-patch.js",
     "publish:patch:ps": "powershell -ExecutionPolicy Bypass -File zkc/deployment/upload-today-patch.ps1",
     "build:godaddy": "node scripts/build-godaddy-nodejs.js",

@@ -9,3 +9,4 @@ uploads/temp/
 
 deployment/smeram-api/
 deployment/*.zip
+deployment/smeram-patch-current/
