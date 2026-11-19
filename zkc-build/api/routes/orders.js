@@ -221,4 +221,131 @@ router.get('/:id/invoice', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Bulk Cancel & Delete Orders (cascades across invoices, packaging, shipping, items, payments) ──
+async function handleBulkDeleteOrders(req, res) {
+  const client = await pool.connect();
+  try {
+    const store = await storeFor(req);
+    if (!store) return res.status(404).json({ error: 'Store not found' });
+
+    const rawIds = Array.isArray(req.body?.ids) ? req.body.ids : (Array.isArray(req.body?.order_ids) ? req.body.order_ids : []);
+    const ids = rawIds.map(Number).filter(n => Number.isSafeInteger(n) && n > 0).slice(0, 1000);
+    if (!ids.length) return res.status(400).json({ error: 'Select at least one valid order to cancel and delete' });
+
+    await client.query('BEGIN');
+    const { rows: orders } = await client.query(
+      'SELECT * FROM orders WHERE id = ANY($1) AND store_id = $2 FOR UPDATE',
+      [ids, store.id]
+    );
+    if (!orders.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'No matching orders found for this store' });
+    }
+
+    const matchedIds = orders.map(o => o.id);
+
+    // 1. Restock inventory for deducted orders
+    for (const o of orders) {
+      if (o.status !== 'cancelled') {
+        try {
+          await inventory.restockForOrder(client, o.id);
+        } catch (err) {
+          console.warn('[Orders] Restock on bulk delete warning:', err.message);
+        }
+      }
+    }
+
+    // 2. Cascade delete all linked records (invoices, shipping/packaging records, reviews, loyalty, items)
+    await client.query('DELETE FROM returns WHERE order_id = ANY($1)', [matchedIds]);
+    await client.query('DELETE FROM reviews WHERE order_id = ANY($1)', [matchedIds]);
+    await client.query('DELETE FROM loyalty_points WHERE order_id = ANY($1)', [matchedIds]);
+    await client.query('DELETE FROM inventory_log WHERE order_id = ANY($1)', [matchedIds]);
+    await client.query('DELETE FROM invoices WHERE order_id = ANY($1)', [matchedIds]);
+    await client.query('DELETE FROM payments WHERE order_id = ANY($1)', [matchedIds]);
+    await client.query('DELETE FROM order_items WHERE order_id = ANY($1)', [matchedIds]);
+
+    try { await client.query('DELETE FROM packaging_manifests WHERE order_id = ANY($1)', [matchedIds]); } catch (_) {}
+    try { await client.query('DELETE FROM shipments WHERE order_id = ANY($1)', [matchedIds]); } catch (_) {}
+    try { await client.query('DELETE FROM smeram_invoices WHERE order_id = ANY($1)', [matchedIds]); } catch (_) {}
+
+    // 3. Delete from orders table
+    const { rowCount } = await client.query('DELETE FROM orders WHERE id = ANY($1) AND store_id = $2', [matchedIds, store.id]);
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      deleted_count: rowCount,
+      deleted_ids: matchedIds,
+      message: `${rowCount} order(s) cancelled and completely deleted (including packaging, invoice, and shipping records).`
+    });
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
+  }
+}
+
+router.post('/bulk-delete', auth, handleBulkDeleteOrders);
+router.delete('/bulk-delete', auth, handleBulkDeleteOrders);
+
+// ── Cancel & Delete Single Order (cascades across invoices, packaging, shipping, items, payments) ──
+router.delete('/:id', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const store = await storeFor(req);
+    if (!store) return res.status(404).json({ error: 'Store not found' });
+
+    const orderId = Number(req.params.id);
+    if (!Number.isSafeInteger(orderId) || orderId <= 0) return res.status(400).json({ error: 'Invalid order ID' });
+
+    await client.query('BEGIN');
+    const { rows: [order] } = await client.query(
+      'SELECT * FROM orders WHERE id=$1 AND store_id=$2 FOR UPDATE',
+      [orderId, store.id]
+    );
+    if (!order) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // 1. Restock inventory if not already cancelled
+    if (order.status !== 'cancelled') {
+      try {
+        await inventory.restockForOrder(client, order.id);
+      } catch (err) {
+        console.warn('[Orders] Restock on delete warning:', err.message);
+      }
+    }
+
+    // 2. Cascade delete all linked records (invoices, shipping, packaging, payments, items)
+    await client.query('DELETE FROM returns WHERE order_id = $1', [orderId]);
+    await client.query('DELETE FROM reviews WHERE order_id = $1', [orderId]);
+    await client.query('DELETE FROM loyalty_points WHERE order_id = $1', [orderId]);
+    await client.query('DELETE FROM inventory_log WHERE order_id = $1', [orderId]);
+    await client.query('DELETE FROM invoices WHERE order_id = $1', [orderId]);
+    await client.query('DELETE FROM payments WHERE order_id = $1', [orderId]);
+    await client.query('DELETE FROM order_items WHERE order_id = $1', [orderId]);
+
+    try { await client.query('DELETE FROM packaging_manifests WHERE order_id = $1', [orderId]); } catch (_) {}
+    try { await client.query('DELETE FROM shipments WHERE order_id = $1', [orderId]); } catch (_) {}
+    try { await client.query('DELETE FROM smeram_invoices WHERE order_id = $1', [orderId]); } catch (_) {}
+
+    // 3. Delete from orders table
+    await client.query('DELETE FROM orders WHERE id = $1 AND store_id = $2', [orderId, store.id]);
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      message: `Order #${order.order_number || orderId} was cancelled and completely deleted (including packaging, invoice, and shipping records).`,
+      deleted_id: orderId
+    });
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

@@ -386,15 +386,16 @@
       vertical-align: middle;
     }
     tr:hover td { background: #fafbfc; }
-    #ordersTable { min-width: 1120px; table-layout: fixed; }
-    #ordersTable th:nth-child(1) { width: 13%; }
-    #ordersTable th:nth-child(2) { width: 18%; }
-    #ordersTable th:nth-child(3) { width: 8%; }
+    #ordersTable { min-width: 1160px; table-layout: fixed; }
+    #ordersTable th:nth-child(1) { width: 44px; text-align: center; }
+    #ordersTable th:nth-child(2) { width: 13%; }
+    #ordersTable th:nth-child(3) { width: 17%; }
     #ordersTable th:nth-child(4) { width: 8%; }
-    #ordersTable th:nth-child(5) { width: 9%; }
-    #ordersTable th:nth-child(6) { width: 12%; }
-    #ordersTable th:nth-child(7) { width: 20%; }
-    #ordersTable th:nth-child(8) { width: 12%; }
+    #ordersTable th:nth-child(5) { width: 8%; }
+    #ordersTable th:nth-child(6) { width: 9%; }
+    #ordersTable th:nth-child(7) { width: 12%; }
+    #ordersTable th:nth-child(8) { width: 19%; }
+    #ordersTable th:nth-child(9) { width: 14%; }
     #ordersTable td { overflow-wrap: anywhere; }
     .order-action-grid { display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:128px; }
     .order-action-grid .action-save { grid-column:1/-1; }
@@ -753,10 +754,26 @@
             <button class="btn-primary" id="btnOrdersToPackaging" style="margin-left:auto">📮 Print packaging labels</button>
           </div>
 
+          <!-- Bulk Action Toolbar -->
+          <div id="ordersBulkBar" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 14px;margin-bottom:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="font-size:13px;font-weight:700;color:#991b1b">
+                <span id="orderSelectedCount">0</span> order(s) selected
+              </span>
+              <button type="button" class="btn-outline btn-sm" onclick="deselectAllOrders()" style="font-size:11px;padding:2px 8px;background:#fff">Clear Selection</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button type="button" class="btn-primary btn-sm" style="background:#dc2626;border-color:#b91c1c;color:#fff;font-weight:700;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;cursor:pointer" onclick="bulkCancelSelectedOrders()">
+                🗑️ Cancel &amp; Delete Selected Orders
+              </button>
+            </div>
+          </div>
+
           <div class="table-wrap">
             <table id="ordersTable">
               <thead>
                 <tr>
+                  <th style="width:36px;text-align:center"><input type="checkbox" id="orderSelectAll" onchange="toggleSelectAllOrders(this)" title="Select all orders"></th>
                   <th>Order #</th>
                   <th>Customer & Phone</th>
                   <th>Date</th>
@@ -767,7 +784,7 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody><tr><td colspan="8" style="text-align:center;color:var(--muted)">Loading orders…</td></tr></tbody>
+              <tbody><tr><td colspan="9" style="text-align:center;color:var(--muted)">Loading orders…</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1922,17 +1939,21 @@
 
     async function loadOrders() {
       try {
+        deselectAllOrders();
         const status = document.getElementById('orderStatusFilter').value;
         const search = document.getElementById('orderSearchInput').value.trim();
         const data = await req('/orders?store_id=' + currentStoreId + '&status=' + encodeURIComponent(status) + '&search=' + encodeURIComponent(search));
         const tbody = document.querySelector('#ordersTable tbody');
         const orders = data.orders || [];
         if (!orders.length) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No orders match the current filter.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted)">No orders match the current filter.</td></tr>';
           return;
         }
         tbody.innerHTML = orders.map(o => `
-          <tr>
+          <tr id="order-row-${o.id}">
+            <td style="text-align:center;vertical-align:middle">
+              <input type="checkbox" class="order-cb" value="${o.id}" data-orderno="${o.order_number}" onchange="updateOrderSelection()">
+            </td>
             <td data-label="Order"><strong>${o.order_number}</strong></td>
             <td data-label="Customer">
               <div>${o.customer_name || 'Guest'}</div>
@@ -1975,6 +1996,7 @@
                 <button class="btn-primary btn-sm action-save" onclick="saveOrderFulfillment('${o.id}')">Save changes</button>
                 ${(o.payment_status === 'paid' || (o.payment_method === 'cod' && o.status !== 'cancelled')) ? `<button class="btn-outline btn-sm" onclick="downloadInvoice('${o.id}', '${o.order_number}')">Invoice</button>` : `<span class="badge badge-unpaid" style="font-size:10px;grid-column:1/-1;justify-content:center" title="Online invoices are available after payment">Unpaid — no invoice</span>`}
                 <a class="btn-outline btn-sm" style="text-decoration:none" href="orders-detail.html?id=${o.id}">Details</a>
+                <button type="button" class="btn-outline btn-sm" style="grid-column:1/-1;color:#dc2626;border-color:#fca5a5;background:#fff5f5;font-weight:700;padding:4px 6px;margin-top:2px;cursor:pointer" onclick="deleteOrderPrompt('${o.id}', '${o.order_number}')" title="Cancel and permanently delete order, invoice, packaging, and shipping">❌ Cancel &amp; Delete</button>
               </div>
             </td>
           </tr>
@@ -1982,8 +2004,105 @@
       } catch (e) { notify(e.message, true); }
     }
 
+    function toggleSelectAllOrders(master) {
+      const cbs = document.querySelectorAll('.order-cb');
+      cbs.forEach(cb => { cb.checked = !!master.checked; });
+      updateOrderSelection();
+    }
+
+    function deselectAllOrders() {
+      const master = document.getElementById('orderSelectAll');
+      if (master) { master.checked = false; master.indeterminate = false; }
+      document.querySelectorAll('.order-cb').forEach(cb => { cb.checked = false; });
+      updateOrderSelection();
+    }
+
+    function updateOrderSelection() {
+      const cbs = Array.from(document.querySelectorAll('.order-cb'));
+      const checked = cbs.filter(cb => cb.checked);
+      const count = checked.length;
+      const bar = document.getElementById('ordersBulkBar');
+      const countEl = document.getElementById('orderSelectedCount');
+      const master = document.getElementById('orderSelectAll');
+      if (countEl) countEl.textContent = count;
+      if (bar) bar.style.display = count > 0 ? 'flex' : 'none';
+      if (master) {
+        master.checked = (cbs.length > 0 && checked.length === cbs.length);
+        master.indeterminate = (checked.length > 0 && checked.length < cbs.length);
+      }
+    }
+
+    async function deleteOrderPrompt(orderId, orderNo) {
+      const name = orderNo || ('Order #' + orderId);
+      const confirmed = confirm(
+        '⚠️ Are you sure you want to CANCEL and PERMANENTLY DELETE ' + name + '?\n\n' +
+        'This will immediately:\n' +
+        '• Delete this order from the orders table\n' +
+        '• Delete associated packaging manifests & shipping tracking\n' +
+        '• Delete associated GST tax invoices & payment records\n' +
+        '• Return reserved items back to inventory\n\n' +
+        'This action cannot be undone. Click OK to proceed.'
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await req('/orders/' + orderId, {
+          method: 'DELETE',
+          body: JSON.stringify({ store_id: currentStoreId })
+        });
+        notify(res?.message || ('Order ' + name + ' was cancelled and permanently deleted.'));
+        deselectAllOrders();
+        await loadOrders();
+        await loadMetrics();
+        if (typeof loadInvoices === 'function') loadInvoices();
+      } catch (err) {
+        notify('Failed to delete order: ' + err.message, true);
+      }
+    }
+
+    async function bulkCancelSelectedOrders() {
+      const checked = Array.from(document.querySelectorAll('.order-cb:checked'));
+      if (!checked.length) {
+        notify('Please select at least one order to cancel & delete.', true);
+        return;
+      }
+      const ids = checked.map(cb => Number(cb.value));
+      const orderNos = checked.map(cb => cb.getAttribute('data-orderno') || ('#' + cb.value)).slice(0, 5).join(', ');
+      const moreText = checked.length > 5 ? ' and ' + (checked.length - 5) + ' more' : '';
+
+      const confirmed = confirm(
+        '⚠️ Are you sure you want to CANCEL and PERMANENTLY DELETE ' + checked.length + ' selected order(s)?\n(' + orderNos + moreText + ')\n\n' +
+        'This will immediately:\n' +
+        '• Delete all selected orders from the database\n' +
+        '• Delete their packaging manifests, courier tracking, and shipping records\n' +
+        '• Delete their GST invoices and payment receipts\n' +
+        '• Return reserved items back to store inventory\n\n' +
+        'This action cannot be undone. Click OK to delete.'
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await req('/orders/bulk-delete', {
+          method: 'POST',
+          body: JSON.stringify({ store_id: currentStoreId, ids: ids })
+        });
+        notify(res?.message || (checked.length + ' orders cancelled and permanently deleted.'));
+        deselectAllOrders();
+        await loadOrders();
+        await loadMetrics();
+        if (typeof loadInvoices === 'function') loadInvoices();
+      } catch (err) {
+        notify('Failed to bulk delete orders: ' + err.message, true);
+      }
+    }
+
     async function saveOrderFulfillment(orderId) {
       const status = document.getElementById('status-' + orderId).value;
+      if (status === 'cancelled') {
+        const orderNo = document.querySelector('#order-row-' + orderId + ' .order-cb')?.getAttribute('data-orderno') || ('Order #' + orderId);
+        deleteOrderPrompt(orderId, orderNo);
+        return;
+      }
       const courier = document.getElementById('courier-' + orderId).value.trim();
       const tracking_number = document.getElementById('track-' + orderId).value.trim();
       try {

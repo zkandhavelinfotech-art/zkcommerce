@@ -125,11 +125,26 @@ async function loadOrders(page,status){
         +'<td><span class="badge">'+(o.payment_method||'razorpay')+'</span></td>'
         +'<td>'+(o.status==='on_hold'?'<span class="badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;font-weight:700">⏸ On Hold</span>':'<span class="status status-'+o.status+'">'+o.status+'</span>')+'</td>'
         +'<td>'+fmt.date(o.created_at)+'</td>'
-        +'<td><a href="orders-detail.html?id='+o.id+'" class="btn btn-secondary btn-sm">View</a></td></tr>';
+        +'<td><div style="display:flex;gap:6px;align-items:center"><a href="orders-detail.html?id='+o.id+'" class="btn btn-secondary btn-sm">View</a><button type="button" class="btn btn-sm" style="color:#dc2626;background:#fff5f5;border:1px solid #fca5a5;cursor:pointer;font-weight:700" onclick="deleteOrder('+o.id+', \''+fmt.orderId(o.id)+'\')">❌ Cancel &amp; Delete</button></div></td></tr>';
     }).join('');
     var t=document.getElementById('orders-total');
     if(t)t.textContent=(d.total||d.orders.length)+' orders';
   }catch(e){console.warn('Orders:',e.message);}
+}
+
+async function deleteOrder(id, num) {
+  if (!confirm('⚠️ Are you sure you want to CANCEL and PERMANENTLY DELETE ' + num + '?\n\nThis will delete the order, invoice, packaging, and shipping tracking records.')) return;
+  try {
+    var token = (window.auth && window.auth.token) ? window.auth.token : '';
+    var headers = { 'Content-Type': 'application/json' };
+    if (token && !token.startsWith('demo_token')) headers['Authorization'] = 'Bearer ' + token;
+    var r = await fetch('../api.php?route=orders/' + id, { method: 'DELETE', headers: headers });
+    var d = await r.json();
+    alert(d.message || ('Order ' + num + ' was cancelled and deleted.'));
+    loadOrders(1);
+  } catch(e) {
+    alert('Failed to delete order: ' + e.message);
+  }
 }
 document.addEventListener('DOMContentLoaded',function(){loadOrders(1);});
 </script>

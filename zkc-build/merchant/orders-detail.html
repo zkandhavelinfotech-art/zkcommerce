@@ -193,6 +193,7 @@ body{background:var(--zk-chalk);overflow-x:hidden}
             </select>
           </div>
           <button class="btn btn-primary btn-sm btn-full" onclick="saveFulfillment()">Save Shipping &amp; Status</button>
+          <button class="btn btn-outline btn-sm btn-full" style="margin-top:8px;color:#dc2626;border-color:#fca5a5;background:#fff5f5;font-weight:700;cursor:pointer" onclick="deleteCurrentOrder()">❌ Cancel &amp; Delete Order</button>
         </div>
 
         <!-- Payment Details -->
@@ -411,6 +412,11 @@ async function saveFulfillment() {
   var tracking = document.getElementById('awb-number').value.trim();
   var status = document.getElementById('select-status').value;
 
+  if (status === 'cancelled') {
+    deleteCurrentOrder();
+    return;
+  }
+
   try {
     var r = await fetch('../api.php?route=orders/' + oid + '/status', {
       method: 'POST',
@@ -423,6 +429,39 @@ async function saveFulfillment() {
       loadOrder();
     } else {
       alert(d.error || 'Update failed');
+    }
+  } catch(e) {
+    alert('Failed to connect to server: ' + e.message);
+  }
+}
+
+async function deleteCurrentOrder() {
+  var oid = getOrderId();
+  if (!oid) return;
+  var orderNo = CURRENT_ORDER?.order_number || ('Order #' + oid);
+  var confirmed = confirm(
+    '⚠️ Are you sure you want to CANCEL and PERMANENTLY DELETE ' + orderNo + '?\n\n' +
+    'This will immediately:\n' +
+    '• Delete this order from the orders table\n' +
+    '• Delete associated packaging manifests & shipping tracking\n' +
+    '• Delete associated GST tax invoices & payment records\n' +
+    '• Return reserved items back to inventory\n\n' +
+    'This action cannot be undone. Click OK to proceed.'
+  );
+  if (!confirmed) return;
+
+  try {
+    var endpoint = (typeof API_BASE !== 'undefined' && API_BASE) ? (API_BASE + 'orders/' + oid) : ('/api/orders/' + oid);
+    var r = await fetch(endpoint, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('zk_token') || '') }
+    });
+    var d = await r.json();
+    if (d && (d.success || !d.error)) {
+      alert(d.message || ('Order ' + orderNo + ' was cancelled and permanently deleted.'));
+      window.location.href = 'index.html';
+    } else {
+      alert(d.error || 'Failed to delete order');
     }
   } catch(e) {
     alert('Failed to connect to server: ' + e.message);

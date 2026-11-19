@@ -1784,6 +1784,89 @@ if (preg_match('#^orders/(\d+)/status$#', $route, $m) && ($method === 'PUT' || $
     respond(['success' => true]);
 }
 
+// Bulk Cancel & Delete orders (deletes order, invoices, order_items, payments, shipments, packaging)
+if (($route === 'orders/bulk-delete' || $route === 'orders/delete') && ($method === 'POST' || $method === 'DELETE')) {
+    $rawIds = $body['ids'] ?? ($body['order_ids'] ?? []);
+    if (!is_array($rawIds)) $rawIds = [];
+    $ids = array_slice(array_values(array_filter(array_map('intval', $rawIds), function($n) { return $n > 0; })), 0, 1000);
+    if (!$ids) respond(['error' => 'Select at least one valid order to cancel and delete'], 400);
+
+    $deletedCount = 0;
+    if ($pdo) {
+        $tbl = zkcGetOrdersTable($pdo);
+        $marks = implode(',', array_fill(0, count($ids), '?'));
+        
+        // 1. Delete associated invoices
+        try {
+            $stmtInv = $pdo->prepare("DELETE FROM `invoices` WHERE order_id IN ($marks)");
+            $stmtInv->execute($ids);
+        } catch (Exception $e) {}
+        try {
+            $stmtSmeramInv = $pdo->prepare("DELETE FROM `smeram_invoices` WHERE order_id IN ($marks)");
+            $stmtSmeramInv->execute($ids);
+        } catch (Exception $e) {}
+
+        // 2. Delete associated order items
+        try {
+            $stmtItems = $pdo->prepare("DELETE FROM `order_items` WHERE order_id IN ($marks)");
+            $stmtItems->execute($ids);
+        } catch (Exception $e) {}
+
+        // 3. Delete associated payments
+        try {
+            $stmtPayments = $pdo->prepare("DELETE FROM `payments` WHERE order_id IN ($marks)");
+            $stmtPayments->execute($ids);
+        } catch (Exception $e) {}
+
+        // 4. Delete associated shipments / packaging manifests if any
+        try {
+            $stmtShip = $pdo->prepare("DELETE FROM `shipments` WHERE order_id IN ($marks)");
+            $stmtShip->execute($ids);
+        } catch (Exception $e) {}
+        try {
+            $stmtPack = $pdo->prepare("DELETE FROM `packaging_manifests` WHERE order_id IN ($marks)");
+            $stmtPack->execute($ids);
+        } catch (Exception $e) {}
+
+        // 5. Delete orders from active table
+        $delStmt = $pdo->prepare("DELETE FROM `{$tbl}` WHERE id IN ($marks)");
+        $delStmt->execute($ids);
+        $deletedCount = $delStmt->rowCount();
+    }
+    respond([
+        'success' => true,
+        'deleted_count' => $deletedCount,
+        'deleted_ids' => $ids,
+        'message' => "{$deletedCount} order(s) and all associated packaging, invoice, and shipping records were deleted successfully."
+    ]);
+}
+
+// Single Cancel & Delete order: DELETE /api/orders/{id} or POST with action=delete
+if (preg_match('#^orders/(\d+)$#', $route, $m) && ($method === 'DELETE' || ($method === 'POST' && (($body['action'] ?? '') === 'delete' || ($body['_method'] ?? '') === 'DELETE')))) {
+    $orderId = (int)$m[1];
+    $deleted = false;
+    if ($pdo && $orderId > 0) {
+        $tbl = zkcGetOrdersTable($pdo);
+        
+        // Delete associated records
+        try { $pdo->prepare("DELETE FROM `invoices` WHERE order_id = ?")->execute([$orderId]); } catch (Exception $e) {}
+        try { $pdo->prepare("DELETE FROM `smeram_invoices` WHERE order_id = ?")->execute([$orderId]); } catch (Exception $e) {}
+        try { $pdo->prepare("DELETE FROM `order_items` WHERE order_id = ?")->execute([$orderId]); } catch (Exception $e) {}
+        try { $pdo->prepare("DELETE FROM `payments` WHERE order_id = ?")->execute([$orderId]); } catch (Exception $e) {}
+        try { $pdo->prepare("DELETE FROM `shipments` WHERE order_id = ?")->execute([$orderId]); } catch (Exception $e) {}
+        try { $pdo->prepare("DELETE FROM `packaging_manifests` WHERE order_id = ?")->execute([$orderId]); } catch (Exception $e) {}
+
+        $delStmt = $pdo->prepare("DELETE FROM `{$tbl}` WHERE id = ?");
+        $delStmt->execute([$orderId]);
+        $deleted = ($delStmt->rowCount() > 0);
+    }
+    respond([
+        'success' => true,
+        'deleted_id' => $orderId,
+        'message' => "Order #{$orderId} was cancelled and completely deleted (including packaging, invoice, and shipping records)."
+    ]);
+}
+
 // Invoices list & retrieval (Only paid or confirmed orders generate tax invoices)
 if ($route === 'invoices' && $method === 'GET') {
     $invoices = [];

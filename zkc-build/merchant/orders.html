@@ -152,9 +152,26 @@ async function loadOrders(page, status) {
       + '  <a href="orders-detail.html?id=' + o.id + '" class="btn btn-secondary btn-sm">View Details</a>'
       + (isPaid ? '  <a href="../invoice.php?id=' + encodeURIComponent(o.id) + '&download=1" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Invoice</a>' : '  <span style="font-size:11px;color:var(--zk-muted);padding:3px 6px;background:#f1f5f9;border-radius:4px" title="Invoices are generated only after payment is received">No Invoice (Unpaid)</span>')
       + '  <a href="' + (o.whatsapp && o.whatsapp.care_url ? o.whatsapp.care_url : ('https://wa.me/917539972026?text=' + encodeURIComponent('🛍️ Order: ' + ordNum + ' | ' + custName + ' | ' + total))) + '" target="_blank" class="btn btn-secondary btn-sm" style="color:#047857;font-weight:700">↪ Care</a>'
+      + '  <button type="button" class="btn btn-sm" style="color:#dc2626;background:#fff5f5;border:1px solid #fca5a5;cursor:pointer;font-weight:700" onclick="deleteOrder(' + o.id + ', \'' + ordNum + '\')">❌ Cancel &amp; Delete</button>'
       + '</div></td>'
       + '</tr>';
   }).join('');
+}
+
+async function deleteOrder(id, num) {
+  if (!confirm('⚠️ Are you sure you want to CANCEL and PERMANENTLY DELETE ' + num + '?\n\nThis will delete the order, invoice, packaging, and shipping tracking records.')) return;
+  try {
+    var token = (window.auth && window.auth.token) ? window.auth.token : '';
+    var headers = { 'Content-Type': 'application/json' };
+    if (token && !token.startsWith('demo_token')) headers['Authorization'] = 'Bearer ' + token;
+    var url = (API_BASE.indexOf('?') !== -1) ? (API_BASE + 'orders/' + id) : (API_BASE + '/orders/' + id);
+    var r = await fetch(url, { method: 'DELETE', headers: headers });
+    var d = await r.json();
+    alert(d.message || ('Order ' + num + ' was cancelled and deleted.'));
+    loadOrders(1);
+  } catch(e) {
+    alert('Failed to delete order: ' + e.message);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() { loadOrders(1); });
