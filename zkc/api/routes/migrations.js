@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ZKCommerce Database Migration Controller & Endpoints
  * Provides live DB migration status inspection, step-by-step one-by-one execution, bulk upgrade,
  * and selective file migration with full audit log and error diagnostics.

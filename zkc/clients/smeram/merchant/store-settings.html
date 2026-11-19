@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="../../../zk-env.js"></script>
+<script src="../zk-env.js"></script>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
@@ -103,6 +103,13 @@ body{background:var(--zk-chalk);overflow-x:hidden}
             <div>
               <span style="font-weight:600;font-size:13px;display:block">🚚 Cart "Inclusive of GST and Free Shipping" Display</span>
               <span style="font-size:12px;color:var(--zk-muted)">Show the configured "Inclusive of GST &amp; Free Shipping" badge/dropdown in customer cart. Uncheck if you don't want to display this field in customer checkout.</span>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" id="toggle-whatsapp-updates" style="margin-top:3px;accent-color:var(--zk-fire);width:16px;height:16px">
+            <div>
+              <span style="font-weight:600;font-size:13px;display:block">💬 WhatsApp Updates in View Cart (Disabled by default)</span>
+              <span style="font-size:12px;color:var(--zk-muted)">Display "Receive order updates on WhatsApp" opt-in checkbox in customer viewcart and checkout drawer. Unchecked / disabled by default.</span>
             </div>
           </label>
         </div>
@@ -234,7 +241,9 @@ function saveStorefrontSettings() {
 
   localStorage.setItem('zk_announcement_enabled', String(annEnabled));
   localStorage.setItem('zk_announcement_disabled', String(!annEnabled));
-  localStorage.setItem('zk_show_shipping_field', String(shippingFieldEnabled));
+    localStorage.setItem('zk_show_shipping_field', String(shippingFieldEnabled));
+  const waUpdatesEnabled = document.getElementById('toggle-whatsapp-updates').checked;
+  localStorage.setItem('zk_checkout_show_whatsapp_updates', String(waUpdatesEnabled));
 
   // Also trigger store save if available
   if (typeof saveSettings === 'function') {
@@ -251,7 +260,8 @@ function saveStorefrontSettings() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({
         announcement_enabled: annEnabled,
-        show_shipping_field: shippingFieldEnabled
+                show_shipping_field: shippingFieldEnabled,
+        show_whatsapp_updates: waUpdatesEnabled
       })
     }).catch(function(){});
   }
@@ -266,7 +276,11 @@ function initDisplayToggles() {
     annEl.checked = localStorage.getItem('zk_announcement_enabled') !== 'false';
   }
   if (shipEl) {
-    shipEl.checked = localStorage.getItem('zk_show_shipping_field') !== 'false';
+        shipEl.checked = localStorage.getItem('zk_show_shipping_field') !== 'false';
+  }
+  const waEl = document.getElementById('toggle-whatsapp-updates');
+  if (waEl) {
+    waEl.checked = localStorage.getItem('zk_checkout_show_whatsapp_updates') === 'true';
   }
 }
 

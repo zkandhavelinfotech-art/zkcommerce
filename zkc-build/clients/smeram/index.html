@@ -1607,10 +1607,12 @@ footer{background:var(--dark);color:#fff;padding:50px 24px 30px}
         <option value="razorpay" id="optPayRazorpay">Pay Online via UPI / Cards / NetBanking (Razorpay)</option>
       </select>
 
-      <label style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:9px;align-items:start;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:11px 12px;margin:10px 0;color:#14532d;font-size:12px;line-height:1.4;cursor:pointer">
-        <input type="checkbox" name="whatsapp_opt_in" value="1" style="width:18px;height:18px;margin:0;accent-color:#16a34a">
-        <span><b style="display:block;font-size:12.5px">Receive order updates on WhatsApp</b><small style="display:block;color:#477052;margin-top:2px">Optional. Confirmation and delivery tracking are sent automatically through our WhatsApp Business service.</small></span>
-      </label>
+      <div class="cart-wa-optin-field" id="chWhatsappOptInField" style="display:none">
+        <label style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:9px;align-items:start;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:11px 12px;margin:10px 0;color:#14532d;font-size:12px;line-height:1.4;cursor:pointer">
+          <input type="checkbox" name="whatsapp_opt_in" value="1" id="cbWhatsappOptIn" style="width:18px;height:18px;margin:0;accent-color:#16a34a">
+          <span><b style="display:block;font-size:12.5px">Receive order updates on WhatsApp</b><small style="display:block;color:#477052;margin-top:2px">Optional. Confirmation and delivery tracking are sent automatically through our WhatsApp Business service.</small></span>
+        </label>
+      </div>
 
       <button type="submit" class="btn-place-order" id="placeOrderBtn">Confirm &amp; Place Order</button>
       <button type="button" class="btn-continue-shopping-block" onclick="closeCart()">🛍️ Continue Shopping</button>
@@ -2181,7 +2183,8 @@ function handlePlaceOrder(e) {
   const city = (fd.get('city') || '').trim();
   const pincode = (fd.get('pincode') || '').trim();
   const payMethod = fd.get('payment_method') || 'razorpay';
-  const whatsappOptIn = fd.get('whatsapp_opt_in') === '1';
+  const isWaUpdatesEnabled = (window.STORE_CHECKOUT_CONFIG?.show_whatsapp_updates === true) || (localStorage.getItem('zk_checkout_show_whatsapp_updates') === 'true');
+  const whatsappOptIn = isWaUpdatesEnabled && (fd.get('whatsapp_opt_in') === '1');
   const totalStr = document.getElementById('grandTotalVal').textContent;
   const totalNum = Number(totalStr.replace(/[^0-9.]/g, '')) || 0;
 
@@ -2801,6 +2804,15 @@ async function syncCheckoutSettings() {
   const isWaOrderEnabled = (checkout.show_whatsapp_order === true) || (localStorage.getItem('zk_checkout_show_whatsapp_order') === 'true');
   const navWa = document.getElementById('navWaBtn');
   if (navWa) navWa.style.display = isWaOrderEnabled ? 'inline-flex' : 'none';
+
+  // Apply WhatsApp Updates in View Cart (disabled by default)
+  const isWaUpdatesEnabled = (checkout.show_whatsapp_updates === true) || (localStorage.getItem('zk_checkout_show_whatsapp_updates') === 'true');
+  const waOptInField = document.getElementById('chWhatsappOptInField');
+  if (waOptInField) {
+    waOptInField.style.display = isWaUpdatesEnabled ? 'block' : 'none';
+    const waCb = document.getElementById('cbWhatsappOptIn');
+    if (waCb && !isWaUpdatesEnabled) waCb.checked = false;
+  }
 
   // Apply category images visibility in header Shop menu
   const isCatImagesEnabled = (localStorage.getItem('zk_header_cat_images') !== 'false');

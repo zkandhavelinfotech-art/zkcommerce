@@ -1125,6 +1125,7 @@
             <div class="form-group"><label>Shown as</label><input id="waCareLabel" placeholder="Smeram Customer Care"></div>
           </div>
           <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0"><input type="checkbox" id="waEnabled"> <b>Use WhatsApp order messages</b></label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:8px 0;cursor:pointer"><input type="checkbox" id="waUpdatesInCart"> <b>Show "Receive WhatsApp updates" opt-in in View Cart &amp; Checkout</b> <span class="badge" style="background:#f1f5f9;color:var(--muted);font-size:11px;margin-left:4px">Disabled by default</span></label>
           <!-- Available Variables Badges -->
           <div style="margin: 14px 0 6px; display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Available Template Variables:</div>
@@ -1347,6 +1348,7 @@
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowCoupon"><span><b>Show discount code box</b><br><small style="color:var(--muted)">Shoppers can enter a coupon in the cart.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowShipping"><span><b>Show Delivery &amp; Tax Fee badge</b><br><small style="color:var(--muted)">Display "Delivery &amp; Tax Fee: ✓ Inclusive of GST and free shipping" locked badge in the cart.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowWhatsappOrder"><span><b>Quick order via WhatsApp button</b><br><small style="color:var(--muted)">Display "💬 Quick order via WhatsApp" button in product view and cart. (Disabled by default).</small></span></label>
+            <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coShowWhatsappUpdates"><span><b>WhatsApp order updates in View Cart</b><br><small style="color:var(--muted)">Display "Receive order updates on WhatsApp" checkbox in the cart &amp; checkout drawer. (Disabled by default).</small></span></label>
             <div style="font-size:12px;font-weight:700;color:var(--muted)">Payment methods offered</div>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coRazorpay"><span><b>Pay online via Razorpay</b><br><small style="color:var(--muted)" id="coRzpStatus">UPI, cards, netbanking, wallets.</small></span></label>
             <label class="legal-card" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="coCod"><span><b>Cash on delivery</b><br><small style="color:var(--muted)">Confirmed immediately, paid on delivery.</small></span></label>
@@ -2436,6 +2438,10 @@
         document.getElementById('waCareNumber').value = s.care_number ? '+' + s.care_number : '';
         document.getElementById('waCareLabel').value = s.care_label || '';
         document.getElementById('waEnabled').checked = !!s.enabled;
+        const storedWaUpdates = localStorage.getItem('zk_checkout_show_whatsapp_updates');
+        const waUpdatesVal = storedWaUpdates !== null ? (storedWaUpdates === 'true') : (s.show_whatsapp_updates === true);
+        if (document.getElementById('waUpdatesInCart')) document.getElementById('waUpdatesInCart').checked = waUpdatesVal;
+        if (document.getElementById('coShowWhatsappUpdates')) document.getElementById('coShowWhatsappUpdates').checked = waUpdatesVal;
         document.getElementById('waCareTpl').value = s.care_template || '';
         document.getElementById('waCustomerTpl').value = s.customer_template || '';
         document.getElementById('waLowTpl').value = s.low_stock_template || '';
@@ -2448,8 +2454,13 @@
     async function saveWhatsAppSettings() {
       const st = document.getElementById('waStatus');
       try {
+        const waUpdatesVal = document.getElementById('waUpdatesInCart')?.checked === true;
+        try { localStorage.setItem('zk_checkout_show_whatsapp_updates', String(waUpdatesVal)); } catch(_) {}
+        if (document.getElementById('coShowWhatsappUpdates')) document.getElementById('coShowWhatsappUpdates').checked = waUpdatesVal;
+
         const r = await req('/orders/whatsapp-settings?store_id=' + currentStoreId, { method: 'PUT', body: JSON.stringify({
           enabled: document.getElementById('waEnabled').checked,
+          show_whatsapp_updates: waUpdatesVal,
           customer_handoff: false,
           care_number: document.getElementById('waCareNumber').value.trim(),
           care_label: document.getElementById('waCareLabel').value.trim(),
@@ -2564,6 +2575,12 @@
           const storedWa = localStorage.getItem('zk_checkout_show_whatsapp_order');
           document.getElementById('coShowWhatsappOrder').checked = (storedWa !== null ? storedWa === 'true' : (c.show_whatsapp_order === true));
         }
+        if (document.getElementById('coShowWhatsappUpdates')) {
+          const storedWaUpdates = localStorage.getItem('zk_checkout_show_whatsapp_updates');
+          const waUpdatesVal = (storedWaUpdates !== null ? storedWaUpdates === 'true' : (c.show_whatsapp_updates === true));
+          document.getElementById('coShowWhatsappUpdates').checked = waUpdatesVal;
+          if (document.getElementById('waUpdatesInCart')) document.getElementById('waUpdatesInCart').checked = waUpdatesVal;
+        }
         document.getElementById('coRazorpay').checked = c.razorpay !== false;
         document.getElementById('coCod').checked = c.cod !== false || c.razorpay === false;
         document.getElementById('coShowPaymentSelector').checked = c.razorpay !== false && c.cod !== false;
@@ -2637,6 +2654,7 @@
         const fresh = await req('/stores/' + currentStoreId + '/builder');
         const showShipping = document.getElementById('coShowShipping')?.checked !== false;
         const showWhatsapp = document.getElementById('coShowWhatsappOrder')?.checked === true;
+        const showWhatsappUpdates = (document.getElementById('coShowWhatsappUpdates')?.checked === true) || (document.getElementById('waUpdatesInCart')?.checked === true);
         const codEnabled = document.getElementById('coCod').checked;
         // Merge into the existing checkout object so keys set elsewhere (e.g. Store Builder) are kept.
         const freshTheme = fresh.store.theme_config || {};
@@ -2645,6 +2663,7 @@
           show_coupon: document.getElementById('coShowCoupon').checked,
           show_shipping_field: showShipping,
           show_whatsapp_order: showWhatsapp,
+          show_whatsapp_updates: showWhatsappUpdates,
           razorpay: document.getElementById('coRazorpay').checked,
           cod: codEnabled,
           show_payment_selector: document.getElementById('coRazorpay').checked && codEnabled,
@@ -2656,6 +2675,8 @@
           localStorage.setItem('zk_show_shipping_field', String(showShipping));
           localStorage.setItem('zk_checkout_show_whatsapp_order', String(showWhatsapp));
           localStorage.setItem('zk_checkout_show_whatsapp', String(showWhatsapp));
+          localStorage.setItem('zk_checkout_show_whatsapp_updates', String(showWhatsappUpdates));
+          if (document.getElementById('waUpdatesInCart')) document.getElementById('waUpdatesInCart').checked = showWhatsappUpdates;
           localStorage.setItem('zk_show_cart_popup', String(document.getElementById('coShowCartPopup').checked));
           localStorage.setItem('zk_show_payment_selector', String(document.getElementById('coShowPaymentSelector').checked));
           localStorage.setItem('zk_pay_button', JSON.stringify(readPayButton()));

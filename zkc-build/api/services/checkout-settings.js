@@ -6,12 +6,13 @@ function checkoutSettings(themeConfig) {
   const cod = c.cod !== false || !razorpay;
   const show_shipping_field = c.show_shipping_field !== false && c.show_shipping !== false;
   const show_whatsapp_order = c.show_whatsapp_order === true; // Disabled by default
+  const show_whatsapp_updates = c.show_whatsapp_updates === true; // Disabled by default
   // "Added to cart · View Cart →" popup after add to cart. On by default for existing stores.
   const show_cart_popup = c.show_cart_popup !== false;
   // Never silently choose a payment method when both are enabled. The shopper must see both choices.
   // The legacy visibility flag is only relevant when a single method is enabled.
   const show_payment_selector = (cod && razorpay) || c.show_payment_selector !== false;
-  return { show_coupon: c.show_coupon === true, cod, razorpay, show_shipping_field, show_whatsapp_order, show_cart_popup, show_payment_selector, pay_button: payButton(c.pay_button) };
+  return { show_coupon: c.show_coupon === true, cod, razorpay, show_shipping_field, show_whatsapp_order, show_whatsapp_updates, show_cart_popup, show_payment_selector, pay_button: payButton(c.pay_button) };
 }
 
 const PAYMENT_LABELS = {

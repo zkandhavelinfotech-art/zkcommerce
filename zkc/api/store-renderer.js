@@ -132,7 +132,7 @@ function renderStore(snapshot, options={}) {
       </div>
       <!--zk-shipping-->
       ${paymentField}
-      <label class="zkc-whatsapp-optin"><input type="checkbox" name="whatsapp_opt_in" value="1"><span><strong>Receive order updates on WhatsApp</strong><small>Optional. We will send confirmation and delivery tracking automatically through our WhatsApp Business service.</small></span></label>
+      <label class="zkc-whatsapp-optin" id="zkcWhatsappOptin" style="${checkout.show_whatsapp_updates === true ? '' : 'display:none'}"><input type="checkbox" name="whatsapp_opt_in" value="1"><span><strong>Receive order updates on WhatsApp</strong><small>Optional. We will send confirmation and delivery tracking automatically through our WhatsApp Business service.</small></span></label>
       ${payButtonHtml}
       <div id="checkoutMessage" class="zkc-checkout-alert" data-type="error" role="alert" aria-live="assertive" hidden></div>
       <button class="button continue-shopping-block" type="button" onclick="closeCheckout()" style="width:100%;margin-top:8px;font-size:13px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155">🛍️ Continue Shopping</button>

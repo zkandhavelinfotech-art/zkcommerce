@@ -269,7 +269,9 @@ router.post('/:slug/checkout',async(req,res)=>{
     const gst_rate=taxResult.rows.length?Number(taxResult.rows[0].default_rate):0;
     const taxable=Math.max(0,subtotal-discount_amount),gst_amount=Math.round(taxable*gst_rate/100),total_amount=taxable+gst_amount+shipping_amount;
     const orderNum='ZK'+Date.now()+Math.random().toString(36).slice(2,6).toUpperCase();
-    const shippingAddress={...(address||{}),whatsapp_opt_in:whatsapp_opt_in===true};
+    const allowWaUpdates=checkoutCfg.show_whatsapp_updates===true;
+    const isWaOptIn=allowWaUpdates&&(whatsapp_opt_in===true);
+    const shippingAddress={...(address||{}),whatsapp_opt_in:isWaOptIn};
     const {rows:[order]}=await client.query(`INSERT INTO orders(store_id,order_number,customer_name,customer_email,customer_phone,shipping_address,items,subtotal,discount_amount,gst_rate,gst_amount,shipping_amount,shipping_rate_id,total_amount,coupon_code,payment_method,payment_status,status)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id,order_number,total_amount,discount_amount,gst_amount,shipping_amount`,
       [storeId,orderNum,String(customer.name).slice(0,150),customer.email||null,customer.phone||null,JSON.stringify(shippingAddress),JSON.stringify(lineItems),subtotal,discount_amount,gst_rate,gst_amount,shipping_amount,selectedShippingRate,total_amount,coupon?.code||null,payment_method,payment_method==='cod'?'cod':'unpaid',payment_method==='cod'?'confirmed':'pending']);
@@ -330,7 +332,7 @@ router.post('/:slug/checkout',async(req,res)=>{
       payment_status:payment_method==='cod'?'cod':'unpaid',
       status:payment_method==='cod'?'confirmed':'pending',
       next:payment_method==='razorpay'?'razorpay_checkout':'confirmed',
-      whatsapp_opt_in: whatsapp_opt_in===true
+      whatsapp_opt_in: isWaOptIn
     });
   }catch(e){await client.query('ROLLBACK').catch(()=>{});res.status(e.status||500).json({error:e.message});}
   finally{client.release();}

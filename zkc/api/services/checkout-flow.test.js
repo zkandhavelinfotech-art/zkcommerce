@@ -109,3 +109,12 @@ test('GoDaddy patch builder is reusable and no longer targets the fixed v1.0.15 
   assert.match(uploader, /smeram-patch-current/);
   assert.doesNotMatch(uploader, /const patchDir = .*smeram-patch-today-v1\.0\.15/);
 });
+
+test('WhatsApp updates from viewcart are disabled by default in checkout settings', () => {
+  const { checkoutSettings } = require('./checkout-settings');
+  const defaults = checkoutSettings({});
+  assert.equal(defaults.show_whatsapp_updates, false, 'WhatsApp updates must be false by default');
+  
+  const enabled = checkoutSettings({ checkout: { show_whatsapp_updates: true } });
+  assert.equal(enabled.show_whatsapp_updates, true, 'WhatsApp updates must be true when merchant enables it');
+});

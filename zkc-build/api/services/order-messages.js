@@ -51,6 +51,7 @@ const PLACEHOLDERS = {
 
 const DEFAULTS = {
   enabled: true,
+  show_whatsapp_updates: false, // Disabled by default
   care_number: '',
   care_label: 'Customer Care',
   // Legacy setting retained for compatible saved configurations. Storefront hand-off is disabled.
@@ -122,7 +123,7 @@ async function saveSettings(storeId, body) {
   await ensureColumn();
   const next = {};
   for (const k of ['care_template', 'customer_template', 'low_stock_template', 'shipped_template', 'delivered_template', 'care_label']) if (body[k] !== undefined) next[k] = String(body[k]).slice(0, 3000);
-  for (const k of ['enabled', 'customer_handoff']) if (body[k] !== undefined) next[k] = !!body[k];
+  for (const k of ['enabled', 'customer_handoff', 'show_whatsapp_updates']) if (body[k] !== undefined) next[k] = !!body[k];
   if (body.care_number !== undefined) {
     const p = cleanPhone(body.care_number);
     if (body.care_number && !p) throw Object.assign(new Error('Enter the customer-care WhatsApp number with country code, e.g. +91 75399 72026'), { status: 400 });
