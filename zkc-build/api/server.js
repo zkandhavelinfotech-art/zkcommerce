@@ -36,6 +36,15 @@ app.use('/clients', express.static(path.join(__dirname, '..', 'clients')));
 app.use('/merchant', express.static(path.join(__dirname, '..', 'merchant')));
 app.use(express.static(path.join(__dirname, '..', 'storefront'), { index: false }));
 
+// Meta Setup Wizard Direct Page Aliases (/admin/meta-setup, /merchant/meta-setup)
+app.get(['/admin/meta-setup', '/admin/meta-setup/'], (req, res) => res.sendFile(path.join(__dirname, '..', 'admin', 'meta-setup.html')));
+app.get(['/merchant/meta-setup', '/merchant/meta-setup/'], (req, res) => res.sendFile(path.join(__dirname, '..', 'merchant', 'meta-setup.html')));
+app.get(['/clients/:client/merchant/meta-setup', '/clients/:client/merchant/meta-setup/'], (req, res) => {
+  const customClientPath = path.join(__dirname, '..', 'clients', req.params.client, 'merchant', 'meta-setup.html');
+  if (fs.existsSync(customClientPath)) return res.sendFile(customClientPath);
+  res.sendFile(path.join(__dirname, '..', 'merchant', 'meta-setup.html'));
+});
+
 // Statutory Indian GST Tax Invoice Generator endpoint (/invoice.php, /invoice, /invoices/view, /invoices/print)
 const invoiceGenerator = require('./services/invoice-generator');
 app.get([

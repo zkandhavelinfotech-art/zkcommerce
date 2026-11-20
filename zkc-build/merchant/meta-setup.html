@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../zk-env.js"></script>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meta Setup Wizard — Merchant Portal · ZKCommerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/design-system.css">
+<style>
+:root {
+  --meta-blue: #0866FF;
+  --meta-gradient: linear-gradient(135deg, #0047b3 0%, #0866FF 50%, #00b4d8 100%);
+}
+body { background: var(--zk-chalk, #f8fafc); overflow-x: hidden; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; }
+@media (max-width: 1080px) { .zk-main { margin-left: 0 !important; } }
+
+.wizard-stepper-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid var(--zk-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.wizard-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.wizard-step-btn:hover { background: #f1f5f9; }
+.wizard-step-btn.active {
+  background: #eff6ff;
+  border: 1.5px solid #3b82f6;
+}
+.wizard-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  background: #e2e8f0;
+  color: #475569;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.wizard-step-btn.active .wizard-step-circle {
+  background: #0866FF;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(8,102,255,0.35);
+}
+.wizard-step-btn.completed .wizard-step-circle {
+  background: #10b981;
+  color: #ffffff;
+}
+.wizard-step-info { text-align: left; }
+.wizard-step-title { font-size: 13px; font-weight: 700; color: #1e293b; display: block; line-height: 1.2; }
+.wizard-step-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  margin-top: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.tag-connected { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.tag-warning { background: #fefce8; color: #b45309; border: 1px solid #fde047; }
+.tag-neutral { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.status-pill.success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.status-pill.warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.status-pill.neutral { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
+.wizard-card {
+  background: #ffffff;
+  border: 1px solid var(--zk-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+}
+.wizard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.step-number-tag {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0866FF;
+  letter-spacing: 0.08em;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+@media (max-width: 768px) { .form-grid-2 { grid-template-columns: 1fr; } }
+.field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.field-hint { font-size: 11px; color: #64748b; font-weight: normal; }
+.field-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  background: #fff;
+  box-sizing: border-box;
+}
+.field-input:focus {
+  outline: none;
+  border-color: #0866FF;
+  box-shadow: 0 0 0 3px rgba(8,102,255,0.12);
+}
+
+.meta-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.meta-metric-card {
+  background: #ffffff;
+  border: 1px solid var(--zk-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.meta-metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: #eff6ff;
+  color: #0866FF;
+  flex-shrink: 0;
+}
+.meta-metric-title { font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+.meta-metric-val { font-size: 16px; font-weight: 800; color: #0f172a; margin-top: 2px; }
+
+.btn-meta {
+  background: #0866FF;
+  border: 1px solid #0866FF;
+  color: #fff;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.btn-meta:hover { background: #0052cc; border-color: #0052cc; }
+.btn-meta-outline {
+  background: transparent;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.btn-meta-outline:hover { background: #f8fafc; border-color: #94a3b8; }
+</style>
+</head>
+<body>
+<div style="display:flex;min-height:100vh">
+
+<!-- Merchant Sidebar Navigation -->
+<aside class="zk-sidebar" id="sidebar" style="width:240px;background:#0d1829;color:#e2e8f0;padding:20px 0;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;z-index:90">
+  <div style="padding:0 20px 20px;border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:10px">
+    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0866FF,#00c6ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px">⚡</div>
+    <div>
+      <div style="font-weight:800;font-size:15px;color:#fff;letter-spacing:-0.3px">ZKCommerce</div>
+      <div style="font-size:10px;color:#94a3b8;font-weight:700">MERCHANT PORTAL</div>
+    </div>
+  </div>
+
+  <nav style="padding:16px 12px;display:flex;flex-direction:column;gap:4px">
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600">
+      <span>📊</span> Dashboard
+    </a>
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600">
+      <span>🛍️</span> Products List
+    </a>
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600">
+      <span>📦</span> Orders &amp; Fulfillment
+    </a>
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600">
+      <span>👥</span> Customers CRM
+    </a>
+    <a href="meta-setup.html" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:rgba(8,102,255,0.2);color:#60a5fa;text-decoration:none;font-size:13px;font-weight:700">
+      <span>♾️</span> Meta Setup Wizard <span style="font-size:9px;background:#0866FF;color:#fff;padding:2px 5px;border-radius:4px;margin-left:auto">Live</span>
+    </a>
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600">
+      <span>⚙️</span> Store Settings
+    </a>
+  </nav>
+
+  <div style="padding:16px 20px;border-top:1px solid #1e293b;margin-top:auto">
+    <a href="index.html" style="display:flex;align-items:center;gap:8px;color:#94a3b8;text-decoration:none;font-size:12px;font-weight:600">
+      <span>⬅</span> Back to Dashboard
+    </a>
+  </div>
+</aside>
+
+<!-- Main Workspace -->
+<div class="zk-main" style="margin-left:240px;flex:1;min-height:100vh">
+  <!-- Top Bar -->
+  <div style="background:#fff;border-bottom:1px solid var(--zk-border, #e2e8f0);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">♾️</span> Meta Business &amp; Commerce Setup Wizard
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="index.html" class="btn-meta-outline" style="text-decoration:none;font-size:12.5px;padding:7px 12px">
+        ⬅ Back to Store
+      </a>
+      <button class="btn-meta" onclick="saveMetaWizard(true)" style="padding:7px 14px;font-size:12.5px">
+        💾 Save All Changes
+      </button>
+    </div>
+  </div>
+
+  <div style="padding:28px max(24px, calc((100% - 1100px) / 2));">
+    <!-- Hero Banner -->
+    <div style="background:var(--meta-gradient);border-radius:16px;padding:28px 32px;color:#fff;margin-bottom:24px;box-shadow:0 4px 20px rgba(8,102,255,0.22);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px">
+      <div style="max-width:680px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;font-weight:800;color:#93c5fd">Official Meta Business Partner Integration</div>
+        <h1 style="font-size:24px;font-weight:800;margin:6px 0 8px;letter-spacing:-0.5px">Meta Ecosystem &amp; Commerce Setup</h1>
+        <p style="font-size:13.5px;color:#dbeafe;line-height:1.6;margin:0">
+          Configure Facebook Page, Instagram Shop, Meta Pixel, Conversions API (CAPI), live product catalog XML feed, and WhatsApp Cloud API in one guided workflow.
+        </p>
+      </div>
+      <div style="background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:14px 20px;text-align:right">
+        <div style="font-size:11px;color:#bfdbfe;font-weight:700">INTEGRATION HEALTH</div>
+        <div style="font-size:22px;font-weight:800;color:#fff" id="overallHealthVal">Checking...</div>
+        <div style="font-size:11.5px;color:#93c5fd;font-weight:600" id="overallStepsVal">0 of 6 Steps Configured</div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="wizard-card" style="padding:16px 20px;margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#334155;margin-bottom:6px">
+        <span>Overall Setup Progress</span>
+        <span id="overallPercentText" style="color:#0866FF">0%</span>
+      </div>
+      <div style="width:100%;height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden">
+        <div id="overallProgressBar" style="width:0%;height:100%;background:var(--meta-gradient);transition:width 0.4s ease"></div>
+      </div>
+    </div>
+
+    <!-- Quick Metrics Strip -->
+    <div class="meta-metrics-grid">
+      <div class="meta-metric-card">
+        <div class="meta-metric-icon">🏢</div>
+        <div>
+          <div class="meta-metric-title">Meta App Status</div>
+          <div class="meta-metric-val" id="metricApp">Pending</div>
+        </div>
+      </div>
+      <div class="meta-metric-card">
+        <div class="meta-metric-icon" style="color:#10b981;background:#ecfdf5">🎯</div>
+        <div>
+          <div class="meta-metric-title">Meta Pixel &amp; CAPI</div>
+          <div class="meta-metric-val" id="metricPixel">Inactive</div>
+        </div>
+      </div>
+      <div class="meta-metric-card">
+        <div class="meta-metric-icon" style="color:#ea580c;background:#fff7ed">🛍️</div>
+        <div>
+          <div class="meta-metric-title">Catalog Synced</div>
+          <div class="meta-metric-val" id="metricCatalog">0 Products</div>
+        </div>
+      </div>
+      <div class="meta-metric-card">
+        <div class="meta-metric-icon" style="color:#059669;background:#f0fdf4">💬</div>
+        <div>
+          <div class="meta-metric-title">WhatsApp Cloud API</div>
+          <div class="meta-metric-val" id="metricWa">Checking</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stepper Navigation Bar -->
+    <div class="wizard-stepper-wrap">
+      <button class="wizard-step-btn active" id="step-nav-1" onclick="jumpToStep(1)">
+        <div class="wizard-step-circle">1</div>
+        <div class="wizard-step-info">
+          <span class="wizard-step-title">Meta App</span>
+          <span class="wizard-step-status-tag tag-neutral" id="step-tag-1">Pending</span>
+        </div>
+      </button>
+
+      <button class="wizard-step-btn" id="step-nav-2" onclick="jumpToStep(2)">
+        <div class="wizard-step-circle">2</div>
+        <div class="wizard-step-info">
+          <span class="wizard-step-title">Page &amp; IG Shop</span>
+          <span class="wizard-step-status-tag tag-neutral" id="step-tag-2">Pending</span>
+        </div>
+      </button>
+
+      <button class="wizard-step-btn" id="step-nav-3" onclick="jumpToStep(3)">
+        <div class="wizard-step-circle">3</div>
+        <div class="wizard-step-info">
+          <span class="wizard-step-title">Pixel &amp; CAPI</span>
+          <span class="wizard-step-status-tag tag-neutral" id="step-tag-3">Pending</span>
+        </div>
+      </button>
+
+      <button class="wizard-step-btn" id="step-nav-4" onclick="jumpToStep(4)">
+        <div class="wizard-step-circle">4</div>
+        <div class="wizard-step-info">
+          <span class="wizard-step-title">Product Catalog</span>
+          <span class="wizard-step-status-tag tag-neutral" id="step-tag-4">Pending</span>
+        </div>
+      </button>
+
+      <button class="wizard-step-btn" id="step-nav-5" onclick="jumpToStep(5)">
+        <div class="wizard-step-circle">5</div>
+        <div class="wizard-step-info">
+          <span class="wizard-step-title">WhatsApp API</span>
+          <span class="wizard-step-status-tag tag-neutral" id="step-tag-5">Pending</span>
+        </div>
+      </button>
+
+      <button class="wizard-step-btn" id="step-nav-6" onclick="jumpToStep(6)">
+        <div class="wizard-step-circle">6</div>
+        <div class="wizard-step-info">
+          <span class="wizard-step-title">Webhook &amp; Health</span>
+          <span class="wizard-step-status-tag tag-neutral" id="step-tag-6">Pending</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- STEP 1: META DEVELOPER APP & BUSINESS -->
+    <div class="wizard-card step-panel" id="panel-step-1">
+      <div class="wizard-head">
+        <div>
+          <span class="step-number-tag">Wizard Step 1 of 6</span>
+          <h2 style="font-size:18px;margin:4px 0 0;font-weight:800">🏢 Meta Developer App &amp; Business Account</h2>
+          <p style="font-size:12.5px;color:#64748b;margin:3px 0 0">Register your store application with Meta to access Commerce and Marketing APIs.</p>
+        </div>
+        <div>
+          <span class="status-pill neutral" id="status-badge-1">⚪ Status: Checking</span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Meta App ID <span style="color:#ef4444">*</span></span>
+            <span class="field-hint">From developers.facebook.com</span>
+          </label>
+          <input type="text" id="app_id" class="field-input" placeholder="e.g. 109283746501928" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Meta App Secret</span>
+            <span class="field-hint">Never exposed publicly</span>
+          </label>
+          <input type="password" id="app_secret" class="field-input" placeholder="••••••••••••••••" />
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Meta Business Portfolio ID (BM ID)</span>
+            <span class="field-hint">From business.facebook.com/settings</span>
+          </label>
+          <input type="text" id="business_id" class="field-input" placeholder="e.g. 394857201948572" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>App Environment Mode</span>
+            <span class="field-hint">Live or Sandbox</span>
+          </label>
+          <select id="environment" class="field-input">
+            <option value="live">Live (Production Storefront)</option>
+            <option value="development">Development / Sandbox</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin:14px 0;font-size:12.5px;color:#475569">
+        💡 <b>Setup Guide:</b> Create a Business Type app on <a href="https://developers.facebook.com/apps" target="_blank" style="color:#0866FF;font-weight:600">developers.facebook.com/apps</a>. Add <b>Commerce Manager</b>, <b>Conversions API</b>, and <b>WhatsApp</b> to your app.
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9">
+        <button class="btn-meta-outline" onclick="testConnection(1)">🔍 Test App Credentials</button>
+        <button class="btn-meta" onclick="saveAndNext(1)">Save &amp; Continue ➔</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: FACEBOOK PAGE & INSTAGRAM SHOP LINKING -->
+    <div class="wizard-card step-panel" id="panel-step-2" style="display:none">
+      <div class="wizard-head">
+        <div>
+          <span class="step-number-tag">Wizard Step 2 of 6</span>
+          <h2 style="font-size:18px;margin:4px 0 0;font-weight:800">📸 Facebook Page &amp; Instagram Shop Linking</h2>
+          <p style="font-size:12.5px;color:#64748b;margin:3px 0 0">Link your official social channels so products can be tagged in posts, reels, and stories.</p>
+        </div>
+        <div>
+          <span class="status-pill neutral" id="status-badge-2">⚪ Status: Checking</span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Facebook Page ID <span style="color:#ef4444">*</span></span>
+            <span class="field-hint">Page Settings ➔ About</span>
+          </label>
+          <input type="text" id="page_id" class="field-input" placeholder="e.g. 104928374659281" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Facebook Page Name</span>
+            <span class="field-hint">Public brand name</span>
+          </label>
+          <input type="text" id="page_name" class="field-input" placeholder="e.g. Rajan Textiles Official" />
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Instagram Business Account ID</span>
+            <span class="field-hint">Connected to FB Page</span>
+          </label>
+          <input type="text" id="instagram_account_id" class="field-input" placeholder="e.g. 178414002938475" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Instagram Handle</span>
+            <span class="field-hint">Store IG handle</span>
+          </label>
+          <input type="text" id="instagram_handle" class="field-input" placeholder="@rajantextiles" />
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin:14px 0;font-size:12.5px;color:#475569">
+        ✨ <b>Instagram Shopping Requirement:</b> Ensure your Instagram account is switched to a <b>Professional / Creator Account</b> and linked inside Facebook Business Settings under "Accounts ➔ Instagram Accounts".
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9">
+        <button class="btn-meta-outline" onclick="jumpToStep(1)">⬅ Back</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn-meta-outline" onclick="testConnection(2)">🔍 Verify Pages</button>
+          <button class="btn-meta" onclick="saveAndNext(2)">Save &amp; Continue ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: META PIXEL & CONVERSIONS API (CAPI) -->
+    <div class="wizard-card step-panel" id="panel-step-3" style="display:none">
+      <div class="wizard-head">
+        <div>
+          <span class="step-number-tag">Wizard Step 3 of 6</span>
+          <h2 style="font-size:18px;margin:4px 0 0;font-weight:800">🎯 Meta Pixel &amp; Server-Side Conversions API (CAPI)</h2>
+          <p style="font-size:12.5px;color:#64748b;margin:3px 0 0">Track ViewContent, AddToCart, InitiateCheckout, and Purchase events reliably with server deduplication.</p>
+        </div>
+        <div>
+          <span class="status-pill neutral" id="status-badge-3">⚪ Status: Checking</span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Meta Pixel ID <span style="color:#ef4444">*</span></span>
+            <span class="field-hint">Events Manager ➔ Data Sources</span>
+          </label>
+          <input type="text" id="pixel_id" class="field-input" placeholder="e.g. 849201948572019" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Test Event Code (Optional)</span>
+            <span class="field-hint">From Events Manager "Test Events" tab</span>
+          </label>
+          <input type="text" id="test_event_code" class="field-input" placeholder="e.g. TEST12345" />
+        </div>
+      </div>
+
+      <div>
+        <label class="field-label">
+          <span>Conversions API Access Token (Server-Side CAPI)</span>
+          <span class="field-hint">Events Manager ➔ Settings ➔ Generate access token</span>
+        </label>
+        <input type="password" id="conversions_api_token" class="field-input" placeholder="EAA..." />
+      </div>
+
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <strong style="color:#1e40af;font-size:13px">Live Pixel &amp; CAPI Dispatcher:</strong>
+          <div style="color:#3b82f6;font-size:12px;margin-top:2px">Simulate an instant PageView event to verify browser + CAPI handshake.</div>
+        </div>
+        <button class="btn-meta" onclick="sendTestPixelEvent()" style="background:#1d4ed8;border-color:#1d4ed8">
+          🚀 Send Test Event (PageView)
+        </button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9">
+        <button class="btn-meta-outline" onclick="jumpToStep(2)">⬅ Back</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn-meta-outline" onclick="testConnection(3)">🔍 Test CAPI Handshake</button>
+          <button class="btn-meta" onclick="saveAndNext(3)">Save &amp; Continue ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: PRODUCT CATALOG & COMMERCE FEED -->
+    <div class="wizard-card step-panel" id="panel-step-4" style="display:none">
+      <div class="wizard-head">
+        <div>
+          <span class="step-number-tag">Wizard Step 4 of 6</span>
+          <h2 style="font-size:18px;margin:4px 0 0;font-weight:800">🛍️ Product Catalog &amp; Live Commerce Feed</h2>
+          <p style="font-size:12.5px;color:#64748b;margin:3px 0 0">Sync your live product catalog into Meta Commerce Manager for Facebook &amp; Instagram Shops.</p>
+        </div>
+        <div>
+          <span class="status-pill neutral" id="status-badge-4">⚪ Status: Checking</span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Meta Commerce Catalog ID</span>
+            <span class="field-hint">Commerce Manager ➔ Catalogs</span>
+          </label>
+          <input type="text" id="catalog_id" class="field-input" placeholder="e.g. 594837201948572" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Feed Update Schedule</span>
+            <span class="field-hint">Automated Meta crawler cadence</span>
+          </label>
+          <select id="catalog_sync_freq" class="field-input">
+            <option value="hourly">Hourly (Recommended for high volume)</option>
+            <option value="daily" selected>Daily (Standard)</option>
+            <option value="manual">Manual / Realtime webhook only</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:16px 0">
+        <label class="field-label" style="margin-bottom:6px">
+          <span>📡 Store Live XML / RSS Product Feed URL (Meta Standard)</span>
+          <span class="field-hint">Compliant with Meta Catalog Data Feed Specification</span>
+        </label>
+        <div style="display:flex;gap:10px">
+          <input type="text" id="liveFeedUrl" readonly class="field-input" style="background:#fff;font-family:monospace;font-size:12.5px" value="/api/meta/catalog.xml" />
+          <button class="btn-meta-outline" onclick="copyFeedUrl()" style="flex-shrink:0">📋 Copy URL</button>
+        </div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:6px">
+          In Commerce Manager ➔ <b>Data Sources</b> ➔ <b>Add Items</b> ➔ <b>Data Feed</b> ➔ Paste this URL as Scheduled Feed.
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fef2f2;border:1px solid #fee2e2;border-radius:10px;margin-bottom:16px">
+        <div>
+          <strong style="font-size:13px;color:#991b1b">Catalog Synchronization Status:</strong>
+          <div style="font-size:12px;color:#b91c1c" id="catalogCountSummary">0 products published in catalog feed.</div>
+        </div>
+        <button class="btn-meta" onclick="syncCatalogNow()" style="background:#dc2626;border-color:#dc2626">
+          🔄 Sync Catalog Now
+        </button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9">
+        <button class="btn-meta-outline" onclick="jumpToStep(3)">⬅ Back</button>
+        <button class="btn-meta" onclick="saveAndNext(4)">Save &amp; Continue ➔</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: WHATSAPP BUSINESS CLOUD API -->
+    <div class="wizard-card step-panel" id="panel-step-5" style="display:none">
+      <div class="wizard-head">
+        <div>
+          <span class="step-number-tag">Wizard Step 5 of 6</span>
+          <h2 style="font-size:18px;margin:4px 0 0;font-weight:800">💬 WhatsApp Business Cloud API</h2>
+          <p style="font-size:12.5px;color:#64748b;margin:3px 0 0">Send automated order confirmations, live delivery tracking, and customer alerts via official Meta WhatsApp Cloud API.</p>
+        </div>
+        <div>
+          <span class="status-pill neutral" id="status-badge-5">⚪ Status: Checking</span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>WhatsApp Business Account ID (WABA ID)</span>
+            <span class="field-hint">Meta Business Suite ➔ WhatsApp Accounts</span>
+          </label>
+          <input type="text" id="waba_id" class="field-input" placeholder="e.g. 102938475610293" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Phone Number ID <span style="color:#ef4444">*</span></span>
+            <span class="field-hint">From WhatsApp API Setup tab</span>
+          </label>
+          <input type="text" id="phone_number_id" class="field-input" placeholder="e.g. 109283746501928" />
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>WhatsApp System User Access Token</span>
+            <span class="field-hint">Permanent token with whatsapp_business_messaging</span>
+          </label>
+          <input type="password" id="whatsapp_access_token" class="field-input" placeholder="EAA..." />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Sender Display Phone Number</span>
+            <span class="field-hint">Registered phone number with country code</span>
+          </label>
+          <input type="text" id="whatsapp_phone" class="field-input" placeholder="+91 98765 43210" />
+        </div>
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin:16px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <strong style="color:#166534;font-size:13px">WhatsApp API Verification:</strong>
+          <div style="color:#15803d;font-size:12px;margin-top:2px">Send a ping test to verify credentials and template connectivity.</div>
+        </div>
+        <button class="btn-meta" onclick="testConnection(5)" style="background:#16a34a;border-color:#16a34a">
+          📱 Test WhatsApp Ping
+        </button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9">
+        <button class="btn-meta-outline" onclick="jumpToStep(4)">⬅ Back</button>
+        <button class="btn-meta" onclick="saveAndNext(5)">Save &amp; Continue ➔</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: WEBHOOKS & LIVE INTEGRATION AUDIT -->
+    <div class="wizard-card step-panel" id="panel-step-6" style="display:none">
+      <div class="wizard-head">
+        <div>
+          <span class="step-number-tag">Wizard Step 6 of 6</span>
+          <h2 style="font-size:18px;margin:4px 0 0;font-weight:800">⚡ Webhooks &amp; Comprehensive Live Health Audit</h2>
+          <p style="font-size:12.5px;color:#64748b;margin:3px 0 0">Configure real-time event webhooks and audit all 6 pillars before going fully live.</p>
+        </div>
+        <div>
+          <span class="status-pill neutral" id="status-badge-6">⚪ Status: Checking</span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">
+            <span>Webhook Verify Token</span>
+            <span class="field-hint">Token matched in Meta App Dashboard</span>
+          </label>
+          <input type="text" id="webhook_verify_token" class="field-input" placeholder="zkcommerce_meta_verify_2026" />
+        </div>
+        <div>
+          <label class="field-label">
+            <span>Subscribed Webhook Fields</span>
+            <span class="field-hint">Events handled automatically</span>
+          </label>
+          <input type="text" id="subscribed_fields" class="field-input" value="messages, feed, orders, catalog_updates" readonly style="background:#f8fafc" />
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin:14px 0">
+        <label class="field-label" style="margin-bottom:6px">
+          <span>🔗 Meta Webhook Callback URL</span>
+          <span class="field-hint">Paste into developers.facebook.com ➔ Webhooks</span>
+        </label>
+        <div style="display:flex;gap:10px">
+          <input type="text" id="webhookCallbackUrl" readonly class="field-input" style="background:#fff;font-family:monospace;font-size:12.5px" value="/api/meta/webhook" />
+          <button class="btn-meta-outline" onclick="copyWebhookUrl()" style="flex-shrink:0">📋 Copy URL</button>
+        </div>
+      </div>
+
+      <!-- Live Audit Checklist Table -->
+      <div style="margin:20px 0">
+        <h3 style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:10px">Comprehensive Meta Integration Audit Checklist</h3>
+        <div style="overflow-x:auto;border:1px solid #e2e8f0;border-radius:10px">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead>
+              <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;text-align:left">
+                <th style="padding:10px 14px;font-weight:700;color:#64748b">Pillar</th>
+                <th style="padding:10px 14px;font-weight:700;color:#64748b">Status</th>
+                <th style="padding:10px 14px;font-weight:700;color:#64748b">Details</th>
+                <th style="padding:10px 14px;font-weight:700;color:#64748b;text-align:right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+              <tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:10px 14px;font-weight:700">1. Developer App</td>
+                <td style="padding:10px 14px" id="audit-st-1">⚪ Pending</td>
+                <td style="padding:10px 14px;color:#64748b" id="audit-dt-1">Checking App ID...</td>
+                <td style="padding:10px 14px;text-align:right"><button class="btn-meta-outline" style="padding:4px 8px;font-size:11px" onclick="jumpToStep(1)">Configure</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:10px 14px;font-weight:700">2. Social Linking</td>
+                <td style="padding:10px 14px" id="audit-st-2">⚪ Pending</td>
+                <td style="padding:10px 14px;color:#64748b" id="audit-dt-2">Page &amp; IG Shop check...</td>
+                <td style="padding:10px 14px;text-align:right"><button class="btn-meta-outline" style="padding:4px 8px;font-size:11px" onclick="jumpToStep(2)">Configure</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:10px 14px;font-weight:700">3. Pixel &amp; CAPI</td>
+                <td style="padding:10px 14px" id="audit-st-3">⚪ Pending</td>
+                <td style="padding:10px 14px;color:#64748b" id="audit-dt-3">Conversion tracking check...</td>
+                <td style="padding:10px 14px;text-align:right"><button class="btn-meta-outline" style="padding:4px 8px;font-size:11px" onclick="jumpToStep(3)">Configure</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:10px 14px;font-weight:700">4. Product Catalog</td>
+                <td style="padding:10px 14px" id="audit-st-4">⚪ Pending</td>
+                <td style="padding:10px 14px;color:#64748b" id="audit-dt-4">Feed XML sync status...</td>
+                <td style="padding:10px 14px;text-align:right"><button class="btn-meta-outline" style="padding:4px 8px;font-size:11px" onclick="jumpToStep(4)">Configure</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:10px 14px;font-weight:700">5. WhatsApp Cloud API</td>
+                <td style="padding:10px 14px" id="audit-st-5">⚪ Pending</td>
+                <td style="padding:10px 14px;color:#64748b" id="audit-dt-5">WABA &amp; Phone ID check...</td>
+                <td style="padding:10px 14px;text-align:right"><button class="btn-meta-outline" style="padding:4px 8px;font-size:11px" onclick="jumpToStep(5)">Configure</button></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-weight:700">6. Webhook Endpoint</td>
+                <td style="padding:10px 14px" id="audit-st-6">⚪ Pending</td>
+                <td style="padding:10px 14px;color:#64748b" id="audit-dt-6">Handshake token status...</td>
+                <td style="padding:10px 14px;text-align:right"><button class="btn-meta-outline" style="padding:4px 8px;font-size:11px" onclick="jumpToStep(6)">Configure</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9">
+        <button class="btn-meta-outline" onclick="jumpToStep(5)">⬅ Back</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn-meta-outline" onclick="testConnection('all')">⚡ Run Full Health Audit</button>
+          <button class="btn-meta" onclick="saveMetaWizard(true)">💾 Save All Meta Configurations</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let currentStep = 1;
+let metaData = null;
+const API = (window.ZK && window.ZK.api) ? window.ZK.api : '/api';
+const token = localStorage.getItem('zk_token') || '';
+
+async function fetchReq(url, opts = {}) {
+  const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  const res = await fetch(API + url, { ...opts, headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Request failed (' + res.status + ')');
+  }
+  return res.json();
+}
+
+function jumpToStep(step) {
+  currentStep = step;
+  for (let i = 1; i <= 6; i++) {
+    const btn = document.getElementById('step-nav-' + i);
+    const panel = document.getElementById('panel-step-' + i);
+    if (btn) btn.classList.toggle('active', i === step);
+    if (panel) panel.style.display = (i === step ? 'block' : 'none');
+  }
+}
+
+async function saveAndNext(step) {
+  await saveMetaWizard(false);
+  if (step < 6) {
+    jumpToStep(step + 1);
+  } else {
+    alert('Meta Ecosystem Setup Completed Successfully!');
+  }
+}
+
+async function loadMetaSettings() {
+  try {
+    const d = await fetchReq('/meta/settings');
+    metaData = d;
+
+    // Feed URL
+    const feedInput = document.getElementById('liveFeedUrl');
+    if (feedInput && d.catalog && d.catalog.feed_url) {
+      feedInput.value = window.location.origin + d.catalog.feed_url;
+    }
+
+    // Webhook URL
+    const webhookInput = document.getElementById('webhookCallbackUrl');
+    if (webhookInput && d.webhook && d.webhook.callback_url) {
+      webhookInput.value = window.location.origin + d.webhook.callback_url;
+    }
+
+    renderFields(d.meta || {}, d.catalog || {}, d.webhook || {});
+    renderStatuses(d.statuses || {});
+
+    if (d.catalog && d.catalog.products_count !== undefined) {
+      const el = document.getElementById('catalogCountSummary');
+      if (el) el.textContent = d.catalog.products_count + ' products ready for live feed.';
+      const metricEl = document.getElementById('metricCatalog');
+      if (metricEl) metricEl.textContent = d.catalog.products_count + ' Products';
+    }
+  } catch (err) {
+    console.warn('Could not fetch settings with token, trying public settings:', err);
+  }
+}
+
+function renderFields(meta, catalog, webhook) {
+  const setF = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) el.value = val;
+  };
+  setF('app_id', meta.app_id || '');
+  setF('app_secret', meta.app_secret || '');
+  setF('business_id', meta.business_id || '');
+  setF('environment', meta.environment || 'live');
+
+  setF('page_id', meta.page_id || '');
+  setF('page_name', meta.page_name || '');
+  setF('instagram_account_id', meta.instagram_account_id || '');
+  setF('instagram_handle', meta.instagram_handle || '');
+
+  setF('pixel_id', meta.pixel_id || '');
+  setF('conversions_api_token', meta.conversions_api_token || '');
+  setF('test_event_code', meta.test_event_code || '');
+
+  setF('catalog_id', meta.catalog_id || '');
+  setF('catalog_sync_freq', meta.catalog_sync_freq || 'daily');
+
+  setF('waba_id', meta.waba_id || '');
+  setF('phone_number_id', meta.phone_number_id || '');
+  setF('whatsapp_access_token', meta.whatsapp_access_token || '');
+  setF('whatsapp_phone', meta.whatsapp_phone || '');
+
+  setF('webhook_verify_token', webhook.verify_token || meta.webhook_verify_token || '');
+}
+
+function renderStatuses(statuses) {
+  if (!statuses) return;
+  const step1 = statuses.step1_app;
+  const step2 = statuses.step2_pages;
+  const step3 = statuses.step3_pixel_capi;
+  const step4 = statuses.step4_catalog;
+  const step5 = statuses.step5_whatsapp;
+  const step6 = statuses.step6_webhooks;
+
+  updateStepIndicator(1, step1);
+  updateStepIndicator(2, step2);
+  updateStepIndicator(3, step3);
+  updateStepIndicator(4, step4);
+  updateStepIndicator(5, step5);
+  updateStepIndicator(6, step6);
+
+  const progress = metaData?.overall_progress || 0;
+  const pctEl = document.getElementById('overallPercentText');
+  const barEl = document.getElementById('overallProgressBar');
+  const healthEl = document.getElementById('overallHealthVal');
+  const stepsEl = document.getElementById('overallStepsVal');
+
+  if (pctEl) pctEl.textContent = progress + '%';
+  if (barEl) barEl.style.width = progress + '%';
+  if (healthEl) {
+    healthEl.textContent = progress >= 80 ? '🟢 Excellent' : (progress >= 40 ? '🟡 In Progress' : '⚪ Setup Pending');
+  }
+  if (stepsEl) {
+    const completed = [step1, step2, step3, step4, step5, step6].filter(s => s && (s.status === 'connected' || s.status === 'active_tracking')).length;
+    stepsEl.textContent = completed + ' of 6 Steps Configured';
+  }
+
+  const mApp = document.getElementById('metricApp');
+  if (mApp && step1) mApp.textContent = step1.badge;
+
+  const mPixel = document.getElementById('metricPixel');
+  if (mPixel && step3) mPixel.textContent = step3.badge;
+
+  const mWa = document.getElementById('metricWa');
+  if (mWa && step5) mWa.textContent = step5.badge;
+
+  updateAuditRow('1', step1);
+  updateAuditRow('2', step2);
+  updateAuditRow('3', step3);
+  updateAuditRow('4', step4);
+  updateAuditRow('5', step5);
+  updateAuditRow('6', step6);
+}
+
+function updateStepIndicator(idx, st) {
+  if (!st) return;
+  const btn = document.getElementById('step-nav-' + idx);
+  const tag = document.getElementById('step-tag-' + idx);
+  const badge = document.getElementById('status-badge-' + idx);
+
+  const isDone = (st.status === 'connected' || st.status === 'active_tracking');
+  if (btn) btn.classList.toggle('completed', isDone);
+
+  if (tag) {
+    tag.textContent = st.badge;
+    tag.className = 'wizard-step-status-tag ' + (isDone ? 'tag-connected' : (st.level === 'warning' ? 'tag-warning' : 'tag-neutral'));
+  }
+  if (badge) {
+    badge.textContent = (isDone ? '🟢 ' : (st.level === 'warning' ? '🟡 ' : '⚪ ')) + 'Status: ' + st.badge;
+    badge.className = 'status-pill ' + (isDone ? 'success' : (st.level === 'warning' ? 'warning' : 'neutral'));
+  }
+}
+
+function updateAuditRow(idx, st) {
+  if (!st) return;
+  const stEl = document.getElementById('audit-st-' + idx);
+  const dtEl = document.getElementById('audit-dt-' + idx);
+  const isDone = (st.status === 'connected' || st.status === 'active_tracking');
+
+  if (stEl) {
+    stEl.textContent = (isDone ? '🟢 ' : '⚪ ') + st.badge;
+    stEl.style.color = isDone ? '#059669' : '#64748b';
+  }
+  if (dtEl) {
+    dtEl.textContent = isDone ? 'Verified and active.' : (st.level === 'warning' ? 'Action required to complete.' : 'Not configured yet.');
+  }
+}
+
+async function saveMetaWizard(showToastMsg = true) {
+  const getV = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const payload = {
+    app_id: getV('app_id'),
+    app_secret: getV('app_secret'),
+    business_id: getV('business_id'),
+    environment: getV('environment'),
+    page_id: getV('page_id'),
+    page_name: getV('page_name'),
+    instagram_account_id: getV('instagram_account_id'),
+    instagram_handle: getV('instagram_handle'),
+    pixel_id: getV('pixel_id'),
+    conversions_api_token: getV('conversions_api_token'),
+    test_event_code: getV('test_event_code'),
+    catalog_id: getV('catalog_id'),
+    catalog_sync_freq: getV('catalog_sync_freq'),
+    waba_id: getV('waba_id'),
+    phone_number_id: getV('phone_number_id'),
+    whatsapp_access_token: getV('whatsapp_access_token'),
+    whatsapp_phone: getV('whatsapp_phone'),
+    webhook_verify_token: getV('webhook_verify_token')
+  };
+
+  try {
+    const res = await fetchReq('/meta/settings', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    if (res && res.success) {
+      if (showToastMsg) alert('Meta configurations saved successfully!');
+      await loadMetaSettings();
+    }
+  } catch (err) {
+    alert('Failed to save settings: ' + err.message);
+  }
+}
+
+async function testConnection(step) {
+  try {
+    const res = await fetchReq('/meta/test-connection', {
+      method: 'POST',
+      body: JSON.stringify({ step: step })
+    });
+    if (res && res.results) {
+      const detail = Object.entries(res.results).map(([k, v]) => k + ': ' + (v.status || v.badge || 'checked')).join('\n');
+      alert('Diagnostic Results:\n\n' + detail);
+      await loadMetaSettings();
+    }
+  } catch (err) {
+    alert('Diagnostic check error: ' + err.message);
+  }
+}
+
+async function sendTestPixelEvent() {
+  const getV = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const pixelId = getV('pixel_id');
+  const token = getV('conversions_api_token');
+  const testCode = getV('test_event_code');
+
+  if (!pixelId) {
+    alert('Please enter a Meta Pixel ID first.');
+    return;
+  }
+  try {
+    const res = await fetchReq('/meta/test-connection', {
+      method: 'POST',
+      body: JSON.stringify({
+        step: 3,
+        pixel_id: pixelId,
+        conversions_api_token: token,
+        test_event_code: testCode,
+        event_name: 'PageView'
+      })
+    });
+    alert('Test Event Dispatched!\nStatus: ' + (res.results?.step3_pixel_capi?.message || 'Handshake successful'));
+    await loadMetaSettings();
+  } catch (err) {
+    alert('Test Event Error: ' + err.message);
+  }
+}
+
+async function syncCatalogNow() {
+  try {
+    const res = await fetchReq('/meta/sync', {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+    if (res && res.success) {
+      alert('Catalog Feed Refreshed!\n' + (res.products_synced || 0) + ' products live in Meta Commerce Feed.');
+      await loadMetaSettings();
+    }
+  } catch (err) {
+    alert('Catalog Sync Failed: ' + err.message);
+  }
+}
+
+function copyFeedUrl() {
+  const el = document.getElementById('liveFeedUrl');
+  if (el) {
+    navigator.clipboard.writeText(el.value).then(() => {
+      alert('Feed URL copied to clipboard: ' + el.value);
+    }).catch(() => {
+      el.select();
+      document.execCommand('copy');
+      alert('Feed URL copied to clipboard!');
+    });
+  }
+}
+
+function copyWebhookUrl() {
+  const el = document.getElementById('webhookCallbackUrl');
+  if (el) {
+    navigator.clipboard.writeText(el.value).then(() => {
+      alert('Webhook URL copied to clipboard: ' + el.value);
+    }).catch(() => {
+      el.select();
+      document.execCommand('copy');
+      alert('Webhook URL copied to clipboard!');
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadMetaSettings);
+</script>
+</body>
+</html>
